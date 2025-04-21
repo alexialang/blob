@@ -7,6 +7,8 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
+
 
 #[ORM\Entity(repositoryClass: QuizRepository::class)]
 class Quiz
@@ -14,42 +16,54 @@ class Quiz
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['quiz:read'])]
     private ?int $id = null;
 
+
     #[ORM\Column(length: 100)]
+    #[Groups(['quiz:read'])]
     private ?string $title = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['quiz:read'])]
     private ?string $description = null;
 
     #[ORM\Column]
+    #[Groups(['quiz:read'])]
     private ?bool $is_public = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Groups(['quiz:read'])]
     private ?\DateTimeInterface $date_creation = null;
 
     #[ORM\Column(length: 50)]
+    #[Groups(['quiz:read'])]
     private ?string $status = null;
 
     #[ORM\ManyToOne(inversedBy: 'quizs')]
+    #[Groups(['quiz:read'])]
     private ?Company $company = null;
 
     #[ORM\ManyToOne(inversedBy: 'quizs')]
+    #[Groups(['quiz:read'])]
     private ?User $user = null;
 
     #[ORM\ManyToOne(inversedBy: 'quizs')]
+    #[Groups(['quiz:read'])]
     private ?CategoryQuiz $category = null;
 
     /**
      * @var Collection<int, Question>
      */
     #[ORM\OneToMany(targetEntity: Question::class, mappedBy: 'quiz')]
+    #[Groups(['quiz:read'])]
     private Collection $questions;
 
     /**
      * @var Collection<int, UserAnswer>
      */
     #[ORM\OneToMany(targetEntity: UserAnswer::class, mappedBy: 'quiz')]
+    #[Groups(['quiz:read'])]
     private Collection $userAnswers;
 
     public function __construct()

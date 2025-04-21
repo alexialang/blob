@@ -6,6 +6,7 @@ use App\Repository\CategoryQuizRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: CategoryQuizRepository::class)]
 class CategoryQuiz
@@ -13,9 +14,11 @@ class CategoryQuiz
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['quiz:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 100)]
+    #[Groups(['quiz:read'])]
     private ?string $name = null;
 
     /**
