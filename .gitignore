@@ -1,0 +1,26 @@
+# Symfony & PHP
+/var/
+/vendor/
+/.env
+/.env.test
+/.env.dev
+/public/bundles/
+/public/assets/
+/config/secrets/prod/prod.decrypt.private.php
+
+# Tests
+/phpunit.xml
+/phpunit.result.cache
+
+# Docker
+/docker-compose.yml
+/docker-compose.override.yml
+Dockerfile
+
+# IDE
+/.idea/
+/.vscode/
+/*.iml
+
+/config/jwt/private.pem
+/config/jwt/public.pem
