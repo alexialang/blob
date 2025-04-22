@@ -6,6 +6,7 @@ use App\Repository\QuestionRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: QuestionRepository::class)]
 class Question
@@ -13,21 +14,26 @@ class Question
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['question:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['question:read', 'question:create'])]
     private ?string $question = null;
 
     #[ORM\ManyToOne(inversedBy: 'questions')]
+    #[Groups(['question:read', 'question:create'])]
     private ?Quiz $quiz = null;
 
     #[ORM\ManyToOne(inversedBy: 'questions')]
+    #[Groups(['question:read', 'question:create'])]
     private ?TypeQuestion $type_question = null;
 
     /**
      * @var Collection<int, Answer>
      */
     #[ORM\OneToMany(targetEntity: Answer::class, mappedBy: 'question')]
+    #[Groups(['question:read'])]
     private Collection $answers;
 
     public function __construct()
@@ -48,7 +54,6 @@ class Question
     public function setQuestion(string $question): static
     {
         $this->question = $question;
-
         return $this;
     }
 
@@ -60,7 +65,6 @@ class Question
     public function setQuiz(?Quiz $quiz): static
     {
         $this->quiz = $quiz;
-
         return $this;
     }
 
@@ -72,7 +76,6 @@ class Question
     public function setTypeQuestion(?TypeQuestion $type_question): static
     {
         $this->type_question = $type_question;
-
         return $this;
     }
 
@@ -90,19 +93,16 @@ class Question
             $this->answers->add($answer);
             $answer->setQuestion($this);
         }
-
         return $this;
     }
 
     public function removeAnswer(Answer $answer): static
     {
         if ($this->answers->removeElement($answer)) {
-            // set the owning side to null (unless already changed)
             if ($answer->getQuestion() === $this) {
                 $answer->setQuestion(null);
             }
         }
-
         return $this;
     }
 }
