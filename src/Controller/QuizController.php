@@ -29,16 +29,26 @@ class QuizController extends AbstractController
         ]);
     }
 
-    /**
-     * @throws \JsonException
-     */
     #[Route('/', name: 'quiz_create', methods: ['POST'])]
     public function create(Request $request): JsonResponse
     {
-        $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
-        $quiz = $this->quizService->create($data);
+        try {
+            $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        } catch (\JsonException $e) {
+            return $this->json(['error' => 'Invalid JSON'], 400);
+        }
 
-        return $this->json($quiz, 201);
+        $user = $this->getUser();
+
+        if (!$user) {
+            return $this->json(['error' => 'User not authenticated'], 401);
+        }
+
+        $quiz = $this->quizService->create($data, $user);
+
+        return $this->json($quiz, 201, [], [
+            'groups' => ['quiz:read']
+        ]);
     }
 
     #[Route('/{id}', name: 'quiz_show', methods: ['GET'])]
@@ -46,19 +56,25 @@ class QuizController extends AbstractController
     {
         $quiz = $this->quizService->show($quiz);
 
-        return $this->json($quiz);
+        return $this->json($quiz, 200, [], [
+            'groups' => ['quiz:read']
+        ]);
     }
 
-    /**
-     * @throws \JsonException
-     */
     #[Route('/{id}', name: 'quiz_update', methods: ['PUT', 'PATCH'])]
     public function update(Request $request, Quiz $quiz): JsonResponse
     {
-        $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        try {
+            $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        } catch (\JsonException $e) {
+            return $this->json(['error' => 'Invalid JSON'], 400);
+        }
+
         $quiz = $this->quizService->update($quiz, $data);
 
-        return $this->json($quiz);
+        return $this->json($quiz, 200, [], [
+            'groups' => ['quiz:read']
+        ]);
     }
 
     #[Route('/{id}', name: 'quiz_delete', methods: ['DELETE'])]

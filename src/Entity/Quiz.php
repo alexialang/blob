@@ -8,7 +8,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
-
+use App\Enum\Status;
 
 #[ORM\Entity(repositoryClass: QuizRepository::class)]
 class Quiz
@@ -19,26 +19,25 @@ class Quiz
     #[Groups(['quiz:read'])]
     private ?int $id = null;
 
-
     #[ORM\Column(length: 100)]
-    #[Groups(['quiz:read'])]
+    #[Groups(['quiz:read', 'quiz:create'])]
     private ?string $title = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['quiz:read'])]
+    #[Groups(['quiz:read', 'quiz:create'])]
     private ?string $description = null;
 
     #[ORM\Column]
-    #[Groups(['quiz:read'])]
+    #[Groups(['quiz:read', 'quiz:create'])]
     private ?bool $is_public = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     #[Groups(['quiz:read'])]
     private ?\DateTimeInterface $date_creation = null;
 
-    #[ORM\Column(length: 50)]
-    #[Groups(['quiz:read'])]
-    private ?string $status = null;
+    #[ORM\Column(length: 50, enumType: Status::class)]
+    #[Groups(['quiz:read', 'quiz:create'])]
+    private ?Status $status = null;
 
     #[ORM\ManyToOne(inversedBy: 'quizs')]
     #[Groups(['quiz:read'])]
@@ -49,7 +48,7 @@ class Quiz
     private ?User $user = null;
 
     #[ORM\ManyToOne(inversedBy: 'quizs')]
-    #[Groups(['quiz:read'])]
+    #[Groups(['quiz:read', 'quiz:create'])]
     private ?CategoryQuiz $category = null;
 
     /**
@@ -86,7 +85,6 @@ class Quiz
     public function setTitle(string $title): static
     {
         $this->title = $title;
-
         return $this;
     }
 
@@ -98,7 +96,6 @@ class Quiz
     public function setDescription(string $description): static
     {
         $this->description = $description;
-
         return $this;
     }
 
@@ -110,7 +107,6 @@ class Quiz
     public function setIsPublic(bool $is_public): static
     {
         $this->is_public = $is_public;
-
         return $this;
     }
 
@@ -122,19 +118,17 @@ class Quiz
     public function setDateCreation(\DateTimeInterface $date_creation): static
     {
         $this->date_creation = $date_creation;
-
         return $this;
     }
 
-    public function getStatus(): ?string
+    public function getStatus(): ?Status
     {
         return $this->status;
     }
 
-    public function setStatus(string $status): static
+    public function setStatus(Status $status): static
     {
         $this->status = $status;
-
         return $this;
     }
 
@@ -146,7 +140,6 @@ class Quiz
     public function setCompany(?Company $company): static
     {
         $this->company = $company;
-
         return $this;
     }
 
@@ -158,7 +151,6 @@ class Quiz
     public function setUser(?User $user): static
     {
         $this->user = $user;
-
         return $this;
     }
 
@@ -170,7 +162,6 @@ class Quiz
     public function setCategory(?CategoryQuiz $category): static
     {
         $this->category = $category;
-
         return $this;
     }
 
@@ -188,19 +179,16 @@ class Quiz
             $this->questions->add($question);
             $question->setQuiz($this);
         }
-
         return $this;
     }
 
     public function removeQuestion(Question $question): static
     {
         if ($this->questions->removeElement($question)) {
-            // set the owning side to null (unless already changed)
             if ($question->getQuiz() === $this) {
                 $question->setQuiz(null);
             }
         }
-
         return $this;
     }
 
@@ -218,20 +206,16 @@ class Quiz
             $this->userAnswers->add($userAnswer);
             $userAnswer->setQuiz($this);
         }
-
         return $this;
     }
 
     public function removeUserAnswer(UserAnswer $userAnswer): static
     {
         if ($this->userAnswers->removeElement($userAnswer)) {
-            // set the owning side to null (unless already changed)
             if ($userAnswer->getQuiz() === $this) {
                 $userAnswer->setQuiz(null);
             }
         }
-
         return $this;
     }
-
 }
