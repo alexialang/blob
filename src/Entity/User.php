@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Enum\Permission;
 use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -331,4 +332,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
         return $this;
     }
+    public function hasPermission(Permission $permission): bool
+    {
+        foreach ($this->userPermissions as $perm) {
+            if ($perm->getPermission() === $permission) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+
 }

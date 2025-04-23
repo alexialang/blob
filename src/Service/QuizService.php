@@ -77,4 +77,5 @@ class QuizService
         $this->em->remove($quiz);
         $this->em->flush();
     }
+
 }

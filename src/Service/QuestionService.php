@@ -74,4 +74,8 @@ class QuestionService
         $this->em->remove($question);
         $this->em->flush();
     }
+    public function find(int $id): ?Question
+    {
+        return $this->questionRepository->find($id);
+    }
 }

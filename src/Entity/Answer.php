@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\AnswerRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: AnswerRepository::class)]
 class Answer
@@ -11,24 +12,31 @@ class Answer
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['answer:read', 'question:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['answer:read', 'answer:create', 'question:read', 'question:create'])]
     private ?string $answer = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(['answer:read', 'answer:create', 'question:read', 'question:create'])]
     private ?bool $is_correct = null;
 
     #[ORM\Column(length: 50, nullable: true)]
+    #[Groups(['answer:read', 'answer:create', 'question:read', 'question:create'])]
     private ?string $order_correct = null;
 
     #[ORM\Column(length: 20, nullable: true)]
+    #[Groups(['answer:read', 'answer:create', 'question:read', 'question:create'])]
     private ?string $pair_id = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(['answer:read', 'answer:create', 'question:read', 'question:create'])]
     private ?bool $is_intrus = null;
 
     #[ORM\ManyToOne(inversedBy: 'answers')]
+    #[Groups(['answer:read', 'answer:create'])]
     private ?Question $question = null;
 
     public function getId(): ?int
@@ -44,7 +52,6 @@ class Answer
     public function setAnswer(string $answer): static
     {
         $this->answer = $answer;
-
         return $this;
     }
 
@@ -56,7 +63,6 @@ class Answer
     public function setIsCorrect(?bool $is_correct): static
     {
         $this->is_correct = $is_correct;
-
         return $this;
     }
 
@@ -68,7 +74,6 @@ class Answer
     public function setOrderCorrect(?string $order_correct): static
     {
         $this->order_correct = $order_correct;
-
         return $this;
     }
 
@@ -80,7 +85,6 @@ class Answer
     public function setPairId(?string $pair_id): static
     {
         $this->pair_id = $pair_id;
-
         return $this;
     }
 
@@ -92,7 +96,6 @@ class Answer
     public function setIsIntrus(?bool $is_intrus): static
     {
         $this->is_intrus = $is_intrus;
-
         return $this;
     }
 
@@ -104,7 +107,6 @@ class Answer
     public function setQuestion(?Question $question): static
     {
         $this->question = $question;
-
         return $this;
     }
 }
