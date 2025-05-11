@@ -1,0 +1,7 @@
+/**
+ * Bundled by jsDelivr using Rollup v2.79.2 and Terser v5.39.0.
+ * Original file: /npm/@taiga-ui/kit@4.36.0/fesm2022/taiga-ui-kit-directives-present.mjs
+ *
+ * Do NOT use SRI with dynamically generated files! More information: https://www.jsdelivr.com/using-sri-with-dynamic-files
+ */
+import*as t from"@angular/core";import{Directive as e,Output as i}from"@angular/core";import{BehaviorSubject as n,distinctUntilChanged as s,skip as r}from"rxjs";class a{constructor(){this.visibility$=new n(!1),this.tuiPresentChange=this.visibility$.pipe(s(),r(1))}ngOnDestroy(){this.visibility$.next(!1)}onAnimation(t){this.visibility$.next(t)}static{this.ɵfac=t.ɵɵngDeclareFactory({minVersion:"12.0.0",version:"16.2.12",ngImport:t,type:a,deps:[],target:t.ɵɵFactoryTarget.Directive})}static{this.ɵdir=t.ɵɵngDeclareDirective({minVersion:"14.0.0",version:"16.2.12",type:a,isStandalone:!0,selector:"[tuiPresentChange]",outputs:{tuiPresentChange:"tuiPresentChange"},host:{listeners:{"animationcancel.self":"onAnimation(false)","animationstart.self":"onAnimation(true)"},properties:{"style.animation":'"tuiPresent 1s infinite"'}},ngImport:t})}}t.ɵɵngDeclareClassMetadata({minVersion:"12.0.0",version:"16.2.12",ngImport:t,type:a,decorators:[{type:e,args:[{standalone:!0,selector:"[tuiPresentChange]",host:{"[style.animation]":'"tuiPresent 1s infinite"',"(animationcancel.self)":"onAnimation(false)","(animationstart.self)":"onAnimation(true)"}}]}],propDecorators:{tuiPresentChange:[{type:i}]}});export{a as TuiPresent};export default null;

@@ -1,0 +1,7 @@
+/**
+ * Bundled by jsDelivr using Rollup v2.79.2 and Terser v5.39.0.
+ * Original file: /npm/@taiga-ui/core@4.36.0/fesm2022/taiga-ui-core-utils-miscellaneous.mjs
+ *
+ * Do NOT use SRI with dynamically generated files! More information: https://www.jsdelivr.com/using-sri-with-dynamic-files
+ */
+import{DOCUMENT as t}from"@angular/common";import{inject as e}from"@angular/core";import{TUI_FONT_SIZE_HANDLER as n}from"@taiga-ui/cdk/directives/font-size";import{tuiClamp as r}from"@taiga-ui/cdk/utils/math";import{tuiGetElementObscures as o}from"@taiga-ui/cdk/utils/dom";import{TUI_ANIMATIONS_SPEED as i}from"@taiga-ui/core/tokens";function m(){return{provide:n,useFactory:({documentElement:n}=e(t))=>t=>n.style.setProperty("--tui-font-offset",r(t,17,28)-17+"px")}}const s=["Spacebar","Backspace","Delete","ArrowLeft","ArrowRight","Left","Right","End","Home"];function u(t=""){return 1===t.length||s.includes(t)}function c(t,e="tui-hints"){return!!o(t)?.some((t=>!t.closest(e)))}function a(t,e){return(n,r)=>{const o=n||{...r||e};return Object.keys(t).forEach((e=>{o[e]=t[e]})),o}}const f={xxs:0,xs:1,s:2,m:3,l:4,xl:5,xxl:6};function p(t,e="s"){return f[t]>f[e]}const l=300;function d(t=e(i),n){return{value:"",params:{duration:g(t),easing:n}}}function g(t){return t&&300/t}export{l as TUI_ANIMATIONS_DEFAULT_DURATION,m as tuiEnableFontScaling,g as tuiGetDuration,u as tuiIsEditingKey,c as tuiIsObscured,a as tuiOverrideOptions,p as tuiSizeBigger,d as tuiToAnimationOptions};export default null;
