@@ -1,0 +1,116 @@
+services:
+  server:
+    build:
+      context: back
+      dockerfile: Dockerfile
+    container_name: blob_server
+    labels:
+      - 'traefik.http.routers.blob_apache.entrypoints=http'
+      - 'traefik.http.routers.blob_apache.rule=Host(`blob.dev.local`)'
+      - 'traefik.http.middlewares.blob_apache-https-redirect.redirectscheme.scheme=https'
+      - 'traefik.http.routers.blob_apache.middlewares=blob_apache-https-redirect'
+      - 'traefik.http.routers.blob_apache-secure.entrypoints=https'
+      - 'traefik.http.routers.blob_apache-secure.rule=Host(`blob.dev.local`)'
+      - 'traefik.http.routers.blob_apache-secure.tls=true'
+      - 'traefik.docker.network=adimeo_local_proxy'
+    volumes:
+      - ./back:/srv/app
+      - ~/.config/composer:/home/adimeo/.composer
+      - ./back/.docker/dev/php/conf.d/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+      - ./back/.docker/dev/php/conf.d/custom.ini:/usr/local/etc/php/conf.d/custom.ini
+    networks:
+      - adimeo_local_proxy
+
+  angular:
+    build:
+      context: front
+      dockerfile: Dockerfile
+    container_name: angular_app
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.angular.entrypoints=http"
+      - "traefik.http.routers.angular.rule=Host(`angular.dev.local`)"
+      - "traefik.http.middlewares.angular-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.angular.middlewares=angular-https-redirect"
+      - "traefik.http.routers.angular-secure.entrypoints=https"
+      - "traefik.http.routers.angular-secure.rule=Host(`angular.dev.local`)"
+      - "traefik.http.routers.angular-secure.tls=true"
+    networks:
+      - adimeo_local_proxy
+
+  bdd:
+    ports:
+      - "3319:3306"
+    image: mariadb:11.8.1-rc
+    restart: always
+    container_name: blob_bdd
+    command: --max_allowed_packet=32505856 --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: toor
+      MYSQL_DATABASE: blob
+      MYSQL_USER: blob
+      MYSQL_PASSWORD: supersecuredpassword
+    volumes:
+      - blob_data_bdd:/var/lib/mysql
+    networks:
+      - adimeo_local_proxy
+
+  rabbitmq:
+    image: rabbitmq:3
+    container_name: blob_rabbitmq
+    volumes:
+      - blob_data_rabbitmq:/var/lib/rabbitmq/
+      - blob_log_rabbitmq:/var/log/rabbitmq
+    networks:
+      - adimeo_local_proxy
+
+  mails:
+    image: schickling/mailcatcher
+    container_name: blob_mails
+    networks:
+      - adimeo_local_proxy
+    labels:
+      - "traefik.http.routers.blob_mails.entrypoints=http"
+      - "traefik.http.routers.blob_mails.rule=Host(`blob-mails.dev.local`)"
+      - "traefik.http.middlewares.traefik-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.blob_mails.middlewares=traefik-https-redirect"
+      - "traefik.http.routers.blob_mails-secure.entrypoints=https"
+      - "traefik.http.routers.blob_mails-secure.rule=Host(`blob-mails.dev.local`)"
+      - "traefik.http.routers.blob_mails-secure.tls=true"
+      - "traefik.http.services.blob_mails.loadbalancer.server.port=1080"
+
+  mercure:
+    image: dunglas/mercure
+    container_name: blob_mercure
+    networks:
+      - adimeo_local_proxy
+    environment:
+      SERVER_NAME: ":80"
+      MERCURE_PUBLISHER_JWT_KEY: '${MERCURE_JWT_SECRET}'
+      MERCURE_SUBSCRIBER_JWT_KEY: '${MERCURE_JWT_SECRET}'
+      MERCURE_EXTRA_DIRECTIVES: |-
+        cors_origins "*"
+        anonymous
+    command: /usr/bin/caddy run --config /etc/caddy/Caddyfile.dev
+    volumes:
+      - blob_mercure_data:/data
+      - blob_mercure_config:/config
+    labels:
+      traefik.enable: true
+      traefik.http.routers.blob_mercure.entrypoints: https
+      traefik.http.routers.blob_mercure.rule: "Host(`blob-mercure.dev.local`)"
+      traefik.http.routers.blob_mercure.tls: true
+      traefik.http.services.blob_mercure.loadbalancer.server.port: 80
+
+networks:
+  adimeo_local_proxy:
+    external: true
+
+volumes:
+  blob_data_bdd:
+  blob_data_rabbitmq:
+  blob_log_rabbitmq:
+  blob_data_elk:
+  blob_mercure_data:
+  blob_mercure_config:
+  angular:

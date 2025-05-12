@@ -20,3 +20,5 @@ node_modules/
 
 .angular/
 .cache/
+
+.docker-compose.yml
