@@ -1,5 +1,7 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import {NgForOf, NgIf} from '@angular/common';
 
 import { TuiTable } from '@taiga-ui/addon-table';
 import {
@@ -23,7 +25,7 @@ import {
 } from '@taiga-ui/kit';
 import { TuiCell } from '@taiga-ui/layout';
 
-type TuiSizeS = 's' | 'm'
+type TuiSizeS = 's' | 'm';
 
 @Component({
   selector: 'app-user-management',
@@ -32,7 +34,9 @@ type TuiSizeS = 's' | 'm'
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
+    CommonModule,
     FormsModule,
+    TuiTable,
     TuiAutoColorPipe,
     TuiAvatar,
     TuiBadge,
@@ -48,7 +52,6 @@ type TuiSizeS = 's' | 'm'
     TuiProgressBar,
     TuiRadioList,
     TuiStatus,
-    TuiTable,
     TuiTitle,
   ],
 })
@@ -59,7 +62,12 @@ export class UserManagementComponent {
   protected readonly data = [
     {
       checkbox: { title: 'Data point 1', subtitle: 'The first element' },
-      title: { icon: '@tui.file', title: 'This is title', chip: 'Chip', subtitle: 'More info ・ Data' },
+      title: {
+        icon: '@tui.file',
+        title: 'This is title',
+        chip: 'Chip',
+        subtitle: 'More info ・ Data',
+      },
       cell: { name: 'John Cleese', email: 'silly@walk.uk' },
       status: { value: 'Success', color: 'var(--tui-status-positive)' },
       items: ['Some', 'items', 'displayed', 'here', 'and', 'can', 'overflow'],
@@ -85,6 +93,8 @@ export class UserManagementComponent {
       selected: false,
     },
   ];
+
+
 
   protected get checked(): boolean | null {
     const every = this.data.every(({ selected }) => selected);

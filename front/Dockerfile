@@ -19,4 +19,3 @@ COPY --from=build-stage /app/dist/front/browser /app
 COPY ./.docker/angular/nginx.conf /etc/nginx/nginx.conf
 
 USER nginx
-do
