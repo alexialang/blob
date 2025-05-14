@@ -1,21 +1,13 @@
-FROM node:20 AS build-stage
+FROM node:20-alpine
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY package.json package-lock.json ./
 
-RUN npm ci
+RUN npm install
 
-COPY ./ ./
+COPY . .
 
-RUN npm run build --prod
+EXPOSE 4200
 
-FROM nginx:1.25-alpine
-
-RUN mkdir -p /app
-
-COPY --from=build-stage /app/dist/front/browser /app
-
-COPY ./.docker/angular/nginx.conf /etc/nginx/nginx.conf
-
-USER nginx
+CMD ["npm", "start"]

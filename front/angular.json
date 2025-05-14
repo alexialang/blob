@@ -72,6 +72,9 @@
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "allowedHosts": ["localhost","angular.dev.local"]
+          },
           "configurations": {
             "production": {
               "buildTarget": "blob-front:build:production"
