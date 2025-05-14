@@ -58,5 +58,5 @@ node_modules/
 .angular/
 .cache/
 
-/docker-compose.yml
+
 /docker-compose.override.yml
