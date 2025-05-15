@@ -694,4 +694,7 @@ return [
     '@ng-web-apis/screen-orientation' => [
         'version' => '4.12.0',
     ],
+    'gsap' => [
+        'version' => '3.13.0',
+    ],
 ];

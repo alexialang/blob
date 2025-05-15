@@ -3,7 +3,6 @@ import { UserManagementComponent } from './pages/user-management/user-management
 
 export const routes: Routes = [
   {
-    path: 'gestion-utilisateur',
-    component: UserManagementComponent,
+    path: 'gestion-utilisateur', component: UserManagementComponent,
   },
 ];
