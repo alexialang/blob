@@ -25,7 +25,9 @@ services:
     build:
       context: front
       dockerfile: Dockerfile
-    container_name: angular_app
+    container_name: blob_angular
+    ports:
+      - "4200:4200"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.angular.entrypoints=http"
@@ -35,6 +37,8 @@ services:
       - "traefik.http.routers.angular-secure.entrypoints=https"
       - "traefik.http.routers.angular-secure.rule=Host(`angular.dev.local`)"
       - "traefik.http.routers.angular-secure.tls=true"
+    volumes:
+      - ./front:/app
     networks:
       - adimeo_local_proxy
 
