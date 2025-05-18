@@ -24,12 +24,12 @@ class UserController extends AbstractController
      * @OA\Get(summary="Lister tous les utilisateurs", tags={"User"})
      * @OA\Response(response=200, description="Liste des utilisateurs")
      */
-    #[Route('/', name: 'user_index', methods: ['GET'])]
+    #[Route('/n', name: 'user_index', methods: ['GET'])]
     public function index(): JsonResponse
     {
         $users = $this->userService->list();
 
-        return $this->json($users, 200, [], ['groups' => ['user:read']]);
+        return $this->json($users, 200, [], ['groups' => ['user:read', 'company:read', 'user_permission:read']]);
     }
 
     /**

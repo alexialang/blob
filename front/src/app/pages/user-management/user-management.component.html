@@ -1,146 +1,164 @@
-<div class="size-selector" [style.margin-bottom.rem]="'2'">
-  <tui-radio-list
-    class="size-selector__radio-list"
-    [itemContent]="content"
-    [items]="sizes"
-    [(ngModel)]="size"
-  ></tui-radio-list>
+<div class="container">
+  <h1>Gestion <br /> des utilisateurs</h1>
 
-  <ng-template #content let-value>
-    {{ value === 's' ? 'Small' : value === 'm' ? 'Medium' : 'Large' }}
-  </ng-template>
-</div>
+  <div class="filters mb-4 d-flex gap-2 align-center">
+    <select
+      class="form-control"
+      [(ngModel)]="filterOrg"
+      (ngModelChange)="applyFilters()"
+    >
+      <option value="">Toutes les organisations</option>
+      <option *ngFor="let org of orgOptions" [value]="org">
+        {{ org }}
+      </option>
+    </select>
 
-<table tuiTable [size]="size" class="custom-table" [style.width.rem]="'58'">
-  <thead>
-  <tr>
-    <th tuiTh>
-      <div [tuiCell]="size">
+    <select
+      class="form-control"
+      [(ngModel)]="filterRight"
+      (ngModelChange)="applyFilters()"
+    >
+      <option value="">Tous les droits</option>
+      <option *ngFor="let right of rightsOptions" [value]="right">
+        {{ right }}
+      </option>
+    </select>
+
+    <input
+      type="text"
+      class="form-control"
+      placeholder="Mot-clé"
+      [(ngModel)]="filterKeyword"
+      (ngModelChange)="applyFilters()"
+    />
+
+    <button tuiButton appearance="primary" size="s" (click)="applyFilters()">
+      Rechercher
+    </button>
+  </div>
+
+
+  <div class="actions mb-4">
+    <button
+      tuiButton
+      appearance="primary"
+      size="s"
+      (click)="deleteSelected()"
+      [disabled]="!hasSelection"
+    >
+      Supprimer la sélection
+    </button>
+  </div>
+
+  <div *ngIf="loadError" class="error">
+    Impossible de charger les utilisateurs.
+  </div>
+
+  <table tuiTable [size]="size" class="custom-table">
+    <thead>
+    <tr>
+      <th tuiTh>
         <input
-          tuiCheckbox
           type="checkbox"
-          [ngModel]="checked"
-          [size]="size"
-          (ngModelChange)="onCheck($event)"
-        />
-        <span tuiTitle>Checkbox</span>
-      </div>
-    </th>
-    <th tuiTh>Title</th>
-    <th tuiTh>Cell</th>
-    <th tuiTh>Status</th>
-    <th tuiTh [style.width.rem]="'10'">Items</th>
-    <th tuiTh>Progress</th>
-    <th tuiTh>Actions</th>
-  </tr>
-  </thead>
-  <tbody tuiTbody>
-  <tr *ngFor="let item of data">
-    <td tuiTd>
-      <div [tuiCell]="size">
-        <input
           tuiCheckbox
-          type="checkbox"
-          [size]="size"
-          [(ngModel)]="item.selected"
+          [ngModel]="allSelected"
+          (ngModelChange)="toggleAll($event)"
         />
-        <span tuiTitle>
-            {{ item.checkbox.title }}
-          <span tuiSubtitle>{{ item.checkbox.subtitle }}</span>
+      </th>
+      <th tuiTh>Utilisateur</th>
+      <th tuiTh>Actif</th>
+      <th tuiTh>Organisation</th>
+      <th tuiTh>Statistiques</th>
+      <th tuiTh>Droits</th>
+      <th tuiTh>Action</th>
+    </tr>
+    </thead>
+    <tbody tuiTbody>
+    <tr *ngFor="let row of rows">
+      <td tuiTd>
+        <input type="checkbox" tuiCheckbox [(ngModel)]="row.selected" />
+      </td>
+      <td tuiTd>
+        <div [tuiCell]="size" class="d-flex align-center gap-2">
+          <tui-avatar [size]="size"></tui-avatar>
+          <div>
+            <div tuiTitle>{{ row.name }}</div>
+            <div tuiSubtitle>{{ row.email }}</div>
+          </div>
+        </div>
+      </td>
+      <td tuiTd>
+          <span [tuiStatus]="row.active ? 'positive' : 'warning'">
+            {{ row.active ? 'Oui' : 'Non' }}
           </span>
-      </div>
-    </td>
-    <td tuiTd>
-      <div [tuiCell]="size">
-          <span tuiTitle>
-            <span tuiStatus>
-              <tui-icon [icon]="item.title.icon"></tui-icon>
-              {{ item.title.title }}
-              <tui-chip *ngIf="item.title.chip && item.title.subtitle">{{ item.title.chip }}</tui-chip>
-            </span>
-            <tui-chip *ngIf="!item.title.subtitle && item.title.chip; else subtitle">
-              {{ item.title.chip }}
-            </tui-chip>
-            <ng-template #subtitle>
-              <span tuiSubtitle>{{ item.title.subtitle }}</span>
+      </td>
+      <td tuiTd>{{ row.organization }}</td>
+      <td tuiTd>
+        <button tuiButton appearance="action-grayscale" size="s">
+          {{ row.stats }}
+          <span *ngIf="row.stats">Voir plus</span>
+        </button>
+      </td>
+      <td tuiTd>
+        <tui-items-with-more [style.gap.rem]="'0.25'">
+          <ng-container *ngFor="let perm of row.rights">
+            <tui-badge *tuiItem>{{ perm }}</tui-badge>
+          </ng-container>
+          <ng-template let-number tuiMore>
+            <button
+              appearance="action-grayscale"
+              tuiDropdownAlign="right"
+              tuiDropdownOpen
+              tuiLink
+              [pseudo]="true"
+              [tuiDropdown]="dropdown"
+            >
+              +{{ row.rights.length - number - 1 }}
+            </button>
+            <ng-template #dropdown>
+              <div [style.padding.rem]="'1'">
+                <ng-container
+                  *ngFor="let perm of row.rights; let i = index"
+                >
+                  <tui-badge *ngIf="i > number">{{ perm }}</tui-badge>
+                </ng-container>
+              </div>
             </ng-template>
-          </span>
-      </div>
-    </td>
-    <td tuiTd>
-      <div [tuiCell]="size">
-        <tui-avatar
-          [src]="item.cell.name | tuiInitials"
-          [style.background]="item.cell.name | tuiAutoColor"
-        ></tui-avatar>
-        <span tuiTitle>
-            {{ item.cell.name }}
-          <span tuiSubtitle>{{ item.cell.email }}</span>
-          </span>
-      </div>
-    </td>
-    <td tuiTd>
-      <span [tuiStatus]="item.status.color">{{ item.status.value }}</span>
-    </td>
-    <td tuiTd>
-      <tui-items-with-more [style.gap.rem]="'0.25'">
-        <ng-container *ngFor="let chip of item.items">
-          <tui-badge *tuiItem>{{ chip }}</tui-badge>
-        </ng-container>
-        <ng-template let-number tuiMore>
-          <button
-            appearance="action-grayscale"
-            tuiDropdownAlign="right"
-            tuiDropdownOpen
-            tuiLink
-            type="button"
-            [pseudo]="true"
-            [tuiDropdown]="dropdown"
-          >
-            + {{ item.items.length - number - 1 }}
-          </button>
-          <ng-template #dropdown>
-            <div tuiStatus [style.padding.rem]="'1'">
-              <ng-container *ngFor="let chip of item.items; let index = index">
-                <tui-badge *ngIf="index > number">{{ chip }}</tui-badge>
-              </ng-container>
-            </div>
           </ng-template>
-        </ng-template>
-      </tui-items-with-more>
-    </td>
-    <td tuiTd>
-        <span tuiStatus>
-          <progress
-            tuiProgressBar
-            [style.width.rem]="'6'"
-            [value]="item.progress / 100"
-          ></progress>
-          {{ item.progress }}ms
-        </span>
-    </td>
-    <td tuiTd>
-        <span tuiStatus>
+          <span *ngIf="!row.rights.length">—</span>
+        </tui-items-with-more>
+      </td>
+      <td tuiTd>
+        <div class="d-flex gap-2">
           <button
+            tuiButton
             appearance="action"
+            size="xs"
+            iconStart="@tui.eye"
+            tuiIconButton
+          >
+            Voir
+          </button>
+          <button
+            tuiButton
+            appearance="action"
+            size="xs"
             iconStart="@tui.pencil"
-            size="xs"
             tuiIconButton
-            type="button"
-          >
-            Edit
-          </button>
+          ></button>
           <button
+            tuiButton
             appearance="action"
-            iconStart="@tui.ellipsis"
             size="xs"
+            iconStart="@tui.trash"
             tuiIconButton
-            type="button"
-          >
-            More
-          </button>
-        </span>
-    </td>
-  </tr>
-  </tbody>
-</table>
+          ></button>
+        </div>
+      </td>
+    </tr>
+    <tr *ngIf="rows.length === 0">
+      <td tuiTd colspan="7">Aucun utilisateur trouvé.</td>
+    </tr>
+    </tbody>
+  </table>
+</div>

@@ -17,20 +17,22 @@ class Company
     #[Groups(['quiz:read'])]
     private ?int $id = null;
 
-    #[Groups(['quiz:read'])]
+
+    #[Groups(['quiz:read','company:read'])]
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 
     /**
      * @var Collection<int, User>
      */
-    #[Groups(['company:read'])]
+
     #[ORM\OneToMany(targetEntity: User::class, mappedBy: 'company')]
     private Collection $users;
 
     /**
      * @var Collection<int, Group>
      */
+    #[Groups(['company:read'])]
     #[ORM\OneToMany(targetEntity: Group::class, mappedBy: 'company')]
     private Collection $groups;
 
