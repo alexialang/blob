@@ -1,8 +1,7 @@
 import {
-  AfterViewInit,
   ChangeDetectionStrategy,
-  Component, ElementRef, QueryList,
-  signal, ViewChild, ViewChildren
+  Component,
+  signal
 } from '@angular/core';
 import {
   TuiButton,

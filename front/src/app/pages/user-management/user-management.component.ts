@@ -4,11 +4,8 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
 } from '@angular/core';
-
-
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
 
 import { TuiTable } from '@taiga-ui/addon-table';
 import { TuiCell } from '@taiga-ui/layout';
@@ -34,6 +31,7 @@ import {
 
 import { catchError, of } from 'rxjs';
 import { UserManagementService } from '../../services/user-management.service';
+import { PaginationComponent } from '../../components/pagination/pagination.component';
 
 type TuiSizeS = 's' | 'm';
 
@@ -73,6 +71,8 @@ interface UserRow {
     TuiTitle,
     TuiAutoColorPipe,
     TuiInitialsPipe,
+
+    PaginationComponent,
   ],
   templateUrl: './user-management.component.html',
   styleUrls: ['./user-management.component.scss'],
@@ -86,6 +86,8 @@ export class UserManagementComponent implements OnInit {
   public rows: UserRow[] = [];
   public loadError = false;
 
+  public page = 1;
+  public pageSize = 10;
 
   public filterOrg = '';
   public filterRight = '';
@@ -132,7 +134,6 @@ export class UserManagementComponent implements OnInit {
       });
   }
 
-
   applyFilters(): void {
     let filtered = this.allRows;
 
@@ -154,6 +155,17 @@ export class UserManagementComponent implements OnInit {
     }
 
     this.rows = filtered;
+    this.page = 1;
+    this.cdr.markForCheck();
+  }
+
+  get pagedRows(): UserRow[] {
+    const start = (this.page - 1) * this.pageSize;
+    return this.rows.slice(start, start + this.pageSize);
+  }
+
+  onPageChange(newPage: number): void {
+    this.page = newPage;
     this.cdr.markForCheck();
   }
 
@@ -172,6 +184,5 @@ export class UserManagementComponent implements OnInit {
   deleteSelected(): void {
     const toDelete = this.rows.filter((r) => r.selected).map((r) => r.id);
     console.log('À supprimer :', toDelete);
-
   }
 }

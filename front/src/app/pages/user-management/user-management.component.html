@@ -8,9 +8,7 @@
       (ngModelChange)="applyFilters()"
     >
       <option value="">Toutes les organisations</option>
-      <option *ngFor="let org of orgOptions" [value]="org">
-        {{ org }}
-      </option>
+      <option *ngFor="let org of orgOptions" [value]="org">{{ org }}</option>
     </select>
 
     <select
@@ -36,7 +34,6 @@
       Rechercher
     </button>
   </div>
-
 
   <div class="actions mb-4">
     <button
@@ -74,7 +71,7 @@
     </tr>
     </thead>
     <tbody tuiTbody>
-    <tr *ngFor="let row of rows">
+    <tr *ngFor="let row of pagedRows">
       <td tuiTd>
         <input type="checkbox" tuiCheckbox [(ngModel)]="row.selected" />
       </td>
@@ -95,8 +92,7 @@
       <td tuiTd>{{ row.organization }}</td>
       <td tuiTd>
         <button tuiButton appearance="action-grayscale" size="s">
-          {{ row.stats }}
-          <span *ngIf="row.stats">Voir plus</span>
+          {{ row.stats }} <span *ngIf="row.stats">Voir plus</span>
         </button>
       </td>
       <td tuiTd>
@@ -106,20 +102,21 @@
           </ng-container>
           <ng-template let-number tuiMore>
             <button
+              tuiButton
               appearance="action-grayscale"
-              tuiDropdownAlign="right"
-              tuiDropdownOpen
+              size="s"
               tuiLink
               [pseudo]="true"
+              tuiDropdownOpen
+              tuiDropdownAlign="right"
               [tuiDropdown]="dropdown"
+              iconStart="@tui.pencil"
             >
               +{{ row.rights.length - number - 1 }}
             </button>
             <ng-template #dropdown>
               <div [style.padding.rem]="'1'">
-                <ng-container
-                  *ngFor="let perm of row.rights; let i = index"
-                >
+                <ng-container *ngFor="let perm of row.rights; let i = index">
                   <tui-badge *ngIf="i > number">{{ perm }}</tui-badge>
                 </ng-container>
               </div>
@@ -130,29 +127,13 @@
       </td>
       <td tuiTd>
         <div class="d-flex gap-2">
-          <button
-            tuiButton
-            appearance="action"
-            size="xs"
-            iconStart="@tui.eye"
-            tuiIconButton
-          >
+          <button tuiButton appearance="action" size="xs" iconStart="@tui.eye" tuiIconButton>
             Voir
           </button>
-          <button
-            tuiButton
-            appearance="action"
-            size="xs"
-            iconStart="@tui.pencil"
-            tuiIconButton
-          ></button>
-          <button
-            tuiButton
-            appearance="action"
-            size="xs"
-            iconStart="@tui.trash"
-            tuiIconButton
-          ></button>
+          <button tuiButton appearance="action" size="xs" iconStart="@tui.pencil" tuiIconButton>
+          </button>
+          <button tuiButton appearance="action" size="xs" iconStart="@tui.trash" tuiIconButton>
+          </button>
         </div>
       </td>
     </tr>
@@ -161,4 +142,13 @@
     </tr>
     </tbody>
   </table>
+
+
+  <app-pagination
+    [totalItems]="rows.length"
+    [pageSize]="pageSize"
+    [page]="page"
+    [activePadding]="2"
+    (pageChange)="onPageChange($event)"
+  ></app-pagination>
 </div>
