@@ -1,0 +1,25 @@
+<div class="filters mb-4 d-flex gap-2 align-center">
+  <ng-container *ngFor="let filter of filterOptions">
+    <label>{{ filter.label }}</label>
+    <select
+      class="form-control"
+      [(ngModel)]="filters[filter.label]"
+      (ngModelChange)="onFilterChange(filter.label, filters[filter.label])"
+    >
+      <option value="">Tous</option>
+      <option *ngFor="let option of filter.options" [value]="option">{{ option }}</option>
+    </select>
+  </ng-container>
+
+  <input
+    type="text"
+    class="form-control "
+    placeholder="Mot-clé"
+    [(ngModel)]="filters['keyword']"
+    (ngModelChange)="onFilterChange('keyword', filters['keyword'])"
+  />
+
+  <button class="filter-button" tuiButton appearance="primary" size="s" (click)="onFilterChange('keyword', filters['keyword'])">
+    Rechercher
+  </button>
+</div>

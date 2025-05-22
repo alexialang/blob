@@ -12,26 +12,22 @@ import { TuiCell } from '@taiga-ui/layout';
 import {
   TuiAvatar,
   TuiBadge,
-  TuiCheckbox,
+  TuiCheckbox, TuiChevron, TuiDataListWrapper,
   TuiItemsWithMore,
-  TuiProgressBar,
-  TuiRadioList,
   TuiStatus,
-  TuiChip,
 } from '@taiga-ui/kit';
 import {
-  TuiButton,
+  TuiButton, TuiDataList,
   TuiDropdown,
   TuiIcon,
-  TuiLink,
+  TuiLink, TuiSpinButton, TuiTextfield,
   TuiTitle,
-  TuiAutoColorPipe,
-  TuiInitialsPipe,
 } from '@taiga-ui/core';
 
 import { catchError, of } from 'rxjs';
 import { UserManagementService } from '../../services/user-management.service';
 import { PaginationComponent } from '../../components/pagination/pagination.component';
+import {TuiActiveZone, TuiObscured} from '@taiga-ui/cdk';
 
 type TuiSizeS = 's' | 'm';
 
@@ -43,6 +39,7 @@ interface UserRow {
   email: string;
   active: boolean;
   organization: string;
+  group:string;
   stats: number;
   rights: string[];
 }
@@ -53,26 +50,27 @@ interface UserRow {
   imports: [
     CommonModule,
     FormsModule,
-
     TuiTable,
     TuiCell,
     TuiAvatar,
     TuiCheckbox,
     TuiItemsWithMore,
     TuiBadge,
-    TuiChip,
-    TuiProgressBar,
-    TuiRadioList,
     TuiStatus,
     TuiButton,
     TuiDropdown,
-    TuiIcon,
     TuiLink,
     TuiTitle,
-    TuiAutoColorPipe,
-    TuiInitialsPipe,
 
     PaginationComponent,
+    TuiIcon,
+    TuiSpinButton,
+    TuiChevron,
+    TuiObscured,
+    TuiActiveZone,
+    TuiDataList,
+    TuiDataListWrapper,
+    TuiTextfield,
   ],
   templateUrl: './user-management.component.html',
   styleUrls: ['./user-management.component.scss'],
@@ -87,7 +85,7 @@ export class UserManagementComponent implements OnInit {
   public loadError = false;
 
   public page = 1;
-  public pageSize = 10;
+  public pageSize = 20;
 
   public filterOrg = '';
   public filterRight = '';
@@ -119,6 +117,7 @@ export class UserManagementComponent implements OnInit {
           email: u.email ?? '—',
           active: !u.is_admin,
           organization: u.company?.name ?? '—',
+          group: u.groups?.name ?? '—',
           stats: Math.floor(Math.random() * 1000),
           rights: (u.userPermissions ?? []).map((p: any) => p.permission),
         }));
@@ -185,4 +184,18 @@ export class UserManagementComponent implements OnInit {
     const toDelete = this.rows.filter((r) => r.selected).map((r) => r.id);
     console.log('À supprimer :', toDelete);
   }
+  onFilterChange(filters: { [key: string]: string }): void {
+    this.filterOrg = filters['Organisation'] || '';
+    this.filterRight = filters['Droits'] || '';
+    this.filterKeyword = filters['keyword'] || '';
+    this.applyFilters();
+  }
+  protected open = false;
+
+  protected readonly items = ['Ajouter une entreprise', 'Attribuer une entreprise '];
+
+  protected selected = null;
+
+  protected onClick(): void {
+    this.open = false;}
 }

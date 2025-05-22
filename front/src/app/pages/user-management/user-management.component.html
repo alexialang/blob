@@ -1,13 +1,13 @@
 <div class="container">
   <h1>Gestion <br /> des utilisateurs</h1>
 
-  <div class="filters mb-4 d-flex gap-2 align-center">
+  <div>
     <select
       class="form-control"
       [(ngModel)]="filterOrg"
       (ngModelChange)="applyFilters()"
     >
-      <option value="">Toutes les organisations</option>
+      <option value="">Organisation</option>
       <option *ngFor="let org of orgOptions" [value]="org">{{ org }}</option>
     </select>
 
@@ -16,7 +16,7 @@
       [(ngModel)]="filterRight"
       (ngModelChange)="applyFilters()"
     >
-      <option value="">Tous les droits</option>
+      <option value="">Droits</option>
       <option *ngFor="let right of rightsOptions" [value]="right">
         {{ right }}
       </option>
@@ -30,7 +30,7 @@
       (ngModelChange)="applyFilters()"
     />
 
-    <button tuiButton appearance="primary" size="s" (click)="applyFilters()">
+    <button tuiButton class="form-control" (click)="applyFilters()">
       Rechercher
     </button>
   </div>
@@ -38,7 +38,6 @@
   <div class="actions mb-4">
     <button
       tuiButton
-      appearance="primary"
       size="s"
       (click)="deleteSelected()"
       [disabled]="!hasSelection"
@@ -46,6 +45,40 @@
       Supprimer la sélection
     </button>
   </div>
+
+ <div
+   tuiDropdownLimitWidth="fixed"
+   tuiGroup
+   [tuiDropdown]="dropdown"
+   [(tuiDropdownOpen)]="open">
+     <button
+       tuiButton
+       type="button"
+     >
+       Gérer les entreprises
+     </button>
+   <button
+     #tuiDropdownHost
+     tuiChevron
+     tuiIconButton
+     type="button"
+     [style.flex]="'0 0 auto'"
+   >
+   </button>
+ </div>
+  <ng-template #dropdown>
+    <tui-data-list>
+      <button
+        *ngFor="let item of items"
+        tuiOption
+        type="button"
+        (click)="onClick()"
+      >
+        {{ item }}
+      </button>
+    </tui-data-list>
+  </ng-template>
+
 
   <div *ngIf="loadError" class="error">
     Impossible de charger les utilisateurs.
@@ -67,7 +100,8 @@
       <th tuiTh>Organisation</th>
       <th tuiTh>Statistiques</th>
       <th tuiTh>Droits</th>
-      <th tuiTh>Action</th>
+      <th tuiTh>Action    <button tuiButton appearance="action" size="xs" iconStart="@tui.trash" tuiIconButton>
+      </button></th>
     </tr>
     </thead>
     <tbody tuiTbody>
@@ -89,7 +123,7 @@
             {{ row.active ? 'Oui' : 'Non' }}
           </span>
       </td>
-      <td tuiTd>{{ row.organization }}</td>
+      <td tuiTd>{{ row.organization }} {{row.group}}</td>
       <td tuiTd>
         <button tuiButton appearance="action-grayscale" size="s">
           {{ row.stats }} <span *ngIf="row.stats">Voir plus</span>
@@ -127,9 +161,7 @@
       </td>
       <td tuiTd>
         <div class="d-flex gap-2">
-          <button tuiButton appearance="action" size="xs" iconStart="@tui.eye" tuiIconButton>
-            Voir
-          </button>
+         <a> Voir le profil </a>
           <button tuiButton appearance="action" size="xs" iconStart="@tui.pencil" tuiIconButton>
           </button>
           <button tuiButton appearance="action" size="xs" iconStart="@tui.trash" tuiIconButton>
