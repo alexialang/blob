@@ -7,27 +7,32 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
-import { TuiTable } from '@taiga-ui/addon-table';
+import { TuiTable, TuiSortChange } from '@taiga-ui/addon-table';
 import { TuiCell } from '@taiga-ui/layout';
 import {
   TuiAvatar,
   TuiBadge,
-  TuiCheckbox, TuiChevron, TuiDataListWrapper,
+  TuiCheckbox,
+  TuiChevron,
+  TuiDataListWrapper,
   TuiItemsWithMore,
   TuiStatus,
 } from '@taiga-ui/kit';
 import {
-  TuiButton, TuiDataList,
+  TuiButton,
+  TuiDataList,
   TuiDropdown,
   TuiIcon,
-  TuiLink, TuiSpinButton, TuiTextfield,
+  TuiLink,
+  TuiSpinButton,
+  TuiTextfield,
   TuiTitle,
 } from '@taiga-ui/core';
+import { TuiActiveZone, TuiObscured } from '@taiga-ui/cdk';
 
 import { catchError, of } from 'rxjs';
 import { UserManagementService } from '../../services/user-management.service';
 import { PaginationComponent } from '../../components/pagination/pagination.component';
-import {TuiActiveZone, TuiObscured} from '@taiga-ui/cdk';
 
 type TuiSizeS = 's' | 'm';
 
@@ -39,7 +44,7 @@ interface UserRow {
   email: string;
   active: boolean;
   organization: string;
-  group:string;
+  group: string;
   stats: number;
   rights: string[];
 }
@@ -61,7 +66,6 @@ interface UserRow {
     TuiDropdown,
     TuiLink,
     TuiTitle,
-
     PaginationComponent,
     TuiIcon,
     TuiSpinButton,
@@ -93,6 +97,13 @@ export class UserManagementComponent implements OnInit {
   public orgOptions: string[] = [];
   public rightsOptions: string[] = [];
 
+  public sortColumn: keyof UserRow | '' = '';
+  public sortDirection: 'asc' | 'desc' = 'asc';
+
+  protected open = false;
+  protected readonly items = ['Ajouter une entreprise', 'Attribuer une entreprise'];
+  protected selected = null;
+
   constructor(
     private userService: UserManagementService,
     private cdr: ChangeDetectorRef
@@ -117,7 +128,7 @@ export class UserManagementComponent implements OnInit {
           email: u.email ?? '—',
           active: !u.is_admin,
           organization: u.company?.name ?? '—',
-          group: u.groups?.name ?? '—',
+          group: Array.isArray(u.groups) && u.groups.length > 0 ? u.groups[0].name : '—',
           stats: Math.floor(Math.random() * 1000),
           rights: (u.userPermissions ?? []).map((p: any) => p.permission),
         }));
@@ -125,6 +136,7 @@ export class UserManagementComponent implements OnInit {
         this.orgOptions = Array.from(
           new Set(this.allRows.map((r) => r.organization))
         ).sort();
+
         this.rightsOptions = Array.from(
           new Set(this.allRows.flatMap((r) => r.rights))
         ).sort();
@@ -154,7 +166,57 @@ export class UserManagementComponent implements OnInit {
     }
 
     this.rows = filtered;
+    this.applySort();
     this.page = 1;
+    this.cdr.markForCheck();
+  }
+
+  sortBy(column: keyof UserRow): void {
+    if (this.sortColumn === column) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
+
+    this.applySort();
+  }
+
+  onSortChange({ sortKey, sortDirection }: TuiSortChange<UserRow>): void {
+    this.sortColumn = sortKey!;
+    this.sortDirection = sortDirection === 1 ? 'asc' : 'desc';
+    this.applySort();
+  }
+
+  private applySort(): void {
+    if (!this.sortColumn) return;
+
+    const column = this.sortColumn;
+    const direction = this.sortDirection;
+
+    this.rows.sort((a, b) => {
+      const aVal = a[column];
+      const bVal = b[column];
+
+      if (typeof aVal === 'string' && typeof bVal === 'string') {
+        return direction === 'asc'
+          ? aVal.localeCompare(bVal)
+          : bVal.localeCompare(aVal);
+      }
+
+      if (typeof aVal === 'number' && typeof bVal === 'number') {
+        return direction === 'asc' ? aVal - bVal : bVal - aVal;
+      }
+
+      if (typeof aVal === 'boolean' && typeof bVal === 'boolean') {
+        return direction === 'asc'
+          ? Number(aVal) - Number(bVal)
+          : Number(bVal) - Number(aVal);
+      }
+
+      return 0;
+    });
+
     this.cdr.markForCheck();
   }
 
@@ -184,18 +246,8 @@ export class UserManagementComponent implements OnInit {
     const toDelete = this.rows.filter((r) => r.selected).map((r) => r.id);
     console.log('À supprimer :', toDelete);
   }
-  onFilterChange(filters: { [key: string]: string }): void {
-    this.filterOrg = filters['Organisation'] || '';
-    this.filterRight = filters['Droits'] || '';
-    this.filterKeyword = filters['keyword'] || '';
-    this.applyFilters();
-  }
-  protected open = false;
-
-  protected readonly items = ['Ajouter une entreprise', 'Attribuer une entreprise '];
-
-  protected selected = null;
 
   protected onClick(): void {
-    this.open = false;}
+    this.open = false;
+  }
 }

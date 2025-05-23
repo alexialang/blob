@@ -1,109 +1,95 @@
 <div class="container">
   <h1>Gestion <br /> des utilisateurs</h1>
 
-  <div>
-    <select
-      class="form-control"
-      [(ngModel)]="filterOrg"
-      (ngModelChange)="applyFilters()"
-    >
-      <option value="">Organisation</option>
-      <option *ngFor="let org of orgOptions" [value]="org">{{ org }}</option>
-    </select>
+  <div class="filters-container">
+    <div class="filters-row">
+      <select class="form-control" [(ngModel)]="filterOrg" (ngModelChange)="applyFilters()">
+        <option value="">Organisation</option>
+        <option *ngFor="let org of orgOptions" [value]="org">{{ org }}</option>
+      </select>
 
-    <select
-      class="form-control"
-      [(ngModel)]="filterRight"
-      (ngModelChange)="applyFilters()"
-    >
-      <option value="">Droits</option>
-      <option *ngFor="let right of rightsOptions" [value]="right">
-        {{ right }}
-      </option>
-    </select>
+      <select class="form-control" [(ngModel)]="filterRight" (ngModelChange)="applyFilters()">
+        <option value="">Droits</option>
+        <option *ngFor="let right of rightsOptions" [value]="right">{{ right }}</option>
+      </select>
 
-    <input
-      type="text"
-      class="form-control"
-      placeholder="Mot-clé"
-      [(ngModel)]="filterKeyword"
-      (ngModelChange)="applyFilters()"
-    />
+      <input
+        type="text"
+        class="form-control"
+        placeholder="Mot-clé"
+        [(ngModel)]="filterKeyword"
+        (ngModelChange)="applyFilters()"
+      />
 
-    <button tuiButton class="form-control" (click)="applyFilters()">
-      Rechercher
-    </button>
-  </div>
+      <button tuiButton class="form-control" (click)="applyFilters()">Rechercher</button>
+    </div>
 
-  <div class="actions mb-4">
-    <button
-      tuiButton
-      size="s"
-      (click)="deleteSelected()"
-      [disabled]="!hasSelection"
-    >
-      Supprimer la sélection
-    </button>
-  </div>
-
- <div
-   tuiDropdownLimitWidth="fixed"
-   tuiGroup
-   [tuiDropdown]="dropdown"
-   [(tuiDropdownOpen)]="open">
-     <button
-       tuiButton
-       type="button"
-     >
-       Gérer les entreprises
-     </button>
-   <button
-     #tuiDropdownHost
-     tuiChevron
-     tuiIconButton
-     type="button"
-     [style.flex]="'0 0 auto'"
-   >
-   </button>
- </div>
-  <ng-template #dropdown>
-    <tui-data-list>
-      <button
-        *ngFor="let item of items"
-        tuiOption
-        type="button"
-        (click)="onClick()"
+    <div class="dropdown-wrapper">
+      <div
+        tuiDropdownLimitWidth="fixed"
+        tuiGroup
+        [tuiDropdown]="dropdown"
+        [(tuiDropdownOpen)]="open"
+        class="dropdown-container"
       >
-        {{ item }}
-      </button>
-    </tui-data-list>
-  </ng-template>
+        <button class="custom-dropdown-btn">Gérer les entreprises</button>
+        <button
+          #tuiDropdownHost
+          tuiChevron
+          tuiIconButton
+          class="custom-dropdown-chevron"
+          type="button"
+        ></button>
+      </div>
 
-
-  <div *ngIf="loadError" class="error">
-    Impossible de charger les utilisateurs.
+      <ng-template #dropdown>
+        <tui-data-list>
+          <button *ngFor="let item of items" tuiOption type="button" (click)="onClick()">
+            {{ item }}
+          </button>
+        </tui-data-list>
+      </ng-template>
+    </div>
   </div>
 
-  <table tuiTable [size]="size" class="custom-table">
-    <thead>
-    <tr>
+  <div *ngIf="loadError" class="error">Impossible de charger les utilisateurs.</div>
+
+  <div class="table-scroll-wrapper"><table
+    tuiTable
+    [size]="size"
+    class="custom-table"
+    [tuiSortBy]="sortColumn"
+    [direction]="sortDirection === 'asc' ? 1 : -1"
+    (tuiSortChange)="onSortChange($event)"
+  >
+
+      <thead>
+      <tr>
+        <th tuiTh>
+          <input type="checkbox" tuiCheckbox [ngModel]="allSelected" (ngModelChange)="toggleAll($event)" />
+        </th>
+
+        <th tuiTh tuiSortable="name">Utilisateur</th>
+        <th tuiTh tuiSortable="active">Actif</th>
+        <th tuiTh tuiSortable="organization">Organisation</th>
+        <th tuiTh tuiSortable="stats">Statistiques</th>
+        <th tuiTh>Droits</th>
+        <th tuiTh>Action</th>
       <th tuiTh>
-        <input
-          type="checkbox"
-          tuiCheckbox
-          [ngModel]="allSelected"
-          (ngModelChange)="toggleAll($event)"
-        />
+        Action
+        <button
+          tuiButton
+          appearance="action"
+          size="xs"
+          iconStart="@tui.trash"
+          tuiIconButton
+          (click)="deleteSelected()"
+          [disabled]="!hasSelection"
+        ></button>
       </th>
-      <th tuiTh>Utilisateur</th>
-      <th tuiTh>Actif</th>
-      <th tuiTh>Organisation</th>
-      <th tuiTh>Statistiques</th>
-      <th tuiTh>Droits</th>
-      <th tuiTh>Action    <button tuiButton appearance="action" size="xs" iconStart="@tui.trash" tuiIconButton>
-      </button></th>
     </tr>
     </thead>
+
     <tbody tuiTbody>
     <tr *ngFor="let row of pagedRows">
       <td tuiTd>
@@ -119,14 +105,21 @@
         </div>
       </td>
       <td tuiTd>
-          <span [tuiStatus]="row.active ? 'positive' : 'warning'">
-            {{ row.active ? 'Oui' : 'Non' }}
-          </span>
+        <span
+          class="status-indicator"
+          [class.active]="row.active"
+          [class.inactive]="!row.active"
+        ></span>
+        {{ row.active ? 'Oui' : 'Non' }}
       </td>
-      <td tuiTd>{{ row.organization }} {{row.group}}</td>
+      <td tuiTd>
+        {{ row.organization }}
+        <br />
+        <span class="group">{{ row.group }}</span>
+      </td>
       <td tuiTd>
         <button tuiButton appearance="action-grayscale" size="s">
-          {{ row.stats }} <span *ngIf="row.stats">Voir plus</span>
+          {{ row.stats }} <span>Voir plus</span>
         </button>
       </td>
       <td tuiTd>
@@ -161,26 +154,27 @@
       </td>
       <td tuiTd>
         <div class="d-flex gap-2">
-         <a> Voir le profil </a>
-          <button tuiButton appearance="action" size="xs" iconStart="@tui.pencil" tuiIconButton>
-          </button>
-          <button tuiButton appearance="action" size="xs" iconStart="@tui.trash" tuiIconButton>
-          </button>
+          <a>Voir le profil</a>
+          <button tuiButton appearance="action" size="xs" iconStart="@tui.pencil" tuiIconButton></button>
+          <button tuiButton appearance="action" size="xs" iconStart="@tui.trash" tuiIconButton></button>
         </div>
       </td>
     </tr>
+
     <tr *ngIf="rows.length === 0">
       <td tuiTd colspan="7">Aucun utilisateur trouvé.</td>
     </tr>
     </tbody>
   </table>
+  </div>
 
-
-  <app-pagination
-    [totalItems]="rows.length"
-    [pageSize]="pageSize"
-    [page]="page"
-    [activePadding]="2"
-    (pageChange)="onPageChange($event)"
-  ></app-pagination>
+  <div class="pagination-container">
+    <app-pagination
+      [totalItems]="rows.length"
+      [pageSize]="pageSize"
+      [page]="page"
+      [activePadding]="2"
+      (pageChange)="onPageChange($event)"
+    ></app-pagination>
+  </div>
 </div>
