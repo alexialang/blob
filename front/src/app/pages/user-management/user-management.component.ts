@@ -22,6 +22,7 @@ import {
   TuiDialogService,
   TuiAlertService,
   TuiDropdown,
+  TuiOption,
   TuiGroup,
   TuiButton,
   TuiDataList, TuiTitle
@@ -68,13 +69,9 @@ interface UserRow {
     TuiDropdown,
     TuiChevron,
     PaginationComponent,
-    TuiButton,
-    TuiDropdown,
-    TuiGroup,
-    TuiTitle,
   ],
   providers: [
-    { provide: TUI_CONFIRM, useValue: TUI_CONFIRM }, // confirmation prête à l'emploi
+    { provide: TUI_CONFIRM, useValue: TUI_CONFIRM },
   ],
   templateUrl: './user-management.component.html',
   styleUrls: ['./user-management.component.scss'],
@@ -100,6 +97,7 @@ export class UserManagementComponent implements OnInit {
   public sortColumn: keyof UserRow | '' = '';
   public sortDirection: 'asc' | 'desc' = 'asc';
 
+  // Dropdown "Gérer les entreprises"
   public open = false;
   public items = ['Ajouter une entreprise', 'Attribuer une entreprise'];
 
@@ -114,13 +112,14 @@ export class UserManagementComponent implements OnInit {
     this.userService
       .getUsers()
       .pipe(
-        catchError((err) => {
+        catchError(err => {
+          console.error('❌ Erreur getUsers()', err);
           this.loadError = true;
           return of([]);
         })
       )
       .subscribe((users: any[]) => {
-        this.allRows = users.map((u) => ({
+        this.allRows = users.map(u => ({
           id: u.id,
           selected: false,
           avatar: u.name ?? u.email,
@@ -137,26 +136,26 @@ export class UserManagementComponent implements OnInit {
           stats: Math.floor(Math.random() * 1000),
           rights: (u.userPermissions ?? []).map((p: any) => p.permission),
         }));
-        this.orgOptions = Array.from(
-          new Set(this.allRows.map((r) => r.organization))
-        ).sort();
-        this.rightsOptions = Array.from(
-          new Set(this.allRows.flatMap((r) => r.rights))
-        ).sort();
+        console.log(users)
+        this.orgOptions = Array.from(new Set(this.allRows.map(r => r.organization))).sort();
+        this.rightsOptions = Array.from(new Set(this.allRows.flatMap(r => r.rights))).sort();
         this.applyFilters();
       });
   }
 
   applyFilters(): void {
     let filtered = this.allRows;
-    if (this.filterOrg) filtered = filtered.filter((r) => r.organization === this.filterOrg);
-    if (this.filterRight) filtered = filtered.filter((r) => r.rights.includes(this.filterRight));
+    if (this.filterOrg) {
+      filtered = filtered.filter(r => r.organization === this.filterOrg);
+    }
+    if (this.filterRight) {
+      filtered = filtered.filter(r => r.rights.includes(this.filterRight));
+    }
     if (this.filterKeyword) {
       const kw = this.filterKeyword.toLowerCase();
-      filtered = filtered.filter(
-        (r) =>
-          `${r.firstName} ${r.lastName}`.toLowerCase().includes(kw) ||
-          r.email.toLowerCase().includes(kw)
+      filtered = filtered.filter(r =>
+        `${r.firstName} ${r.lastName}`.toLowerCase().includes(kw) ||
+        r.email.toLowerCase().includes(kw)
       );
     }
     this.rows = filtered;
@@ -166,8 +165,9 @@ export class UserManagementComponent implements OnInit {
   }
 
   sortBy(column: keyof UserRow): void {
-    this.sortDirection =
-      this.sortColumn === column ? (this.sortDirection === 'asc' ? 'desc' : 'asc') : 'asc';
+    this.sortDirection = this.sortColumn === column
+      ? (this.sortDirection === 'asc' ? 'desc' : 'asc')
+      : 'asc';
     this.sortColumn = column;
     this.applySort();
   }
@@ -177,14 +177,19 @@ export class UserManagementComponent implements OnInit {
     const { sortColumn: col, sortDirection: dir } = this;
     this.rows.sort((a, b) => {
       const aVal = a[col], bVal = b[col];
-      if (typeof aVal === 'string' && typeof bVal === 'string')
-        return dir === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
-      if (typeof aVal === 'number' && typeof bVal === 'number')
+      if (typeof aVal === 'string' && typeof bVal === 'string') {
+        return dir === 'asc'
+          ? aVal.localeCompare(bVal)
+          : bVal.localeCompare(aVal);
+      }
+      if (typeof aVal === 'number' && typeof bVal === 'number') {
         return dir === 'asc' ? aVal - bVal : bVal - aVal;
-      if (typeof aVal === 'boolean' && typeof bVal === 'boolean')
+      }
+      if (typeof aVal === 'boolean' && typeof bVal === 'boolean') {
         return dir === 'asc'
           ? Number(aVal) - Number(bVal)
           : Number(bVal) - Number(aVal);
+      }
       return 0;
     });
     this.cdr.markForCheck();
@@ -201,19 +206,21 @@ export class UserManagementComponent implements OnInit {
   }
 
   get hasSelection(): boolean {
-    return this.rows.some((r) => r.selected);
+    return this.rows.some(r => r.selected);
   }
   get allSelected(): boolean {
-    return this.rows.length > 0 && this.rows.every((r) => r.selected);
+    return this.rows.length > 0 && this.rows.every(r => r.selected);
   }
   toggleAll(checked: boolean): void {
-    this.rows.forEach((r) => (r.selected = checked));
+    this.rows.forEach(r => r.selected = checked);
     this.cdr.markForCheck();
   }
 
   deleteSelected(): void {
-    const toDelete = this.rows.filter((r) => r.selected).map((r) => r.id);
-    if (toDelete.length) this.confirmDelete(toDelete);
+    const toDelete = this.rows.filter(r => r.selected).map(r => r.id);
+    if (toDelete.length) {
+      this.confirmDelete(toDelete);
+    }
   }
 
   deleteSingle(id: number): void {
@@ -234,13 +241,13 @@ export class UserManagementComponent implements OnInit {
           },
         }
       )
-      .subscribe((confirmed: boolean) => {
+      .subscribe(confirmed => {
         if (!confirmed) return;
         this.userService.softDeleteUser(ids[0]).subscribe({
           next: () => {
-            this.allRows = this.allRows.filter((r) => !ids.includes(r.id));
+            this.allRows = this.allRows.filter(r => !ids.includes(r.id));
             this.applyFilters();
-            this.rows.forEach((r) => (r.selected = false));
+            this.rows.forEach(r => r.selected = false);
             this.cdr.markForCheck();
             this.alerts.open('Suppression terminée', {
               label: 'Info',
@@ -248,7 +255,8 @@ export class UserManagementComponent implements OnInit {
               autoClose: 2000,
             }).subscribe();
           },
-          error: (err) => {
+          error: err => {
+            console.error('Suppression échouée', err);
             this.alerts.open('Échec de la suppression', {
               label: 'Erreur',
               appearance: 'danger',

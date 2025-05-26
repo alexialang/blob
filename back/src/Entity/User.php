@@ -26,9 +26,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 180)]
     private ?string $email = null;
 
-    /**
-     * @var list<string> The user roles
-     */
+
+    #[Groups(['user:read','quiz:read'])]
     #[ORM\Column]
     private array $roles = [];
 
@@ -90,12 +89,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\ManyToMany(targetEntity: Group::class, inversedBy: 'users')]
     private Collection $groups;
 
+    #[Groups(['user:read'])]
     #[ORM\Column(length: 70)]
     private ?string $firstName = null;
-
+    #[Groups(['user:read'])]
     #[ORM\Column(length: 70)]
     private ?string $lastName = null;
 
+    #[Groups(['user:read'])]
     #[ORM\Column]
     private ?bool $isActive = true;
 
