@@ -19,7 +19,7 @@
 }
 
 .form-control {
-  height: 48px !important;
+  height: 48px;
   width: 150px;
   border-radius: 25px;
   border: 1px solid black;
@@ -31,7 +31,6 @@
   display: flex;
   align-items: center;
 }
-
 
 .filters-container {
   display: flex;
@@ -59,17 +58,18 @@
 
 .dropdown-container {
   display: flex;
+  width: 16em;
   height: 42px;
   border-radius: 6px;
   overflow: hidden;
 }
 
 .custom-dropdown-btn {
+  max-width: 88%;
   background: #000;
   color: #fff;
   border: none;
   padding: 0 20px;
-  margin-right: 3px;
   font-weight: 600;
   font-size: 14px;
   display: flex;
@@ -79,10 +79,11 @@
   border-radius: 6px 0 0 6px;
 }
 
+
 .custom-dropdown-chevron {
+  max-width: 12%;
   background: #000;
   color: #fff;
-  width: 42px;
   height: 100%;
   border: none;
   display: flex;
@@ -132,7 +133,6 @@
   font-size: 0.95rem;
 }
 
-
 .group {
   font-size: 0.8rem;
   color: #999;
@@ -155,7 +155,6 @@
   background-color: #e3342f;
 }
 
-
 .pagination-container {
   margin-top: 2rem;
   padding: 1rem 0 3rem;
@@ -163,13 +162,11 @@
   justify-content: center;
 }
 
-
 a,
 button[tuiIconButton],
 button[tuiIconButton] svg {
   color: #000;
 }
-
 
 @media (max-width: 768px) {
   .form-control {

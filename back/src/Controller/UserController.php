@@ -21,15 +21,29 @@ class UserController extends AbstractController
     }
 
     /**
-     * @OA\Get(summary="Lister tous les utilisateurs", tags={"User"})
-     * @OA\Response(response=200, description="Liste des utilisateurs")
+     * @OA\Get(summary="Lister tous les utilisateurs actifs", tags={"User"})
+     * @OA\Response(response=200, description="Liste des utilisateurs actifs")
      */
     #[Route('/n', name: 'user_index', methods: ['GET'])]
     public function index(): JsonResponse
     {
-        $users = $this->userService->list();
+        $users = $this->userService->list(false);
 
         return $this->json($users, 200, [], ['groups' => ['user:read', 'company:read', 'user_permission:read']]);
+    }
+
+    /**
+     * @OA\Get(summary="Lister tous les utilisateurs (admin)", tags={"User"})
+     * @OA\Response(response=200, description="Liste complète des utilisateurs")
+     */
+    #[Route('/admin/all', name: 'admin_user_list', methods: ['GET'])]
+    public function adminList(): JsonResponse
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        $users = $this->userService->list(true);
+
+        return $this->json($users, 200, [], ['groups' => ['user:admin_read']]);
     }
 
     /**
@@ -39,8 +53,10 @@ class UserController extends AbstractController
      *     @OA\JsonContent(
      *         @OA\Property(property="email", type="string"),
      *         @OA\Property(property="password", type="string"),
-     *         @OA\Property(property="name", type="string"),
-     *         @OA\Property(property="company_id", type="integer", nullable=true)
+     *         @OA\Property(property="firstName", type="string"),
+     *         @OA\Property(property="lastName", type="string"),
+     *         @OA\Property(property="company_id", type="integer", nullable=true),
+     *         @OA\Property(property="is_admin", type="boolean", nullable=true)
      *     )
      * )
      * @OA\Response(response=201, description="Utilisateur créé")
@@ -77,9 +93,12 @@ class UserController extends AbstractController
      *     required=true,
      *     @OA\JsonContent(
      *         @OA\Property(property="email", type="string"),
-     *         @OA\Property(property="name", type="string"),
+     *         @OA\Property(property="firstName", type="string"),
+     *         @OA\Property(property="lastName", type="string"),
      *         @OA\Property(property="roles", type="array", @OA\Items(type="string")),
-     *         @OA\Property(property="is_admin", type="boolean")
+     *         @OA\Property(property="is_admin", type="boolean"),
+     *         @OA\Property(property="password", type="string", nullable=true),
+     *         @OA\Property(property="company_id", type="integer", nullable=true)
      *     )
      * )
      * @OA\Response(response=200, description="Utilisateur modifié")
@@ -99,9 +118,9 @@ class UserController extends AbstractController
     }
 
     /**
-     * @OA\Delete(summary="Supprimer un utilisateur", tags={"User"})
+     * @OA\Delete(summary="Supprimer un utilisateur (soft delete)", tags={"User"})
      * @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer"))
-     * @OA\Response(response=204, description="Utilisateur supprimé")
+     * @OA\Response(response=204, description="Utilisateur supprimé (soft delete)")
      * @OA\Security(name="bearerAuth")
      */
     #[Route('/{id}', name: 'user_delete', methods: ['DELETE'])]

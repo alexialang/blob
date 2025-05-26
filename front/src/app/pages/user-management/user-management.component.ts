@@ -7,30 +7,29 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
-import { TuiTable, TuiSortChange } from '@taiga-ui/addon-table';
+import { TuiTable } from '@taiga-ui/addon-table';
 import { TuiCell } from '@taiga-ui/layout';
 import {
   TuiAvatar,
   TuiBadge,
   TuiCheckbox,
-  TuiChevron,
-  TuiDataListWrapper,
   TuiItemsWithMore,
-  TuiStatus,
 } from '@taiga-ui/kit';
 import {
-  TuiButton,
-  TuiDataList,
+  TuiChevron,
+} from '@taiga-ui/kit';
+import {
+  TuiDialogService,
+  TuiAlertService,
   TuiDropdown,
-  TuiIcon,
-  TuiLink,
-  TuiSpinButton,
-  TuiTextfield,
-  TuiTitle,
+  TuiGroup,
+  TuiButton,
+  TuiDataList, TuiTitle
 } from '@taiga-ui/core';
-import { TuiActiveZone, TuiObscured } from '@taiga-ui/cdk';
+import { TUI_CONFIRM } from '@taiga-ui/kit';
 
 import { catchError, of } from 'rxjs';
+
 import { UserManagementService } from '../../services/user-management.service';
 import { PaginationComponent } from '../../components/pagination/pagination.component';
 
@@ -40,6 +39,8 @@ interface UserRow {
   id: number;
   selected: boolean;
   avatar: string;
+  firstName: string;
+  lastName: string;
   name: string;
   email: string;
   active: boolean;
@@ -61,20 +62,19 @@ interface UserRow {
     TuiCheckbox,
     TuiItemsWithMore,
     TuiBadge,
-    TuiStatus,
+    TuiButton,
+    TuiDataList,
+    TuiGroup,
+    TuiDropdown,
+    TuiChevron,
+    PaginationComponent,
     TuiButton,
     TuiDropdown,
-    TuiLink,
+    TuiGroup,
     TuiTitle,
-    PaginationComponent,
-    TuiIcon,
-    TuiSpinButton,
-    TuiChevron,
-    TuiObscured,
-    TuiActiveZone,
-    TuiDataList,
-    TuiDataListWrapper,
-    TuiTextfield,
+  ],
+  providers: [
+    { provide: TUI_CONFIRM, useValue: TUI_CONFIRM }, // confirmation prête à l'emploi
   ],
   templateUrl: './user-management.component.html',
   styleUrls: ['./user-management.component.scss'],
@@ -100,13 +100,14 @@ export class UserManagementComponent implements OnInit {
   public sortColumn: keyof UserRow | '' = '';
   public sortDirection: 'asc' | 'desc' = 'asc';
 
-  protected open = false;
-  protected readonly items = ['Ajouter une entreprise', 'Attribuer une entreprise'];
-  protected selected = null;
+  public open = false;
+  public items = ['Ajouter une entreprise', 'Attribuer une entreprise'];
 
   constructor(
     private userService: UserManagementService,
-    private cdr: ChangeDetectorRef
+    private dialogService: TuiDialogService,
+    private cdr: ChangeDetectorRef,
+    private alerts: TuiAlertService
   ) {}
 
   ngOnInit(): void {
@@ -114,7 +115,6 @@ export class UserManagementComponent implements OnInit {
       .getUsers()
       .pipe(
         catchError((err) => {
-          console.error('Erreur getUsers()', err);
           this.loadError = true;
           return of([]);
         })
@@ -124,47 +124,41 @@ export class UserManagementComponent implements OnInit {
           id: u.id,
           selected: false,
           avatar: u.name ?? u.email,
-          name: u.name ?? '—',
+          firstName: u.firstName ?? '—',
+          lastName: u.lastName ?? '—',
+          name: `${u.firstName ?? ''} ${u.lastName ?? ''}`.trim(),
           email: u.email ?? '—',
-          active: !u.is_admin,
+          active: u.isActive,
           organization: u.company?.name ?? '—',
-          group: Array.isArray(u.groups) && u.groups.length > 0 ? u.groups[0].name : '—',
+          group:
+            Array.isArray(u.company?.groups) && u.company.groups.length
+              ? u.company.groups.map((g: any) => g.name).join(', ')
+              : '—',
           stats: Math.floor(Math.random() * 1000),
           rights: (u.userPermissions ?? []).map((p: any) => p.permission),
         }));
-
         this.orgOptions = Array.from(
           new Set(this.allRows.map((r) => r.organization))
         ).sort();
-
         this.rightsOptions = Array.from(
           new Set(this.allRows.flatMap((r) => r.rights))
         ).sort();
-
         this.applyFilters();
       });
   }
 
   applyFilters(): void {
     let filtered = this.allRows;
-
-    if (this.filterOrg) {
-      filtered = filtered.filter((r) => r.organization === this.filterOrg);
-    }
-
-    if (this.filterRight) {
-      filtered = filtered.filter((r) => r.rights.includes(this.filterRight));
-    }
-
+    if (this.filterOrg) filtered = filtered.filter((r) => r.organization === this.filterOrg);
+    if (this.filterRight) filtered = filtered.filter((r) => r.rights.includes(this.filterRight));
     if (this.filterKeyword) {
       const kw = this.filterKeyword.toLowerCase();
       filtered = filtered.filter(
         (r) =>
-          r.name.toLowerCase().includes(kw) ||
+          `${r.firstName} ${r.lastName}`.toLowerCase().includes(kw) ||
           r.email.toLowerCase().includes(kw)
       );
     }
-
     this.rows = filtered;
     this.applySort();
     this.page = 1;
@@ -172,51 +166,27 @@ export class UserManagementComponent implements OnInit {
   }
 
   sortBy(column: keyof UserRow): void {
-    if (this.sortColumn === column) {
-      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-    } else {
-      this.sortColumn = column;
-      this.sortDirection = 'asc';
-    }
-
-    this.applySort();
-  }
-
-  onSortChange({ sortKey, sortDirection }: TuiSortChange<UserRow>): void {
-    this.sortColumn = sortKey!;
-    this.sortDirection = sortDirection === 1 ? 'asc' : 'desc';
+    this.sortDirection =
+      this.sortColumn === column ? (this.sortDirection === 'asc' ? 'desc' : 'asc') : 'asc';
+    this.sortColumn = column;
     this.applySort();
   }
 
   private applySort(): void {
     if (!this.sortColumn) return;
-
-    const column = this.sortColumn;
-    const direction = this.sortDirection;
-
+    const { sortColumn: col, sortDirection: dir } = this;
     this.rows.sort((a, b) => {
-      const aVal = a[column];
-      const bVal = b[column];
-
-      if (typeof aVal === 'string' && typeof bVal === 'string') {
-        return direction === 'asc'
-          ? aVal.localeCompare(bVal)
-          : bVal.localeCompare(aVal);
-      }
-
-      if (typeof aVal === 'number' && typeof bVal === 'number') {
-        return direction === 'asc' ? aVal - bVal : bVal - aVal;
-      }
-
-      if (typeof aVal === 'boolean' && typeof bVal === 'boolean') {
-        return direction === 'asc'
+      const aVal = a[col], bVal = b[col];
+      if (typeof aVal === 'string' && typeof bVal === 'string')
+        return dir === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+      if (typeof aVal === 'number' && typeof bVal === 'number')
+        return dir === 'asc' ? aVal - bVal : bVal - aVal;
+      if (typeof aVal === 'boolean' && typeof bVal === 'boolean')
+        return dir === 'asc'
           ? Number(aVal) - Number(bVal)
           : Number(bVal) - Number(aVal);
-      }
-
       return 0;
     });
-
     this.cdr.markForCheck();
   }
 
@@ -233,21 +203,63 @@ export class UserManagementComponent implements OnInit {
   get hasSelection(): boolean {
     return this.rows.some((r) => r.selected);
   }
-
   get allSelected(): boolean {
     return this.rows.length > 0 && this.rows.every((r) => r.selected);
   }
-
   toggleAll(checked: boolean): void {
     this.rows.forEach((r) => (r.selected = checked));
+    this.cdr.markForCheck();
   }
 
   deleteSelected(): void {
     const toDelete = this.rows.filter((r) => r.selected).map((r) => r.id);
-    console.log('À supprimer :', toDelete);
+    if (toDelete.length) this.confirmDelete(toDelete);
   }
 
-  protected onClick(): void {
+  deleteSingle(id: number): void {
+    this.confirmDelete([id]);
+  }
+
+  confirmDelete(ids: number[]): void {
+    const count = ids.length;
+    this.dialogService
+      .open<boolean>(
+        TUI_CONFIRM,
+        {
+          label: 'Confirmation',
+          data: {
+            content: `Supprimer ${count} utilisateur${count > 1 ? 's' : ''} ?`,
+            yes: 'Supprimer',
+            no: 'Annuler',
+          },
+        }
+      )
+      .subscribe((confirmed: boolean) => {
+        if (!confirmed) return;
+        this.userService.softDeleteUser(ids[0]).subscribe({
+          next: () => {
+            this.allRows = this.allRows.filter((r) => !ids.includes(r.id));
+            this.applyFilters();
+            this.rows.forEach((r) => (r.selected = false));
+            this.cdr.markForCheck();
+            this.alerts.open('Suppression terminée', {
+              label: 'Info',
+              appearance: 'positive',
+              autoClose: 2000,
+            }).subscribe();
+          },
+          error: (err) => {
+            this.alerts.open('Échec de la suppression', {
+              label: 'Erreur',
+              appearance: 'danger',
+              autoClose: 2000,
+            }).subscribe();
+          },
+        });
+      });
+  }
+
+  onClick(): void {
     this.open = false;
   }
 }
