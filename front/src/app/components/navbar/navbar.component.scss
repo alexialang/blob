@@ -1,0 +1,111 @@
+.navbar {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 2rem;
+
+
+  &__links {
+    width: 60%;
+    display: flex;
+    column-gap: 10%;
+
+    .logo-container {
+    display: flex;
+      align-items: end;
+  }
+    .links-container{
+      width: 70%;
+      align-content: end;
+      font-size: 1.125em;
+
+      ul {
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        column-gap: 10%;
+        list-style-type: none;
+      }
+
+      a {
+        color: #0c1017;
+      }
+    }
+    .logo {
+      width: 170px;
+
+    }
+
+  }
+  .nav-list {
+    display: flex;
+    gap: 30px;
+    list-style: none;
+    padding: 0;
+    a {
+      padding: 2em 0;
+    }
+  }
+
+  .nav-item {
+    position: relative;
+  }
+
+  .nav-item::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0px;
+    height: 0px;
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.3s ease, height 0.3s ease;
+    z-index: 0;
+  }
+
+  .nav-item:hover::before {
+    transition: width 0.3s ease, height 0.3s ease;
+    width: 60px;
+    height: 60px;
+  }
+  @media (max-width: 768px) {
+  display: none;
+  }
+  .profil-container {
+    width: 20%;
+    display: flex;
+    flex-direction: row;
+    column-gap: 10%;
+
+    .progress-container{
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: start;
+      row-gap: 10%;
+    }
+  }
+  .progress-bar{
+    color: #0c1017;
+  }
+  &__toggle {
+    display: none;
+
+    @media (max-width: 768px) {
+      display: block;
+    }
+  }
+}
+
+.mobile-menu {
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  gap: 1rem;
+
+  a {
+    font-size: 1.125rem;
+  }
+}

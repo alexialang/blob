@@ -1,0 +1,12 @@
+<form (ngSubmit)="onSubmit()">
+  <label>
+    Email
+    <input type="email" name="email" [(ngModel)]="email" required />
+  </label>
+  <label>
+    Mot de passe
+    <input type="password" name="password" [(ngModel)]="password" required />
+  </label>
+  <button type="submit">Se connecter</button>
+  <p *ngIf="error" class="error">{{ error }}</p>
+</form>

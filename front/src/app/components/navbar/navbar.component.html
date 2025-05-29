@@ -1,0 +1,43 @@
+<header >
+  <nav class="navbar ">
+  <div class="navbar__links">
+    <div class="logo-container">
+    <img class="logo" src="./assets/svg/logo.svg" alt="" />
+    </div>
+    <div class ="links-container">
+      <ul class="nav-list">
+        <li class="nav-item"><a routerLink="/">Quiz</a></li>
+        <li class="nav-item"><a routerLink="/">Statistiques</a></li>
+        <li class="nav-item"><a routerLink="/">Créer un quiz</a></li>
+        <li class="nav-item"><a routerLink="/">Gestion</a></li>
+      </ul>
+
+
+    </div>
+  </div>
+    <div class="profil-container">
+      <div class="progress-container">
+        <p>Jeanne Dufour</p>
+        <progress class="progress-bar" max="100" size="m" tuiProgressBar [value]="65"></progress>
+      </div>
+      <tui-avatar src="./assets/svg/logo.svg" size="l" />
+      <tui-icon class="chevron-down" icon="@tui.heart"></tui-icon>
+    </div>
+
+  </nav>
+  <button
+    tuiButton
+    type="button"
+    class="navbar__toggle"
+    icon="menu"
+    (click)="toggle()"
+  >
+    Menu
+  </button>
+</header>
+<tui-drawer *tuiPopup="open()" size="m">
+  <nav tuiDrawerContent class="mobile-menu">
+    <a tuiLink routerLink="/" (click)="close()">Accueil</a>
+    <a tuiLink routerLink="/contact" (click)="close()">Contact</a>
+  </nav>
+</tui-drawer>

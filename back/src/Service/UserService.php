@@ -7,6 +7,7 @@ use App\Repository\UserRepository;
 use App\Service\CompanyService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 class UserService
 {
@@ -23,9 +24,13 @@ class UserService
         $this->passwordHasher = $passwordHasher;
     }
 
-    public function list(): array
+    public function list(bool $includeDeleted = false): array
     {
-        return $this->userRepository->findAll();
+        if ($includeDeleted) {
+            return $this->userRepository->findAll();
+        } else {
+            return $this->userRepository->findBy(['deletedAt' => null]);
+        }
     }
 
     public function find(int $id): ?User
@@ -37,11 +42,13 @@ class UserService
     {
         $user = new User();
         $user->setEmail($data['email']);
-        $user->setName($data['name']);
+        $user->setFirstName($data['firstName'] ?? '');
+        $user->setLastName($data['lastName'] ?? '');
         $user->setDateRegistration(new \DateTimeImmutable());
-        $user->setLastAcces(new \DateTime());
+        $user->setLastAccess(new \DateTime());
         $user->setRoles(['ROLE_USER']);
         $user->setIsAdmin($data['is_admin'] ?? false);
+        $user->setIsActive(true);
 
         $hashedPassword = $this->passwordHasher->hashPassword($user, $data['password']);
         $user->setPassword($hashedPassword);
@@ -62,8 +69,11 @@ class UserService
         if (isset($data['email'])) {
             $user->setEmail($data['email']);
         }
-        if (isset($data['name'])) {
-            $user->setName($data['name']);
+        if (isset($data['firstName'])) {
+            $user->setFirstName($data['firstName']);
+        }
+        if (isset($data['lastName'])) {
+            $user->setLastName($data['lastName']);
         }
         if (isset($data['roles'])) {
             $user->setRoles($data['roles']);
@@ -79,8 +89,11 @@ class UserService
         if (isset($data['is_admin'])) {
             $user->setIsAdmin($data['is_admin']);
         }
-        if (isset($data['last_acces'])) {
-            $user->setLastAcces(new \DateTime($data['last_acces']));
+        if (isset($data['lastAccess'])) {
+            $user->setLastAccess(new \DateTime($data['lastAccess']));
+        }
+        if (isset($data['isActive'])) {
+            $user->setIsActive($data['isActive']);
         }
 
         $this->em->flush();
@@ -88,9 +101,21 @@ class UserService
         return $user;
     }
 
+
     public function delete(User $user): void
     {
-        $this->em->remove($user);
+
+        $user->setDeletedAt(new \DateTimeImmutable());
+        $user->setIsActive(false);
+
+        $user->setEmail('deleted_user_'.$user->getId().'@example.com');
+        $user->setFirstName('Deleted');
+        $user->setLastName('User');
+        $user->setPassword('');
+        $user->setRoles([]);
+        $user->setIsAdmin(false);
+        $user->setCompany(null);
+
         $this->em->flush();
     }
 }

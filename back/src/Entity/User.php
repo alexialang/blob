@@ -16,18 +16,18 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['quiz:read'])]
+    #[Groups(['user:read','quiz:read'])]
     private ?int $id = null;
     #[Groups(['user:read', 'company:read','quiz:read'])]
     #[ORM\Column(length: 180)]
     private ?string $email = null;
 
-    /**
-     * @var list<string> The user roles
-     */
+
+    #[Groups(['user:read','quiz:read'])]
     #[ORM\Column]
     private array $roles = [];
 
@@ -37,18 +37,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?string $password = null;
 
-    #[ORM\Column(length: 100)]
-    private ?string $name = null;
-
+    #[Groups(['user:read'])]
     #[ORM\Column]
-    private ?\DateTimeImmutable $date_registration = null;
+    private ?\DateTimeImmutable $dateRegistration = null;
 
+    #[Groups(['user:read'])]
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $last_acces = null;
+    private ?\DateTimeInterface $lastAccess = null;
 
 
+    #[Groups(['user:read'])]
     #[ORM\Column]
-    private ?bool $is_admin = null;
+    private ?bool $isAdmin = null;
 
     #[Groups(['user:read'])]
     #[ORM\ManyToOne(inversedBy: 'users')]
@@ -57,26 +57,51 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @var Collection<int, Badge>
      */
+    #[Groups(['user:read'])]
     #[ORM\ManyToMany(targetEntity: Badge::class, inversedBy: 'users')]
     private Collection $badges;
 
     /**
      * @var Collection<int, Quiz>
      */
+    #[Groups(['user:read'])]
     #[ORM\OneToMany(targetEntity: Quiz::class, mappedBy: 'user')]
     private Collection $quizs;
 
     /**
      * @var Collection<int, UserAnswer>
      */
+    #[Groups(['user:read'])]
     #[ORM\OneToMany(targetEntity: UserAnswer::class, mappedBy: 'user')]
     private Collection $userAnswers;
 
     /**
      * @var Collection<int, UserPermission>
      */
+    #[Groups(['user:read'])]
     #[ORM\OneToMany(targetEntity: UserPermission::class, mappedBy: 'user')]
     private Collection $userPermissions;
+
+    /**
+     * @var Collection<int, Group>
+     */
+    #[Groups(['user:read'])]
+    #[ORM\ManyToMany(targetEntity: Group::class, inversedBy: 'users')]
+    private Collection $groups;
+
+    #[Groups(['user:read'])]
+    #[ORM\Column(length: 70)]
+    private ?string $firstName = null;
+    #[Groups(['user:read'])]
+    #[ORM\Column(length: 70)]
+    private ?string $lastName = null;
+
+    #[Groups(['user:read'])]
+    #[ORM\Column]
+    private ?bool $isActive = true;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $deletedAt = null;
 
     public function __construct()
     {
@@ -84,6 +109,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->quizs = new ArrayCollection();
         $this->userAnswers = new ArrayCollection();
         $this->userPermissions = new ArrayCollection();
+        $this->groups = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -159,50 +185,38 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     }
 
-    public function getName(): ?string
-    {
-        return $this->name;
-    }
-
-    public function setName(string $name): static
-    {
-        $this->name = $name;
-
-        return $this;
-    }
-
     public function getDateRegistration(): ?\DateTimeImmutable
     {
-        return $this->date_registration;
+        return $this->dateRegistration;
     }
 
-    public function setDateRegistration(\DateTimeImmutable $date_registration): static
+    public function setDateRegistration(\DateTimeImmutable $dateRegistration): static
     {
-        $this->date_registration = $date_registration;
+        $this->dateRegistration = $dateRegistration;
 
         return $this;
     }
 
-    public function getLastAcces(): ?\DateTimeInterface
+    public function getLastAccess(): ?\DateTimeInterface
     {
-        return $this->last_acces;
+        return $this->lastAccess;
     }
 
-    public function setLastAcces(?\DateTimeInterface $last_acces): static
+    public function setLastAccess(?\DateTimeInterface $lastAccess): static
     {
-        $this->last_acces = $last_acces;
+        $this->lastAcces = $lastAccess;
 
         return $this;
     }
 
     public function isAdmin(): ?bool
     {
-        return $this->is_admin;
+        return $this->isAdmin;
     }
 
-    public function setIsAdmin(bool $is_admin): static
+    public function setIsAdmin(bool $isAdmin): static
     {
-        $this->is_admin = $is_admin;
+        $this->isAdmin = $isAdmin;
 
         return $this;
     }
@@ -341,6 +355,78 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         }
 
         return false;
+    }
+
+    /**
+     * @return Collection<int, Group>
+     */
+    public function getGroups(): Collection
+    {
+        return $this->groups;
+    }
+
+    public function addGroup(Group $group): static
+    {
+        if (!$this->groups->contains($group)) {
+            $this->groups->add($group);
+        }
+
+        return $this;
+    }
+
+    public function removeGroup(Group $group): static
+    {
+        $this->groups->removeElement($group);
+
+        return $this;
+    }
+
+    public function getFirstName(): ?string
+    {
+        return $this->firstName;
+    }
+
+    public function setFirstName(string $firstName): static
+    {
+        $this->firstName = $firstName;
+
+        return $this;
+    }
+
+    public function getLastName(): ?string
+    {
+        return $this->lastName;
+    }
+
+    public function setLastName(string $lastName): static
+    {
+        $this->lastName = $lastName;
+
+        return $this;
+    }
+
+    public function isActive(): ?bool
+    {
+        return $this->isActive;
+    }
+
+    public function setIsActive(bool $isActive): static
+    {
+        $this->isActive = $isActive;
+
+        return $this;
+    }
+
+    public function getDeletedAt(): ?\DateTimeImmutable
+    {
+        return $this->deletedAt;
+    }
+
+    public function setDeletedAt(?\DateTimeImmutable $deletedAt): static
+    {
+        $this->deletedAt = $deletedAt;
+
+        return $this;
     }
 
 
