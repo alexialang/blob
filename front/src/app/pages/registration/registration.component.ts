@@ -1,8 +1,13 @@
-import { Component }           from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import {Router, RouterLink} from '@angular/router';
-import { AuthService }         from '../../services/auth.service';
-import {NgIf} from '@angular/common';
+import { Component } from '@angular/core';
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+  ReactiveFormsModule
+} from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
+import { NgIf } from '@angular/common';
 
 @Component({
   standalone: true,
@@ -12,7 +17,7 @@ import {NgIf} from '@angular/common';
   styleUrls: ['./registration.component.scss']
 })
 export class RegistrationComponent {
-  form!: FormGroup;
+  form: FormGroup;
   error?: string;
 
   constructor(
@@ -21,9 +26,12 @@ export class RegistrationComponent {
     private readonly router: Router
   ) {
     this.form = this.fb.group({
-      email:    ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
-      confirm:  ['', Validators.required]
+      firstName: ['', [Validators.required]],
+      lastName:  ['', [Validators.required]],
+      email:     ['', [Validators.required, Validators.email]],
+      password:  ['', [Validators.required, Validators.minLength(6)]],
+      confirm:   ['', [Validators.required]],
+      tos:       [false, [Validators.requiredTrue]]
     }, { validators: this.passwordsMatch });
   }
 
@@ -38,10 +46,12 @@ export class RegistrationComponent {
       this.form.markAllAsTouched();
       return;
     }
-    const { email, password } = this.form.value;
-    this.auth.register(email, password).subscribe({
-      next: () => this.router.navigate(['/connexion']),
-      error: () => (this.error = 'Inscription impossible')
-    });
+    const { firstName, lastName, email, password } = this.form.value;
+    this.auth
+      .register(email, password, firstName, lastName)
+      .subscribe({
+        next: () => this.router.navigate(['/connexion']),
+        error: () => (this.error = 'Inscription impossible')
+      });
   }
 }

@@ -55,7 +55,7 @@ export class AuthService {
   isLoggedIn(): boolean {
     return !!this.getToken();
   }
-  register(email: string, password: string): Observable<any> {
+  register(email: string, password: string, firstName: string, lastName: string): Observable<any> {
     return this.http.post(
       `${this.base}/user-create`,
       { email, password }
