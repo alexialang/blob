@@ -10,7 +10,7 @@ export class UserManagementService {
   constructor(private http: HttpClient) {}
 
   getUsers(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.baseUrl}/n`);
+    return this.http.get<any[]>(`${this.baseUrl}`);
   }
 
   softDeleteUser(id: number): Observable<void> {

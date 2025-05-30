@@ -1,13 +1,17 @@
 import { Component } from '@angular/core';
-import { Router }    from '@angular/router';
+import {Router, RouterLink} from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import {FormsModule} from '@angular/forms';
+import {NgIf} from '@angular/common';
+import {SlideButtonComponent} from '../../components/slide-button/slide-button.component';
 
 @Component({
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, NgIf, SlideButtonComponent, RouterLink],
   selector: 'app-login',
   templateUrl: './login.component.html',
+  styleUrls: ['./login.component.scss'],
+
 })
 export class LoginComponent {
   email = '';

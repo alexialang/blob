@@ -22,10 +22,9 @@ import {
   TuiDialogService,
   TuiAlertService,
   TuiDropdown,
-  TuiOption,
   TuiGroup,
   TuiButton,
-  TuiDataList, TuiTitle
+  TuiDataList,
 } from '@taiga-ui/core';
 import { TUI_CONFIRM } from '@taiga-ui/kit';
 
@@ -97,7 +96,6 @@ export class UserManagementComponent implements OnInit {
   public sortColumn: keyof UserRow | '' = '';
   public sortDirection: 'asc' | 'desc' = 'asc';
 
-  // Dropdown "Gérer les entreprises"
   public open = false;
   public items = ['Ajouter une entreprise', 'Attribuer une entreprise'];
 
@@ -113,7 +111,7 @@ export class UserManagementComponent implements OnInit {
       .getUsers()
       .pipe(
         catchError(err => {
-          console.error('❌ Erreur getUsers()', err);
+          console.error(' Erreur getUsers()', err);
           this.loadError = true;
           return of([]);
         })

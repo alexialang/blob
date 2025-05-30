@@ -11,11 +11,13 @@ interface LoginResponse {
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly base = environment.apiBaseUrl;
-  constructor(private http: HttpClient) {}
+
+  constructor(private http: HttpClient) {
+  }
 
   login(email: string, password: string): Observable<void> {
     return this.http
-      .post<{ token: string; refresh_token: string }>(`${this.base}/login_check`, { email, password })
+      .post<{ token: string; refresh_token: string }>(`${this.base}/login_check`, {email, password})
       .pipe(
         tap(res => {
           localStorage.setItem('JWT_TOKEN', res.token);
@@ -31,7 +33,7 @@ export class AuthService {
       return throwError(() => new Error('No refresh token'));
     }
     return this.http
-      .post<{ token: string; refresh_token: string }>(`${this.base}/token/refresh`, { refresh_token: refreshToken })
+      .post<{ token: string; refresh_token: string }>(`${this.base}/token/refresh`, {refresh_token: refreshToken})
       .pipe(
         tap(res => {
           localStorage.setItem('JWT_TOKEN', res.token);
@@ -53,5 +55,12 @@ export class AuthService {
   isLoggedIn(): boolean {
     return !!this.getToken();
   }
+  register(email: string, password: string): Observable<any> {
+    return this.http.post(
+      `${this.base}/user-create`,
+      { email, password }
+    );
+  }
+
 }
 

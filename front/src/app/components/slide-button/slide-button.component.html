@@ -1,0 +1,11 @@
+<button
+  class="slide-btn"
+  [ngStyle]="{
+  '--duration': duration + 's',
+  '--angle': angle + 'deg',
+  '--bg': backgroundColor
+  }"
+>
+  <span class="btn-text white">{{ label }}</span>
+  <span class="btn-text black">{{ label }}</span>
+</button>
