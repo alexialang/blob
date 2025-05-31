@@ -5,7 +5,8 @@ import { LoginComponent }             from './pages/login/login.component';
 import { UserManagementComponent }    from './pages/user-management/user-management.component';
 import { CompanyManagementComponent } from './pages/company-management/company-management.component';
 import {RegistrationComponent}        from './pages/registration/registration.component';
-import {LegalNoticesComponent} from './pages/legal-notices/legal-notices.component';
+import {LegalNoticesComponent}        from './pages/legal-notices/legal-notices.component';
+import {ConfirmAccountComponent}      from './pages/confirm-account/confirm-account.component';
 
 export const routes: Routes = [
   { path: 'connexion', component: LoginComponent, data: { hideNavbar: true } },
@@ -22,6 +23,10 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {path: 'mentions-legales', component: LegalNoticesComponent, data: { hideNavbar: true } },
+  {
+    path: 'confirmation-compte/:token',
+    component: ConfirmAccountComponent
+  },
 
   { path: '',   redirectTo: 'gestion-utilisateur', pathMatch: 'full' },
   { path: '**', redirectTo: 'gestion-utilisateur' },

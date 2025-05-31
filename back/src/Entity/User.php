@@ -103,6 +103,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $deletedAt = null;
 
+    #[ORM\Column(type: 'string', length: 100, nullable: true)]
+    private ?string $confirmationToken = null;
+
+    #[ORM\Column(type: 'boolean')]
+    private bool $isVerified = false;
     public function __construct()
     {
         $this->badges = new ArrayCollection();
@@ -426,6 +431,25 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->deletedAt = $deletedAt;
 
+        return $this;
+    }
+    public function getConfirmationToken(): ?string
+    {
+        return $this->confirmationToken;
+    }
+    public function setConfirmationToken(?string $confirmationToken): static
+    {
+        $this->confirmationToken = $confirmationToken;
+        return $this;
+    }
+
+    public function isVerified(): bool
+    {
+        return $this->isVerified;
+    }
+    public function setIsVerified(bool $isVerified): static
+    {
+        $this->isVerified = $isVerified;
         return $this;
     }
 

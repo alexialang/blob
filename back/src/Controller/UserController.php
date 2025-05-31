@@ -130,4 +130,22 @@ class UserController extends AbstractController
 
         return $this->json(null, 204);
     }
+    /**
+     * @OA\Get(summary="Confirmer l’adresse email avec un token", tags={"User"})
+     * @OA\Parameter(name="token", in="path", required=true, @OA\Schema(type="string"))
+     * @OA\Response(response=200, description="Utilisateur vérifié")
+     * @OA\Response(response=400, description="Token invalide")
+     */
+    #[Route('/confirm-account/{token}', name: 'user_confirm_account', methods: ['GET'])]
+    public function confirmAccount(string $token): JsonResponse
+    {
+        $user = $this->userService->confirmToken($token);
+
+        if (!$user) {
+            return $this->json(['error' => 'Token invalide ou expiré'], 400);
+        }
+
+        return $this->json(['message' => 'Votre compte a bien été vérifié']);
+    }
+
 }
