@@ -8,10 +8,8 @@ use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Mailer\MailerInterface;
-use Symfony\Component\Messenger\Exception\ExceptionInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
@@ -27,13 +25,14 @@ class UserService
     private string                      $frontendUrl;
 
     public function __construct(
+        #[Autowire('%mailer_from%')]  string       $mailerFrom,
         EntityManagerInterface        $em,
         UserRepository                $userRepository,
         UserPasswordHasherInterface   $passwordHasher,
         MessageBusInterface           $bus,
         MailerInterface               $mailer,
-        ParameterBagInterface         $params,
-        #[Autowire('%mailer_from%')]  string       $mailerFrom
+        ParameterBagInterface         $params
+
     ) {
         $this->em             = $em;
         $this->userRepository = $userRepository;
@@ -94,9 +93,6 @@ class UserService
         $user->setIsVerified(false);
         $this->em->persist($user);
         $this->em->flush();
-
-
-        $this->sendQueueEmail($user);
 
         return $user;
     }
