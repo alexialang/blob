@@ -7,6 +7,8 @@ import { CompanyManagementComponent } from './pages/company-management/company-m
 import {RegistrationComponent}        from './pages/registration/registration.component';
 import {LegalNoticesComponent}        from './pages/legal-notices/legal-notices.component';
 import {ConfirmAccountComponent}      from './pages/confirm-account/confirm-account.component';
+import {ForgotPasswordComponent}      from './pages/forgot-password/forgot-password.component';
+import {ResetPasswordComponent}       from './pages/reset-password/reset-password.component';
 
 export const routes: Routes = [
   { path: 'connexion', component: LoginComponent, data: { hideNavbar: true } },
@@ -26,6 +28,14 @@ export const routes: Routes = [
   {
     path: 'confirmation-compte/:token',
     component: ConfirmAccountComponent
+  },
+  {
+    path: 'mot-de-passe-oublie',
+    component: ForgotPasswordComponent,
+  },
+  {
+    path: 'reset-password/:token',
+    component: ResetPasswordComponent,
   },
 
   { path: '',   redirectTo: 'gestion-utilisateur', pathMatch: 'full' },

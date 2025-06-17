@@ -11,7 +11,6 @@
     <p class="p-1 diplay-none">Bienvenue <br>sur Blob.</p>
     <p class="p-2 diplay-none"> Le meilleur concepteur de quiz pour tous.</p>
     <div class="container-blob">
-
     </div>
     <footer class="footer-nav">
       <ul class="footer-nav__list">
@@ -41,14 +40,24 @@
         placeholder="Mot de passe"
         required
       />
-      <a class="forgot" routerLink="/reset">Mot de passe oublié ?</a>
-      <button class="btn main" type="submit">Se connecter</button>
-      <p *ngIf="error" class="error">{{ error }}</p>
+      <a class="forgot" routerLink="/mot-de-passe-oublie">Mot de passe oublié ?</a>
+      <app-slide-button
+        label="Se connecter"
+        [negative]="true"
+        backgroundColor="#333"
+        (buttonClick)="onLogin()">
+      </app-slide-button>
 
+      <p *ngIf="error" class="error">{{ error }}</p>
     </form>
     <div class="register-container">
-    <p class="no-account">Vous n’avez pas de compte&nbsp;?</p>
-    <app-slide-button label="S’inscrire" routerLink="/inscription"></app-slide-button>
+    <p class="no-account">Vous n'avez pas de compte ?</p>
+
+    <app-slide-button
+      label="S'inscrire"
+      (buttonClick)="goToRegister()">
+    </app-slide-button>
+
     <a class="skip" routerLink="/">Passer cette étape</a>
     </div>
   </div>

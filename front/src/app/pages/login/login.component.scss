@@ -121,7 +121,7 @@ h1{
       max-width: 320px;
       display: flex;
       flex-direction: column;
-      gap: 1.2rem;
+      gap: 1rem;
       text-align: center;
 
       h2 {
@@ -131,7 +131,8 @@ h1{
       }
 
       input {
-        padding: 0.8rem 1rem;
+        width: 100%;
+        padding: 0.9rem 2rem;
         border: 1px solid #fff;
         border-radius: 999px;
         background: transparent;
@@ -227,7 +228,6 @@ h1{
     grid-template-rows: 1fr !important;
   }
   .footer-nav {
-    justify-content: flex-start !important;
     padding-left: 3rem;
     padding-right: 3rem;
     max-width: calc(100% - 6rem);
@@ -297,5 +297,39 @@ h1{
       opacity: 0;
     }
   }
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+input,
+app-slide-button {
+  width: 100%;
+  max-width: 300px;
+}
+
+input,
+app-slide-button {
+  width: 300px;
+}
+
+.login-right form,
+.register-container {
+  app-slide-button {
+    padding: 12px 16px;
+    margin: 0 16px;
+  }
+}
+
+.login-right form app-slide-button,
+.register-container app-slide-button {
+  width: 100%;
+  margin: 0;
 }
 

@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import {NgStyle} from '@angular/common';
 
 @Component({
@@ -15,4 +15,31 @@ export class SlideButtonComponent {
   @Input() angle = 5.7;
   @Input() backgroundColor = '#fff';
   @Input() textColor = '#000';
+  @Input() negative = false;
+  @Input() type: 'button' | 'submit' = 'button';
+  @Output() buttonClick = new EventEmitter<void>();
+
+  get finalBackgroundColor() {
+    return this.negative ? '#000' : this.backgroundColor;
+  }
+
+  get finalButtonBackground() {
+    return this.negative ? '#fff' : 'transparent';
+  }
+
+  get finalBorderColor() {
+    return this.negative ? '#000' : '#fff';
+  }
+
+  get finalWhiteTextColor() {
+    return this.negative ? '#000' : '#fff';
+  }
+
+  get finalBlackTextColor() {
+    return this.negative ? '#fff' : '#000';
+  }
+
+  onClick() {
+    this.buttonClick.emit();
+  }
 }

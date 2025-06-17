@@ -1,9 +1,9 @@
 import { Component } from '@angular/core';
-import {Router, RouterLink} from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
-import {FormsModule} from '@angular/forms';
-import {NgIf} from '@angular/common';
-import {SlideButtonComponent} from '../../components/slide-button/slide-button.component';
+import { FormsModule } from '@angular/forms';
+import { NgIf } from '@angular/common';
+import { SlideButtonComponent } from '../../components/slide-button/slide-button.component';
 
 @Component({
   standalone: true,
@@ -11,7 +11,6 @@ import {SlideButtonComponent} from '../../components/slide-button/slide-button.c
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
-
 })
 export class LoginComponent {
   email = '';
@@ -19,9 +18,13 @@ export class LoginComponent {
   error?: string;
 
   constructor(
-    private auth: AuthService,
-    private router: Router
+    private readonly auth: AuthService,
+    private readonly router: Router
   ) {}
+
+  onLogin() {
+    this.onSubmit();
+  }
 
   onSubmit() {
     this.error = undefined;
@@ -29,5 +32,9 @@ export class LoginComponent {
       next: () => this.router.navigate(['/gestion-utilisateur']),
       error: () => (this.error = 'Identifiants invalides'),
     });
+  }
+
+  goToRegister() {
+    this.router.navigate(['/inscription']);
   }
 }
