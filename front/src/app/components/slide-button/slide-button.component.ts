@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import {NgStyle} from '@angular/common';
 
 @Component({
+  standalone: true,
   selector: 'app-slide-button',
   templateUrl: './slide-button.component.html',
   styleUrls: ['./slide-button.component.scss'],

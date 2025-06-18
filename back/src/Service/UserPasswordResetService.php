@@ -12,6 +12,7 @@ use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class UserPasswordResetService
 {
@@ -20,6 +21,7 @@ class UserPasswordResetService
         private readonly UserRepository $userRepository,
         private readonly MailerInterface $mailer,
         private readonly MessageBusInterface $bus,
+        private readonly UserPasswordHasherInterface $passwordHasher,
         #[Autowire('%app.frontend_url%')]
         private readonly string $frontendUrl,
         #[Autowire('%mailer_from%')]
@@ -49,8 +51,12 @@ class UserPasswordResetService
         ));
     }
 
-    public function resetPassword(string $token, string $newPassword): bool
+    public function resetPassword(string $token, string $newPassword, string $confirmPassword): bool
     {
+        if ($newPassword !== $confirmPassword) {
+            return false;
+        }
+
         $user = $this->userRepository->findOneBy(['passwordResetToken' => $token]);
         if (!$user || $this->tokenExpired($user)) {
             return false;
@@ -58,7 +64,7 @@ class UserPasswordResetService
 
         $user->setPasswordResetToken(null);
         $user->setPasswordResetRequestAt(null);
-        $user->setPassword($newPassword);
+        $user->setPassword($this->passwordHasher->hashPassword($user, $newPassword));
 
         $this->em->flush();
         return true;

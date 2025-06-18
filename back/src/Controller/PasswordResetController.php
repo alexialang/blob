@@ -34,14 +34,14 @@ class PasswordResetController extends AbstractController
     {
         $data = json_decode($request->getContent(), true);
 
-        if (empty($data['password'])) {
-            return $this->json(['error' => 'Mot de passe manquant'], 400);
+        if (empty($data['password']) || empty($data['confirmPassword'])) {
+            return $this->json(['error' => 'Mots de passe manquants'], 400);
         }
 
-        $success = $this->resetService->resetPassword($token, $data['password']);
+        $success = $this->resetService->resetPassword($token, $data['password'], $data['confirmPassword']);
 
         if (!$success) {
-            return $this->json(['error' => 'Lien invalide ou expiré'], 400);
+            return $this->json(['error' => 'Lien invalide, expiré ou mots de passe différents'], 400);
         }
 
         return $this->json(['message' => 'Mot de passe réinitialisé avec succès']);

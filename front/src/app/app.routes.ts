@@ -30,12 +30,12 @@ export const routes: Routes = [
     component: ConfirmAccountComponent
   },
   {
-    path: 'mot-de-passe-oublie',
+    path: 'mot-de-passe-oublie', data: { hideNavbar: true },
     component: ForgotPasswordComponent,
   },
   {
     path: 'reset-password/:token',
-    component: ResetPasswordComponent,
+    component: ResetPasswordComponent,data: { hideNavbar: true },
   },
 
   { path: '',   redirectTo: 'gestion-utilisateur', pathMatch: 'full' },
