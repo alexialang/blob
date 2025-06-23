@@ -10,7 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use OpenApi\Annotations as OA;
 
-#[Route('/api/user')]
+#[Route('/api')]
 class UserController extends AbstractController
 {
     private UserService $userService;
@@ -24,7 +24,7 @@ class UserController extends AbstractController
      * @OA\Get(summary="Lister tous les utilisateurs actifs", tags={"User"})
      * @OA\Response(response=200, description="Liste des utilisateurs actifs")
      */
-    #[Route('/n', name: 'user_index', methods: ['GET'])]
+    #[Route('/user', name: 'user_index', methods: ['GET'])]
     public function index(): JsonResponse
     {
         $users = $this->userService->list(false);
@@ -62,7 +62,7 @@ class UserController extends AbstractController
      * @OA\Response(response=201, description="Utilisateur créé")
      * @OA\Security(name="bearerAuth")
      */
-    #[Route('/', name: 'user_create', methods: ['POST'])]
+    #[Route('/user-create', name: 'user_create', methods: ['POST'])]
     public function create(Request $request): JsonResponse
     {
         try {
@@ -80,7 +80,7 @@ class UserController extends AbstractController
      * @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer"))
      * @OA\Response(response=200, description="Détails de l'utilisateur")
      */
-    #[Route('/{id}', name: 'user_show', methods: ['GET'])]
+    #[Route('user/{id}', name: 'user_show', methods: ['GET'])]
     public function show(User $user): JsonResponse
     {
         return $this->json($user, 200, [], ['groups' => ['user:read']]);
@@ -104,7 +104,7 @@ class UserController extends AbstractController
      * @OA\Response(response=200, description="Utilisateur modifié")
      * @OA\Security(name="bearerAuth")
      */
-    #[Route('/{id}', name: 'user_update', methods: ['PUT', 'PATCH'])]
+    #[Route('user/{id}', name: 'user_update', methods: ['PUT', 'PATCH'])]
     public function update(Request $request, User $user): JsonResponse
     {
         try {
@@ -123,11 +123,29 @@ class UserController extends AbstractController
      * @OA\Response(response=204, description="Utilisateur supprimé (soft delete)")
      * @OA\Security(name="bearerAuth")
      */
-    #[Route('/{id}', name: 'user_delete', methods: ['DELETE'])]
+    #[Route('user/{id}', name: 'user_delete', methods: ['DELETE'])]
     public function delete(User $user): JsonResponse
     {
         $this->userService->delete($user);
 
         return $this->json(null, 204);
     }
+    /**
+     * @OA\Get(summary="Confirmer l’adresse email avec un token", tags={"User"})
+     * @OA\Parameter(name="token", in="path", required=true, @OA\Schema(type="string"))
+     * @OA\Response(response=200, description="Utilisateur vérifié")
+     * @OA\Response(response=400, description="Token invalide")
+     */
+    #[Route('/confirmation-compte/{token}', name: 'user_confirm_account', methods: ['GET'])]
+    public function confirmAccount(string $token): JsonResponse
+    {
+        $user = $this->userService->confirmToken($token);
+
+        if (!$user) {
+            return $this->json(['error' => 'Token invalide ou expiré'], 400);
+        }
+
+        return $this->json(['message' => 'Votre compte a bien été vérifié']);
+    }
+
 }

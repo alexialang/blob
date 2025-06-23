@@ -1,0 +1,100 @@
+<div class="registration-page">
+  <div class="registration-left">
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <h1>S'inscrire</h1>
+
+      <input
+        type="text"
+        formControlName="firstName"
+        placeholder="Nom" />
+      <div *ngIf="showError('firstName')" class="error">
+        Nom requis
+      </div>
+
+      <input
+        type="text"
+        formControlName="lastName"
+        placeholder="Prénom" />
+      <div *ngIf="showError('lastName')" class="error">
+        Prénom requis
+      </div>
+
+      <input
+        type="email"
+        formControlName="email"
+        placeholder="Email" />
+      <div *ngIf="showError('email')" class="error">
+        Email invalide
+      </div>
+
+      <input
+        type="password"
+        formControlName="password"
+        placeholder="Mot de passe" />
+      <div *ngIf="showPasswordError()" class="error">
+        Minimum 6 caractères
+      </div>
+
+      <input
+        type="password"
+        formControlName="confirm"
+        placeholder="Confirmez le mot de passe" />
+      <div *ngIf="showConfirmError()" class="error">
+        Les mots de passe ne correspondent pas
+      </div>
+
+      <label class="tos">
+        <input type="checkbox" formControlName="tos" />
+        En cochant cette case j'accepte les conditions d'utilisation
+      </label>
+      <div *ngIf="showError('tos')" class="error">
+        Vous devez accepter les conditions
+      </div>
+
+      <app-slide-button
+        label="Valider"
+        [negative]="true"
+        backgroundColor="#333"
+        type="submit">
+      </app-slide-button>
+
+      <div *ngIf="error" class="error">{{ error }}</div>
+
+      <p class="no-account">
+        Vous avez déjà un compte ?
+        <app-slide-button
+          label="Se connecter"
+          [negative]="false">
+        </app-slide-button>
+      </p>
+
+      <a class="skip" routerLink="/">Passer cette étape</a>
+    </form>
+  </div>
+
+  <div class="registration-right">
+    <div class="header">
+      <img
+        src="./assets/svg/logo.svg"
+        alt="Blob Logo"
+        class="logo" />
+      <ul class="header-nav">
+        <li><a href="/mentions-legales">Mentions Légales</a></li>
+        <li><a href="/a-propos">À propos</a></li>
+        <li><a href="#">Faire un Don</a></li>
+      </ul>
+    </div>
+    <div class="hero">
+      <h2>Créer ton compte</h2>
+      <img
+        src="./assets/svg/three_blob.svg"
+        alt="Blob Trees"
+        class="blob-illu" />
+    </div>
+    <footer class="footer-nav">
+      <a href="/mentions-legales">Mentions Légales</a>
+      <a href="/a-propos">À propos</a>
+      <a href="#">Faire un Don</a>
+    </footer>
+  </div>
+</div>

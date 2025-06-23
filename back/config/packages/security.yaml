@@ -10,6 +10,10 @@ security:
                 property: email
 
     firewalls:
+        register:
+            pattern: ^/api/user-create
+            stateless: true
+            security: false
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
@@ -18,6 +22,7 @@ security:
             pattern:  ^/api/login_check$
             stateless: true
             provider: app_user_provider
+            user_checker: App\Security\UserChecker
             json_login:
                 check_path:    /api/login_check
                 username_path: email
@@ -41,9 +46,10 @@ security:
             entry_point: lexik_jwt_authentication.jwt_manager
 
     access_control:
+        - { path: ^/api/user-create, methods: [ POST ], roles: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/api/token/refresh$, roles: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/api/login_check$,   roles: IS_AUTHENTICATED_ANONYMOUSLY }
-        - { path: ^/api,                roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/api/login,          roles: IS_AUTHENTICATED_ANONYMOUSLY }
 
 when@test:
     security:

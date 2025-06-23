@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { tap, map } from 'rxjs/operators';
+import {tap, map, catchError} from 'rxjs/operators';
 import {Observable, throwError} from 'rxjs';
 import { environment } from '../../environments/environment';
 
@@ -11,17 +11,24 @@ interface LoginResponse {
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly base = environment.apiBaseUrl;
-  constructor(private http: HttpClient) {}
+
+  constructor(private http: HttpClient) {
+  }
 
   login(email: string, password: string): Observable<void> {
     return this.http
-      .post<{ token: string; refresh_token: string }>(`${this.base}/login_check`, { email, password })
+      .post<{ token: string; refresh_token: string }>(`${this.base}/login_check`, {email, password})
       .pipe(
         tap(res => {
           localStorage.setItem('JWT_TOKEN', res.token);
           localStorage.setItem('REFRESH_TOKEN', res.refresh_token);
         }),
-        map(() => void 0)
+        map(() => {
+          return void 0;
+        }),
+        catchError(error => {
+          return throwError(() => error);
+        })
       );
   }
 
@@ -31,7 +38,7 @@ export class AuthService {
       return throwError(() => new Error('No refresh token'));
     }
     return this.http
-      .post<{ token: string; refresh_token: string }>(`${this.base}/token/refresh`, { refresh_token: refreshToken })
+      .post<{ token: string; refresh_token: string }>(`${this.base}/token/refresh`, {refresh_token: refreshToken})
       .pipe(
         tap(res => {
           localStorage.setItem('JWT_TOKEN', res.token);
@@ -52,6 +59,17 @@ export class AuthService {
 
   isLoggedIn(): boolean {
     return !!this.getToken();
+  }
+  register(
+    email: string,
+    password: string,
+    firstName: string,
+    lastName: string
+  ): Observable<any> {
+    return this.http.post(
+      `${this.base}/user-create`,
+      { email, password, firstName, lastName }
+    );
   }
 }
 

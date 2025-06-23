@@ -73,6 +73,9 @@ services:
     container_name: blob_mails
     networks:
       - adimeo_local_proxy
+    ports:
+      - "1025:1025"
+      - "8025:1080"
     labels:
       - "traefik.http.routers.blob_mails.entrypoints=http"
       - "traefik.http.routers.blob_mails.rule=Host(`blob-mails.dev.local`)"
