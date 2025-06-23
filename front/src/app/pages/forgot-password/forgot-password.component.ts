@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { Router } from '@angular/router';
+import {Router, RouterLink} from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { NgIf } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
@@ -9,7 +9,7 @@ import {environment} from '../../../environments/environment';
 
 @Component({
   standalone: true,
-  imports: [FormsModule, NgIf, SlideButtonComponent, BackButtonComponent],
+  imports: [FormsModule, NgIf, SlideButtonComponent, BackButtonComponent, RouterLink],
   selector: 'app-forgot-password',
   templateUrl: './forgot-password.component.html',
   styleUrls: ['./forgot-password.component.scss'],
@@ -20,8 +20,7 @@ export class ForgotPasswordComponent {
   success?: string;
   isLoading = false;
 
-  constructor(private router: Router, private http: HttpClient) {}
-
+  constructor(private readonly router: Router, private readonly http: HttpClient) {}
   onReset() {
     this.onSubmit();
   }
