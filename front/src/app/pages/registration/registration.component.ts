@@ -8,11 +8,12 @@ import {
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { NgIf } from '@angular/common';
+import {SlideButtonComponent} from '../../components/slide-button/slide-button.component';
 
 @Component({
   standalone: true,
   selector: 'app-registration',
-  imports: [ReactiveFormsModule, NgIf, RouterLink],
+  imports: [ReactiveFormsModule, NgIf, RouterLink, SlideButtonComponent],
   templateUrl: './registration.component.html',
   styleUrls: ['./registration.component.scss']
 })
@@ -41,7 +42,7 @@ export class RegistrationComponent {
       : { mismatch: true };
   }
 
-  onSubmit() {
+  onSubmit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
@@ -53,5 +54,19 @@ export class RegistrationComponent {
         next: () => this.router.navigate(['/connexion']),
         error: () => (this.error = 'Inscription impossible')
       });
+  }
+  showError(fieldName: string): boolean {
+    const field = this.form.get(fieldName);
+    return field ? field.invalid && field.touched : false;
+  }
+
+  showPasswordError(): boolean {
+    const password = this.form.get('password');
+    return password ? password.hasError('minlength') && password.touched : false;
+  }
+
+  showConfirmError(): boolean {
+    const confirm = this.form.get('confirm');
+    return this.form.hasError('mismatch') && confirm ? confirm.touched : false;
   }
 }

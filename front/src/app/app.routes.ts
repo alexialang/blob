@@ -9,6 +9,7 @@ import {LegalNoticesComponent}        from './pages/legal-notices/legal-notices.
 import {ConfirmAccountComponent}      from './pages/confirm-account/confirm-account.component';
 import {ForgotPasswordComponent}      from './pages/forgot-password/forgot-password.component';
 import {ResetPasswordComponent}       from './pages/reset-password/reset-password.component';
+import {AboutComponent}               from './pages/about/about.component';
 
 export const routes: Routes = [
   { path: 'connexion', component: LoginComponent, data: { hideNavbar: true } },
@@ -36,6 +37,10 @@ export const routes: Routes = [
   {
     path: 'reset-password/:token',
     component: ResetPasswordComponent,data: { hideNavbar: true },
+  },
+  {
+    path: 'a-propos', data: { hideNavbar: true },
+    component: AboutComponent,
   },
 
   { path: '',   redirectTo: 'gestion-utilisateur', pathMatch: 'full' },

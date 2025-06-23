@@ -158,7 +158,7 @@ class UserService
 
     public function sendEmail(string $email, string $firstName, string $confirmationToken): void
     {
-        $confirmationUrl = $this->frontendUrl . '/confirmation-compte//' . $confirmationToken;
+        $confirmationUrl = $this->frontendUrl . '/confirmation-compte/' . $confirmationToken;
 
         $mail = (new TemplatedEmail())
             ->from($this->mailerFrom)

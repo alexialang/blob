@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { tap, map } from 'rxjs/operators';
+import {tap, map, catchError} from 'rxjs/operators';
 import {Observable, throwError} from 'rxjs';
 import { environment } from '../../environments/environment';
 
@@ -23,7 +23,12 @@ export class AuthService {
           localStorage.setItem('JWT_TOKEN', res.token);
           localStorage.setItem('REFRESH_TOKEN', res.refresh_token);
         }),
-        map(() => void 0)
+        map(() => {
+          return void 0;
+        }),
+        catchError(error => {
+          return throwError(() => error);
+        })
       );
   }
 

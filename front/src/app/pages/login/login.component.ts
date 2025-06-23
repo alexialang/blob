@@ -16,6 +16,7 @@ export class LoginComponent {
   email = '';
   password = '';
   error?: string;
+  isLoading = false;
 
   constructor(
     private readonly auth: AuthService,
@@ -28,13 +29,19 @@ export class LoginComponent {
 
   onSubmit() {
     this.error = undefined;
+
     this.auth.login(this.email, this.password).subscribe({
-      next: () => this.router.navigate(['/gestion-utilisateur']),
-      error: () => (this.error = 'Identifiants invalides'),
+      next: (result) => {
+        this.router.navigate(['/gestion-utilisateur']);
+      },
+      error: (err) => {
+        this.error = 'Identifiants invalides ou compte non vérifié';
+      }
     });
   }
 
   goToRegister() {
     this.router.navigate(['/inscription']);
   }
+
 }

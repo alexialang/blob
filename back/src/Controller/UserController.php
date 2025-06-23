@@ -136,7 +136,7 @@ class UserController extends AbstractController
      * @OA\Response(response=200, description="Utilisateur vérifié")
      * @OA\Response(response=400, description="Token invalide")
      */
-    #[Route('/confirm-account/{token}', name: 'user_confirm_account', methods: ['GET'])]
+    #[Route('/confirmation-compte/{token}', name: 'user_confirm_account', methods: ['GET'])]
     public function confirmAccount(string $token): JsonResponse
     {
         $user = $this->userService->confirmToken($token);
