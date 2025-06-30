@@ -1,0 +1,225 @@
+.container {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.page-title {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 2rem;
+  line-height: 1.2;
+  color:grey;
+}
+
+.d-flex {
+  display: flex;
+  align-items: center;
+}
+
+.align-center {
+  align-items: center;
+}
+
+.gap-2 {
+  gap: 0.75rem;
+}
+
+.form-control {
+  height: 48px;
+  width: 150px;
+  border-radius: 25px;
+  border: 1px solid black;
+  background-color: transparent;
+  color: grey;
+  padding-left: 20px;
+  font-size: 14px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+}
+
+.filters-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.filters-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.filters-row .form-control {
+  flex: 1 1 150px;
+  min-width: 120px;
+  max-width: 200px;
+}
+
+.dropdown-wrapper {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.dropdown-container {
+  display: flex;
+  width: 16em;
+  height: 42px;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.custom-dropdown-btn {
+  max-width: 88%;
+  background: black;
+  color:white;
+  border: none;
+  padding: 0 20px;
+  font-weight: 600;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  line-height: 1;
+  border-radius: 6px 0 0 6px;
+}
+
+.custom-dropdown-chevron {
+  max-width: 12%;
+  background: black;
+  color: white;
+  height: 100%;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0 6px 6px 0;
+}
+
+.custom-dropdown-chevron svg {
+  color: black;
+  stroke: black;
+  fill: none;
+  width: 16px;
+  height: 16px;
+}
+
+[tuiChevron][tuiIcons]::after {
+  color: black;
+  stroke: black;
+  fill: none;
+  width: 16px;
+  height: 16px;
+}
+
+.table-scroll-wrapper {
+  overflow-x: auto;
+  width: 100%;
+}
+
+.custom-table {
+  width: 100%;
+  min-width: 1000px;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.custom-table th,
+.custom-table td {
+  padding: 1rem 1.25rem;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.custom-table th {
+  background-color: white;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.status-indicator {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+.status-indicator.active {
+  background-color: green;
+}
+
+.status-indicator.inactive {
+  background-color: red;
+}
+
+.pagination-container {
+  margin-top: 2rem;
+  padding: 1rem 0 3rem;
+  display: flex;
+  justify-content: center;
+}
+
+a,
+button[tuiIconButton],
+button[tuiIconButton] svg {
+  color: #000;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem 0.5rem;
+  }
+
+  .filters-row {
+    gap: 0.25rem;
+  }
+
+  .filters-row .form-control {
+    flex: 1 1 120px;
+    min-width: 100px;
+    max-width: 140px;
+    height: 40px;
+    font-size: 13px;
+    padding-left: 15px;
+  }
+
+  .dropdown-wrapper {
+    justify-content: center;
+    margin-top: 0.5rem;
+  }
+
+  .dropdown-container {
+    width: 100%;
+    max-width: 280px;
+  }
+
+  .custom-table {
+    min-width: 700px;
+  }
+
+  .custom-table th,
+  .custom-table td {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-title {
+    font-size: 1.6rem;
+  }
+
+  .filters-row .form-control {
+    flex: 1 1 90px;
+    min-width: 80px;
+    max-width: 120px;
+    height: 36px;
+    font-size: 12px;
+    padding-left: 12px;
+  }
+}

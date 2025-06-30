@@ -14,7 +14,7 @@ class Company
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['quiz:read'])]
+    #[Groups(['quiz:read','company:read'])]
     private ?int $id = null;
 
 
@@ -25,7 +25,7 @@ class Company
     /**
      * @var Collection<int, User>
      */
-
+    #[Groups(['company:read'])]
     #[ORM\OneToMany(targetEntity: User::class, mappedBy: 'company')]
     private Collection $users;
 

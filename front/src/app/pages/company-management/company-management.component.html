@@ -1,1 +1,200 @@
-<p>company-management works!</p>
+<div class="container">
+  <h1 class="page-title">Gestion <br /> des entreprises</h1>
+
+  <div class="filters-container">
+    <div class="filters-row">
+      <select
+        class="form-control"
+        [(ngModel)]="filterStatus"
+        (ngModelChange)="applyFilters()"
+      >
+        <option value="">Groupe</option>
+        <option *ngFor="let status of statusOptions" [value]="status">
+          {{ status }}
+        </option>
+      </select>
+
+      <input
+        type="text"
+        class="form-control"
+        placeholder="Mot-clé"
+        [(ngModel)]="filterKeyword"
+        (ngModelChange)="applyFilters()"
+      />
+
+      <button tuiButton class="form-control" (click)="applyFilters()">
+        Rechercher
+      </button>
+    </div>
+
+    <div class="dropdown-wrapper">
+      <div
+        tuiDropdownLimitWidth="fixed"
+        tuiGroup
+        [tuiDropdown]="dropdown"
+        [(tuiDropdownOpen)]="open"
+        class="dropdown-container"
+      >
+        <button class="custom-dropdown-btn">Actions</button>
+        <button
+          tuiChevron
+          tuiIconButton
+          class="custom-dropdown-chevron"
+          type="button"
+        ></button>
+      </div>
+      <ng-template #dropdown>
+        <tui-data-list>
+          <button
+            *ngFor="let item of items"
+            tuiOption
+            type="button"
+            (click)="onClick()"
+          >
+            {{ item }}
+          </button>
+        </tui-data-list>
+      </ng-template>
+    </div>
+  </div>
+
+  <div *ngIf="loadError" class="alert alert-danger">
+    Impossible de charger les entreprises.
+  </div>
+
+  <div class="table-scroll-wrapper">
+    <table tuiTable [size]="size" class="custom-table table-striped">
+      <thead>
+      <tr>
+        <th tuiTh class="th-checkbox">
+          <input
+            type="checkbox"
+            tuiCheckbox
+            [ngModel]="allSelected"
+            (ngModelChange)="toggleAll($event)"
+          />
+        </th>
+        <th tuiTh (click)="sortBy('name')" class="th-company">
+          Entreprise
+          <button
+            tuiIconButton
+            size="xs"
+            class="sort-btn"
+            *ngIf="sortColumn === 'name'"
+            [iconStart]="
+                sortDirection === 'asc'
+                  ? 'tuiIconChevronUp'
+                  : 'tuiIconChevronDown'
+              "
+          ></button>
+        </th>
+        <th tuiTh (click)="sortBy('userCount')" class="th-users">
+          Utilisateurs
+          <button
+            tuiIconButton
+            size="xs"
+            appearance="ghost"
+            class="sort-btn"
+            *ngIf="sortColumn === 'userCount'"
+            [iconStart]="
+                sortDirection === 'asc'
+                  ? 'tuiIconChevronUp'
+                  : 'tuiIconChevronDown'
+              "
+          ></button>
+        </th>
+        <th tuiTh class="th-groups">
+          Groupe
+        </th>
+        <th tuiTh class="th-action">
+          Action
+          <button
+            tuiButton
+            appearance="action"
+            size="xs"
+            iconStart="@tui.trash"
+            tuiIconButton
+            (click)="deleteSelected()"
+            [disabled]="!hasSelection"
+            class="btn-delete-all"
+          ></button>
+        </th>
+      </tr>
+      </thead>
+      <tbody tuiTbody>
+      <tr *ngFor="let row of pagedRows" class="table-row">
+        <td tuiTd>
+          <input type="checkbox" tuiCheckbox [(ngModel)]="row.selected" />
+        </td>
+        <td tuiTd class="td-company">
+          <div [tuiCell]="size" class="d-flex align-center gap-2 company-cell">
+            <tui-avatar [size]="size">{{ row.name.charAt(0) }}</tui-avatar>
+            <div>
+              <div tuiTitle>{{ row.name }}</div>
+            </div>
+          </div>
+        </td>
+        <td tuiTd class="td-users">
+          <tui-icon icon="tuiIconUserLarge" class="mr-1"></tui-icon>
+          {{ row.userCount }} utilisateur{{ row.userCount > 1 ? 's' : '' }}
+        </td>
+        <td tuiTd class="td-groups">
+          <div class="groups-container">
+            <tui-chip
+              *ngFor="let group of getVisibleGroups(row.groups)"
+              [size]="'s'"
+              class="group-chip"
+            >
+              {{ group.name }}
+            </tui-chip>
+            <tui-chip
+              *ngIf="getRemainingGroupsCount(row.groups) > 0"
+              [size]="'s'"
+              class="group-chip group-chip-more"
+              [tuiHint]="getGroupsTooltip(row.groups)"
+              tuiHintDirection="top"
+            >
+              +{{ getRemainingGroupsCount(row.groups) }}
+            </tui-chip>
+          </div>
+        </td>
+        <td tuiTd class="td-action">
+          <div class="d-flex gap-2">
+            <a class="link-profile">Voir détails</a>
+            <button
+              tuiButton
+              appearance="action"
+              size="xs"
+              iconStart="@tui.pencil"
+              tuiIconButton
+              class="btn-edit"
+            ></button>
+            <button
+              tuiButton
+              appearance="action"
+              size="xs"
+              iconStart="@tui.trash"
+              tuiIconButton
+              class="btn-delete-single"
+              (click)="deleteSingle(row.id)"
+            ></button>
+          </div>
+        </td>
+      </tr>
+      <tr *ngIf="rows.length === 0">
+        <td tuiTd colspan="6" class="no-data">Aucune entreprise trouvée.</td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="pagination-container">
+    <app-pagination
+      [totalItems]="rows.length"
+      [pageSize]="pageSize"
+      [page]="page"
+      [activePadding]="2"
+      (pageChange)="onPageChange($event)"
+    ></app-pagination>
+  </div>
+</div>
