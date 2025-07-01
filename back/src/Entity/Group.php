@@ -15,9 +15,10 @@ class Group
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['company:read'])]
     private ?int $id = null;
 
-    #[Groups(['user:read'])]
+    #[Groups(['user:read', 'company:read'])]
     #[ORM\Column(length: 100)]
     private ?string $name = null;
 

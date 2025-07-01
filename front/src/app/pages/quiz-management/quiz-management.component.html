@@ -1,5 +1,10 @@
 <div class="container">
-  <h1 class="page-title">Gestion <br /> des entreprises</h1>
+  <div class="stats-graph-container" style="margin-bottom: 20px;">
+    <h3>Statistiques globales</h3>
+    <canvas height="200"></canvas>
+  </div>
+
+  <h1 class="page-title">Gestion <br /> des Quiz</h1>
 
   <div class="filters-container">
     <div class="filters-row">
@@ -8,7 +13,7 @@
         [(ngModel)]="filterStatus"
         (ngModelChange)="applyFilters()"
       >
-        <option value="">Groupe</option>
+        <option value="">Statut</option>
         <option *ngFor="let status of statusOptions" [value]="status">
           {{ status }}
         </option>
@@ -37,6 +42,7 @@
       >
         <button class="custom-dropdown-btn">Actions</button>
         <button
+          #tuiDropdownHost
           tuiChevron
           tuiIconButton
           class="custom-dropdown-chevron"
@@ -59,11 +65,11 @@
   </div>
 
   <div *ngIf="loadError" class="alert alert-danger">
-    Impossible de charger les entreprises.
+    Impossible de charger les quiz.
   </div>
 
   <div class="table-scroll-wrapper">
-    <table tuiTable [size]="size" class="custom-table table-striped">
+    <table tuiTable class="custom-table table-striped">
       <thead>
       <tr>
         <th tuiTh class="th-checkbox">
@@ -74,38 +80,40 @@
             (ngModelChange)="toggleAll($event)"
           />
         </th>
-        <th tuiTh (click)="sortBy('name')" class="th-company">
-          Entreprise
+        <th tuiTh (click)="sortBy('title')" class="th-quiz">
+          Quiz
           <button
             tuiIconButton
             size="xs"
             class="sort-btn"
-            *ngIf="sortColumn === 'name'"
-            [iconStart]="
-                sortDirection === 'asc'
-                  ? 'tuiIconChevronUp'
-                  : 'tuiIconChevronDown'
-              "
+            *ngIf="sortColumn === 'title'"
+            [iconStart]="sortDirection === 'asc' ? 'tuiIconChevronUp' : 'tuiIconChevronDown'"
           ></button>
         </th>
-        <th tuiTh (click)="sortBy('userCount')" class="th-users">
-          Utilisateurs
+        <th tuiTh class="th-creator">Créateur</th>
+        <th tuiTh class="th-groups">Groupes</th>
+        <th tuiTh (click)="sortBy('category')" class="th-category">
+          Catégorie
           <button
             tuiIconButton
             size="xs"
-            appearance="ghost"
             class="sort-btn"
-            *ngIf="sortColumn === 'userCount'"
-            [iconStart]="
-                sortDirection === 'asc'
-                  ? 'tuiIconChevronUp'
-                  : 'tuiIconChevronDown'
-              "
+            *ngIf="sortColumn === 'category'"
+            [iconStart]="sortDirection === 'asc' ? 'tuiIconChevronUp' : 'tuiIconChevronDown'"
           ></button>
         </th>
-        <th tuiTh class="th-groups">
-          Groupe
+        <th tuiTh (click)="sortBy('stats')" class="th-stats">
+          Statistique du quiz
+          <button
+            tuiIconButton
+            size="xs"
+            class="sort-btn"
+            *ngIf="sortColumn === 'stats'"
+            [iconStart]="sortDirection === 'asc' ? 'tuiIconChevronUp' : 'tuiIconChevronDown'"
+          ></button>
         </th>
+        <th tuiTh>Public</th>
+        <th tuiTh>Statut</th>
         <th tuiTh class="th-action">
           Action
           <button
@@ -121,23 +129,24 @@
         </th>
       </tr>
       </thead>
+
       <tbody tuiTbody>
       <tr *ngFor="let row of pagedRows" class="table-row">
         <td tuiTd>
           <input type="checkbox" tuiCheckbox [(ngModel)]="row.selected" />
         </td>
-        <td tuiTd class="td-company">
-          <div [tuiCell]="size" class="d-flex align-center gap-2 company-cell">
-            <tui-avatar [size]="size">{{ row.name.charAt(0) }}</tui-avatar>
+        <td tuiTd class="td-quiz">
+          <div [tuiCell]="size" class="d-flex align-center gap-2 quiz-cell">
+            <tui-avatar [size]="size">{{ row.title.charAt(0) }}</tui-avatar>
             <div>
-              <div tuiTitle>{{ row.name }}</div>
+              <div tuiTitle>{{ row.title }}</div>
+              <div tuiSubtitle *ngIf="row.description">
+                {{ row.description }}
+              </div>
             </div>
           </div>
         </td>
-        <td tuiTd class="td-users">
-          <tui-icon icon="tuiIconUserLarge" class="mr-1"></tui-icon>
-          {{ row.userCount }} utilisateur{{ row.userCount > 1 ? 's' : '' }}
-        </td>
+        <td tuiTd class="td-creator">{{ row.createdBy }}</td>
         <td tuiTd class="td-groups">
           <div class="groups-container">
             <tui-chip
@@ -158,9 +167,13 @@
             </tui-chip>
           </div>
         </td>
+        <td tuiTd class="td-category">{{ row.category || '—' }}</td>
+        <td tuiTd class="td-stats">{{ row.stats || '—' }}</td>
+        <td tuiTd class="td-public">{{ row.isPublic ? 'Oui' : 'Non' }}</td>
+        <td tuiTd class="td-status">{{ row.status }}</td>
         <td tuiTd class="td-action">
           <div class="d-flex gap-2">
-            <a [routerLink]="['/company', row.id]" class="link-profile">Voir détails</a>
+            <a class="link-profile">Voir détails</a>
             <button
               tuiButton
               appearance="action"
@@ -182,10 +195,12 @@
         </td>
       </tr>
       <tr *ngIf="rows.length === 0">
-        <td tuiTd colspan="6" class="no-data">Aucune entreprise trouvée.</td>
+        <td tuiTd colspan="9" class="no-data">Aucun quiz trouvé.</td>
       </tr>
       </tbody>
     </table>
+
+
   </div>
 
   <div class="pagination-container">

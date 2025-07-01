@@ -31,6 +31,7 @@ import { TUI_CONFIRM } from '@taiga-ui/kit';
 import { catchError, of, forkJoin } from 'rxjs';
 import { PaginationComponent } from '../../components/pagination/pagination.component';
 import { CompanyManagementService } from '../../services/company-management.service';
+import {RouterLink} from '@angular/router';
 
 type TuiSizeS = 's' | 'm';
 
@@ -66,6 +67,7 @@ interface CompanyRow {
     TuiIcon,
     PaginationComponent,
     TuiHintDirective,
+    RouterLink,
   ],
   providers: [
     { provide: TUI_CONFIRM, useValue: TUI_CONFIRM },
@@ -101,10 +103,10 @@ export class CompanyManagementComponent implements OnInit {
   private readonly MAX_VISIBLE_GROUPS = 2;
 
   constructor(
-    private companyService: CompanyManagementService,
-    private dialogService: TuiDialogService,
-    private cdr: ChangeDetectorRef,
-    private alerts: TuiAlertService
+    private readonly companyService: CompanyManagementService,
+    private readonly dialogService: TuiDialogService,
+    private readonly cdr: ChangeDetectorRef,
+    private readonly alerts: TuiAlertService
   ) {}
 
   ngOnInit(): void {

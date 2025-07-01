@@ -25,7 +25,7 @@ class QuizController extends AbstractController
      * @OA\Get(summary="Liste des quiz", tags={"Quiz"})
      * @OA\Response(response=200, description="Liste des quiz")
      */
-    #[Route('/', name: 'quiz_index', methods: ['GET'])]
+    #[Route('/list', name: 'quiz_index', methods: ['GET'])]
     public function index(): JsonResponse
     {
         $quizList = $this->quizService->list();
@@ -48,7 +48,7 @@ class QuizController extends AbstractController
      * @OA\Response(response=201, description="Quiz créé")
      * @OA\Security(name="bearerAuth")
      */
-    #[Route('/', name: 'quiz_create', methods: ['POST'])]
+    #[Route('/create', name: 'quiz_create', methods: ['POST'])]
     #[IsGranted('ROLE_USER')]
     public function create(Request $request): JsonResponse
     {

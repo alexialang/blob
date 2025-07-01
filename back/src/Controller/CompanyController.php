@@ -10,7 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use OpenApi\Annotations as OA;
 
-#[Route('/api/company')]
+#[Route('/api')]
 class CompanyController extends AbstractController
 {
     private CompanyService $companyService;
@@ -24,7 +24,7 @@ class CompanyController extends AbstractController
      * @OA\Get(summary="Lister toutes les entreprises", tags={"Company"})
      * @OA\Response(response=200, description="Liste des entreprises")
      */
-    #[Route('/', name: 'company_index', methods: ['GET'])]
+    #[Route('/companies', name: 'company_index', methods: ['GET'])]
     public function index(): JsonResponse
     {
         $companies = $this->companyService->list();
@@ -44,7 +44,7 @@ class CompanyController extends AbstractController
      * @OA\Response(response=201, description="Entreprise créée")
      * @OA\Security(name="bearerAuth")
      */
-    #[Route('/', name: 'company_create', methods: ['POST'])]
+    #[Route('/company-create', name: 'company_create', methods: ['POST'])]
     public function create(Request $request): JsonResponse
     {
         try {
@@ -62,7 +62,7 @@ class CompanyController extends AbstractController
      * @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer"))
      * @OA\Response(response=200, description="Détails de l'entreprise")
      */
-    #[Route('/{id}', name: 'company_show', methods: ['GET'])]
+    #[Route('/company/{id}', name: 'company_show', methods: ['GET'])]
     public function show(Company $company): JsonResponse
     {
         return $this->json($company, 200, [], ['groups' => ['company:read', 'company:details']]);
@@ -81,7 +81,7 @@ class CompanyController extends AbstractController
      * @OA\Response(response=200, description="Entreprise modifiée")
      * @OA\Security(name="bearerAuth")
      */
-    #[Route('/{id}', name: 'company_update', methods: ['PUT', 'PATCH'])]
+    #[Route('/company/{id}', name: 'company_update', methods: ['PUT', 'PATCH'])]
     public function update(Request $request, Company $company): JsonResponse
     {
         try {
@@ -100,7 +100,7 @@ class CompanyController extends AbstractController
      * @OA\Response(response=204, description="Entreprise supprimée")
      * @OA\Security(name="bearerAuth")
      */
-    #[Route('/{id}', name: 'company_delete', methods: ['DELETE'])]
+    #[Route('/company/{id}', name: 'company_delete', methods: ['DELETE'])]
     public function delete(Company $company): JsonResponse
     {
         $this->companyService->delete($company);
