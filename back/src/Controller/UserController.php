@@ -29,7 +29,12 @@ class UserController extends AbstractController
     {
         $users = $this->userService->list(false);
 
-        return $this->json($users, 200, [], ['groups' => ['user:read', 'company:read', 'user_permission:read']]);
+        return $this->json($users, 200, [], [
+            'groups' => ['user:read', 'company:read', 'user_permission:read'],
+            'circular_reference_handler' => function ($object) {
+                return $object->getId();
+            }
+        ]);
     }
 
     /**

@@ -107,6 +107,8 @@ export class UserManagementComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.generateRandomColor();
+
     this.userService
       .getUsers()
       .pipe(
@@ -126,10 +128,10 @@ export class UserManagementComponent implements OnInit {
           name: `${u.firstName ?? ''} ${u.lastName ?? ''}`.trim(),
           email: u.email ?? '—',
           active: u.isActive,
-          organization: u.company?.name ?? '—',
+          organization: u.companyName ?? '—',
           group:
-            Array.isArray(u.company?.groups) && u.company.groups.length
-              ? u.company.groups.map((g: any) => g.name).join(', ')
+            Array.isArray(u.groups) && u.groups.length
+              ? u.groups.map((g: any) => g.name).join(', ')
               : '—',
           stats: Math.floor(Math.random() * 1000),
           rights: (u.userPermissions ?? []).map((p: any) => p.permission),
@@ -140,6 +142,17 @@ export class UserManagementComponent implements OnInit {
         this.applyFilters();
       });
   }
+  highlightColor: string = '';
+
+  private generateRandomColor(): void {
+    const colors = [
+      '#257D54', '#91DEDA', '#FAA24B', '#D30D4C',
+    ];
+
+    const index = Math.floor(Math.random() * colors.length);
+    this.highlightColor = colors[index];
+  }
+
 
   applyFilters(): void {
     let filtered = this.allRows;

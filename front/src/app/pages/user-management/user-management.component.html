@@ -1,5 +1,7 @@
+<div class="user-page">
+
 <div class="container">
-  <h1 class="page-title">Gestion <br /> des utilisateurs</h1>
+  <h1 class="page-title">Gestion <br /> des <span class="user-highlight" [ngStyle]="{ 'color': highlightColor }"> utilisateurs</span></h1>>
 
   <div class="filters-container">
     <div class="filters-row">
@@ -221,4 +223,5 @@
       (pageChange)="onPageChange($event)"
     ></app-pagination>
   </div>
+</div>
 </div>
