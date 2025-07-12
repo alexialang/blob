@@ -1,3 +1,4 @@
+
 h1{
   color: white;
   font-size: 2em;
@@ -8,17 +9,23 @@ a{
   color: white;
 }
 .login-page {
+  .blob-highlight{
+    font: (var(--font-size-h1));
+    color:(var(--color-accent));
+  }
+
   display: grid;
   grid-template-columns: 70% 30%;
   min-height: 100vh;
   align-items: stretch;
 
+
   .p-1 {
     font-family: "LCMogiA", serif;
-    font-size: 9em;
+    font-size: 14em;
     letter-spacing: 0.01em;
     line-height: 1em;
-    color: black;
+    color: var(--color-dark);
     font-weight: normal;
 
   }
@@ -27,7 +34,7 @@ a{
     font-size: 3em;
     letter-spacing: 0.01em;
     line-height: 1em;
-    color: black;
+    color: var(--color-dark);
     font-weight: normal;
 
   }
@@ -65,7 +72,7 @@ a{
 
 
   .login-left {
-    background: white;
+    background: var(--color-light);
     padding: 3rem;
     display: flex;
     flex-direction: column;
@@ -90,7 +97,7 @@ a{
       align-items: end;
       justify-content: space-between;
       a {
-        color: black;
+        color:  var(--color-dark);
         text-decoration: none;
       }
     }
@@ -98,7 +105,7 @@ a{
 
 
   .login-right {
-    background-image: url('/assets/svg/background_connection.svg');
+    background-image: url('/assets/svg/background_connection1.svg');
     background-repeat: no-repeat;
     background-position: left center;
     background-size: auto 100%;
@@ -161,8 +168,8 @@ a{
         width: 100%;
       }
       .btn.main {
-        background: black;
-        color: black;
+        background:  var(--color-dark);
+        color:  var(--color-dark);
       }
       .btn.secondary {
         background: transparent;
@@ -184,10 +191,7 @@ a{
         text-decoration: none;
       }
 
-      .flowers {
-        width: 100px;
-        margin: 2rem auto 0;
-      }
+
 
       .error {
         color: red;
@@ -215,10 +219,15 @@ a{
 
   a {
     text-decoration: none;
-    color: black;
+    color:  var(--color-dark);
     font-size: 0.9rem;
   }
 }
+.footer-nav__icon img {
+  width: 27em;
+  height: auto;
+}
+
 @media (max-width: 768px) {
   .diplay-none {
     display: none !important;
@@ -238,6 +247,10 @@ a{
     justify-content: center;
   }
 
+  .footer-nav__icon img {
+    width: 100px;
+    height: auto;
+  }
   .footer-nav__list {
     display: none !important;
     align-items: center;
@@ -283,7 +296,7 @@ a{
     top: 50%;
     transform: translate(-50%, 150%);
     z-index: 2;
-    color: black;
+    color:  var(--color-dark);
     transition: transform 0.4s ease;
   }
 

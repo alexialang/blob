@@ -2,6 +2,12 @@
   display: grid;
   grid-template-columns: 30% 70%;
   height: 100vh;
+  .text-primary {
+    color: var(--color-primary);
+    font-family: "LCMogiA", serif;
+  }
+
+
 
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
@@ -32,7 +38,7 @@
       left: 0;
       right: 2em;
       bottom: 0;
-      background: #000;
+      background: var(--color-dark);
       z-index: 1;
     }
 
@@ -97,7 +103,7 @@
       }
 
       .error {
-        color: red;
+        color: white;
         font-size: 0.9rem;
         text-align: left;
         margin-top: -0.5rem;
@@ -240,7 +246,7 @@
 
         li a {
           text-decoration: none;
-          color: black;
+          color:  var(--color-dark);
           font-size: 0.9rem;
         }
       }
@@ -256,16 +262,16 @@
 
       h2 {
         font-family: "LCMogiA", serif;
-        font-size: clamp(3rem, 8vw, 6rem);
+        font-size: clamp(4.5rem, 12vw, 9rem);
+
         line-height: 1;
         margin: 0;
-        color: black;
+        color:  var(--color-dark);
       }
 
       .blob-illu {
         margin-top: 1rem;
-        width: clamp(250px, 40vw, 500px);
-      }
+        width: clamp(300px, 45vw, 550px);      }
     }
 
     footer.footer-nav {
@@ -277,7 +283,7 @@
 
       a {
         text-decoration: none;
-        color: black;
+        color:  var(--color-dark);
         font-size: 0.9rem;
         transition: opacity 0.2s;
 

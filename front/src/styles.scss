@@ -1,35 +1,104 @@
-@font-face {
-  font-family:"LCMogiA";
-  src: url("../public/font/LCMogi-A.otf");
-  font-weight: normal;
-  font-style: normal;
+:root {
+  --color-primary: #257D54;
+  --color-secondary: #91DEDA;
+  --color-accent: #FAA24B;
+  --color-pink: #D30D4C;
+  --color-danger: #DC2626;
+  --color-dark: #0B0C1E;
+  --color-light: #F2F2F2;
+  --color-white: #FFFFFF;
 
+  --color-primary-light: #2E9A68;
+  --color-primary-dark: #1E6B47;
+  --color-secondary-light: #A8E5E2;
+  --color-pink-light: #E63D6F;
+  --color-danger-light: #EF4444;
+  --color-danger-dark: #B91C1C;
+
+  --color-success: var(--color-primary);
+  --color-warning: var(--color-accent);
+  --color-error: var(--color-danger);
+  --color-info: var(--color-secondary);
+
+  --text-primary: var(--color-dark);
+  --text-secondary: #6B7280;
+  --text-muted: #9CA3AF;
+  --text-inverse: var(--color-white);
+
+  --bg-primary: var(--color-white);
+  --bg-secondary: var(--color-light);
+  --bg-dark: var(--color-dark);
+  --bg-overlay: rgba(11, 12, 30, 0.8);
+
+  --border-light: #E5E7EB;
+  --border-medium: #D1D5DB;
+  --border-dark: var(--color-dark);
+
+  --font-primary: "Archivo", sans-serif;
+  --font-display: "LCMogiA", sans-serif;
+
+  --font-size-h1: 8em;
+  --font-size-h2: 100px;
+  --font-size-h3: 40px;
+
+  --letter-spacing-h1: 0.01em;
+  --letter-spacing-h2: 10px;
+  --letter-spacing-h3: 8px;
+
+  --line-height-h1: 1em;
+  --line-height-base: 1.5;
+
+  --font-weight-normal: normal;
+  --font-weight-medium: 500;
+  --font-weight-bold: 700;
+
+  --hover-opacity: 0.8;
+  --active-opacity: 0.9;
+  --disabled-opacity: 0.5;
+}
+
+@font-face {
+  font-family: "LCMogiA";
+  src: url("../public/font/LCMogi-A.otf");
+  font-weight: var(--font-weight-normal);
+  font-style: normal;
 }
 
 * {
   margin: 0;
   padding: 0;
-  font-family: "Archivo", sans-serif;
+  font-family: var(--font-primary);
   font-optical-sizing: auto;
   font-style: normal;
 }
-
-h1{
-  font-family: "LCMogiA", sans-serif;
-  font-size: 8em;
-  letter-spacing: 0.01em;
-  line-height: 1em;
-  color: black;
-  font-weight: normal;
-
+:root {
+  background-color: var(--color-light) !important;
+  margin: 0;
+  padding: 0;
 }
-h2{
-  font-family: "LCMogiA", sans-serif;
-  font-size: 100px;
-  letter-spacing: 10px;
+
+
+
+h1 {
+  font-family: var(--font-display);
+  font-size: var(--font-size-h1);
+  letter-spacing: var(--letter-spacing-h1);
+  line-height: var(--line-height-h1);
+  font-weight: var(--font-weight-normal);
 }
-h3{
-  font-family: "LCMogiA", sans-serif;
-  font-size: 40px;
-  letter-spacing: 8px;
+
+h2 {
+  font-family: var(--font-display);
+  font-size: var(--font-size-h2);
+  letter-spacing: var(--letter-spacing-h2);
+  color: var(--text-primary);
+  font-weight: var(--font-weight-normal);
+}
+
+h3 {
+  font-family: var(--font-display);
+  font-size: var(--font-size-h3);
+  letter-spacing: var(--letter-spacing-h3);
+  color: var(--text-primary);
+  font-weight: var(--font-weight-normal);
 }
