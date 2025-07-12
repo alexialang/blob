@@ -31,6 +31,7 @@ class Group
     /**
      * @var Collection<int, User>
      */
+    #[Groups(['company:read'])]
     #[ORM\ManyToMany(targetEntity: User::class, mappedBy: 'groups')]
     private Collection $users;
 

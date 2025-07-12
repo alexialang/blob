@@ -10,6 +10,9 @@ import {ConfirmAccountComponent}      from './pages/confirm-account/confirm-acco
 import {ForgotPasswordComponent}      from './pages/forgot-password/forgot-password.component';
 import {ResetPasswordComponent}       from './pages/reset-password/reset-password.component';
 import {AboutComponent}               from './pages/about/about.component';
+import {QuizManagementComponent}      from './pages/quiz-management/quiz-management.component';
+import {QuizCreationComponent}        from './pages/quiz-creation/quiz-creation.component';
+import {CompanyDetailsComponent} from './pages/company-details/company-details.component';
 
 export const routes: Routes = [
   { path: 'connexion', component: LoginComponent, data: { hideNavbar: true } },
@@ -23,6 +26,16 @@ export const routes: Routes = [
   {
     path: 'gestion-entreprise',
     component: CompanyManagementComponent,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'gestion-quiz',
+    component: QuizManagementComponent,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'creation-quiz',
+    component: QuizCreationComponent,
     canActivate: [authGuard],
   },
   {path: 'mentions-legales', component: LegalNoticesComponent, data: { hideNavbar: true } },
@@ -42,7 +55,8 @@ export const routes: Routes = [
     path: 'a-propos', data: { hideNavbar: true },
     component: AboutComponent,
   },
+  { path: 'company/:id', component: CompanyDetailsComponent },
 
-  { path: '',   redirectTo: 'gestion-utilisateur', pathMatch: 'full' },
-  { path: '**', redirectTo: 'gestion-utilisateur' },
+  { path: '',   redirectTo: 'connexion', pathMatch: 'full' },
+  { path: '**', redirectTo: 'connexion' },
 ];

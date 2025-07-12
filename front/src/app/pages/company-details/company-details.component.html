@@ -1,0 +1,177 @@
+<div class="container" *ngIf="!loadError">
+  <div *ngIf="company">
+    <h1>{{ company.name }}</h1>
+    <p>{{ company.address || 'Adresse non renseignée' }}</p>
+
+    <div class="actions d-flex gap-2 mb-4">
+      <button tuiButton size="s" appearance="primary" (click)="editCompany()">
+        Modifier
+      </button>
+      <button tuiButton size="s" appearance="secondary" (click)="deleteCompany()">
+        Supprimer
+      </button>
+    </div>
+
+    <tui-tabs [(activeItemIndex)]="activeTabIndex" class="mb-4">
+      <button tuiTab>Groupes</button>
+    </tui-tabs>
+
+    <ng-container *ngIf="activeTabIndex === 0">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3>Groupes de l'entreprise</h3>
+        <button tuiButton size="s" appearance="primary" (click)="createGroup()">
+          Créer un groupe
+        </button>
+      </div>
+
+      <ng-container *ngIf="company.groups?.length; else noGroupsTpl">
+        <div *ngFor="let g of company.groups" class="group-container mb-3">
+          <div class="group-header d-flex justify-content-between align-items-center p-3 border rounded">
+            <div class="d-flex align-items-center">
+              <button tuiButton size="xs" appearance="flat" (click)="toggleGroup(g)" class="me-2">
+                {{ g.expanded ? '▼' : '▶' }}
+              </button>
+              <span><strong>{{ g.name }}</strong></span>
+            </div>
+            <div class="group-actions">
+              <button tuiButton size="xs" appearance="outline" (click)="addMemberToGroup(g.id)" class="me-2">
+                Ajouter membre
+              </button>
+              <button tuiButton size="xs" appearance="secondary" (click)="deleteGroup(g.id)">
+                Supprimer
+              </button>
+            </div>
+          </div>
+
+          <div *ngIf="g.expanded" class="group-content p-3 border-start border-end border-bottom rounded-bottom">
+            <p *ngIf="g.description" class="text-muted mb-3">{{ g.description }}</p>
+            <p *ngIf="!g.users?.length">Aucun membre</p>
+            <table *ngIf="g.users?.length" class="table table-sm">
+              <thead>
+              <tr>
+                <th>Prénom</th>
+                <th>Nom</th>
+                <th>Email</th>
+                <th>Statut</th>
+                <th>Actions</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr *ngFor="let m of g.users">
+                <td>{{ m.firstName }}</td>
+                <td>{{ m.lastName }}</td>
+                <td>{{ m.email }}</td>
+                <td>{{ m.isActive ? 'Actif' : 'Inactif' }}</td>
+                <td>
+                  <button tuiButton size="xs" appearance="secondary" (click)="removeFromGroup(g.id, m.id)">
+                    Retirer
+                  </button>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </ng-container>
+    </ng-container>
+
+    <div class="collaborators-section mt-5">
+      <h2>Collaborateurs</h2>
+      <div class="filters d-flex gap-2 mb-3">
+        <select class="form-control" [(ngModel)]="filterByGroup" (ngModelChange)="applyFilters()">
+          <option value="">Tous groupes</option>
+          <option *ngFor="let g of groupList" [value]="g">{{ g }}</option>
+        </select>
+
+        <select class="form-control" [(ngModel)]="filterByStatus" (ngModelChange)="applyFilters()">
+          <option value="">Tous statuts</option>
+          <option value="active">Actif</option>
+          <option value="inactive">Inactif</option>
+        </select>
+
+        <input class="form-control" placeholder="Recherche..." [(ngModel)]="searchKeyword" (ngModelChange)="applyFilters()" />
+      </div>
+
+      <table tuiTable size="m" class="custom-table table-striped mb-3">
+        <thead>
+        <tr tuiThGroup>
+          <th tuiTh>Nom</th>
+          <th tuiTh>Email</th>
+          <th tuiTh (click)="sortBy('isActive')" style="cursor: pointer;">
+            Actif
+            <span *ngIf="sortColumn === 'isActive'">
+                {{ sortDirection === 'asc' ? '↑' : '↓' }}
+              </span>
+          </th>
+          <th tuiTh>Groupes</th>
+          <th tuiTh>Statistiques</th>
+          <th tuiTh>Droits</th>
+          <th tuiTh>Actions</th>
+        </tr>
+        </thead>
+        <tbody tuiTbody>
+        <tr *ngFor="let c of pagedCollaborators">
+          <td tuiTd>{{ c.name }}</td>
+          <td tuiTd>{{ c.email }}</td>
+          <td tuiTd>{{ c.isActive ? 'Oui' : 'Non' }}</td>
+          <td tuiTd>{{ c.groups.join(', ') }}</td>
+          <td tuiTd>-</td>
+          <td tuiTd>
+            <tui-badge *ngFor="let r of c.rights" class="me-1" size="s">{{ r }}</tui-badge>
+          </td>
+          <td tuiTd>
+            <div class="d-flex gap-2">
+              <button tuiButton size="xs" appearance="outline">Voir</button>
+              <button tuiButton size="xs" appearance="secondary" (click)="deleteCollaborator(c.id)">Supprimer</button>
+            </div>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+
+      <app-pagination [totalItems]="filteredCollaborators.length" [pageSize]="pageSize" [page]="page" (pageChange)="onPageChange($event)"></app-pagination>
+    </div>
+
+    <div *ngIf="showCreateGroupModal" class="modal-overlay">
+      <div class="modal-content">
+        <h3>Créer un groupe</h3>
+        <input [(ngModel)]="newGroupName" placeholder="Nom du groupe" class="form-control mb-2" />
+        <textarea [(ngModel)]="newGroupDescription" placeholder="Description" class="form-control mb-2"></textarea>
+        <h4>Membres</h4>
+        <div class="mb-2">
+          <button (click)="selectAllMembers()">Tout sélectionner</button>
+          <button (click)="deselectAllMembers()">Tout désélectionner</button>
+        </div>
+        <ul class="list-unstyled mb-3" style="max-height: 200px; overflow-y: auto;">
+          <li *ngFor="let u of availableMembersForNewGroup">
+            <label>
+              <input type="checkbox" [checked]="isMemberSelected(u.id)" (change)="toggleMemberSelection(u.id)" />
+              {{ u.firstName }} {{ u.lastName }} ({{ u.email }})
+            </label>
+          </li>
+        </ul>
+        <div class="d-flex justify-content-end gap-2">
+          <button tuiButton size="s" appearance="secondary" (click)="cancelCreateGroup()">Annuler</button>
+          <button tuiButton size="s" appearance="primary" (click)="confirmCreateGroup()">Valider</button>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="showAddMemberModal" class="modal-overlay">
+      <div class="modal-content">
+        <h3>Ajouter un membre</h3>
+        <select class="form-control mb-3" [(ngModel)]="selectedUserId">
+          <option *ngFor="let u of availableMembersForNewGroup" [value]="u.id">{{ u.firstName }} {{ u.lastName }} ({{ u.email }})</option>
+        </select>
+        <div class="d-flex justify-content-end gap-2">
+          <button tuiButton size="s" appearance="secondary" (click)="cancelAddMember()">Annuler</button>
+          <button tuiButton size="s" appearance="primary" (click)="confirmAddMember()">Valider</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #noGroupsTpl>
+  <p class="no-data">Aucun groupe trouvé.</p>
+</ng-template>

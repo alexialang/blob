@@ -3,7 +3,8 @@
 namespace App\Service;
 
 use App\Entity\Group;
-use App\Service\CompanyService;
+use App\Entity\User;
+use App\Entity\Company;
 use App\Repository\GroupRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -34,15 +35,26 @@ class GroupService
     {
         $group = new Group();
         $group->setName($data['name']);
-        $group->setAccesCode($data['acces_code'] ?? null);
+        $group->setAccesCode($data['acces_code'] ?? '');
 
         if (isset($data['company_id'])) {
-            $company = $this->companyService->find($data['company_id']);
-            $group->setCompany($company);
+            $company = $this->em->getRepository(Company::class)->find($data['company_id']);
+            if ($company) {
+                $group->setCompany($company);
+            }
         }
 
         $this->em->persist($group);
         $this->em->flush();
+
+        if (isset($data['member_ids']) && is_array($data['member_ids'])) {
+            foreach ($data['member_ids'] as $userId) {
+                $user = $this->em->getRepository(User::class)->find($userId);
+                if ($user) {
+                    $this->addUserToGroup($group, $user);
+                }
+            }
+        }
 
         return $group;
     }
@@ -70,4 +82,21 @@ class GroupService
         $this->em->remove($group);
         $this->em->flush();
     }
+
+    public function addUserToGroup(Group $group, User $user): void
+    {
+        if (!$group->getUsers()->contains($user)) {
+            $group->addUser($user);
+            $this->em->flush();
+        }
+    }
+
+    public function removeUserFromGroup(Group $group, User $user): void
+    {
+        if ($group->getUsers()->contains($user)) {
+            $group->removeUser($user);
+            $this->em->flush();
+        }
+    }
+
 }
