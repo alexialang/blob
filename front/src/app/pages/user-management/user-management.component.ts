@@ -146,11 +146,21 @@ export class UserManagementComponent implements OnInit {
 
   private generateRandomColor(): void {
     const colors = [
-      '#257D54', '#91DEDA', '#FAA24B', '#D30D4C',
+      '#257D54', '#FAA24B', '#D30D4C',
     ];
 
     const index = Math.floor(Math.random() * colors.length);
     this.highlightColor = colors[index];
+  }
+  getDeleteButtonText(): string {
+    const count = this.getSelectedCount();
+    if (count === 0) return 'Supprimer les éléments';
+    if (count === 1) return 'Supprimer 1 élément';
+    return `Supprimer ${count} éléments`;
+  }
+
+  getSelectedCount(): number {
+    return this.rows.filter(row => row.selected).length;
   }
 
 

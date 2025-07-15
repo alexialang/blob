@@ -24,7 +24,7 @@ class CategoryQuizController extends AbstractController
      * @OA\Get(summary="Lister les catégories de quiz", tags={"CategoryQuiz"})
      * @OA\Response(response=200, description="Liste des catégories")
      */
-    #[Route('/', name: 'category_quiz_index', methods: ['GET'])]
+    #[Route('', name: 'category_quiz_index', methods: ['GET'])]
     public function index(): JsonResponse
     {
         $categories = $this->categoryQuizService->list();

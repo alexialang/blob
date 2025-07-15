@@ -6,6 +6,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { TuiTable } from '@taiga-ui/addon-table';
 import {
   TuiButton,
@@ -14,7 +15,6 @@ import {
   TuiDataList,
   TuiDialogService,
   TuiAlertService,
-  TuiIcon,
   TuiHintDirective,
 } from '@taiga-ui/core';
 import {
@@ -64,7 +64,6 @@ interface QuizRow {
     TuiDataList,
     TuiAvatar,
     TuiCell,
-    TuiIcon,
     TuiHintDirective,
     PaginationComponent,
   ],
@@ -86,7 +85,7 @@ export class QuizManagementComponent implements OnInit {
   public sortColumn: keyof QuizRow | '' = '';
   public sortDirection: 'asc' | 'desc' = 'asc';
   public open = false;
-  public items = ['Créer un quiz', 'Exporter', 'Importer'];
+
   public loadError = false;
 
   private readonly MAX_VISIBLE_GROUPS = 2;
@@ -95,7 +94,8 @@ export class QuizManagementComponent implements OnInit {
     private quizService: QuizManagementService,
     private dialogService: TuiDialogService,
     private cdr: ChangeDetectorRef,
-    private alerts: TuiAlertService
+    private alerts: TuiAlertService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -241,6 +241,10 @@ export class QuizManagementComponent implements OnInit {
 
   onClick(): void {
     this.open = false;
+  }
+
+  onCreateQuiz(): void {
+    this.router.navigate(['/creation-quiz']);
   }
 
   getVisibleGroups(groups: Group[]): Group[] {

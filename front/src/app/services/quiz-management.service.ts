@@ -51,4 +51,20 @@ export class QuizManagementService {
   removeQuizFromGroups(quizId: number, groupIds: number[]): Observable<any> {
     return this.http.post(`${this.apiUrl}/quiz/${quizId}/remove-groups`, { groupIds });
   }
+
+  getTypeQuestions(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/type-question/list`);
+  }
+
+  getCategories(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/category-quiz`);
+  }
+
+  getGroups(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/group/list`);
+  }
+
+  getStatuses(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/status/list`);
+  }
 }

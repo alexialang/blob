@@ -34,7 +34,7 @@ class QuizController extends AbstractController
     }
 
     /**
-     * @OA\Post(summary="Créer un quiz", tags={"Quiz"})
+     * @OA\Post(summary="Créer un quiz avec questions", tags={"Quiz"})
      * @OA\RequestBody(
      *     required=true,
      *     @OA\JsonContent(
@@ -64,7 +64,7 @@ class QuizController extends AbstractController
             return $this->json(['error' => 'User not authenticated'], 401);
         }
 
-        $quiz = $this->quizService->create($data, $user);
+        $quiz = $this->quizService->createWithQuestions($data, $user);
 
         return $this->json($quiz, 201, [], ['groups' => ['quiz:read']]);
     }

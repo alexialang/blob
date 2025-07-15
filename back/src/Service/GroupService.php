@@ -26,6 +26,22 @@ class GroupService
         return $this->groupRepository->findAll();
     }
 
+    public function getGroupsByUser(User $user): array
+    {
+        $companyId = $user->getCompanyId();
+        
+        if (!$companyId) {
+            return [];
+        }
+        
+        $company = $this->em->getRepository(Company::class)->find($companyId);
+        if (!$company) {
+            return [];
+        }
+        
+        return $this->groupRepository->findBy(['company' => $company]);
+    }
+
     public function find(int $id): ?Group
     {
         return $this->groupRepository->find($id);

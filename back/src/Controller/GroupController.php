@@ -9,6 +9,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use OpenApi\Annotations as OA;
 
 #[Route('/api/group')]
@@ -38,12 +39,20 @@ class GroupController extends AbstractController
     /**
      * @OA\Get(summary="Lister les groupes", tags={"Group"})
      * @OA\Response(response=200, description="Liste des groupes")
+     * @OA\Security(name="bearerAuth")
      */
     #[Route('/list', name: 'group_list', methods: ['GET'])]
+    #[IsGranted('ROLE_USER')]
     public function list(): JsonResponse
     {
-        $groups = $this->groupService->list();
+        $user = $this->getUser();
 
+        if (!$user) {
+            return $this->json(['error' => 'Utilisateur non authentifié'], 401);
+        }
+
+        $groups = $this->groupService->getGroupsByUser($user);
+        
         return $this->json($groups, 200, [], ['groups' => ['group:read']]);
     }
 

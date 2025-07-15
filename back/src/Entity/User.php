@@ -20,7 +20,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['user:read','quiz:read'])]
+    #[Groups(['user:read','quiz:read','company:read'])]
     private ?int $id = null;
     #[Groups(['user:read', 'company:read','quiz:read'])]
     #[ORM\Column(length: 180)]
@@ -50,7 +50,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?bool $isAdmin = null;
 
-    #[Groups(['user:read'])]
     #[ORM\ManyToOne(inversedBy: 'users')]
     private ?Company $company = null;
 
@@ -483,5 +482,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    #[Groups(['user:read'])]
+    public function getCompanyName(): ?string
+    {
+        return $this->company?->getName();
+    }
 
+    #[Groups(['user:read'])]
+    public function getCompanyId(): ?int
+    {
+        return $this->company?->getId();
+    }
 }

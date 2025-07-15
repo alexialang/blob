@@ -52,12 +52,25 @@
       <ng-template #dropdown>
         <tui-data-list>
           <button
-            *ngFor="let item of items"
+            tuiOption
+            type="button"
+            (click)="onCreateQuiz()"
+          >
+            Créer un quiz
+          </button>
+          <button
             tuiOption
             type="button"
             (click)="onClick()"
           >
-            {{ item }}
+            Exporter
+          </button>
+          <button
+            tuiOption
+            type="button"
+            (click)="onClick()"
+          >
+            Importer
           </button>
         </tui-data-list>
       </ng-template>

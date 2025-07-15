@@ -48,6 +48,14 @@ class Quiz
     #[Groups(['quiz:read'])]
     private ?User $user = null;
 
+    /**
+     * @var Collection<int, Group>
+     */
+    #[ORM\ManyToMany(targetEntity: Group::class)]
+    #[ORM\JoinTable(name: 'quiz_group')]
+    #[Groups(['quiz:read'])]
+    private Collection $groups;
+
     #[ORM\ManyToOne(inversedBy: 'quizs')]
     #[Groups(['quiz:read', 'quiz:create'])]
     private ?CategoryQuiz $category = null;
@@ -70,6 +78,7 @@ class Quiz
     {
         $this->questions = new ArrayCollection();
         $this->userAnswers = new ArrayCollection();
+        $this->groups = new ArrayCollection();
     }
 
 
@@ -217,6 +226,30 @@ class Quiz
                 $userAnswer->setQuiz(null);
             }
         }
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Group>
+     */
+    public function getGroups(): Collection
+    {
+        return $this->groups;
+    }
+
+    public function addGroup(Group $group): static
+    {
+        if (!$this->groups->contains($group)) {
+            $this->groups->add($group);
+        }
+
+        return $this;
+    }
+
+    public function removeGroup(Group $group): static
+    {
+        $this->groups->removeElement($group);
+
         return $this;
     }
 }
