@@ -135,6 +135,29 @@ class UserController extends AbstractController
 
         return $this->json(null, 204);
     }
+    
+    /**
+     * @OA\Get(summary="Récupérer le profil de l'utilisateur connecté", tags={"User"})
+     * @OA\Response(response=200, description="Profil de l'utilisateur connecté")
+     * @OA\Security(name="bearerAuth")
+     */
+    #[Route('/user/profile', name: 'user_profile', methods: ['GET'])]
+    public function profile(): JsonResponse
+    {
+        $user = $this->getUser();
+        
+        if (!$user) {
+            return $this->json(['error' => 'Utilisateur non authentifié'], 401);
+        }
+
+        return $this->json($user, 200, [], [
+            'groups' => ['user:read', 'company:read'],
+            'circular_reference_handler' => function ($object) {
+                return $object->getId();
+            }
+        ]);
+    }
+
     /**
      * @OA\Get(summary="Confirmer l’adresse email avec un token", tags={"User"})
      * @OA\Parameter(name="token", in="path", required=true, @OA\Schema(type="string"))

@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import {tap, map, catchError} from 'rxjs/operators';
 import {Observable, throwError} from 'rxjs';
 import { environment } from '../../environments/environment';
+import { User } from '../models/user.interface';
 
 interface LoginResponse {
   token: string;
@@ -59,6 +60,10 @@ export class AuthService {
 
   isLoggedIn(): boolean {
     return !!this.getToken();
+  }
+
+  getCurrentUser(): Observable<User> {
+    return this.http.get<User>(`${this.base}/user/profile`);
   }
   register(
     email: string,

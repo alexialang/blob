@@ -28,7 +28,7 @@
       }
 
       a {
-        color: #0c1017;
+        color:var(--color-dark);
         text-decoration: none;
       }
     }
@@ -55,7 +55,7 @@
       background: none;
       border: none;
       font-size: 2rem;
-      color: #0c1017;
+      color: var(--color-dark);
       cursor: pointer;
 
       @media (max-width: 768px) {
@@ -87,10 +87,10 @@
       a {
         font-size: inherit;
         text-decoration: none;
-        color: #0c1017;
+        color: var(--color-dark);
 
         &:hover {
-          color: var(--color-primary, #007bff);
+          color: var(--color-primary);
         }
       }
 
@@ -116,7 +116,7 @@
         background: none;
         border: none;
         font-size: 2rem;
-        color: #0c1017;
+        color: var(--color-dark);
         cursor: pointer;
       }
     }
@@ -152,6 +152,7 @@
     display: flex;
     flex-direction: row;
     column-gap: 10%;
+    align-items: center;
 
     .progress-container{
       display: flex;
@@ -159,10 +160,77 @@
       justify-content: center;
       align-items: start;
       row-gap: 10%;
+
+      p {
+        margin: 0;
+        font-weight: 600;
+      }
+    }
+
+    .profile-dropdown {
+      position: relative;
+      cursor: pointer;
+
+      .chevron-down {
+        padding: 0.5rem;
+        transition: transform 0.2s ease;
+
+        &:hover {
+          transform: rotate(180deg);
+        }
+      }
+
+      .profile-dropdown-menu {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background:var(--color-light);
+        border-radius: 8px;
+        box-shadow: 0 4px 12px var(--color-dark);
+        border: 1px solid var(--color-light);
+        min-width: 200px;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
+        transition: all 0.2s ease;
+        z-index: 1000;
+        list-style: none;
+        margin: 0;
+        padding: 0.5rem 0;
+
+        &.show {
+          opacity: 1;
+          visibility: visible;
+          transform: translateY(0);
+        }
+
+        li {
+          padding: 0;
+
+          a {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            color:var(--color-dark);
+            text-decoration: none;
+            transition: background-color 0.2s ease;
+
+            &:hover {
+              background-color: var(--color-light);
+            }
+
+            tui-icon {
+              width: 16px;
+              height: 16px;
+            }
+          }
+        }
+      }
     }
   }
   .progress-bar{
-    color: #0c1017;
+    color: var(--color-black);
   }
   &__toggle {
     display: none;
@@ -213,10 +281,10 @@
   position: absolute;
   top: 100%;
   left: 0;
-  background: white;
-  border: 1px solid #e0e0e0;
+  background: var(--color-light);
+  border: 1px solid var(--color-light);
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px var(--color-black);
   min-width: 160px;
   opacity: 0;
   visibility: hidden;
