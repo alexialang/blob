@@ -108,9 +108,17 @@ class QuizController extends AbstractController
             return $this->json(['error' => 'Invalid JSON'], 400);
         }
 
-        $quiz = $this->quizService->update($quiz, $data);
+        try {
+            $quiz = $this->quizService->updateWithQuestions($quiz, $data);
 
-        return $this->json($quiz, 200, [], ['groups' => ['quiz:read']]);
+            return $this->json($quiz, 200, [], ['groups' => ['quiz:read']]);
+
+        } catch (\Exception $e) {
+            return $this->json([
+                'error' => 'Erreur lors de la mise à jour du quiz',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**

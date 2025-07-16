@@ -247,6 +247,15 @@ export class QuizManagementComponent implements OnInit {
     this.router.navigate(['/creation-quiz']);
   }
 
+  editQuiz(id: number): void {
+    if (!id) {
+      this.router.navigate(['/creation-quiz']);
+      return;
+    }
+
+    this.router.navigate(['/creation-quiz', id]);
+  }
+
   getVisibleGroups(groups: Group[]): Group[] {
     return groups.slice(0, this.MAX_VISIBLE_GROUPS);
   }
@@ -257,5 +266,31 @@ export class QuizManagementComponent implements OnInit {
 
   getGroupsTooltip(groups: Group[]): string {
     return groups.slice(this.MAX_VISIBLE_GROUPS).map(g => g.name).join(', ');
+  }
+
+  trackByStatus(index: number, status: string): string {
+    return status;
+  }
+
+  trackByRow(index: number, row: any): number {
+    return row.id;
+  }
+
+  trackByGroup(index: number, group: any): number {
+    return group.id;
+  }
+
+  onExport(): void {
+    console.log('Export des quiz');
+  }
+
+  onImport(): void {
+    console.log('Import des quiz');
+
+  }
+
+  viewDetails(quizId: number): void {
+    console.log('Voir détails du quiz:', quizId);
+
   }
 }

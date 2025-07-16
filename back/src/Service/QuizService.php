@@ -1,11 +1,8 @@
 <?php
 namespace App\Service;
 
-use App\Entity\Answer;
 use App\Entity\CategoryQuiz;
-use App\Entity\Question;
 use App\Entity\Quiz;
-use App\Entity\TypeQuestion;
 use App\Entity\User;
 use App\Enum\Status;
 use App\Repository\CategoryQuizRepository;
@@ -96,8 +93,23 @@ class QuizService
 
     public function delete(Quiz $quiz): void
     {
-        $this->em->remove($quiz);
-        $this->em->flush();
+        try {
+            foreach ($quiz->getQuestions() as $question) {
+                foreach ($question->getAnswers() as $answer) {
+                    $this->em->remove($answer);
+                }
+                $this->em->remove($question);
+            }
+
+            foreach ($quiz->getUserAnswers() as $userAnswer) {
+                $this->em->remove($userAnswer);
+            }
+
+            $this->em->remove($quiz);
+            $this->em->flush();
+        } catch (\Exception $e) {
+            throw new \Exception('Erreur lors de la suppression du quiz: ' . $e->getMessage());
+        }
     }
 
     public function createWithQuestions(array $data, User $user): Quiz
@@ -105,7 +117,7 @@ class QuizService
         $this->validateQuizData($data);
 
         $this->em->beginTransaction();
-        
+
         try {
             $quiz = new Quiz();
             $quiz->setTitle($data['title']);
@@ -114,25 +126,25 @@ class QuizService
             $quiz->setIsPublic($data['is_public'] ?? false);
             $quiz->setDateCreation(new \DateTimeImmutable());
             $quiz->setUser($user);
-            
+
             if (isset($data['category']) && is_numeric($data['category'])) {
                 $category = $this->categoryQuizRepository->find($data['category']);
                 if ($category) {
                     $quiz->setCategory($category);
                 }
             }
-            
+
             if (!$quiz->isPublic() && isset($data['groups']) && is_array($data['groups'])) {
                 $userCompany = $user->getCompany();
                 if ($userCompany) {
                     $maxGroups = 50;
                     $groupsToProcess = array_slice($data['groups'], 0, $maxGroups);
-                    
+
                     foreach ($groupsToProcess as $groupId) {
                         if (!is_numeric($groupId) || $groupId <= 0) {
                             continue;
                         }
-                        
+
                         $group = $this->groupRepository->find($groupId);
                         if ($group && $group->getCompany() === $userCompany) {
                             $quiz->addGroup($group);
@@ -140,20 +152,21 @@ class QuizService
                     }
                 }
             }
-            
+
             $this->em->persist($quiz);
             $this->em->flush();
-            
+
             if (isset($data['questions']) && is_array($data['questions'])) {
                 foreach ($data['questions'] as $questionData) {
                     $this->createQuestion($quiz, $questionData);
                 }
             }
-            
+
+            $this->em->flush();
             $this->em->commit();
-            
+
             return $quiz;
-            
+
         } catch (\Exception $e) {
             $this->em->rollback();
             throw new BadRequestException('Erreur lors de la création du quiz: ' . $e->getMessage());
@@ -165,27 +178,27 @@ class QuizService
         if (empty($data['title'])) {
             throw new BadRequestException('Le titre du quiz est requis');
         }
-        
+
         if (empty($data['description'])) {
             throw new BadRequestException('La description du quiz est requise');
         }
-        
+
         if (empty($data['status'])) {
             throw new BadRequestException('Le statut du quiz est requis');
         }
-        
+
         if (!isset($data['is_public']) || !is_bool($data['is_public'])) {
             throw new BadRequestException('Le statut public/privé du quiz est requis');
         }
-        
+
         if (isset($data['questions']) && !is_array($data['questions'])) {
             throw new BadRequestException('Les questions doivent être un tableau');
         }
-        
+
         if (empty($data['questions'])) {
             throw new BadRequestException('Au moins une question est requise');
         }
-        
+
         foreach ($data['questions'] as $index => $questionData) {
             $this->validateQuestionData($questionData, $index);
         }
@@ -205,25 +218,25 @@ class QuizService
         if (empty($questionData['answers']) || !is_array($questionData['answers'])) {
             throw new BadRequestException("Les réponses pour la question #{$index} sont requises");
         }
-        
+
         if (count($questionData['answers']) < 2) {
             throw new BadRequestException("Au moins 2 réponses sont requises pour la question #{$index}");
         }
-        
+
         $this->validateAnswersByType($questionData, $index);
     }
-    
+
     private function validateAnswersByType(array $questionData, int $index): void
     {
         $answers = $questionData['answers'];
         $type = $questionData['type_question'];
-        
+
         foreach ($answers as $answerIndex => $answerData) {
             if (empty($answerData['answer'])) {
                 throw new BadRequestException("La réponse #{$answerIndex} de la question #{$index} ne peut pas être vide");
             }
         }
-        
+
         switch ($type) {
             case 'find_the_intruder':
                 $this->validateFindIntruderAnswers($answers, $index);
@@ -249,7 +262,7 @@ class QuizService
                 }
         }
     }
-    
+
     private function validateFindIntruderAnswers(array $answers, int $index): void
     {
         $intrusCount = 0;
@@ -258,22 +271,22 @@ class QuizService
                 $intrusCount++;
             }
         }
-        
+
         if ($intrusCount !== 1) {
-            throw new BadRequestException("Exactement un intrus doit être désigné pour la question #{$index}");
+            throw new BadRequestException("Un intrus doit être désigné pour la question #{$index}");
         }
     }
-    
+
     private function validateMatchingAnswers(array $answers, int $index): void
     {
         $leftPairs = [];
         $rightPairs = [];
-        
+
         foreach ($answers as $answerData) {
             if (!isset($answerData['pair_id'])) {
                 throw new BadRequestException("Chaque réponse de matching doit avoir un pair_id pour la question #{$index}");
             }
-            
+
             $pairId = $answerData['pair_id'];
             if (str_starts_with($pairId, 'left_')) {
                 $leftPairs[] = $pairId;
@@ -281,12 +294,12 @@ class QuizService
                 $rightPairs[] = $pairId;
             }
         }
-        
+
         if (count($leftPairs) !== count($rightPairs)) {
             throw new BadRequestException("Le nombre de réponses gauche et droite doit être égal pour la question #{$index}");
         }
     }
-    
+
     private function validateRightOrderAnswers(array $answers, int $index): void
     {
         $orders = [];
@@ -296,7 +309,7 @@ class QuizService
             }
             $orders[] = (int)$answerData['order_correct'];
         }
-        
+
         sort($orders);
         $expectedOrders = range(1, count($answers));
         if ($orders !== $expectedOrders) {
@@ -307,21 +320,21 @@ class QuizService
     private function createQuestion(Quiz $quiz, array $questionData): Question
     {
         $typeQuestion = $this->findOrCreateTypeQuestion($questionData['type_question']);
-        
+
         $question = new Question();
         $question->setQuestion($questionData['question']);
         $question->setQuiz($quiz);
         $question->setTypeQuestion($typeQuestion);
-        
+
         $this->em->persist($question);
         $this->em->flush();
-        
+
         foreach ($questionData['answers'] as $answerData) {
             $this->createAnswer($question, $answerData);
         }
-        
+
         $this->em->flush();
-        
+
         return $question;
     }
 
@@ -331,22 +344,114 @@ class QuizService
         $answer->setAnswer($answerData['answer']);
         $answer->setIsCorrect($answerData['is_correct'] ?? false);
         $answer->setQuestion($question);
-        
+
         if (isset($answerData['order_correct']) && !empty($answerData['order_correct'])) {
             $answer->setOrderCorrect($answerData['order_correct']);
         }
-        
+
         if (isset($answerData['pair_id']) && !empty($answerData['pair_id'])) {
             $answer->setPairId($answerData['pair_id']);
         }
-        
+
         if (isset($answerData['is_intrus'])) {
             $answer->setIsIntrus($answerData['is_intrus']);
         }
-        
+
         $this->em->persist($answer);
-        
+
         return $answer;
     }
+    private function findOrCreateTypeQuestion(string $name): TypeQuestion
+    {
+        $typeQuestion = $this->em->getRepository(TypeQuestion::class)->findOneBy(['name' => $name]);
 
+        if (!$typeQuestion) {
+            $typeQuestion = new TypeQuestion();
+            $typeQuestion->setName($name);
+            $this->em->persist($typeQuestion);
+        }
+
+        return $typeQuestion;
+    }
+
+    public function updateWithQuestions(Quiz $quiz, array $data): Quiz
+    {
+
+        $this->validateQuizData($data);
+        $this->em->beginTransaction();
+
+        try {
+            if (isset($data['title'])) {
+                $quiz->setTitle($data['title']);
+            }
+            if (isset($data['description'])) {
+                $quiz->setDescription($data['description']);
+            }
+            if (isset($data['status'])) {
+                $quiz->setStatus(Status::from($data['status']));
+            }
+            if (isset($data['is_public'])) {
+                $quiz->setIsPublic($data['is_public']);
+            }
+            if (isset($data['category']) && is_numeric($data['category'])) {
+                $category = $this->categoryQuizRepository->find($data['category']);
+                if ($category) {
+                    $quiz->setCategory($category);
+                }
+            }
+
+            if (!$quiz->isPublic() && isset($data['groups']) && is_array($data['groups'])) {
+                $quiz->getGroups()->clear();
+
+                $user = $quiz->getUser();
+                $userCompany = $user->getCompany();
+                if ($userCompany) {
+                    $maxGroups = 50;
+                    $groupsToProcess = array_slice($data['groups'], 0, $maxGroups);
+
+                    foreach ($groupsToProcess as $groupId) {
+                        if (!is_numeric($groupId) || $groupId <= 0) {
+                            continue;
+                        }
+
+                        $group = $this->groupRepository->find($groupId);
+                        if ($group && $group->getCompany() === $userCompany) {
+                            $quiz->addGroup($group);
+                        }
+                    }
+                }
+
+            }
+
+            if (isset($data['questions']) && is_array($data['questions'])) {
+
+                $existingQuestions = $quiz->getQuestions()->toArray();
+
+                foreach ($existingQuestions as $existingQuestion) {
+                    $existingAnswers = $existingQuestion->getAnswers()->toArray();
+                    foreach ($existingAnswers as $answer) {
+                        $this->em->remove($answer);
+                    }
+                    $this->em->remove($existingQuestion);
+                }
+
+                $quiz->getQuestions()->clear();
+
+                $this->em->flush();
+
+                foreach ($data['questions'] as $index => $questionData) {
+                    $this->createQuestion($quiz, $questionData);
+                }
+
+            }
+
+            $this->em->flush();
+            $this->em->commit();
+            return $quiz;
+
+        } catch (\Exception $e) {
+            $this->em->rollback();
+            throw new BadRequestException('Erreur lors de la mise à jour du quiz: ' . $e->getMessage());
+        }
+    }
 }

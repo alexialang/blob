@@ -14,11 +14,11 @@ class TypeQuestion
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['question:read'])]
+    #[Groups(['question:read', 'quiz:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['question:read'])]
+    #[Groups(['question:read', 'quiz:read'])]
     private ?string $name = null;
 
     /**

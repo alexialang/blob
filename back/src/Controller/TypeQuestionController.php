@@ -31,7 +31,7 @@ class TypeQuestionController extends AbstractController
         $typeQuestions = array_map(fn($enum) => [
             'id' => array_search($enum, TypeQuestionName::cases()) + 1,
             'name' => $enum->getName(),
-            'value' => $enum->value,
+            'key' => $enum->value,
         ], TypeQuestionName::cases());
 
         return $this->json($typeQuestions, 200);

@@ -1,9 +1,10 @@
 <div class="background"><div class="quiz-creation-container">
 
   <div class="header">
-    <h1>Créer un nouveau quiz</h1>
-    <p>Créez un quiz personnalisé avec des questions et réponses</p>
+    <h1>{{ isEditMode ? 'Modifier le quiz' : 'Créer un nouveau quiz' }}</h1>
+    <p>{{ isEditMode ? 'Modifiez votre quiz avec des questions et réponses' : 'Créez un quiz personnalisé avec des questions et réponses' }}</p>
   </div>
+
 
   <form [formGroup]="quizForm" class="quiz-form" (ngSubmit)="onSubmit()">
     <div class="form-section">
@@ -125,7 +126,7 @@
               <small>({{getQuestionTypeLabel(question.get('type_question')?.value)}})</small>
             </h4>
 
-            <div *ngIf="isQuestionTypeRequiringMatching(question.get('type_question')?.value)" class="matching-interface">
+            <div *ngIf="question.get('type_question')?.value === 'matching'" class="matching-interface">
               <div class="matching-pairs">
                 <div *ngFor="let pairIndex of getMatchingPairs(i); let pairNum = index" class="matching-pair">
                   <h5>Paire {{pairNum + 1}}</h5>
@@ -151,7 +152,7 @@
               <button type="button" class="btn" (click)="addMatchingPair(i)">+ Ajouter une paire</button>
             </div>
 
-            <div *ngIf="!isQuestionTypeRequiringMatching(question.get('type_question')?.value)">
+            <div *ngIf="question.get('type_question')?.value !== 'matching'">
               <button type="button" class="btn" (click)="addAnswer(i)">+ Ajouter une réponse</button>
 
               <div *ngFor="let answer of getAnswers(i).controls; let j = index" [formGroupName]="j" class="answer-item">
@@ -159,7 +160,6 @@
                   <input type="text" formControlName="answer" class="form-input"
                          [placeholder]="getAnswerPlaceholder(question.get('type_question')?.value, j)">
 
-                  <!-- QCM et Choix multiple -->
                   <div *ngIf="question.get('type_question')?.value === 'MCQ' ||
                              question.get('type_question')?.value === 'multiple_choice'">
                     <label>
@@ -168,20 +168,17 @@
                     </label>
                   </div>
 
-                  <div *ngIf="isQuestionTypeRequiringOrder(question.get('type_question')?.value)">
                     <label>
                       Ordre correct:
                       <input type="number" formControlName="order_correct" class="form-input small" min="1" [max]="getAnswers(i).length">
                     </label>
                   </div>
 
-                  <div *ngIf="isQuestionTypeRequiringIntrus(question.get('type_question')?.value)">
                     <label>
                       <input type="checkbox" formControlName="is_intrus" (change)="onCorrectAnswerChange(i, j)">
                       C'est l'intrus
                     </label>
                   </div>
-
                   <div *ngIf="question.get('type_question')?.value === 'blind_test'">
                     <label>
                       <input type="checkbox" formControlName="is_correct" (change)="onCorrectAnswerChange(i, j)">
@@ -207,9 +204,10 @@
 
     <div class="form-actions">
       <button type="button" class="btn btn-secondary" (click)="cancel()">Annuler</button>
+
       <button type="submit" class="btn btn-primary" [disabled]="isSubmitting || quizForm.invalid">
-        <span *ngIf="isSubmitting">Création en cours...</span>
-        <span *ngIf="!isSubmitting">Créer le quiz</span>
+        <span *ngIf="isSubmitting">{{ isEditMode ? 'Modification en cours...' : 'Création en cours...' }}</span>
+        <span *ngIf="!isSubmitting">{{ isEditMode ? 'Modifier le quiz' : 'Créer le quiz' }}</span>
       </button>
     </div>
   </form>
