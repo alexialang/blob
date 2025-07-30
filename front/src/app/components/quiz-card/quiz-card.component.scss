@@ -1,0 +1,237 @@
+.quiz-card {
+  position: relative;
+  width: 350px;
+  height: 320px;
+  perspective: 1000px;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+
+  &:hover {
+    transform: scale(1.02);
+  }
+
+  &.flipped {
+    .card-front {
+      transform: rotateY(-180deg);
+    }
+
+    .card-back {
+      transform: rotateY(0deg);
+    }
+  }
+}
+
+.card-face {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: 20px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 0.6s ease;
+}
+
+.card-front {
+  background: #1a1a1a;
+  color: white;
+  transform: rotateY(0deg);
+}
+
+.card-back {
+  background: #1a1a1a;
+  color: white;
+  transform: rotateY(180deg);
+}
+
+.card-corner-badge {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  color: white;
+}
+
+.card-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  text-align:start;
+}
+
+.quiz-title {
+  font-size: 32px;
+  font-weight: 900;
+  color: var(--color-light);
+  font-family: var(--font-primary);
+  margin: 0;
+  line-height: 1.2;
+  letter-spacing: -1px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  max-height: 80px;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.quiz-subtitle {
+  font-size: 16px;
+  margin: 12px 0 0;
+  opacity: 0.8;
+  text-transform: capitalize;
+}
+
+.quiz-rating {
+  display: flex;
+  align-items: end;
+  margin-bottom: 2.3em;
+  .stars {
+    display: flex;
+    gap: 4px;
+
+    .star {
+      font-size: 20px;
+      color: transparent;
+      -webkit-text-stroke: 1px white;
+      text-stroke: 1px white;
+
+      &.filled {
+        color: white;
+        -webkit-text-stroke: 1px white;
+        text-stroke: 1px white;
+      }
+    }
+  }
+}
+
+.card-action {
+  display: flex;
+  justify-content: space-between;
+
+  .details-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: background-color 0.3s ease;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .arrow {
+      transform: rotate(-45deg);
+      display: inline-block;
+    }
+  }
+}
+
+.quiz-description {
+  font-size: 14px;
+  line-height: 1.6;
+  opacity: 0.9;
+  margin-bottom: 24px;
+}
+
+.play-mode-section {
+  margin-bottom: 24px;
+
+  h4 {
+    font-size: 14px;
+    margin: 0 0 12px;
+    opacity: 0.8;
+  }
+
+  .mode-toggle {
+    display: flex;
+    gap: 8px;
+
+    .mode-btn {
+      flex: 1;
+      padding: 8px 16px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      background: transparent;
+      color: white;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      &.active {
+        background: white;
+        color: #1a1a1a;
+        border-color: white;
+      }
+    }
+  }
+}
+
+.card-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  .back-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: background-color 0.3s ease;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+  }
+
+  .start-btn {
+    background: white;
+    color: #1a1a1a;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 24px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background: #f0f0f0;
+      transform: translateY(-2px);
+    }
+  }
+}
+
+
+
+@keyframes expandToFullscreen {
+  0% {
+    transform: scale(1);
+    border-radius: 20px;
+  }
+
+  50% {
+    transform: scale(1.1);
+    border-radius: 15px;
+  }
+
+  100% {
+    transform: scale(100);
+    border-radius: 0;
+  }
+}

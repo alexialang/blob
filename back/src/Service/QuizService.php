@@ -1,15 +1,20 @@
 <?php
 namespace App\Service;
 
-use App\Entity\CategoryQuiz;
 use App\Entity\Quiz;
 use App\Entity\User;
+use App\Entity\Question;
+use App\Entity\Answer;
+use App\Entity\TypeQuestion;
 use App\Enum\Status;
+use App\Enum\Difficulty;
+use App\Enum\TypeQuestionName;
 use App\Repository\CategoryQuizRepository;
 use App\Repository\GroupRepository;
 use App\Repository\QuizRepository;
 use App\Repository\TypeQuestionRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -21,6 +26,7 @@ class QuizService
     private TypeQuestionRepository $typeQuestionRepository;
     private GroupRepository $groupRepository;
     private ValidatorInterface $validator;
+    private LoggerInterface $logger;
 
     public function __construct(
         EntityManagerInterface $em,
@@ -28,7 +34,8 @@ class QuizService
         CategoryQuizRepository $categoryQuizRepository,
         TypeQuestionRepository $typeQuestionRepository,
         GroupRepository $groupRepository,
-        ValidatorInterface $validator
+        ValidatorInterface $validator,
+        LoggerInterface $logger
     ) {
         $this->em = $em;
         $this->quizRepository = $quizRepository;
@@ -36,59 +43,79 @@ class QuizService
         $this->typeQuestionRepository = $typeQuestionRepository;
         $this->groupRepository = $groupRepository;
         $this->validator = $validator;
+        $this->logger = $logger;
     }
 
-    public function list(): array
+    public function list(bool $forManagement = false): array
     {
-        return $this->quizRepository->findAll();
+        return $this->quizRepository->findPublishedOrAll($forManagement);
     }
 
-    public function create(array $data, User $user): Quiz
-    {
-        $quiz = new Quiz();
-        $quiz->setTitle($data['title']);
-        $quiz->setDescription($data['description']);
-        $quiz->setStatus(Status::from($data['status']));
-        $quiz->setIsPublic($data['is_public'] ?? false);
-        $quiz->setDateCreation(new \DateTimeImmutable());
-        $quiz->setUser($user);
 
-        if (isset($data['category']) && $data['category'] instanceof CategoryQuiz) {
-            $quiz->setCategory($data['category']);
+    public function getPrivateQuizzesForUser(User $user): array
+    {
+        try {
+            if (!$user->getCompany()) {
+                return [];
+            }
+
+            $userGroups = $user->getGroups();
+            if ($userGroups->isEmpty()) {
+                return [];
+            }
+
+            $userGroupIds = [];
+            foreach ($userGroups as $group) {
+                $userGroupIds[] = $group->getId();
+            }
+
+            return $this->quizRepository->findPrivateQuizzesForUserGroups($userGroupIds);
+        } catch (\Exception $e) {
+            $this->logger->error('Erreur getPrivateQuizzesForUser: ' . $e->getMessage());
+            return [];
         }
-
-        $this->em->persist($quiz);
-        $this->em->flush();
-
-        return $quiz;
     }
+
+    public function getMyQuizzes(User $user): array
+    {
+        try {
+            return $this->quizRepository->findByUser($user);
+        } catch (\Exception $e) {
+            $this->logger->error('Erreur getMyQuizzes: ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    public function getMostPopularQuizzes(int $limit = 8): array
+    {
+        try {
+            return $this->quizRepository->findMostPopular($limit);
+        } catch (\Exception $e) {
+            $this->logger->error('Erreur getMostPopularQuizzes: ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    public function getMostRecentQuizzes(int $limit = 6): array
+    {
+        try {
+            return $this->quizRepository->findMostRecent($limit);
+        } catch (\Exception $e) {
+            $this->logger->error('Erreur getMostRecentQuizzes: ' . $e->getMessage());
+            return [];
+        }
+    }
+
+
 
     public function show(Quiz $quiz): Quiz
     {
         return $quiz;
     }
 
-    public function update(Quiz $quiz, array $data): Quiz
+    public function find(int $id): ?Quiz
     {
-        if (isset($data['title'])) {
-            $quiz->setTitle($data['title']);
-        }
-        if (isset($data['description'])) {
-            $quiz->setDescription($data['description']);
-        }
-        if (isset($data['status'])) {
-            $quiz->setStatus(Status::from($data['status']));
-        }
-        if (isset($data['is_public'])) {
-            $quiz->setIsPublic($data['is_public']);
-        }
-        if (isset($data['category']) && $data['category'] instanceof CategoryQuiz) {
-            $quiz->setCategory($data['category']);
-        }
-
-        $this->em->flush();
-
-        return $quiz;
+        return $this->quizRepository->find($id);
     }
 
     public function delete(Quiz $quiz): void
@@ -123,7 +150,7 @@ class QuizService
             $quiz->setTitle($data['title']);
             $quiz->setDescription($data['description']);
             $quiz->setStatus(Status::from($data['status']));
-            $quiz->setIsPublic($data['is_public'] ?? false);
+            $quiz->setIsPublic($data['isPublic'] ?? false);
             $quiz->setDateCreation(new \DateTimeImmutable());
             $quiz->setUser($user);
 
@@ -166,7 +193,6 @@ class QuizService
             $this->em->commit();
 
             return $quiz;
-
         } catch (\Exception $e) {
             $this->em->rollback();
             throw new BadRequestException('Erreur lors de la création du quiz: ' . $e->getMessage());
@@ -187,7 +213,7 @@ class QuizService
             throw new BadRequestException('Le statut du quiz est requis');
         }
 
-        if (!isset($data['is_public']) || !is_bool($data['is_public'])) {
+        if (!isset($data['isPublic']) || !is_bool($data['isPublic'])) {
             throw new BadRequestException('Le statut public/privé du quiz est requis');
         }
 
@@ -210,7 +236,7 @@ class QuizService
             throw new BadRequestException("La question #{$index} est requise");
         }
 
-        $validTypes = array_column(\App\Enum\TypeQuestionName::cases(), 'value');
+        $validTypes = array_column(TypeQuestionName::cases(), 'value');
         if (!in_array($questionData['type_question'], $validTypes)) {
             throw new BadRequestException("Type de question invalide : {$questionData['type_question']}");
         }
@@ -307,7 +333,7 @@ class QuizService
             if (!isset($answerData['order_correct']) || !is_numeric($answerData['order_correct'])) {
                 throw new BadRequestException("Chaque réponse de right_order doit avoir un order_correct pour la question #{$index}");
             }
-            $orders[] = (int)$answerData['order_correct'];
+            $orders[] = (int) $answerData['order_correct'];
         }
 
         sort($orders);
@@ -325,6 +351,13 @@ class QuizService
         $question->setQuestion($questionData['question']);
         $question->setQuiz($quiz);
         $question->setTypeQuestion($typeQuestion);
+
+        if (isset($questionData['difficulty'])) {
+            $difficulty = Difficulty::tryFrom($questionData['difficulty']);
+            if ($difficulty !== null) {
+                $question->setDifficulty($difficulty);
+            }
+        }
 
         $this->em->persist($question);
         $this->em->flush();
@@ -345,11 +378,11 @@ class QuizService
         $answer->setIsCorrect($answerData['is_correct'] ?? false);
         $answer->setQuestion($question);
 
-        if (isset($answerData['order_correct']) && !empty($answerData['order_correct'])) {
+        if (!empty($answerData['order_correct'])) {
             $answer->setOrderCorrect($answerData['order_correct']);
         }
 
-        if (isset($answerData['pair_id']) && !empty($answerData['pair_id'])) {
+        if (!empty($answerData['pair_id'])) {
             $answer->setPairId($answerData['pair_id']);
         }
 
@@ -390,8 +423,8 @@ class QuizService
             if (isset($data['status'])) {
                 $quiz->setStatus(Status::from($data['status']));
             }
-            if (isset($data['is_public'])) {
-                $quiz->setIsPublic($data['is_public']);
+            if (isset($data['isPublic'])) {
+                $quiz->setIsPublic($data['isPublic']);
             }
             if (isset($data['category']) && is_numeric($data['category'])) {
                 $category = $this->categoryQuizRepository->find($data['category']);
@@ -420,7 +453,6 @@ class QuizService
                         }
                     }
                 }
-
             }
 
             if (isset($data['questions']) && is_array($data['questions'])) {
@@ -442,13 +474,11 @@ class QuizService
                 foreach ($data['questions'] as $index => $questionData) {
                     $this->createQuestion($quiz, $questionData);
                 }
-
             }
 
             $this->em->flush();
             $this->em->commit();
             return $quiz;
-
         } catch (\Exception $e) {
             $this->em->rollback();
             throw new BadRequestException('Erreur lors de la mise à jour du quiz: ' . $e->getMessage());

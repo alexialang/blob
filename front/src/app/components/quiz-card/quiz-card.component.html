@@ -1,0 +1,60 @@
+<div class="quiz-card" [class.flipped]="quiz.isFlipped">
+  <div class="card-face card-front">
+    <div class="card-corner-badge" *ngIf="getCompanyBadgeText()">{{ getCompanyBadgeText() }}</div>
+    <div class="card-content">
+      <h3 class="quiz-title">{{ quiz.title }}</h3>
+      <p class="quiz-subtitle">{{ quiz.difficulty }}</p>
+
+      <div class="quiz-category">
+        <small>Catégorie: {{ quiz.category }}</small>
+      </div>
+    </div>
+
+    <div class="card-action">
+      <div class="quiz-rating">
+      <div class="stars">
+        <span class="star" *ngFor="let i of [1,2,3]" [class.filled]="i <= quiz.rating">★</span>
+      </div>
+    </div>
+      <button class="details-btn" (click)="flipCard()">
+        <img src="/assets/svg/arrow-down-left.svg" alt="Détails">
+      </button>
+    </div>
+  </div>
+
+  <div class="card-face card-back">
+    <div class="card-corner-badge" *ngIf="getCompanyBadgeText()">{{ getCompanyBadgeText() }}</div>
+    <div class="card-content">
+      <p class="quiz-description">{{ quiz.description }}</p>
+
+      <div class="quiz-info">
+        <p><strong>Catégorie:</strong> {{ quiz.category }}</p>
+        <p><strong>Entreprise:</strong> {{ quiz.company }}</p>
+      </div>
+
+      <div class="play-mode-section">
+        <h4>Mode:</h4>
+        <div class="mode-toggle">
+          <button
+            class="mode-btn"
+            [class.active]="quiz.playMode === 'solo'"
+            (click)="togglePlayMode()">
+            Solo
+          </button>
+          <button
+            class="mode-btn"
+            [class.active]="quiz.playMode === 'team'"
+            (click)="togglePlayMode()">
+            Équipe
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="card-actions">
+      <button class="back-btn" (click)="flipCard()">←</button>
+      <button class="start-btn" (click)="startQuiz()">
+        Démarrer le Quiz
+      </button>
+    </div>
+  </div>
+</div>
