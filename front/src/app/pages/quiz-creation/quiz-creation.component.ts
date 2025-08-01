@@ -34,6 +34,11 @@ interface Status {
   value: string;
 }
 
+interface Difficulty {
+  value: string;
+  label: string;
+}
+
 @Component({
   selector: 'app-quiz-creation',
   standalone: true,
@@ -48,6 +53,11 @@ export class QuizCreationComponent implements OnInit {
   filteredCategories: Category[] = [];
   groups: Group[] = [];
   statuses: Status[] = [];
+  difficulties: Difficulty[] = [
+    { value: 'easy', label: 'Facile' },
+    { value: 'medium', label: 'Moyen' },
+    { value: 'hard', label: 'Difficile' }
+  ];
   isSubmitting = false;
   isEditMode = false;
   quizId: number | null = null;
@@ -115,6 +125,7 @@ export class QuizCreationComponent implements OnInit {
     const questionForm = this.fb.group({
       question: ['', [Validators.required, Validators.minLength(5)]],
       type_question: [null, Validators.required],
+      difficulty: ['easy', Validators.required],
       answers: this.fb.array([])
     });
 
@@ -185,11 +196,11 @@ export class QuizCreationComponent implements OnInit {
       answers.removeAt(0);
     }
 
-        this.initializeAnswersForType(questionIndex, questionType);
-    }
+    this.initializeAnswersForType(questionIndex, questionType);
+  }
 
-    private initializeAnswersForType(questionIndex: number, questionType: string): void {
-        const minAnswers = this.getMinAnswersForType(questionType);
+  private initializeAnswersForType(questionIndex: number, questionType: string): void {
+    const minAnswers = this.getMinAnswersForType(questionType);
 
     if (questionType === 'matching') {
       for (let i = 0; i < minAnswers; i++) {
@@ -228,10 +239,6 @@ export class QuizCreationComponent implements OnInit {
     }
   }
 
-  getTypeQuestionKeys(): string {
-    return this.typeQuestions.map(t => t.key).join(', ');
-  }
-
   getQuestionTypeLabel(type: string): string {
     switch (type) {
       case 'MCQ': return 'QCM';
@@ -242,10 +249,6 @@ export class QuizCreationComponent implements OnInit {
       case 'blind_test': return 'Blind Test';
       default: return type;
     }
-  }
-
-  getMinAnswersForTypePublic(type: string): number {
-    return this.getMinAnswersForType(type);
   }
 
   getMatchingPairs(questionIndex: number): string[] {
@@ -320,12 +323,11 @@ export class QuizCreationComponent implements OnInit {
 
   loadQuizForEdit(id: number): void {
     this.quizService.getQuiz(id).subscribe(res => {
-
       this.quizForm.patchValue({
         title: res.title,
         description: res.description,
         status: res.status,
-        is_public: res.is_public,
+        is_public: res.isPublic,
         category: res.category?.id || null,
         groups: res.groups.map((g: any) => g.id)
       });
@@ -351,10 +353,10 @@ export class QuizCreationComponent implements OnInit {
           questionTypeKey = q.type_question;
         }
 
-
         const questionForm = this.fb.group({
           question: [q.question || '', [Validators.required, Validators.minLength(5)]],
           type_question: [questionTypeKey, Validators.required],
+          difficulty: [q.difficulty || 'easy', Validators.required],
           answers: this.fb.array([])
         });
 
@@ -366,7 +368,7 @@ export class QuizCreationComponent implements OnInit {
             const answerForm = this.fb.group({
               answer: [ans.answer || '', Validators.required],
               is_correct: [ans.is_correct || false],
-              order_correct: [ans.order_correct ?? '', Validators.required],
+              order_correct: [ans.order_correct ?? ''],
               pair_id: [ans.pair_id || ''],
               is_intrus: [ans.is_intrus || false]
             });
@@ -376,7 +378,6 @@ export class QuizCreationComponent implements OnInit {
           this.initializeAnswersForType(questionIndex, questionTypeKey);
         }
       });
-
     });
   }
 
@@ -388,14 +389,19 @@ export class QuizCreationComponent implements OnInit {
 
     const payload = {
       ...formValue,
+      isPublic: formValue.is_public,
       questions: formValue.questions.map((q: any) => ({
-        ...q,
+        question: q.question,
+        type_question: q.type_question,
+        difficulty: q.difficulty,
         answers: q.answers.map((a: any) => ({
           ...a,
           order_correct: a.order_correct || null
         }))
       }))
     };
+    
+    delete payload.is_public;
 
     const action = this.isEditMode
       ? this.quizService.updateQuiz(this.quizId!, payload)
@@ -412,9 +418,7 @@ export class QuizCreationComponent implements OnInit {
     });
   }
 
-  trackByKey(index: number, item: TypeQuestion): string {
-    return item.key;
-  }
+
 
   addMatchingPair(questionIndex: number): void {
     const answers = this.getAnswers(questionIndex);

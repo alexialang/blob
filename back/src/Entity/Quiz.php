@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Enum\Difficulty;
 use App\Repository\QuizRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -17,7 +18,6 @@ class Quiz
     #[ORM\GeneratedValue]
     #[ORM\Column]
     #[Groups(['quiz:read', 'question:read'])]
-
     private ?int $id = null;
 
     #[ORM\Column(length: 100)]
@@ -30,7 +30,7 @@ class Quiz
 
     #[ORM\Column]
     #[Groups(['quiz:read', 'quiz:create'])]
-    private ?bool $is_public = null;
+    private ?bool $isPublic = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     #[Groups(['quiz:read'])]
@@ -81,7 +81,6 @@ class Quiz
         $this->groups = new ArrayCollection();
     }
 
-
     public function getId(): ?int
     {
         return $this->id;
@@ -111,12 +110,12 @@ class Quiz
 
     public function isPublic(): ?bool
     {
-        return $this->is_public;
+        return $this->isPublic;
     }
 
-    public function setIsPublic(bool $is_public): static
+    public function setIsPublic(bool $isPublic): static
     {
-        $this->is_public = $is_public;
+        $this->isPublic = $isPublic;
         return $this;
     }
 

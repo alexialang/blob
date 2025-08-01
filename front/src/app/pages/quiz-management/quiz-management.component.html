@@ -151,9 +151,9 @@
         <td tuiTd class="td-quiz">
           <div [tuiCell]="size" class="d-flex align-center gap-2 quiz-cell">
             <tui-avatar [size]="size">{{ row.title.charAt(0) }}</tui-avatar>
-            <div>
-              <div tuiTitle>{{ row.title }}</div>
-              <div tuiSubtitle *ngIf="row.description">
+            <div class="quiz-info">
+              <div class="quiz-title" [title]="row.title">{{ row.title }}</div>
+              <div class="quiz-description" *ngIf="row.description" [title]="row.description">
                 {{ row.description }}
               </div>
             </div>
@@ -185,8 +185,7 @@
         <td tuiTd class="td-public">{{ row.isPublic ? 'Oui' : 'Non' }}</td>
         <td tuiTd class="td-status">{{ row.status }}</td>
         <td tuiTd class="td-action">
-          <div class="d-flex gap-2">
-            <a class="link-profile">Voir détails</a>
+          <div class="action-buttons">
             <button
               tuiButton
               appearance="action"
@@ -195,7 +194,8 @@
               tuiIconButton
               class="btn-edit"
               (click)="editQuiz(row.id)"
-            ></button>
+              title="Modifier">
+            </button>
             <button
               tuiButton
               appearance="action"
@@ -204,7 +204,8 @@
               tuiIconButton
               class="btn-delete-single"
               (click)="deleteSingle(row.id)"
-            ></button>
+              title="Supprimer">
+            </button>
           </div>
         </td>
       </tr>
@@ -213,8 +214,6 @@
       </tr>
       </tbody>
     </table>
-
-
   </div>
 
   <div class="pagination-container">

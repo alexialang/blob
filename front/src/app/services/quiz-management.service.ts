@@ -12,7 +12,15 @@ export class QuizManagementService {
   constructor(private http: HttpClient) {}
 
   getQuizzes(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/quiz/management/list`);
+  }
+
+  getPublicQuizzes(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/quiz/list`);
+  }
+
+  getOrganizedQuizzes(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/quiz/organized`);
   }
 
   getQuiz(id: number): Observable<any> {
@@ -29,27 +37,6 @@ export class QuizManagementService {
 
   deleteQuiz(id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/quiz/${id}`);
-  }
-
-  activateQuiz(id: number): Observable<any> {
-    return this.http.patch(`${this.apiUrl}/quiz/${id}/activate`, {});
-  }
-
-  deactivateQuiz(id: number): Observable<any> {
-    return this.http.patch(`${this.apiUrl}/quiz/${id}/deactivate`, {});
-  }
-
-  duplicateQuiz(id: number): Observable<any> {
-    return this.http.post(`${this.apiUrl}/quiz/${id}/duplicate`, {});
-  }
-
-
-  assignQuizToGroups(quizId: number, groupIds: number[]): Observable<any> {
-    return this.http.post(`${this.apiUrl}/quiz/${quizId}/assign-groups`, { groupIds });
-  }
-
-  removeQuizFromGroups(quizId: number, groupIds: number[]): Observable<any> {
-    return this.http.post(`${this.apiUrl}/quiz/${quizId}/remove-groups`, { groupIds });
   }
 
   getTypeQuestions(): Observable<any[]> {

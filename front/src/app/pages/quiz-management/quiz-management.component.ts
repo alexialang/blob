@@ -105,7 +105,6 @@ export class QuizManagementComponent implements OnInit {
   private loadQuizzes(): void {
     this.quizService.getQuizzes().subscribe({
       next: quizzes => {
-        console.log(quizzes);
         this.rows = quizzes.map(quiz => ({
           id: quiz.id,
           selected: false,
@@ -113,8 +112,8 @@ export class QuizManagementComponent implements OnInit {
           description: quiz.description,
           createdBy: `${quiz.user?.email || ''} ${quiz.user?.lastName || ''}`.trim(),
           category: quiz.category?.name ?? null,
-          isPublic: quiz.isPublic?? 'null',
-          status: quiz.status?? 'null',
+          isPublic: quiz.isPublic ?? false,
+          status: quiz.status ?? 'draft',
           groups: quiz.groups || [],
           stats: '',
         }));
@@ -266,31 +265,5 @@ export class QuizManagementComponent implements OnInit {
 
   getGroupsTooltip(groups: Group[]): string {
     return groups.slice(this.MAX_VISIBLE_GROUPS).map(g => g.name).join(', ');
-  }
-
-  trackByStatus(index: number, status: string): string {
-    return status;
-  }
-
-  trackByRow(index: number, row: any): number {
-    return row.id;
-  }
-
-  trackByGroup(index: number, group: any): number {
-    return group.id;
-  }
-
-  onExport(): void {
-    console.log('Export des quiz');
-  }
-
-  onImport(): void {
-    console.log('Import des quiz');
-
-  }
-
-  viewDetails(quizId: number): void {
-    console.log('Voir détails du quiz:', quizId);
-
   }
 }

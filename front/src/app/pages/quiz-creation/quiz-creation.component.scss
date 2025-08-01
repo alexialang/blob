@@ -1,11 +1,11 @@
-.background{
+.background {
   background-color: var(--color-light);
 }
+
 .quiz-creation-container {
   max-width: 1000px;
   margin: 0 auto;
   padding: 2rem;
-
 }
 
 .header h1 {
@@ -21,9 +21,8 @@
 }
 
 h2 {
-    font-size: var(--font-size-h3);
+  font-size: var(--font-size-h3);
   letter-spacing: 2px;
-
   margin-bottom: 1rem;
   color: var(--text-primary);
   font-family: var(--font-primary), sans-serif;
@@ -49,6 +48,8 @@ h4 {
   margin-bottom: 2rem;
   border: 1px solid var(--border-light);
   border-radius: 8px;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .form-group {
@@ -72,12 +73,16 @@ label {
 .form-select,
 .form-textarea {
   width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   padding: 0.75rem 1rem;
   font-size: 1rem;
   border: 1px solid var(--border-medium);
   border-radius: 8px;
   background-color: var(--color-white);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  overflow: hidden;
+  resize: vertical;
 }
 
 .form-input:focus,
@@ -279,6 +284,29 @@ label {
 
 .category-search .clear-btn:hover {
   color: var(--color-danger);
+}
+
+.add-question-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-light);
+}
+
+.btn-add-question {
+  background-color: var(--color-primary);
+  color: var(--text-inverse);
+  font-size: 1.1rem;
+  padding: 0.8rem 2rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(37, 125, 84, 0.2);
+}
+
+.btn-add-question:hover {
+  background-color: var(--color-primary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 125, 84, 0.3);
 }
 
 @media (max-width: 768px) {
