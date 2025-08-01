@@ -228,27 +228,29 @@ export class QuizCreationComponent implements OnInit {
   }
 
   private getMinAnswersForType(questionType: string): number {
-    switch (questionType) {
-      case 'MCQ':
-      case 'multiple_choice': return 3;
-      case 'right_order': return 3;
-      case 'matching':
-      case 'find_the_intruder': return 4;
-      case 'blind_test': return 1;
-      default: return 2;
-    }
+    const MIN_ANSWERS_CONFIG = {
+      'MCQ': 3,
+      'multiple_choice': 3,
+      'right_order': 3,
+      'matching': 4,
+      'find_the_intruder': 4,
+      'blind_test': 1
+    } as const;
+
+    return MIN_ANSWERS_CONFIG[questionType as keyof typeof MIN_ANSWERS_CONFIG] || 2;
   }
 
   getQuestionTypeLabel(type: string): string {
-    switch (type) {
-      case 'MCQ': return 'QCM';
-      case 'multiple_choice': return 'Choix multiple';
-      case 'right_order': return 'Remise dans le bon ordre';
-      case 'matching': return 'Association d\'éléments';
-      case 'find_the_intruder': return 'Intrus';
-      case 'blind_test': return 'Blind Test';
-      default: return type;
-    }
+    const TYPE_LABELS = {
+      'MCQ': 'QCM',
+      'multiple_choice': 'Choix multiple',
+      'right_order': 'Remise dans le bon ordre',
+      'matching': 'Association d\'éléments',
+      'find_the_intruder': 'Intrus',
+      'blind_test': 'Blind Test'
+    } as const;
+
+    return TYPE_LABELS[type as keyof typeof TYPE_LABELS] || type;
   }
 
   getMatchingPairs(questionIndex: number): string[] {
@@ -446,21 +448,16 @@ export class QuizCreationComponent implements OnInit {
   }
 
   getAnswerPlaceholder(questionType: string, answerIndex: number): string {
-    switch (questionType) {
-      case 'MCQ':
-        return `Option ${answerIndex + 1}`;
-      case 'multiple_choice':
-        return `Choix ${answerIndex + 1}`;
-      case 'right_order':
-        return `Élément ${answerIndex + 1} à ordonner`;
-      case 'find_the_intruder':
-        return `Élément ${answerIndex + 1}`;
-      case 'blind_test':
-        return 'Réponse du blind test';
-      case 'matching':
-        return 'Élément à associer';
-      default:
-        return `Réponse ${answerIndex + 1}`;
-    }
+    const PLACEHOLDER_GENERATORS = {
+      'MCQ': (index: number) => `Option ${index + 1}`,
+      'multiple_choice': (index: number) => `Choix ${index + 1}`,
+      'right_order': (index: number) => `Élément ${index + 1} à ordonner`,
+      'find_the_intruder': (index: number) => `Élément ${index + 1}`,
+      'blind_test': () => 'Réponse du blind test',
+      'matching': () => 'Élément à associer'
+    } as const;
+
+    const generator = PLACEHOLDER_GENERATORS[questionType as keyof typeof PLACEHOLDER_GENERATORS];
+    return generator ? generator(answerIndex) : `Réponse ${answerIndex + 1}`;
   }
 }

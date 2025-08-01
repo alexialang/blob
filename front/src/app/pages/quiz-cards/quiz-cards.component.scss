@@ -208,7 +208,7 @@
 
       @media (max-width: 600px) {
         grid-template-columns: 1fr;
-        column-gap: 0;
+        column-gap: 20px;
         row-gap: 32px;
         justify-items: center;
       }

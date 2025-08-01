@@ -56,15 +56,13 @@ export class QuizCardsComponent implements OnInit {
   categoriesWithBlobs: { [key: string]: DisplayItem[] } = {};
 
   readonly pageSize = 12;
-
-
   loading = true;
   searchTerm = '';
   selectedCategory = '';
   selectedDifficulty = '';
 
-  private flippedCardsCache = new Map<number, boolean>();
-  private blobPositions: Record<string, number | null> = {};
+  private readonly flippedCardsCache = new Map<number, boolean>();
+  private readonly blobPositions: Record<string, number | null> = {};
 
   constructor(
     private quizService: QuizManagementService,
@@ -225,8 +223,11 @@ export class QuizCardsComponent implements OnInit {
     maxItems: number,
     key: string
   ): DisplayItem[] {
+    const BLOB_PROBABILITY = 0.25;
+    const MIN_QUIZZES_FOR_BLOB = 1;
+    
     if (!(key in this.blobPositions)) {
-      if (quizzes.length >= 1 && Math.random() < 0.25) {
+      if (quizzes.length >= MIN_QUIZZES_FOR_BLOB && Math.random() < BLOB_PROBABILITY) {
         this.blobPositions[key] = Math.floor(Math.random() * quizzes.length);
       } else {
         this.blobPositions[key] = null;

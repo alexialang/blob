@@ -251,4 +251,49 @@ class Quiz
 
         return $this;
     }
+
+    #[Groups(['quiz:read'])]
+    public function getDifficultyLabel(): string
+    {
+        if ($this->questions->isEmpty()) {
+            return 'Facile';
+        }
+
+        $totalWeight = 0;
+        $questionCount = 0;
+
+        foreach ($this->questions as $question) {
+            $difficulty = $question->getDifficulty();
+            if ($difficulty) {
+                $totalWeight += $difficulty->getWeight();
+                $questionCount++;
+            }
+        }
+
+        if ($questionCount === 0) {
+            return 'Facile';
+        }
+
+        $avgWeight = $totalWeight / $questionCount;
+        return Difficulty::fromWeight($avgWeight)->getLabel();
+    }
+
+    #[Groups(['quiz:read'])]
+    public function getTotalAttempts(): int
+    {
+        return $this->userAnswers->count();
+    }
+
+    #[Groups(['quiz:read'])]
+    public function getPopularity(): int
+    {
+        $attempts = $this->getTotalAttempts();
+        return min(5, max(1, ceil($attempts / 2)));
+    }
+
+    #[Groups(['quiz:read'])]
+    public function getQuestionCount(): int
+    {
+        return $this->questions->count();
+    }
 }

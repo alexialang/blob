@@ -1,6 +1,7 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { QuizCard } from '../../models/quiz.model';
+import { QuizTransitionService } from '../../services/quiz-transition.service';
 
 @Component({
   selector: 'app-quiz-card',
@@ -16,7 +17,14 @@ export class QuizCardComponent {
   @Output() quizFlip = new EventEmitter<QuizCard>();
   @Output() playModeChange = new EventEmitter<QuizCard>();
 
-  startQuiz() {
+  constructor(
+    private quizTransitionService: QuizTransitionService,
+    private elementRef: ElementRef
+  ) {}
+
+  async startQuiz() {
+    const cardElement = this.elementRef.nativeElement.querySelector('.quiz-card');
+    await this.quizTransitionService.startTransition(this.quiz, cardElement);
     this.quizStart.emit(this.quiz);
   }
 
