@@ -1,11 +1,13 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import {CommonModule, NgOptimizedImage} from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { QuizManagementService } from '../../services/quiz-management.service';
+import { QuizResultsService } from '../../services/quiz-results.service';
 import { QuizCardComponent } from '../../components/quiz-card/quiz-card.component';
 import { QuizCard } from '../../models/quiz.model';
 import { PaginationComponent } from '../../components/pagination/pagination.component';
+import { forkJoin } from 'rxjs';
 
 interface CategoryWithPagination {
   name: string;
@@ -35,7 +37,7 @@ type DisplayItem = QuizItem | BlobItem;
   styleUrls: ['./quiz-cards.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class QuizCardsComponent implements OnInit {
+export class QuizCardsComponent implements OnInit, OnDestroy {
   originalPopularQuizzes: QuizCard[] = [];
   popularQuizzes: QuizCard[] = [];
   popularQuizzesWithBlobs: DisplayItem[] = [];
@@ -63,15 +65,24 @@ export class QuizCardsComponent implements OnInit {
 
   private readonly flippedCardsCache = new Map<number, boolean>();
   private readonly blobPositions: Record<string, number | null> = {};
+  private ratingUpdateListener?: (event: Event) => void;
 
   constructor(
     private quizService: QuizManagementService,
+    private quizResultsService: QuizResultsService,
     private cdr: ChangeDetectorRef,
     private router: Router
   ) {}
 
   ngOnInit(): void {
     this.loadQuizzes();
+    this.setupRatingListener();
+  }
+
+  ngOnDestroy(): void {
+    if (this.ratingUpdateListener) {
+      window.removeEventListener('quiz-rating-updated', this.ratingUpdateListener);
+    }
   }
 
   private loadQuizzes(): void {
@@ -99,6 +110,7 @@ export class QuizCardsComponent implements OnInit {
         this.categories = this.originalCategories.map(cat => ({ ...cat }));
 
         this.calculateAllBlobs();
+        this.loadQuizRatings();
 
         this.loading = false;
         this.cdr.markForCheck();
@@ -125,7 +137,6 @@ export class QuizCardsComponent implements OnInit {
         category: q.category?.name ?? 'Catégorie inconnue',
         difficulty: (q.difficultyLabel ?? q.difficulty) ?? 'Niveau non renseigné',
         rating: 0,
-        isLiked: false,
         questionCount: q.questionCount,
         isFlipped: this.flippedCardsCache.get(q.id) ?? false,
         playMode: 'solo' as const,
@@ -136,11 +147,6 @@ export class QuizCardsComponent implements OnInit {
   flipCard(quiz: QuizCard): void {
     quiz.isFlipped = !quiz.isFlipped;
     this.flippedCardsCache.set(quiz.id, quiz.isFlipped);
-    this.cdr.markForCheck();
-  }
-
-  toggleLike(quiz: QuizCard): void {
-    quiz.isLiked = !quiz.isLiked;
     this.cdr.markForCheck();
   }
 
@@ -214,7 +220,6 @@ export class QuizCardsComponent implements OnInit {
     this.onPopularPageChange(this.popularCurrentPage);
     this.onMyQuizzesPageChange(this.myQuizzesCurrentPage);
     this.onRecentPageChange(this.recentCurrentPage);
-    // Catégories
     this.categories.forEach(cat => this.recalculateCategoryBlobs(cat));
   }
 
@@ -225,7 +230,7 @@ export class QuizCardsComponent implements OnInit {
   ): DisplayItem[] {
     const BLOB_PROBABILITY = 0.25;
     const MIN_QUIZZES_FOR_BLOB = 1;
-    
+
     if (!(key in this.blobPositions)) {
       if (quizzes.length >= MIN_QUIZZES_FOR_BLOB && Math.random() < BLOB_PROBABILITY) {
         this.blobPositions[key] = Math.floor(Math.random() * quizzes.length);
@@ -269,5 +274,85 @@ export class QuizCardsComponent implements OnInit {
 
     this.calculateAllBlobs();
     this.cdr.markForCheck();
+  }
+
+  private loadQuizRatings(): void {
+    const allQuizzes: QuizCard[] = [
+      ...this.originalPopularQuizzes,
+      ...this.originalMyQuizzes,
+      ...this.originalRecentQuizzes,
+      ...this.originalCategories.flatMap(cat => cat.quizzes)
+    ];
+
+    const uniqueQuizzes = allQuizzes.filter((quiz, index, self) =>
+      index === self.findIndex(q => q.id === quiz.id)
+    );
+
+    if (uniqueQuizzes.length === 0) return;
+
+    const ratingRequests = uniqueQuizzes.map(quiz =>
+      this.quizResultsService.getQuizRating(quiz.id)
+    );
+
+    forkJoin(ratingRequests).subscribe({
+      next: (ratings) => {
+        // Appliquer les notes aux quiz
+        ratings.forEach((rating, index) => {
+          const quizId = uniqueQuizzes[index].id;
+          const userRating = rating.userRating || 0;
+
+          this.updateQuizRating(this.originalPopularQuizzes, quizId, userRating);
+          this.updateQuizRating(this.popularQuizzes, quizId, userRating);
+          this.updateQuizRating(this.originalMyQuizzes, quizId, userRating);
+          this.updateQuizRating(this.myQuizzes, quizId, userRating);
+          this.updateQuizRating(this.originalRecentQuizzes, quizId, userRating);
+          this.updateQuizRating(this.recentQuizzes, quizId, userRating);
+
+          this.originalCategories.forEach(cat => {
+            this.updateQuizRating(cat.quizzes, quizId, userRating);
+          });
+          this.categories.forEach(cat => {
+            this.updateQuizRating(cat.quizzes, quizId, userRating);
+          });
+        });
+
+        this.cdr.markForCheck();
+      },
+      error: (error) => {
+        console.error('Erreur lors du chargement des notes:', error);
+      }
+    });
+  }
+
+  private updateQuizRating(quizList: QuizCard[], quizId: number, rating: number): void {
+    const quiz = quizList.find(q => q.id === quizId);
+    if (quiz) {
+      quiz.rating = rating;
+    }
+  }
+
+  private setupRatingListener(): void {
+    this.ratingUpdateListener = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      const { quizId, rating } = customEvent.detail;
+
+      this.updateQuizRating(this.originalPopularQuizzes, quizId, rating);
+      this.updateQuizRating(this.popularQuizzes, quizId, rating);
+      this.updateQuizRating(this.originalMyQuizzes, quizId, rating);
+      this.updateQuizRating(this.myQuizzes, quizId, rating);
+      this.updateQuizRating(this.originalRecentQuizzes, quizId, rating);
+      this.updateQuizRating(this.recentQuizzes, quizId, rating);
+
+      this.originalCategories.forEach(cat => {
+        this.updateQuizRating(cat.quizzes, quizId, rating);
+      });
+      this.categories.forEach(cat => {
+        this.updateQuizRating(cat.quizzes, quizId, rating);
+      });
+
+      this.cdr.markForCheck();
+    };
+
+    window.addEventListener('quiz-rating-updated', this.ratingUpdateListener);
   }
 }

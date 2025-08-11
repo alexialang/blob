@@ -40,7 +40,6 @@ export interface QuizCard {
   category: string;
   difficulty: 'Facile' | 'Moyen' | 'Difficile';
   rating: number;
-  isLiked: boolean;
   questionCount: number;
   isFlipped: boolean;
   playMode: 'solo' | 'team';

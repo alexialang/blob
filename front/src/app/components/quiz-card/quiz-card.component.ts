@@ -13,7 +13,6 @@ import { QuizTransitionService } from '../../services/quiz-transition.service';
 export class QuizCardComponent {
   @Input() quiz!: QuizCard;
   @Output() quizStart = new EventEmitter<QuizCard>();
-  @Output() quizLike = new EventEmitter<QuizCard>();
   @Output() quizFlip = new EventEmitter<QuizCard>();
   @Output() playModeChange = new EventEmitter<QuizCard>();
 
@@ -23,6 +22,11 @@ export class QuizCardComponent {
   ) {}
 
   async startQuiz() {
+    if (this.quiz.playMode === 'team') {
+      this.quizStart.emit(this.quiz);
+      return;
+    }
+
     const cardElement = this.elementRef.nativeElement.querySelector('.quiz-card');
     await this.quizTransitionService.startTransition(this.quiz, cardElement);
     this.quizStart.emit(this.quiz);

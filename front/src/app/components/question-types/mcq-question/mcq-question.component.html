@@ -1,0 +1,32 @@
+<div class="mcq-question-container">
+  <div class="question-instruction">
+    <span>Choisissez la bonne réponse</span>
+  </div>
+
+  <div class="answers-container">
+    <div
+      *ngFor="let answer of question.answers; let i = index"
+      class="answer-option"
+      [class.selected]="isSelected(answer.id)"
+      (click)="selectAnswer(answer.id)">
+      <div class="answer-shape">
+        <img
+          [src]="getFlowerShape(i)"
+          alt="Flower shape"
+          class="flower-shape flower-{{ i + 1 }}"
+          [class.selected]="isSelected(answer.id)">
+        <span class="answer-text">{{ answer.answer }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="validation-container">
+    <button
+      class="validate-btn"
+      [disabled]="!selectedAnswerId"
+      (click)="validateAnswer()">
+      <span class="btn-icon">✓</span>
+      Valider cette réponse
+    </button>
+  </div>
+</div>

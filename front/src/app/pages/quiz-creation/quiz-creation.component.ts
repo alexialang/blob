@@ -145,6 +145,14 @@ export class QuizCreationComponent implements OnInit {
   }
 
   addAnswer(questionIndex: number): void {
+    const questionType = this.questions.at(questionIndex).get('type_question')?.value;
+    const answers = this.getAnswers(questionIndex);
+    const maxAnswers = this.getMaxAnswersForType(questionType);
+
+    if (answers.length >= maxAnswers) {
+      return;
+    }
+
     const answerForm = this.fb.group({
       answer: ['', Validators.required],
       is_correct: [false],
@@ -153,12 +161,15 @@ export class QuizCreationComponent implements OnInit {
       is_intrus: [false]
     });
 
-    this.getAnswers(questionIndex).push(answerForm);
+    answers.push(answerForm);
   }
 
   removeAnswer(questionIndex: number, answerIndex: number): void {
+    const questionType = this.questions.at(questionIndex).get('type_question')?.value;
     const answers = this.getAnswers(questionIndex);
-    if (answers.length > 2) {
+    const minAnswers = this.getMinAnswersForType(questionType);
+
+    if (answers.length > minAnswers) {
       answers.removeAt(answerIndex);
     }
   }
@@ -233,11 +244,24 @@ export class QuizCreationComponent implements OnInit {
       'multiple_choice': 3,
       'right_order': 3,
       'matching': 4,
-      'find_the_intruder': 4,
+      'find_the_intruder': 3,
       'blind_test': 1
     } as const;
 
     return MIN_ANSWERS_CONFIG[questionType as keyof typeof MIN_ANSWERS_CONFIG] || 2;
+  }
+
+  private getMaxAnswersForType(questionType: string): number {
+    const MAX_ANSWERS_CONFIG = {
+      'MCQ': 6,
+      'multiple_choice': 6,
+      'right_order': 8,
+      'matching': 10,
+      'find_the_intruder': 3,
+      'blind_test': 1
+    } as const;
+
+    return MAX_ANSWERS_CONFIG[questionType as keyof typeof MAX_ANSWERS_CONFIG] || 8;
   }
 
   getQuestionTypeLabel(type: string): string {
@@ -402,7 +426,7 @@ export class QuizCreationComponent implements OnInit {
         }))
       }))
     };
-    
+
     delete payload.is_public;
 
     const action = this.isEditMode
@@ -459,5 +483,19 @@ export class QuizCreationComponent implements OnInit {
 
     const generator = PLACEHOLDER_GENERATORS[questionType as keyof typeof PLACEHOLDER_GENERATORS];
     return generator ? generator(answerIndex) : `Réponse ${answerIndex + 1}`;
+  }
+
+  canAddAnswer(questionIndex: number): boolean {
+    const questionType = this.questions.at(questionIndex).get('type_question')?.value;
+    const answers = this.getAnswers(questionIndex);
+    const maxAnswers = this.getMaxAnswersForType(questionType);
+    return answers.length < maxAnswers;
+  }
+
+  canRemoveAnswer(questionIndex: number): boolean {
+    const questionType = this.questions.at(questionIndex).get('type_question')?.value;
+    const answers = this.getAnswers(questionIndex);
+    const minAnswers = this.getMinAnswersForType(questionType);
+    return answers.length > minAnswers;
   }
 }

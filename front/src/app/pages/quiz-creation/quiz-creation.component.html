@@ -161,7 +161,12 @@
               </div>
 
               <div *ngIf="question.get('type_question')?.value !== 'matching'">
-                <button type="button" class="btn" (click)="addAnswer(i)">+ Ajouter une réponse</button>
+                <button type="button" class="btn" (click)="addAnswer(i)" [disabled]="!canAddAnswer(i)">
+                  + Ajouter une réponse
+                  <span *ngIf="question.get('type_question')?.value === 'find_the_intruder' && !canAddAnswer(i)">
+                    (Max 3 pour les intrus)
+                  </span>
+                </button>
 
                 <div *ngFor="let answer of getAnswers(i).controls; let j = index" [formGroupName]="j" class="answer-item">
                   <div class="answer-content">
@@ -199,7 +204,7 @@
                   </div>
 
                   <button type="button" class="btn btn-danger" (click)="removeAnswer(i, j)"
-                          [disabled]="getAnswers(i).length <= 2">
+                          [disabled]="!canRemoveAnswer(i)">
                     Supprimer
                   </button>
 

@@ -35,14 +35,14 @@
 }
 
 .card-front {
-  background: #1a1a1a;
-  color: white;
+  background: var(--color-dark);
+  color: var(--color-white);
   transform: rotateY(0deg);
 }
 
 .card-back {
-  background: #1a1a1a;
-  color: white;
+  background: var(--color-dark);
+  color: var(--color-white);
   transform: rotateY(180deg);
 }
 
