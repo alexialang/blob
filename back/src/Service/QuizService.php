@@ -9,6 +9,7 @@ use App\Entity\TypeQuestion;
 use App\Enum\Status;
 use App\Enum\Difficulty;
 use App\Enum\TypeQuestionName;
+use App\Event\QuizCreatedEvent;
 use App\Repository\CategoryQuizRepository;
 use App\Repository\GroupRepository;
 use App\Repository\QuizRepository;
@@ -17,6 +18,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 class QuizService
 {
@@ -27,6 +29,7 @@ class QuizService
     private GroupRepository $groupRepository;
     private ValidatorInterface $validator;
     private LoggerInterface $logger;
+    private EventDispatcherInterface $eventDispatcher;
 
     public function __construct(
         EntityManagerInterface $em,
@@ -35,7 +38,8 @@ class QuizService
         TypeQuestionRepository $typeQuestionRepository,
         GroupRepository $groupRepository,
         ValidatorInterface $validator,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        EventDispatcherInterface $eventDispatcher
     ) {
         $this->em = $em;
         $this->quizRepository = $quizRepository;
@@ -44,6 +48,7 @@ class QuizService
         $this->groupRepository = $groupRepository;
         $this->validator = $validator;
         $this->logger = $logger;
+        $this->eventDispatcher = $eventDispatcher;
     }
 
     public function list(bool $forManagement = false): array
@@ -191,6 +196,9 @@ class QuizService
 
             $this->em->flush();
             $this->em->commit();
+
+            $event = new QuizCreatedEvent($quiz, $user);
+            $this->eventDispatcher->dispatch($event, QuizCreatedEvent::NAME);
 
             return $quiz;
         } catch (\Exception $e) {

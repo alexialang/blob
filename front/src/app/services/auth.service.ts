@@ -1,15 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import {tap, map, catchError} from 'rxjs/operators';
-import {Observable, throwError} from 'rxjs';
+import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
+import { tap, catchError, map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { User } from '../models/user.interface';
 
-interface LoginResponse {
-  token: string;
-}
-
-@Injectable({ providedIn: 'root' })
+@Injectable({
+  providedIn: 'root'
+})
 export class AuthService {
   private readonly base = environment.apiBaseUrl;
 
@@ -23,6 +21,7 @@ export class AuthService {
         tap(res => {
           localStorage.setItem('JWT_TOKEN', res.token);
           localStorage.setItem('REFRESH_TOKEN', res.refresh_token);
+          this.clearGuestMode();
         }),
         map(() => {
           return void 0;
@@ -52,6 +51,7 @@ export class AuthService {
   logout(): void {
     localStorage.removeItem('JWT_TOKEN');
     localStorage.removeItem('REFRESH_TOKEN');
+    this.clearGuestMode();
   }
 
   getToken(): string | null {
@@ -62,6 +62,39 @@ export class AuthService {
     return !!this.getToken();
   }
 
+  isGuest(): boolean {
+    return localStorage.getItem('GUEST_MODE') === 'true';
+  }
+
+  setGuestMode(): void {
+    localStorage.setItem('GUEST_MODE', 'true');
+  }
+
+  clearGuestMode(): void {
+    localStorage.removeItem('GUEST_MODE');
+  }
+
+  hasRole(role: string): Observable<boolean> {
+    return this.getCurrentUser().pipe(
+      map((user: User) => user.roles.includes(role))
+    );
+  }
+
+  hasPermission(permission: string): Observable<boolean> {
+    return this.getCurrentUser().pipe(
+      map((user: User) => {
+        if (user.roles.includes('ROLE_ADMIN')) {
+          return true;
+        }
+        return user.userPermissions?.some((p: any) => p.permission === permission) || false;
+      })
+    );
+  }
+
+  isAdmin(): Observable<boolean> {
+    return this.hasRole('ROLE_ADMIN');
+  }
+
   getCurrentUser(): Observable<User> {
     return this.http.get<User>(`${this.base}/user/profile`);
   }
@@ -69,11 +102,12 @@ export class AuthService {
     email: string,
     password: string,
     firstName: string,
-    lastName: string
+    lastName: string,
+    recaptchaToken?: string
   ): Observable<any> {
     return this.http.post(
       `${this.base}/user-create`,
-      { email, password, firstName, lastName }
+      { email, password, firstName, lastName, recaptchaToken }
     );
   }
 }

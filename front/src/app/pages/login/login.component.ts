@@ -23,16 +23,12 @@ export class LoginComponent {
     private readonly router: Router
   ) {}
 
-  onLogin() {
-    this.onSubmit();
-  }
-
   onSubmit() {
     this.error = undefined;
 
     this.auth.login(this.email, this.password).subscribe({
       next: (result) => {
-        this.router.navigate(['/gestion-utilisateur']);
+        window.location.href = '/quiz';
       },
       error: (err) => {
         this.error = 'Identifiants invalides ou compte non vérifié';
@@ -42,6 +38,11 @@ export class LoginComponent {
 
   goToRegister() {
     this.router.navigate(['/inscription']);
+  }
+
+  continueAsGuest() {
+    this.auth.setGuestMode();
+    this.router.navigate(['/quiz']);
   }
 
 }

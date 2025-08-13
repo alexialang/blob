@@ -70,7 +70,6 @@ class CategoryQuiz
     public function removeQuiz(Quiz $quiz): static
     {
         if ($this->quizs->removeElement($quiz)) {
-            // set the owning side to null (unless already changed)
             if ($quiz->getCategory() === $this) {
                 $quiz->setCategory(null);
             }

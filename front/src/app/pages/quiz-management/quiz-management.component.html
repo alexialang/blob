@@ -1,10 +1,12 @@
+<div class="quiz-page">
+
 <div class="container">
   <div class="stats-graph-container" style="margin-bottom: 20px;">
     <h3>Statistiques globales</h3>
     <canvas height="200"></canvas>
   </div>
 
-  <h1 class="page-title">Gestion <br /> des Quiz</h1>
+  <h1 class="page-title">Gestion <br /> des <span class="quiz-highlight" [ngStyle]="{ 'color': highlightColor }">Quiz</span></h1>
 
   <div class="filters-container">
     <div class="filters-row">
@@ -181,7 +183,11 @@
           </div>
         </td>
         <td tuiTd class="td-category">{{ row.category || '—' }}</td>
-        <td tuiTd class="td-stats">{{ row.stats || '—' }}</td>
+        <td tuiTd class="td-stats">
+          <button tuiButton appearance="action-grayscale" size="s">
+            {{ getQuizStats(row) }} <span>Voir plus</span>
+          </button>
+        </td>
         <td tuiTd class="td-public">{{ row.isPublic ? 'Oui' : 'Non' }}</td>
         <td tuiTd class="td-status">{{ row.status }}</td>
         <td tuiTd class="td-action">
@@ -225,4 +231,6 @@
       (pageChange)="onPageChange($event)"
     ></app-pagination>
   </div>
+</div>
+
 </div>

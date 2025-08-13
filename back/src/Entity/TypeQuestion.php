@@ -70,7 +70,6 @@ class TypeQuestion
     public function removeQuestion(Question $question): static
     {
         if ($this->questions->removeElement($question)) {
-            // set the owning side to null (unless already changed)
             if ($question->getTypeQuestion() === $this) {
                 $question->setTypeQuestion(null);
             }

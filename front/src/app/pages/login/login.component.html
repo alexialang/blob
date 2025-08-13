@@ -15,7 +15,7 @@
       <ul class="footer-nav__list">
         <li class="footer-nav__item"><a href="/mentions-legales">Mentions Légales</a></li>
         <li class="footer-nav__item"><a href="/a-propos">À propos</a></li>
-        <li class="footer-nav__item"><a href="#">Faire un Don</a></li>
+        <li><a routerLink="/faire-un-don">Faire un Don</a></li>
       </ul>
       <div class="footer-nav__icon">
         <img src="./assets/svg/three_blob2.svg"/>
@@ -44,7 +44,7 @@
         label="Se connecter"
         [negative]="true"
         backgroundColor="var(--color-dark)"
-        (buttonClick)="onLogin()">
+        (buttonClick)="onSubmit()">
       </app-slide-button>
       <p *ngIf="error" class="error">{{ error }}</p>
     </form>
@@ -54,7 +54,7 @@
         label="S'inscrire"
         (buttonClick)="goToRegister()">
       </app-slide-button>
-      <a class="skip" routerLink="/">Passer cette étape</a>
+      <a class="skip" (click)="continueAsGuest()">Passer cette étape</a>
     </div>
   </div>
 </div>

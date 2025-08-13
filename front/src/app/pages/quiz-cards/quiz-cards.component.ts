@@ -8,6 +8,8 @@ import { QuizCardComponent } from '../../components/quiz-card/quiz-card.componen
 import { QuizCard } from '../../models/quiz.model';
 import { PaginationComponent } from '../../components/pagination/pagination.component';
 import { forkJoin } from 'rxjs';
+import { AuthService } from '../../services/auth.service';
+import { AlertService } from '../../services/alert.service';
 
 interface CategoryWithPagination {
   name: string;
@@ -63,6 +65,8 @@ export class QuizCardsComponent implements OnInit, OnDestroy {
   selectedCategory = '';
   selectedDifficulty = '';
 
+  isGuest = false;
+
   private readonly flippedCardsCache = new Map<number, boolean>();
   private readonly blobPositions: Record<string, number | null> = {};
   private ratingUpdateListener?: (event: Event) => void;
@@ -71,10 +75,13 @@ export class QuizCardsComponent implements OnInit, OnDestroy {
     private quizService: QuizManagementService,
     private quizResultsService: QuizResultsService,
     private cdr: ChangeDetectorRef,
-    private router: Router
+    private router: Router,
+    private authService: AuthService,
+    private alertService: AlertService
   ) {}
 
   ngOnInit(): void {
+    this.isGuest = this.authService.isGuest();
     this.loadQuizzes();
     this.setupRatingListener();
   }
@@ -157,11 +164,14 @@ export class QuizCardsComponent implements OnInit, OnDestroy {
 
   startQuiz(quiz: QuizCard): void {
     if (quiz.playMode === 'solo') {
-      this.router.navigate(['/quiz', quiz.id, 'play'])
-        .catch(err => console.error('Navigation erreur', err));
+      this.router.navigate(['/quiz', quiz.id, 'play']);
     } else if (quiz.playMode === 'team') {
-      this.router.navigate(['/multiplayer/create', quiz.id])
-        .catch(err => console.error('Navigation erreur', err));
+      if (this.isGuest) {
+        this.alertService.error('Vous devez vous connecter pour jouer en équipe !');
+        this.router.navigate(['/connexion']);
+        return;
+      }
+      this.router.navigate(['/multiplayer/create', quiz.id]);
     }
   }
 
@@ -289,37 +299,34 @@ export class QuizCardsComponent implements OnInit, OnDestroy {
     );
 
     if (uniqueQuizzes.length === 0) return;
-
-    const ratingRequests = uniqueQuizzes.map(quiz =>
-      this.quizResultsService.getQuizRating(quiz.id)
+    const ratingRequests = uniqueQuizzes.map(quiz => 
+      this.quizResultsService.getPublicQuizRating(quiz.id)
     );
 
     forkJoin(ratingRequests).subscribe({
       next: (ratings) => {
-        // Appliquer les notes aux quiz
         ratings.forEach((rating, index) => {
           const quizId = uniqueQuizzes[index].id;
-          const userRating = rating.userRating || 0;
+          const displayRating = rating.averageRating || 0;
 
-          this.updateQuizRating(this.originalPopularQuizzes, quizId, userRating);
-          this.updateQuizRating(this.popularQuizzes, quizId, userRating);
-          this.updateQuizRating(this.originalMyQuizzes, quizId, userRating);
-          this.updateQuizRating(this.myQuizzes, quizId, userRating);
-          this.updateQuizRating(this.originalRecentQuizzes, quizId, userRating);
-          this.updateQuizRating(this.recentQuizzes, quizId, userRating);
+          this.updateQuizRating(this.originalPopularQuizzes, quizId, displayRating);
+          this.updateQuizRating(this.popularQuizzes, quizId, displayRating);
+          this.updateQuizRating(this.originalMyQuizzes, quizId, displayRating);
+          this.updateQuizRating(this.myQuizzes, quizId, displayRating);
+          this.updateQuizRating(this.originalRecentQuizzes, quizId, displayRating);
+          this.updateQuizRating(this.recentQuizzes, quizId, displayRating);
 
           this.originalCategories.forEach(cat => {
-            this.updateQuizRating(cat.quizzes, quizId, userRating);
+            this.updateQuizRating(cat.quizzes, quizId, displayRating);
           });
           this.categories.forEach(cat => {
-            this.updateQuizRating(cat.quizzes, quizId, userRating);
+            this.updateQuizRating(cat.quizzes, quizId, displayRating);
           });
         });
 
         this.cdr.markForCheck();
       },
       error: (error) => {
-        console.error('Erreur lors du chargement des notes:', error);
       }
     });
   }

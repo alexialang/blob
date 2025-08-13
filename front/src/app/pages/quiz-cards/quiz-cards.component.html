@@ -34,7 +34,6 @@
           <app-quiz-card *ngIf="it.type==='quiz'"
                          [quiz]="it.data"
                          (quizStart)="startQuiz($event)"
-                         (quizLike)="toggleLike($event)"
                          (quizFlip)="flipCard($event)"
                          (playModeChange)="togglePlayMode($event)">
           </app-quiz-card>
@@ -61,7 +60,6 @@
         <ng-container *ngFor="let it of myQuizzesWithBlobs">
           <app-quiz-card *ngIf="it.type==='quiz'" [quiz]="it.data"
                          (quizStart)="startQuiz($event)"
-                         (quizLike)="toggleLike($event)"
                          (quizFlip)="flipCard($event)"
                          (playModeChange)="togglePlayMode($event)">
           </app-quiz-card>
@@ -86,7 +84,6 @@
         <ng-container *ngFor="let it of recentQuizzesWithBlobs">
           <app-quiz-card *ngIf="it.type==='quiz'" [quiz]="it.data"
                          (quizStart)="startQuiz($event)"
-                         (quizLike)="toggleLike($event)"
                          (quizFlip)="flipCard($event)"
                          (playModeChange)="togglePlayMode($event)">
           </app-quiz-card>
@@ -111,7 +108,6 @@
         <ng-container *ngFor="let it of categoriesWithBlobs[cat.name + '-' + cat.currentPage]">
           <app-quiz-card *ngIf="it.type==='quiz'" [quiz]="it.data"
                          (quizStart)="startQuiz($event)"
-                         (quizLike)="toggleLike($event)"
                          (quizFlip)="flipCard($event)"
                          (playModeChange)="togglePlayMode($event)">
           </app-quiz-card>

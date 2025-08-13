@@ -15,6 +15,8 @@ import {
 import {TuiIcon} from '@taiga-ui/core/components/icon';
 import {RouterModule, Router} from '@angular/router';
 import {AuthService} from '../../services/auth.service';
+import {CommonModule} from '@angular/common';
+import {Observable} from 'rxjs';
 
 
 @Component({
@@ -32,7 +34,7 @@ import {AuthService} from '../../services/auth.service';
     TuiProgressBar,
     TuiIcon,
     RouterModule,
-
+    CommonModule,
   ],
 })
 export class NavbarComponent implements OnInit {
@@ -41,10 +43,21 @@ export class NavbarComponent implements OnInit {
   showProfileDropdown = false;
   userName = 'Chargement...';
 
+  canCreateQuiz$: Observable<boolean>;
+  canManageUsers$: Observable<boolean>;
+  canViewResults$: Observable<boolean>;
+  isAdmin$: Observable<boolean>;
+  isGuest: boolean = false;
+
   constructor(
     private readonly authService: AuthService,
     private readonly router: Router
-  ) {}
+  ) {
+    this.canCreateQuiz$ = this.authService.hasPermission('CREATE_QUIZ');
+    this.canManageUsers$ = this.authService.hasPermission('MANAGE_USERS');
+    this.canViewResults$ = this.authService.hasPermission('VIEW_RESULTS');
+    this.isAdmin$ = this.authService.isAdmin();
+  }
 
   toggle(): void {
     this.open.set(!this.open());
@@ -58,11 +71,21 @@ export class NavbarComponent implements OnInit {
 
   ngOnInit(): void {
     this.randomColor = this.getRandomColor();
-    const cachedName = localStorage.getItem('USER_NAME');
-    if (cachedName) {
-      this.userName = cachedName;
+    this.checkUserStatus();
+  }
+
+  checkUserStatus(): void {
+    this.isGuest = this.authService.isGuest();
+    
+    if (this.isGuest) {
+      this.userName = 'Visiteur';
+    } else {
+      const cachedName = localStorage.getItem('USER_NAME');
+      if (cachedName) {
+        this.userName = cachedName;
+      }
+      this.loadUserData();
     }
-    this.loadUserData();
   }
 
   loadUserData(): void {

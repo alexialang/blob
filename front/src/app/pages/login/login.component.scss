@@ -13,7 +13,7 @@ a{
     font: (var(--font-size-h1));
     color:(var(--color-accent));
   }
-
+  background: var(--color-light) ;
   display: grid;
   grid-template-columns: 70% 30%;
   min-height: 100vh;

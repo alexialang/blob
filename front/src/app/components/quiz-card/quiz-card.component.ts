@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter, ElementRef } from '@angular/cor
 import { CommonModule } from '@angular/common';
 import { QuizCard } from '../../models/quiz.model';
 import { QuizTransitionService } from '../../services/quiz-transition.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-quiz-card',
@@ -18,8 +19,13 @@ export class QuizCardComponent {
 
   constructor(
     private quizTransitionService: QuizTransitionService,
-    private elementRef: ElementRef
+    private elementRef: ElementRef,
+    private authService: AuthService
   ) {}
+
+  get isGuest(): boolean {
+    return this.authService.isGuest();
+  }
 
   async startQuiz() {
     if (this.quiz.playMode === 'team') {
@@ -37,6 +43,9 @@ export class QuizCardComponent {
   }
 
   togglePlayMode() {
+    if (this.isGuest) {
+      return;
+    }
     this.playModeChange.emit(this.quiz);
   }
 

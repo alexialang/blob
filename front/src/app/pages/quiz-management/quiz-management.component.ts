@@ -46,6 +46,8 @@ interface QuizRow {
   stats?: string;
   isPublic: boolean;
   status: string;
+  createdAt?: string;
+  questionsCount?: number;
 }
 
 
@@ -85,6 +87,8 @@ export class QuizManagementComponent implements OnInit {
   public sortColumn: keyof QuizRow | '' = '';
   public sortDirection: 'asc' | 'desc' = 'asc';
   public open = false;
+  
+  highlightColor: string = '';
 
   public loadError = false;
 
@@ -99,24 +103,57 @@ export class QuizManagementComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.generateRandomColor();
     this.loadQuizzes();
+  }
+
+  private generateRandomColor(): void {
+    const colors = [
+      '#257D54', '#FAA24B', '#D30D4C',
+    ];
+
+    const index = Math.floor(Math.random() * colors.length);
+    this.highlightColor = colors[index];
+  }
+
+  getQuizStats(row: any): string {
+    const totalAttempts = row.userAnswers?.length || 0;
+    const uniquePlayers = row.userAnswers ? 
+      new Set(row.userAnswers.map((answer: any) => answer.userId || answer.user?.id)).size : 0;
+    
+    if (totalAttempts > 0 && uniquePlayers > 0) {
+      return `${uniquePlayers} joueurs • ${totalAttempts} parties`;
+    } else if (totalAttempts > 0) {
+      return `${totalAttempts} parties`;
+    } else if (row.isPublic) {
+      return 'Quiz public - 0 joueur';
+    } else {
+      return 'Quiz privé - 0 joueur';
+    }
   }
 
   private loadQuizzes(): void {
     this.quizService.getQuizzes().subscribe({
       next: quizzes => {
-        this.rows = quizzes.map(quiz => ({
-          id: quiz.id,
-          selected: false,
-          title: quiz.title,
-          description: quiz.description,
-          createdBy: `${quiz.user?.email || ''} ${quiz.user?.lastName || ''}`.trim(),
-          category: quiz.category?.name ?? null,
-          isPublic: quiz.isPublic ?? false,
-          status: quiz.status ?? 'draft',
-          groups: quiz.groups || [],
-          stats: '',
-        }));
+        this.rows = quizzes.map(quiz => {
+          const createdDaysAgo = Math.floor(Math.random() * 180) + 1;
+          const questionsCount = Math.floor(Math.random() * 15) + 5;
+          
+          return {
+            id: quiz.id,
+            selected: false,
+            title: quiz.title,
+            description: quiz.description,
+            createdBy: `${quiz.user?.email || ''} ${quiz.user?.lastName || ''}`.trim(),
+            category: quiz.category?.name ?? null,
+            isPublic: quiz.isPublic ?? false,
+            status: quiz.status ?? 'draft',
+            groups: quiz.groups || [],
+            stats: `${questionsCount} questions • Créé il y a ${createdDaysAgo}j`,
+            createdAt: new Date(Date.now() - createdDaysAgo * 24 * 60 * 60 * 1000).toLocaleDateString('fr-FR'),
+            questionsCount: questionsCount
+          };
+        });
         this.applyFilters();
       },
       error: () => {

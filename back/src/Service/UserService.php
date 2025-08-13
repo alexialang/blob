@@ -13,6 +13,7 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class UserService
 {
@@ -21,6 +22,7 @@ class UserService
     private UserPasswordHasherInterface $passwordHasher;
     private MessageBusInterface         $bus;
     private MailerInterface             $mailer;
+    private HttpClientInterface         $httpClient;
     private string                      $mailerFrom;
     private string                      $frontendUrl;
 
@@ -31,6 +33,7 @@ class UserService
         UserPasswordHasherInterface   $passwordHasher,
         MessageBusInterface           $bus,
         MailerInterface               $mailer,
+        HttpClientInterface           $httpClient,
         ParameterBagInterface         $params
 
     ) {
@@ -39,6 +42,7 @@ class UserService
         $this->passwordHasher = $passwordHasher;
         $this->bus            = $bus;
         $this->mailer         = $mailer;
+        $this->httpClient     = $httpClient;
         $this->mailerFrom     = $mailerFrom;
 
         $this->frontendUrl = rtrim($params->get('app.frontend_url'), '/');
@@ -80,8 +84,11 @@ class UserService
         $user->setLastName($data['lastName']);
         $user->setDateRegistration(new \DateTimeImmutable());
         $user->setLastAccess(new \DateTime());
-        $user->setRoles(['ROLE_USER']);
-        $user->setIsAdmin($data['is_admin'] ?? false);
+        $roles = ['ROLE_USER'];
+        if ($data['is_admin'] ?? false) {
+            $roles[] = 'ROLE_ADMIN';
+        }
+        $user->setRoles($roles);
         $user->setIsActive(true);
 
 
@@ -116,7 +123,15 @@ class UserService
             $user->setPassword($hashedPassword);
         }
         if (isset($data['is_admin'])) {
-            $user->setIsAdmin((bool) $data['is_admin']);
+            $roles = $user->getRoles();
+            if ($data['is_admin']) {
+                if (!in_array('ROLE_ADMIN', $roles)) {
+                    $roles[] = 'ROLE_ADMIN';
+                }
+            } else {
+                $roles = array_filter($roles, fn($role) => $role !== 'ROLE_ADMIN');
+            }
+            $user->setRoles($roles);
         }
         if (isset($data['lastAccess'])) {
             $user->setLastAccess(new \DateTime($data['lastAccess']));
@@ -140,21 +155,9 @@ class UserService
         $user->setLastName('User');
         $user->setPassword('');
         $user->setRoles([]);
-        $user->setIsAdmin(false);
 
         $this->em->flush();
     }
-
-    public function sendQueueEmail(User $user): void
-    {
-        $message = new RegistrationConfirmationEmailMessage(
-            $user->getEmail(),
-            $user->getFirstName(),
-            (string) $user->getConfirmationToken()
-        );
-        $this->bus->dispatch($message);
-    }
-
 
     public function sendEmail(string $email, string $firstName, string $confirmationToken): void
     {
@@ -207,7 +210,6 @@ class UserService
             $user->setAvatar($data['avatar']);
         }
         
-        // Gérer les données d'avatar séparées (shape et color)
         if (isset($data['avatarShape']) && isset($data['avatarColor'])) {
             $avatarData = [
                 'shape' => $data['avatarShape'],
@@ -233,14 +235,12 @@ class UserService
             $score = $userAnswer->getTotalScore() ?? 0;
             $totalScore += $score;
             
-            // Historique des scores avec date
             $scoreHistory[] = [
                 'date' => $userAnswer->getDateAttempt()->format('Y-m-d'),
                 'score' => $score,
                 'quizTitle' => $userAnswer->getQuiz()?->getTitle() ?? 'Quiz inconnu'
             ];
             
-            // Performance par catégorie (si disponible)
             if ($userAnswer->getQuiz() && $userAnswer->getQuiz()->getCategory()) {
                 $categoryName = $userAnswer->getQuiz()->getCategory()->getName();
                 if (!isset($categoryPerformance[$categoryName])) {
@@ -251,12 +251,10 @@ class UserService
             }
         }
         
-        // Trier l'historique par date
         usort($scoreHistory, function($a, $b) {
             return strtotime($a['date']) - strtotime($b['date']);
         });
         
-        // Calculer les moyennes par catégorie
         $categoryAverages = [];
         foreach ($categoryPerformance as $category => $data) {
             $categoryAverages[] = [
@@ -284,7 +282,6 @@ class UserService
 
     public function getLeaderboard(int $limit, User $currentUser): array
     {
-        // Récupérer tous les utilisateurs actifs avec leurs scores
         $users = $this->userRepository->createQueryBuilder('u')
             ->where('u.deletedAt IS NULL')
             ->andWhere('u.isActive = true')
@@ -306,7 +303,6 @@ class UserService
             $averageScore = $quizzesCompleted > 0 ? round($totalScore / $quizzesCompleted, 1) : 0;
             $badgesCount = $user->getBadges()->count();
             
-            // Calculer un score de classement (combinaison de total, moyenne et badges)
             $rankingScore = $totalScore + ($averageScore * 2) + ($badgesCount * 50);
             
             $leaderboardData[] = [
@@ -325,17 +321,14 @@ class UserService
             ];
         }
         
-        // Trier par score de classement décroissant
         usort($leaderboardData, function($a, $b) {
             return $b['rankingScore'] - $a['rankingScore'];
         });
         
-        // Ajouter les positions
         foreach ($leaderboardData as $index => &$userData) {
             $userData['position'] = $index + 1;
         }
         
-        // Trouver la position de l'utilisateur actuel
         $currentUserPosition = null;
         $currentUserData = null;
         foreach ($leaderboardData as $userData) {
@@ -346,7 +339,6 @@ class UserService
             }
         }
         
-        // Limiter aux N premiers utilisateurs
         $topUsers = array_slice($leaderboardData, 0, $limit);
         
         return [
@@ -394,5 +386,58 @@ class UserService
         }
 
         return $history;
+    }
+
+    public function updateUserRoles(User $user, array $data): User
+    {
+        if (isset($data['roles']) && \is_array($data['roles'])) {
+            $roles = $data['roles'];
+            if (!in_array('ROLE_USER', $roles)) {
+                $roles[] = 'ROLE_USER';
+            }
+            $user->setRoles($roles);
+        }
+
+        if (isset($data['permissions']) && \is_array($data['permissions'])) {
+            foreach ($user->getUserPermissions() as $userPermission) {
+                $this->em->remove($userPermission);
+            }
+            $this->em->flush();
+
+            foreach ($data['permissions'] as $permission) {
+                try {
+                    $userPermission = new \App\Entity\UserPermission();
+                    $userPermission->setUser($user);
+                    
+                    $permissionEnum = \App\Enum\Permission::from($permission);
+                    $userPermission->setPermission($permissionEnum);
+                    $this->em->persist($userPermission);
+                } catch (\ValueError $e) {
+                    continue;
+                }
+            }
+        }
+
+        $this->em->flush();
+        return $user;
+    }
+
+    public function verifyCaptcha(string $token): bool
+    {
+        $secretKey = '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe';
+        
+        try {
+            $response = $this->httpClient->request('POST', 'https://www.google.com/recaptcha/api/siteverify', [
+                'body' => [
+                    'secret' => $secretKey,
+                    'response' => $token,
+                ],
+            ]);
+
+            $result = $response->toArray();
+            return $result['success'] ?? false;
+        } catch (\Exception $e) {
+            return false;
+        }
     }
 }

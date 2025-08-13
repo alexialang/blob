@@ -27,9 +27,9 @@
     <div class ="links-container">
       <ul class="nav-list">
         <li class="nav-item"><a routerLink="/quiz">Quiz</a></li>
-        <li class="nav-item" ><a routerLink="/classement">Classement</a></li>
-        <li class="nav-item"><a routerLink="/creation-quiz">Créer un quiz</a></li>
-        <li class="nav-item dropdown"
+        <li class="nav-item" *ngIf="!isGuest"><a routerLink="/classement">Classement</a></li>
+        <li class="nav-item" *ngIf="!isGuest && (canCreateQuiz$ | async)"><a routerLink="/creation-quiz">Créer un quiz</a></li>
+        <li class="nav-item dropdown" *ngIf="!isGuest && ((canManageUsers$ | async) || (isAdmin$ | async) || (canViewResults$ | async))"
             (mouseenter)="showGestionDropdown = true"
             (mouseleave)="showGestionDropdown = false">
           <a href="#" class="dropdown-toggle">
@@ -37,9 +37,9 @@
             <span class="dropdown-arrow">▼</span>
           </a>
           <ul class="dropdown-menu" [class.show]="showGestionDropdown">
-            <li><a routerLink="/gestion-utilisateur" (click)="showGestionDropdown = false">Utilisateurs</a></li>
-            <li><a routerLink="/gestion-entreprise" (click)="showGestionDropdown = false">Entreprises</a></li>
-            <li><a routerLink="/gestion-quiz" (click)="showGestionDropdown = false">Quiz</a></li>
+            <li *ngIf="canManageUsers$ | async"><a routerLink="/gestion-utilisateur" (click)="showGestionDropdown = false">Utilisateurs</a></li>
+            <li *ngIf="isAdmin$ | async"><a routerLink="/gestion-entreprise" (click)="showGestionDropdown = false">Entreprises</a></li>
+            <li *ngIf="canViewResults$ | async"><a routerLink="/gestion-quiz" (click)="showGestionDropdown = false">Quiz</a></li>
           </ul>
         </li>
       </ul>
@@ -59,11 +59,15 @@
            (mouseleave)="showProfileDropdown = false">
         <tui-icon class="chevron-down" icon="@tui.chevron-down"></tui-icon>
         <ul class="profile-dropdown-menu" [class.show]="showProfileDropdown">
-          <li><a routerLink="/profil" (click)="showProfileDropdown = false">
+          <li *ngIf="!isGuest"><a routerLink="/profil" (click)="showProfileDropdown = false">
             <tui-icon icon="@tui.user"></tui-icon>
             Voir le profil
           </a></li>
-          <li><a href="#" (click)="logout(); showProfileDropdown = false">
+          <li *ngIf="isGuest"><a routerLink="/connexion" (click)="showProfileDropdown = false">
+            <tui-icon icon="@tui.log-in"></tui-icon>
+            Se connecter
+          </a></li>
+          <li *ngIf="!isGuest"><a href="#" (click)="logout(); showProfileDropdown = false">
             <tui-icon icon="@tui.log-out"></tui-icon>
             Se déconnecter
           </a></li>
@@ -84,13 +88,14 @@
 </header>
 <tui-drawer *tuiPopup="open()" size="m">
   <nav tuiDrawerContent class="mobile-menu">
-    <a tuiLink routerLink="/" (click)="close()">Accueil</a>
-    <a tuiLink routerLink="/contact" (click)="close()">Contact</a>
-    <div class="mobile-gestion">
+    <!-- COMMENTED: Liens vers pages non existantes - 08/12/2025 -->
+    <!-- <a tuiLink routerLink="/" (click)="close()">Accueil</a> -->
+    <!-- <a tuiLink routerLink="/contact" (click)="close()">Contact</a> -->
+    <div class="mobile-gestion" *ngIf="!isGuest && ((canManageUsers$ | async) || (isAdmin$ | async) || (canViewResults$ | async))">
       <p class="mobile-section-title">Gestion</p>
-      <a tuiLink routerLink="/gestion-utilisateur" (click)="close()">Utilisateurs</a>
-      <a tuiLink routerLink="/gestion-entreprise" (click)="close()">Entreprises</a>
-      <a tuiLink routerLink="/gestion-quiz" (click)="close()">Quiz</a>
+      <a tuiLink routerLink="/gestion-utilisateur" (click)="close()" *ngIf="canManageUsers$ | async">Utilisateurs</a>
+      <a tuiLink routerLink="/gestion-entreprise" (click)="close()" *ngIf="isAdmin$ | async">Entreprises</a>
+      <a tuiLink routerLink="/gestion-quiz" (click)="close()" *ngIf="canViewResults$ | async">Quiz</a>
     </div>
   </nav>
 </tui-drawer>

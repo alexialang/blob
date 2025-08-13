@@ -1,5 +1,8 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './guards/auth.guard';
+import { adminGuard } from './guards/admin.guard';
+import { createQuizGuard, manageUsersGuard, viewResultsGuard } from './guards/permission.guard';
+import { quizAccessGuard } from './guards/quiz-access.guard';
 
 import { LoginComponent }             from './pages/login/login.component';
 import { UserManagementComponent }    from './pages/user-management/user-management.component';
@@ -22,6 +25,7 @@ import {MultiplayerRoomCreateComponent} from './pages/multiplayer-room-create/mu
 import {MultiplayerRoomComponent} from './pages/multiplayer-room/multiplayer-room.component';
 import {MultiplayerGameComponent} from './pages/multiplayer-game/multiplayer-game.component';
 import {QuizResultsComponent} from './pages/quiz-results/quiz-results.component';
+import {DonationComponent} from './pages/donation/donation.component';
 
 export const routes: Routes = [
   { path: 'connexion', component: LoginComponent, data: { hideNavbar: true } },
@@ -30,32 +34,32 @@ export const routes: Routes = [
   {
     path: 'gestion-utilisateur',
     component: UserManagementComponent,
-    canActivate: [authGuard],
+    canActivate: [authGuard, manageUsersGuard],
   },
   {
     path: 'gestion-entreprise',
     component: CompanyManagementComponent,
-    canActivate: [authGuard],
+    canActivate: [authGuard, adminGuard],
   },
   {
     path: 'gestion-quiz',
     component: QuizManagementComponent,
-    canActivate: [authGuard],
+    canActivate: [authGuard, viewResultsGuard],
   },
   {
     path: 'creation-quiz',
     component: QuizCreationComponent,
-    canActivate: [authGuard],
+    canActivate: [authGuard, createQuizGuard],
   },
   {
     path: 'creation-quiz/:id',
     component: QuizCreationComponent,
-    canActivate: [authGuard],
+    canActivate: [authGuard, createQuizGuard],
   },
   {
     path: 'quiz',
     component: QuizCardsComponent,
-    canActivate: [authGuard],
+    canActivate: [quizAccessGuard],
   },
   {
     path: 'profil',
@@ -75,13 +79,13 @@ export const routes: Routes = [
   {
     path: 'quiz/:id/play',
     component: QuizGameComponent,
-    canActivate: [authGuard],
+    canActivate: [quizAccessGuard],
     data: { hideNavbar: true }
   },
   {
     path: 'quiz/:id/results',
     component: QuizResultsComponent,
-    canActivate: [authGuard],
+    canActivate: [authGuard, viewResultsGuard],
     data: { hideNavbar: true }
   },
   {
@@ -119,8 +123,12 @@ export const routes: Routes = [
     path: 'a-propos', data: { hideNavbar: true },
     component: AboutComponent,
   },
+  {
+    path: 'faire-un-don', data: { hideNavbar: true },
+    component: DonationComponent,
+  },
   { path: 'company/:id', component: CompanyDetailsComponent },
 
-  { path: '',   redirectTo: 'connexion', pathMatch: 'full' },
+  { path: '',   redirectTo: 'quiz', pathMatch: 'full' },
   { path: '**', redirectTo: 'connexion' },
 ];

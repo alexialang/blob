@@ -42,12 +42,16 @@
             Solo
           </button>
           <button
+            *ngIf="!isGuest"
             class="mode-btn"
             [class.active]="quiz.playMode === 'team'"
             (click)="togglePlayMode()">
             Équipe
           </button>
         </div>
+        <p *ngIf="isGuest && quiz.playMode === 'team'" class="guest-notice">
+          Connectez-vous pour jouer en équipe
+        </p>
       </div>
     </div>
     <div class="card-actions">

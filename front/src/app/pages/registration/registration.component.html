@@ -51,6 +51,14 @@
         Vous devez accepter les conditions
       </div>
 
+      <div class="g-recaptcha" 
+           data-sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"
+           data-callback="onCaptchaCallback">
+      </div>
+      <div *ngIf="showError('recaptcha')" class="error">
+        Veuillez valider le captcha
+      </div>
+
       <app-slide-button
         label="Valider"
         [negative]="true"

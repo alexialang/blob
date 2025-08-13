@@ -4,11 +4,13 @@ namespace App\Service;
 
 use App\Entity\UserAnswer;
 use App\Entity\QuizRating;
+use App\Event\QuizCompletedEvent;
 use App\Service\UserService;
 use App\Service\QuizService;
 use App\Repository\UserAnswerRepository;
 use App\Repository\QuizRatingRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 class UserAnswerService
 {
@@ -17,14 +19,16 @@ class UserAnswerService
     private QuizRatingRepository $quizRatingRepository;
     private UserService $userService;
     private QuizService $quizService;
+    private EventDispatcherInterface $eventDispatcher;
 
-    public function __construct(EntityManagerInterface $em, UserAnswerRepository $userAnswerRepository, QuizRatingRepository $quizRatingRepository, UserService $userService, QuizService $quizService)
+    public function __construct(EntityManagerInterface $em, UserAnswerRepository $userAnswerRepository, QuizRatingRepository $quizRatingRepository, UserService $userService, QuizService $quizService, EventDispatcherInterface $eventDispatcher)
     {
         $this->em = $em;
         $this->userAnswerRepository = $userAnswerRepository;
         $this->quizRatingRepository = $quizRatingRepository;
         $this->userService = $userService;
         $this->quizService = $quizService;
+        $this->eventDispatcher = $eventDispatcher;
     }
 
     public function list(): array
@@ -102,6 +106,9 @@ class UserAnswerService
         $this->em->persist($userAnswer);
         $this->em->flush();
 
+        $event = new QuizCompletedEvent($userAnswer, $user);
+        $this->eventDispatcher->dispatch($event, QuizCompletedEvent::NAME);
+
         return $userAnswer;
     }
 
@@ -162,7 +169,7 @@ class UserAnswerService
             ->setParameter('quiz', $quiz)
             ->groupBy('u.id')
             ->orderBy('score', 'DESC')
-            ->addOrderBy('firstAttempt', 'ASC') // En cas d'égalité, le plus rapide gagne
+            ->addOrderBy('firstAttempt', 'ASC')
             ->getQuery()
             ->getResult();
 
@@ -192,7 +199,7 @@ class UserAnswerService
         }
 
         return [
-            'leaderboard' => array_slice($leaderboard, 0, 10), // Top 10
+            'leaderboard' => array_slice($leaderboard, 0, 10),
             'currentUserRank' => $currentUserRank ?: count($results) + 1,
             'totalPlayers' => count($results),
             'currentUserScore' => $currentUser ? $this->getCurrentUserScore($quizId, $currentUser?->getId() ?: 0) : 0
