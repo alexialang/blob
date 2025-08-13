@@ -22,6 +22,9 @@ interface Collaborator {
   isActive: boolean;
   groups: string[];
   rights: string[];
+  quizs?: any[];
+  userAnswers?: any[];
+  badges?: any[];
 }
 
 @Component({
@@ -68,6 +71,8 @@ export class CompanyDetailsComponent implements OnInit {
   newGroupDescription = '';
   selectedMemberIds: number[] = [];
 
+  highlightColor: string = '';
+
   constructor(
     private readonly route: ActivatedRoute,
     private readonly router: Router,
@@ -78,6 +83,7 @@ export class CompanyDetailsComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.generateRandomColor();
     const companyId = Number(this.route.snapshot.paramMap.get('id'));
     if (companyId) this.loadCompany(companyId);
   }
@@ -93,6 +99,16 @@ export class CompanyDetailsComponent implements OnInit {
         this.company = data;
         this.company.groups?.forEach((group: any) => group.expanded = false);
         this.prepareCollaborators();
+        this.allCollaborators = this.allCollaborators.map(collab => {
+          const fullUser = data.users?.find((u: any) => u.id === collab.id);
+          return {
+            ...collab,
+            quizs: fullUser?.quizs ?? [],
+            userAnswers: fullUser?.userAnswers ?? [],
+            badges: fullUser?.badges ?? []
+          };
+        });
+        
         this.cdr.markForCheck();
       });
   }
@@ -156,7 +172,7 @@ export class CompanyDetailsComponent implements OnInit {
       : 'asc';
     this.sortColumn = column;
 
-    this.filteredCollaborators.sort((a, b) => {
+    this.filteredCollaborators.sort((a: any, b: any) => {
       const av = a[column];
       const bv = b[column];
       if (typeof av === 'string') return this.sortDirection === 'asc' ? av.localeCompare(bv as string) : (bv as string).localeCompare(av);
@@ -346,5 +362,43 @@ export class CompanyDetailsComponent implements OnInit {
       this.selectedMemberIds.push(userId);
     }
     this.cdr.markForCheck();
+  }
+
+  private generateRandomColor(): void {
+    const colors = [
+      '#257D54', '#FAA24B', '#D30D4C',
+    ];
+
+    const index = Math.floor(Math.random() * colors.length);
+    this.highlightColor = colors[index];
+  }
+
+  getCollaboratorStats(collaboratorId: number): string {
+    const collaborator = this.pagedCollaborators.find(c => c.id === collaboratorId);
+    if (!collaborator) return '—';
+    
+    const quizCreated = collaborator.quizs?.length || 0;
+    const quizAnswered = collaborator.userAnswers?.length || 0;
+    const badgesCount = collaborator.badges?.length || 0;
+    let averageScore = 0;
+    if (collaborator.userAnswers && collaborator.userAnswers.length > 0) {
+      const correctAnswers = collaborator.userAnswers.filter((answer: any) => answer.isCorrect).length;
+      averageScore = Math.round((correctAnswers / collaborator.userAnswers.length) * 100);
+    }
+    
+    if (quizAnswered > 0 && averageScore > 0) {
+      return `${quizAnswered} quiz • ${averageScore}/100`;
+    } else if (quizCreated > 0) {
+      return `${quizCreated} quiz créés`;
+    } else if (badgesCount > 0) {
+      return `${badgesCount} badges`;
+    } else {
+      return 'Aucune activité';
+    }
+  }
+
+  getActiveUsersCount(): number {
+    if (!this.company?.users) return 0;
+    return this.company.users.filter((user: any) => user.isActive).length;
   }
 }

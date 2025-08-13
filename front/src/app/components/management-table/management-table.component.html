@@ -1,0 +1,193 @@
+<div class="management-page">
+  <div class="container">
+    <h1 class="page-title">
+      {{ config.title }}
+      <span
+        *ngIf="config.highlightText"
+        class="highlight-text"
+        [ngStyle]="{ 'color': config.highlightColor || '#257D54' }">
+        {{ config.highlightText }}
+      </span>
+    </h1>
+
+    <div class="filters-container">
+      <div class="filters-row">
+        <select
+          *ngFor="let filter of config.filters"
+          class="form-control"
+          [(ngModel)]="filters[filter.key]"
+          (ngModelChange)="applyFilters()"
+        >
+          <option value="">{{ filter.label }}</option>
+          <option *ngFor="let option of filter.options" [value]="option.value">
+            {{ option.label }}
+          </option>
+        </select>
+
+        <input
+          *ngIf="config.showKeywordFilter !== false"
+          type="text"
+          class="form-control"
+          placeholder="Mot-clé"
+          [(ngModel)]="keywordFilter"
+          (ngModelChange)="applyFilters()"
+        />
+
+        <button tuiButton class="form-control" (click)="applyFilters()">Rechercher</button>
+      </div>
+
+      <div class="dropdown-wrapper" *ngIf="config.dropdownActions?.length">
+        <div
+          tuiDropdownLimitWidth="fixed"
+          tuiGroup
+          [tuiDropdown]="dropdown"
+          [(tuiDropdownOpen)]="dropdownOpen"
+          class="dropdown-container"
+        >
+          <button class="custom-dropdown-btn">Actions</button>
+          <button
+            tuiChevron
+            tuiIconButton
+            class="custom-dropdown-chevron"
+            type="button"
+          ></button>
+        </div>
+
+        <ng-template #dropdown>
+          <tui-data-list>
+            <button
+              *ngFor="let action of config.dropdownActions"
+              tuiOption
+              type="button"
+              (click)="onDropdownAction(action)"
+            >
+              {{ action }}
+            </button>
+          </tui-data-list>
+        </ng-template>
+      </div>
+    </div>
+
+    <div *ngIf="error" class="alert alert-danger">
+      Impossible de charger les données.
+    </div>
+
+    <div class="table-scroll-wrapper">
+      <table tuiTable [size]="size" class="custom-table table-striped">
+        <thead>
+          <tr>
+            <th tuiTh class="th-checkbox" *ngIf="config.showSelectAll !== false">
+              <input
+                type="checkbox"
+                tuiCheckbox
+                [ngModel]="allSelected"
+                (ngModelChange)="toggleAll($event)"
+              />
+            </th>
+            <th
+              *ngFor="let column of config.columns"
+              tuiTh
+              [class]="'th-' + column.key"
+              [ngClass]="{'sortable': column.sortable}"
+              (click)="column.sortable ? sortBy(column.key) : null"
+              [style.width]="column.width"
+            >
+              {{ column.label }}
+              <button
+                *ngIf="column.sortable && sortColumn === column.key"
+                tuiIconButton
+                size="xs"
+                class="sort-btn"
+                [iconStart]="sortDirection === 'asc' ? 'tuiIconChevronUp' : 'tuiIconChevronDown'"
+              ></button>
+            </th>
+            <th tuiTh class="th-action">
+              Action
+              <button
+                *ngIf="hasSelection && config.showSelectAll !== false"
+                tuiButton
+                appearance="action"
+                size="xs"
+                iconStart="@tui.trash"
+                tuiIconButton
+                (click)="onActionClick('deleteSelected')"
+                class="btn-delete-all"
+              >
+                Supprimer ({{ selectedItems.length }})
+              </button>
+            </th>
+          </tr>
+        </thead>
+        <tbody tuiTbody>
+          <tr *ngFor="let row of pagedData" class="table-row">
+            <td tuiTd *ngIf="config.showSelectAll !== false">
+              <input
+                type="checkbox"
+                tuiCheckbox
+                [(ngModel)]="row.selected"
+                (ngModelChange)="onItemSelectionChange()"
+              />
+            </td>
+
+            <td
+              *ngFor="let column of config.columns"
+              tuiTd
+              [class]="'td-' + column.key"
+            >
+              <ng-container
+                *ngIf="column.template; else defaultCell"
+                [ngTemplateOutlet]="column.template"
+                [ngTemplateOutletContext]="{ $implicit: row, column: column }"
+              ></ng-container>
+
+              <ng-template #defaultCell>
+                {{ row[column.key] }}
+              </ng-template>
+            </td>
+
+            <td tuiTd class="td-action">
+              <div class="d-flex gap-2">
+                <ng-content select="[slot=row-actions]" [ngTemplateOutletContext]="{ $implicit: row }"></ng-content>
+
+                <button
+                  tuiButton
+                  appearance="action"
+                  size="xs"
+                  iconStart="@tui.pencil"
+                  tuiIconButton
+                  class="btn-edit"
+                  (click)="onActionClick('edit', row)"
+                ></button>
+                <button
+                  tuiButton
+                  appearance="action"
+                  size="xs"
+                  iconStart="@tui.trash"
+                  tuiIconButton
+                  class="btn-delete-single"
+                  (click)="onActionClick('delete', row)"
+                ></button>
+              </div>
+            </td>
+          </tr>
+
+          <tr *ngIf="data.length === 0">
+            <td tuiTd [attr.colspan]="config.columns.length + 2" class="no-data">
+              Aucune donnée trouvée.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination-container">
+      <app-pagination
+        [totalItems]="data.length"
+        [pageSize]="pageSize"
+        [page]="page"
+        [activePadding]="2"
+        (pageChange)="onPageChanged($event)"
+      ></app-pagination>
+    </div>
+  </div>
+</div>

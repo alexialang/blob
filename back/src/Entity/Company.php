@@ -87,7 +87,6 @@ class Company
     public function removeUser(User $user): static
     {
         if ($this->users->removeElement($user)) {
-            // set the owning side to null (unless already changed)
             if ($user->getCompany() === $this) {
                 $user->setCompany(null);
             }
@@ -117,7 +116,6 @@ class Company
     public function removeGroup(Group $group): static
     {
         if ($this->groups->removeElement($group)) {
-            // set the owning side to null (unless already changed)
             if ($group->getCompany() === $this) {
                 $group->setCompany(null);
             }
@@ -147,7 +145,6 @@ class Company
     public function removeQuiz(Quiz $quiz): static
     {
         if ($this->quizs->removeElement($quiz)) {
-            // set the owning side to null (unless already changed)
             if ($quiz->getCompany() === $this) {
                 $quiz->setCompany(null);
             }

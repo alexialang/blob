@@ -1,16 +1,29 @@
+body {
+  background-color: var(--color-light);
+  color: var(--color-dark);
+}
+:root {
+  background-color: var(--color-light) !important;
+  margin: 0;
+  padding: 0;
+}
+.company-page{
+  width: 100%;
+  align-items: center;
+  background-color: var(--color-light) !important;
+
+}
+.company-highlight
+{
+  font-family: var(--font-display);
+}
+
 .container {
   width: 100%;
   max-width: 1400px;
   margin: 0 auto;
   padding: 2rem 1rem;
-}
 
-.page-title {
-  font-size: 2rem;
-  font-weight: bold;
-  margin-bottom: 2rem;
-  line-height: 1.2;
-  color:grey;
 }
 
 .d-flex {
@@ -30,14 +43,25 @@
   height: 48px;
   width: 150px;
   border-radius: 25px;
-  border: 1px solid black;
-  background-color: transparent;
-  color: grey;
+  border: 1px solid var(--color-dark);
+  background-color: var(--color-white);
+  color: #5f5e5e;
   padding-left: 20px;
   font-size: 14px;
   line-height: 1;
   display: flex;
   align-items: center;
+  transition: all 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px rgba(37, 125, 84, 0.15);
+  }
+
+  &:hover {
+    border-color: var(--color-accent);
+  }
 }
 
 .filters-container {
@@ -45,6 +69,10 @@
   flex-direction: column;
   gap: 1rem;
   margin-bottom: 1.5rem;
+  background: transparent;
+  padding: 0;
+  box-shadow: none;
+  border-radius: 0;
 }
 
 .filters-row {
@@ -70,12 +98,13 @@
   height: 42px;
   border-radius: 6px;
   overflow: hidden;
+  box-shadow: none;
 }
 
 .custom-dropdown-btn {
   max-width: 88%;
-  background: black;
-  color:white;
+  background: var(--color-primary);
+  color: #ffffff;
   border: none;
   padding: 0 20px;
   font-weight: 600;
@@ -85,46 +114,46 @@
   height: 100%;
   line-height: 1;
   border-radius: 6px 0 0 6px;
+  transition: background-color 0.2s ease;
+
+
 }
 
 .custom-dropdown-chevron {
   max-width: 12%;
-  background: black;
-  color: white;
+  background: var(--color-primary);
+  color: #ffffff;
   height: 100%;
   border: none;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 0 6px 6px 0;
-}
+  transition: background-color 0.2s ease;
 
-.custom-dropdown-chevron svg {
-  color: black;
-  stroke: black;
-  fill: none;
-  width: 16px;
-  height: 16px;
-}
 
-[tuiChevron][tuiIcons]::after {
-  color: black;
-  stroke: black;
-  fill: none;
-  width: 16px;
-  height: 16px;
+  svg {
+    color: #ffffff;
+    stroke: #ffffff;
+    fill: none;
+    width: 16px;
+    height: 16px;
+  }
 }
 
 .table-scroll-wrapper {
   overflow-x: auto;
   width: 100%;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  background-color: #ffffff;
 }
 
 .custom-table {
   width: 100%;
-  min-width: 1000px;
+  min-width: 1200px;
   border-collapse: collapse;
-  margin-top: 1rem;
+  background: #ffffff;
 }
 
 .custom-table th,
@@ -132,12 +161,28 @@
   padding: 1rem 1.25rem;
   text-align: left;
   white-space: nowrap;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .custom-table th {
-  background-color: white;
+  background-color: #f8fafc;
   font-weight: 600;
   font-size: 0.95rem;
+  color: var(--color-dark);
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.custom-table tbody tr {
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: rgba(145, 222, 218, 0.1);
+  }
+}
+
+.group {
+  font-size: 0.8rem;
+  color: #64748b;
 }
 
 .status-indicator {
@@ -147,14 +192,66 @@
   border-radius: 50%;
   margin-right: 8px;
   vertical-align: middle;
+
+  &.active {
+    background-color: var(--color-primary);
+  }
+
+  &.inactive {
+    background-color: var(--color-pink);
+  }
 }
 
-.status-indicator.active {
-  background-color: green;
+.link-profile {
+  text-decoration: underline;
+  font-weight: 500;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: #1e6b47;
+    text-decoration: underline;
+  }
 }
 
-.status-indicator.inactive {
-  background-color: red;
+.btn-edit {
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    background-color: var(--color-accent);
+    color: #ffffff;
+  }
+}
+
+.btn-delete-single,
+.btn-delete-all {
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    background-color: var(--color-danger);
+    color: #ffffff;
+  }
+}
+
+.alert {
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  background-color: #ffffff;
+
+  &.alert-danger {
+    background-color: rgba(220, 38, 38, 0.05);
+    color: var(--color-danger);
+    border-left: 4px solid var(--color-danger);
+  }
+}
+
+.no-data {
+  text-align: center;
+  color: #64748b;
+  font-style: italic;
+  padding: 2rem;
 }
 
 .pagination-container {
@@ -164,15 +261,81 @@
   justify-content: center;
 }
 
-a,
-button[tuiIconButton],
-button[tuiIconButton] svg {
-  color: #000;
+.sort-btn {
+  margin-left: 0.5rem;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+  color: var(--color-primary);
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
+tui-badge {
+  background-color: var(--color-light);
+  color: var(--color-dark);
+  border: 1px solid var(--color-secondary);
+
+  &:nth-child(2n) {
+    background-color: var(--color-accent);
+    color: #ffffff;
+  }
+
+  &:nth-child(3n) {
+    background-color: var(--color-pink);
+    color: #ffffff;
+  }
+}
+
+
+.company-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.groups-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  max-width: 200px;
+}
+
+.group-chip {
+  background-color: var(--color-light) !important;
+  color: var(--color-dark) !important;
+  border: 1px solid var(--color-secondary) !important;
+  
+  &.group-chip-more {
+    background-color: var(--color-accent) !important;
+    color: #ffffff !important;
+  }
+}
+
+button[tuiButton][appearance="action-grayscale"] {
+  background-color:aliceblue;
+  color: var(--color-dark);
+  border: none;
+
+  &:hover {
+    background-color: var(--color-secondary);
+    color: #ffffff;
+  }
 }
 
 @media (max-width: 768px) {
   .container {
     padding: 1rem 0.5rem;
+  }
+
+  .page-title {
+    font-size: 3rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .filters-container {
+    padding: 0;
   }
 
   .filters-row {
@@ -199,7 +362,7 @@ button[tuiIconButton] svg {
   }
 
   .custom-table {
-    min-width: 700px;
+    min-width: 800px;
   }
 
   .custom-table th,
@@ -207,19 +370,8 @@ button[tuiIconButton] svg {
     padding: 0.75rem 0.5rem;
     font-size: 0.9rem;
   }
-}
 
-@media (max-width: 480px) {
-  .page-title {
-    font-size: 1.6rem;
-  }
-
-  .filters-row .form-control {
-    flex: 1 1 90px;
-    min-width: 80px;
-    max-width: 120px;
-    height: 36px;
-    font-size: 12px;
-    padding-left: 12px;
+  .groups-container {
+    max-width: 150px;
   }
 }

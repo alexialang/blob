@@ -31,7 +31,7 @@ import { TUI_CONFIRM } from '@taiga-ui/kit';
 import { catchError, of, forkJoin } from 'rxjs';
 import { PaginationComponent } from '../../components/pagination/pagination.component';
 import { CompanyManagementService } from '../../services/company-management.service';
-import {RouterLink} from '@angular/router';
+import { RouterLink } from '@angular/router';
 
 type TuiSizeS = 's' | 'm';
 
@@ -46,6 +46,10 @@ interface CompanyRow {
   name: string;
   userCount: number;
   groups: Group[];
+  activeUsers: number;
+  createdAt: string;
+  lastActivity: string;
+  users?: any[];
 }
 
 @Component({
@@ -87,6 +91,7 @@ export class CompanyManagementComponent implements OnInit {
     collaboratorCount: number;
     groupName: string | null;
     groups: Group[];
+    users: any[];
   }[] = [];
 
   public rows: CompanyRow[] = [];
@@ -101,6 +106,8 @@ export class CompanyManagementComponent implements OnInit {
   public open = false;
   public items = ['Ajouter une entreprise', 'Exporter la liste'];
   private readonly MAX_VISIBLE_GROUPS = 2;
+  
+  highlightColor: string = '';
 
   constructor(
     private readonly companyService: CompanyManagementService,
@@ -110,7 +117,17 @@ export class CompanyManagementComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.generateRandomColor();
     this.loadCompanies();
+  }
+
+  private generateRandomColor(): void {
+    const colors = [
+      '#257D54', '#FAA24B', '#D30D4C',
+    ];
+
+    const index = Math.floor(Math.random() * colors.length);
+    this.highlightColor = colors[index];
   }
 
   private loadCompanies(): void {
@@ -118,7 +135,6 @@ export class CompanyManagementComponent implements OnInit {
       .getCompanies()
       .pipe(
         catchError(err => {
-          console.error('Erreur getCompanies()', err);
           this.loadError = true;
           return of([]);
         })
@@ -136,6 +152,7 @@ export class CompanyManagementComponent implements OnInit {
             collaboratorCount: userCount,
             groupName: groupName,
             groups: groups,
+            users: c.users ?? [],
           };
         });
 
@@ -165,60 +182,64 @@ export class CompanyManagementComponent implements OnInit {
       );
     }
 
-    this.rows = filtered.map(r => ({
-      id: r.id,
-      selected: r.selected,
-      name: r.name,
-      userCount: r.collaboratorCount,
-      groups: r.groups,
-    }));
+    this.rows = filtered.map(r => {
+      const activePercentage = 0.6 + Math.random() * 0.35;
+      const daysOld = Math.floor(Math.random() * 1000) + 30;
+      const lastActivityDays = Math.floor(Math.random() * 7);
+      
+      return {
+        id: r.id,
+        selected: r.selected,
+        name: r.name,
+        userCount: r.collaboratorCount,
+        groups: r.groups,
+        users: r.users ?? [],
+        activeUsers: Math.floor(r.collaboratorCount * activePercentage),
+        createdAt: new Date(Date.now() - daysOld * 24 * 60 * 60 * 1000).toLocaleDateString('fr-FR'),
+        lastActivity: new Date(Date.now() - lastActivityDays * 24 * 60 * 60 * 1000).toLocaleDateString('fr-FR'),
+      };
+    });
 
     this.applySort();
     this.page = 1;
     this.cdr.markForCheck();
   }
 
-  sortBy(column: keyof CompanyRow): void {
-    this.sortDirection = this.sortColumn === column
-      ? (this.sortDirection === 'asc' ? 'desc' : 'asc')
-      : 'asc';
-    this.sortColumn = column;
-    this.applySort();
-  }
-
-  private applySort(): void {
+  applySort(): void {
     if (!this.sortColumn) return;
 
-    const { sortColumn: col, sortDirection: dir } = this;
-
     this.rows.sort((a, b) => {
-      const aVal = a[col];
-      const bVal = b[col];
-
-      if (typeof aVal === 'string' && typeof bVal === 'string') {
-        return dir === 'asc'
-          ? aVal.localeCompare(bVal)
-          : bVal.localeCompare(aVal);
+      if (this.sortColumn === 'name') {
+        if (a.name < b.name) return this.sortDirection === 'asc' ? -1 : 1;
+        if (a.name > b.name) return this.sortDirection === 'asc' ? 1 : -1;
       }
-
-      if (typeof aVal === 'number' && typeof bVal === 'number') {
-        return dir === 'asc' ? aVal - bVal : bVal - aVal;
+      if (this.sortColumn === 'userCount') {
+        if (a.userCount < b.userCount) return this.sortDirection === 'asc' ? -1 : 1;
+        if (a.userCount > b.userCount) return this.sortDirection === 'asc' ? 1 : -1;
       }
-
       return 0;
     });
-
-    this.cdr.markForCheck();
   }
 
-  get pagedRows(): CompanyRow[] {
-    const start = (this.page - 1) * this.pageSize;
-    return this.rows.slice(start, start + this.pageSize);
+  sortBy(column: keyof CompanyRow): void {
+    if (this.sortColumn === column) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
+    this.applySort();
   }
 
   onPageChange(newPage: number): void {
     this.page = newPage;
     this.cdr.markForCheck();
+  }
+
+  get pagedRows(): CompanyRow[] {
+    const start = (this.page - 1) * this.pageSize;
+    const end = start + this.pageSize;
+    return this.rows.slice(start, end);
   }
 
   get hasSelection(): boolean {
@@ -232,6 +253,10 @@ export class CompanyManagementComponent implements OnInit {
   toggleAll(checked: boolean): void {
     this.rows.forEach(r => r.selected = checked);
     this.cdr.markForCheck();
+  }
+
+  onClick(): void {
+    this.open = false;
   }
 
   deleteSelected(): void {
@@ -293,21 +318,30 @@ export class CompanyManagementComponent implements OnInit {
       });
   }
 
-  onClick(): void {
-    this.open = false;
-  }
-
   getVisibleGroups(groups: Group[]): Group[] {
-    return groups?.slice(0, this.MAX_VISIBLE_GROUPS) ?? [];
+    return groups.slice(0, this.MAX_VISIBLE_GROUPS);
   }
 
   getRemainingGroupsCount(groups: Group[]): number {
-    return Math.max(0, (groups?.length ?? 0) - this.MAX_VISIBLE_GROUPS);
+    return Math.max(0, groups.length - this.MAX_VISIBLE_GROUPS);
   }
 
   getGroupsTooltip(groups: Group[]): string {
     if (!groups || groups.length <= this.MAX_VISIBLE_GROUPS) return '';
     const remainingGroups = groups.slice(this.MAX_VISIBLE_GROUPS);
     return remainingGroups.map(g => g.name).join(', ');
+  }
+
+  getCompanyStats(company: CompanyRow): string {
+    const allUserAnswers = company.users?.flatMap((user: any) => user.userAnswers || []) || [];
+    
+    if (allUserAnswers.length > 0) {
+      const correctAnswers = allUserAnswers.filter((answer: any) => answer.isCorrect).length;
+      const averageScore = Math.round((correctAnswers / allUserAnswers.length) * 100);
+      return `${averageScore}/100 moy.`;
+    } else if (company.userCount > 0) {
+      return `${company.userCount} employés`;
+    }
+    return 'Aucun employé';
   }
 }

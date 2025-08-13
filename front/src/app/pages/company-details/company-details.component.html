@@ -1,7 +1,25 @@
+<div class="company-details-page">
+
 <div class="container" *ngIf="!loadError">
   <div *ngIf="company">
-    <h1>{{ company.name }}</h1>
-    <p>{{ company.address || 'Adresse non renseignée' }}</p>
+    <h1 class="page-title">Détails <br /> de <span class="company-highlight" [ngStyle]="{ 'color': highlightColor }">{{ company.name }}</span></h1>
+    <div class="company-info">
+      <p class="company-address">{{ company.address || 'Adresse non renseignée' }}</p>
+      <div class="company-stats">
+        <div class="stat-item">
+          <span class="stat-number">{{ company.users?.length || 0 }}</span>
+          <span class="stat-label">Collaborateurs</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">{{ company.groups?.length || 0 }}</span>
+          <span class="stat-label">Groupes</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">{{ getActiveUsersCount() }}</span>
+          <span class="stat-label">Actifs</span>
+        </div>
+      </div>
+    </div>
 
     <div class="actions d-flex gap-2 mb-4">
       <button tuiButton size="s" appearance="primary" (click)="editCompany()">
@@ -114,10 +132,30 @@
           <td tuiTd>{{ c.name }}</td>
           <td tuiTd>{{ c.email }}</td>
           <td tuiTd>{{ c.isActive ? 'Oui' : 'Non' }}</td>
-          <td tuiTd>{{ c.groups.join(', ') }}</td>
-          <td tuiTd>-</td>
           <td tuiTd>
-            <tui-badge *ngFor="let r of c.rights" class="me-1" size="s">{{ r }}</tui-badge>
+            <div class="groups-container">
+              <span *ngFor="let group of c.groups.slice(0, 2)" class="group-badge">
+                {{ group }}
+              </span>
+              <span *ngIf="c.groups.length > 2" class="group-badge group-badge-more">
+                +{{ c.groups.length - 2 }}
+              </span>
+            </div>
+          </td>
+          <td tuiTd>
+            <button tuiButton appearance="action-grayscale" size="s">
+              {{ getCollaboratorStats(c.id) }} <span>Voir plus</span>
+            </button>
+          </td>
+          <td tuiTd>
+            <div class="rights-container">
+              <span *ngFor="let right of c.rights.slice(0, 3)" class="right-badge">
+                {{ right }}
+              </span>
+              <span *ngIf="c.rights.length > 3" class="right-badge right-badge-more">
+                +{{ c.rights.length - 3 }}
+              </span>
+            </div>
           </td>
           <td tuiTd>
             <div class="d-flex gap-2">
@@ -170,6 +208,8 @@
       </div>
     </div>
   </div>
+</div>
+
 </div>
 
 <ng-template #noGroupsTpl>
