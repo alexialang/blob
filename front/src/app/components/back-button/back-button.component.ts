@@ -1,5 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { Router } from '@angular/router';
+import { Location } from '@angular/common';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -10,11 +11,15 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./back-button.component.scss']
 })
 export class BackButtonComponent {
-  @Input() route: string = '/login';
+  @Input() fallbackRoute: string = '/login';
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private location: Location) {}
 
   goBack() {
-    this.router.navigate([this.route]);
+    if (window.history.length > 1) {
+      this.location.back();
+    } else {
+      this.router.navigate([this.fallbackRoute]);
+    }
   }
 }

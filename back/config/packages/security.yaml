@@ -46,10 +46,20 @@ security:
             entry_point: lexik_jwt_authentication.jwt_manager
 
     access_control:
-        - { path: ^/api/user-create, methods: [ POST ], roles: IS_AUTHENTICATED_ANONYMOUSLY }
-        - { path: ^/api/token/refresh$, roles: IS_AUTHENTICATED_ANONYMOUSLY }
-        - { path: ^/api/login_check$,   roles: IS_AUTHENTICATED_ANONYMOUSLY }
-        - { path: ^/api/login,          roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/api/user-create, methods: [ POST ], roles: PUBLIC_ACCESS }
+        - { path: ^/api/confirmation-compte/, methods: [ GET ], roles: PUBLIC_ACCESS }
+        - { path: ^/api/token/refresh$, roles: PUBLIC_ACCESS }
+        - { path: ^/api/login_check$,   roles: PUBLIC_ACCESS }
+        - { path: ^/api/login,          roles: PUBLIC_ACCESS }
+
+        - { path: ^/api/quiz/list$, methods: [ GET ], roles: PUBLIC_ACCESS }
+        - { path: ^/api/quiz/[0-9]+$, methods: [ GET ], roles: PUBLIC_ACCESS }
+        - { path: ^/api/quiz/organized$, methods: [ GET ], roles: PUBLIC_ACCESS }
+        - { path: ^/api/category-quiz, methods: [ GET ], roles: PUBLIC_ACCESS }
+
+        - { path: ^/api/game, roles: PUBLIC_ACCESS }
+
+        - { path: ^/api, roles: ROLE_USER }
 
 when@test:
     security:

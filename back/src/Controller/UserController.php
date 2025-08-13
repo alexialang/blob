@@ -170,10 +170,107 @@ class UserController extends AbstractController
         $user = $this->userService->confirmToken($token);
 
         if (!$user) {
-            return $this->json(['error' => 'Token invalide ou expiré'], 400);
+            return $this->json(['error' => 'Token invalide ou déjà utilisé'], 400);
         }
 
         return $this->json(['message' => 'Votre compte a bien été vérifié']);
+    }
+
+    /**
+     * @OA\Put(summary="Mettre à jour le profil de l'utilisateur connecté", tags={"User"})
+     * @OA\RequestBody(
+     *     required=true,
+     *     @OA\JsonContent(
+     *         @OA\Property(property="pseudo", type="string"),
+     *         @OA\Property(property="firstName", type="string"),
+     *         @OA\Property(property="lastName", type="string"),
+     *         @OA\Property(property="avatar", type="string")
+     *     )
+     * )
+     * @OA\Response(response=200, description="Profil mis à jour")
+     * @OA\Security(name="bearerAuth")
+     */
+    #[Route('/user/profile/update', name: 'user_profile_update', methods: ['PUT', 'PATCH'])]
+    public function updateProfile(Request $request): JsonResponse
+    {
+        $user = $this->getUser();
+        
+        if (!$user) {
+            return $this->json(['error' => 'Utilisateur non authentifié'], 401);
+        }
+
+        try {
+            $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
+            $user = $this->userService->updateProfile($user, $data);
+
+            return $this->json($user, 200, [], [
+                'groups' => ['user:read', 'company:read'],
+                'circular_reference_handler' => function ($object) {
+                    return $object->getId();
+                }
+            ]);
+        } catch (\JsonException $e) {
+            return $this->json(['error' => 'Invalid JSON'], 400);
+        }
+    }
+
+    /**
+     * @OA\Get(summary="Récupérer les statistiques de l'utilisateur connecté", tags={"User"})
+     * @OA\Response(response=200, description="Statistiques de l'utilisateur")
+     * @OA\Security(name="bearerAuth")
+     */
+    #[Route('/user/statistics', name: 'user_statistics', methods: ['GET'])]
+    public function statistics(): JsonResponse
+    {
+        $user = $this->getUser();
+        
+        if (!$user) {
+            return $this->json(['error' => 'Utilisateur non authentifié'], 401);
+        }
+
+        $statistics = $this->userService->getUserStatistics($user);
+
+        return $this->json($statistics);
+    }
+
+    /**
+     * @OA\Get(summary="Récupérer le classement général des utilisateurs", tags={"User"})
+     * @OA\Parameter(name="limit", in="query", @OA\Schema(type="integer", default=50), description="Nombre d'utilisateurs à retourner")
+     * @OA\Response(response=200, description="Classement des utilisateurs")
+     * @OA\Security(name="bearerAuth")
+     */
+    #[Route('/leaderboard', name: 'user_leaderboard', methods: ['GET'])]
+    public function leaderboard(Request $request): JsonResponse
+    {
+        $limit = (int) $request->query->get('limit', 50);
+        $currentUser = $this->getUser();
+        
+        if (!$currentUser) {
+            return $this->json(['error' => 'Utilisateur non authentifié'], 401);
+        }
+
+        $leaderboard = $this->userService->getLeaderboard($limit, $currentUser);
+
+        return $this->json($leaderboard);
+    }
+
+    /**
+     * @OA\Get(summary="Récupérer l'historique des parties de l'utilisateur", tags={"User"})
+     * @OA\Response(response=200, description="Historique des parties")
+     * @OA\Security(name="bearerAuth")
+     */
+    #[Route('/user/game-history', name: 'user_game_history', methods: ['GET'])]
+    public function gameHistory(): JsonResponse
+    {
+        $user = $this->getUser();
+        
+        if (!$user) {
+            return $this->json(['error' => 'Utilisateur non authentifié'], 401);
+        }
+
+        $history = $this->userService->getGameHistory($user);
+
+        return $this->json($history);
     }
 
 }

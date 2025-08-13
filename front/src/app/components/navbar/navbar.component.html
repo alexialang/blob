@@ -27,14 +27,14 @@
     <div class ="links-container">
       <ul class="nav-list">
         <li class="nav-item"><a routerLink="/quiz">Quiz</a></li>
-        <li class="nav-item" ><a routerLink="/">Statistiques</a></li>
+        <li class="nav-item" ><a routerLink="/classement">Classement</a></li>
         <li class="nav-item"><a routerLink="/creation-quiz">Créer un quiz</a></li>
         <li class="nav-item dropdown"
             (mouseenter)="showGestionDropdown = true"
             (mouseleave)="showGestionDropdown = false">
           <a href="#" class="dropdown-toggle">
             Gestion
-            <tui-icon icon="@tui.chevron-down" class="dropdown-icon"></tui-icon>
+            <span class="dropdown-arrow">▼</span>
           </a>
           <ul class="dropdown-menu" [class.show]="showGestionDropdown">
             <li><a routerLink="/gestion-utilisateur" (click)="showGestionDropdown = false">Utilisateurs</a></li>

@@ -31,9 +31,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private array $roles = [];
 
-    /**
-     * @var string The hashed password
-     */
     #[ORM\Column]
     private ?string $password = null;
 
@@ -46,44 +43,27 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?\DateTimeInterface $lastAccess = null;
 
 
-    #[Groups(['user:read'])]
-    #[ORM\Column]
-    private ?bool $isAdmin = null;
+
 
     #[ORM\ManyToOne(inversedBy: 'users')]
     private ?Company $company = null;
 
-    /**
-     * @var Collection<int, Badge>
-     */
     #[Groups(['user:read'])]
     #[ORM\ManyToMany(targetEntity: Badge::class, inversedBy: 'users')]
     private Collection $badges;
 
-    /**
-     * @var Collection<int, Quiz>
-     */
     #[Groups(['user:read'])]
     #[ORM\OneToMany(targetEntity: Quiz::class, mappedBy: 'user')]
     private Collection $quizs;
 
-    /**
-     * @var Collection<int, UserAnswer>
-     */
     #[Groups(['user:read'])]
     #[ORM\OneToMany(targetEntity: UserAnswer::class, mappedBy: 'user')]
     private Collection $userAnswers;
 
-    /**
-     * @var Collection<int, UserPermission>
-     */
     #[Groups(['user:read'])]
     #[ORM\OneToMany(targetEntity: UserPermission::class, mappedBy: 'user')]
     private Collection $userPermissions;
 
-    /**
-     * @var Collection<int, Group>
-     */
     #[Groups(['user:read'])]
     #[ORM\ManyToMany(targetEntity: Group::class, inversedBy: 'users')]
     private Collection $groups;
@@ -113,6 +93,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $passwordResetRequestAt = null;
+
+    #[Groups(['user:read'])]
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $pseudo = null;
+
+    #[Groups(['user:read'])]
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $avatar = null;
     public function __construct()
     {
         $this->badges = new ArrayCollection();
@@ -139,21 +127,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    /**
-     * A visual identifier that represents this user.
-     *
-     * @see UserInterface
-     */
     public function getUserIdentifier(): string
     {
         return (string) $this->email;
     }
 
-    /**
-     * @see UserInterface
-     *
-     * @return list<string>
-     */
     public function getRoles(): array
     {
         $roles = $this->roles;
@@ -162,9 +140,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return array_unique($roles);
     }
 
-    /**
-     * @param list<string> $roles
-     */
     public function setRoles(array $roles): static
     {
         $this->roles = $roles;
@@ -172,9 +147,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    /**
-     * @see PasswordAuthenticatedUserInterface
-     */
     public function getPassword(): ?string
     {
         return $this->password;
@@ -187,9 +159,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    /**
-     * @see UserInterface
-     */
     public function eraseCredentials(): void
     {
 
@@ -214,21 +183,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function setLastAccess(?\DateTimeInterface $lastAccess): static
     {
-        $this->lastAcces = $lastAccess;
+        $this->lastAccess = $lastAccess;
 
         return $this;
     }
 
-    public function isAdmin(): ?bool
+    #[Groups(['user:read'])]
+    public function isAdmin(): bool
     {
-        return $this->isAdmin;
-    }
-
-    public function setIsAdmin(bool $isAdmin): static
-    {
-        $this->isAdmin = $isAdmin;
-
-        return $this;
+        return in_array('ROLE_ADMIN', $this->roles);
     }
 
     public function getCompany(): ?Company
@@ -243,9 +206,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    /**
-     * @return Collection<int, Badge>
-     */
     public function getBadges(): Collection
     {
         return $this->badges;
@@ -267,9 +227,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    /**
-     * @return Collection<int, Quiz>
-     */
     public function getQuizs(): Collection
     {
         return $this->quizs;
@@ -288,7 +245,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function removeQuiz(Quiz $quiz): static
     {
         if ($this->quizs->removeElement($quiz)) {
-            // set the owning side to null (unless already changed)
             if ($quiz->getUser() === $this) {
                 $quiz->setUser(null);
             }
@@ -297,9 +253,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    /**
-     * @return Collection<int, UserAnswer>
-     */
     public function getUserAnswers(): Collection
     {
         return $this->userAnswers;
@@ -318,7 +271,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function removeUserAnswer(UserAnswer $userAnswer): static
     {
         if ($this->userAnswers->removeElement($userAnswer)) {
-            // set the owning side to null (unless already changed)
             if ($userAnswer->getUser() === $this) {
                 $userAnswer->setUser(null);
             }
@@ -327,9 +279,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    /**
-     * @return Collection<int, UserPermission>
-     */
     public function getUserPermissions(): Collection
     {
         return $this->userPermissions;
@@ -348,7 +297,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function removeUserPermission(UserPermission $userPermission): static
     {
         if ($this->userPermissions->removeElement($userPermission)) {
-            // set the owning side to null (unless already changed)
             if ($userPermission->getUser() === $this) {
                 $userPermission->setUser(null);
             }
@@ -367,9 +315,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return false;
     }
 
-    /**
-     * @return Collection<int, Group>
-     */
     public function getGroups(): Collection
     {
         return $this->groups;
@@ -492,5 +437,49 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getCompanyId(): ?int
     {
         return $this->company?->getId();
+    }
+
+    public function getPseudo(): ?string
+    {
+        return $this->pseudo;
+    }
+
+    public function setPseudo(?string $pseudo): static
+    {
+        $this->pseudo = $pseudo;
+        return $this;
+    }
+
+    public function getAvatar(): ?string
+    {
+        return $this->avatar;
+    }
+
+    public function setAvatar(?string $avatar): static
+    {
+        $this->avatar = $avatar;
+        return $this;
+    }
+
+    #[Groups(['user:read'])]
+    public function getAvatarShape(): ?string
+    {
+        if (!$this->avatar) {
+            return null;
+        }
+        
+        $avatarData = json_decode($this->avatar, true);
+        return $avatarData['shape'] ?? null;
+    }
+
+    #[Groups(['user:read'])]
+    public function getAvatarColor(): ?string
+    {
+        if (!$this->avatar) {
+            return null;
+        }
+        
+        $avatarData = json_decode($this->avatar, true);
+        return $avatarData['color'] ?? null;
     }
 }

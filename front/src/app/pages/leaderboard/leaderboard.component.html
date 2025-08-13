@@ -1,0 +1,252 @@
+<div class="leaderboard-container">
+  <div class="container">
+    <!-- En-tête -->
+    <div class="header-section">
+      <div class="header-content">
+        <div class="header-icon">
+          <i class="fas fa-crown"></i>
+        </div>
+        <div class="header-text">
+          <h1 class="page-title">Classement Général</h1>
+          <p class="page-subtitle">Découvrez qui dominate le monde des quiz !</p>
+        </div>
+        <button class="refresh-btn" (click)="refreshLeaderboard()" [disabled]="isLoading">
+          <i class="fas fa-sync-alt" [class.fa-spin]="isLoading"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div class="loading-container" *ngIf="isLoading">
+      <div class="spinner"></div>
+      <p>Chargement du classement...</p>
+    </div>
+
+    <!-- Error State -->
+    <div class="error-container" *ngIf="error && !isLoading">
+      <div class="error-card">
+        <i class="fas fa-exclamation-triangle"></i>
+        <h3>Erreur</h3>
+        <p>{{ error }}</p>
+        <button class="btn-retry" (click)="refreshLeaderboard()">Réessayer</button>
+      </div>
+    </div>
+
+    <!-- Leaderboard Content -->
+    <div class="leaderboard-content" *ngIf="leaderboardData && !isLoading">
+
+      <!-- Podium (Top 3) -->
+      <div class="podium-section">
+        <div class="podium-card">
+          <h2 class="podium-title">
+            <i class="fas fa-trophy"></i>
+            Le Podium
+          </h2>
+
+          <div class="podium" *ngIf="leaderboardData.leaderboard.length > 0">
+          <!-- 2ème place -->
+          <div class="podium-player second-place" *ngIf="leaderboardData.leaderboard.length >= 2">
+          <div class="player-avatar">
+          <img [src]="'assets/avatars/' + leaderboardData.leaderboard[1].avatar + '.svg'"
+          [alt]="leaderboardData.leaderboard[1].pseudo">
+          <div class="medal silver">
+          <i class="fas fa-medal"></i>
+          <span>2</span>
+          </div>
+          </div>
+          <div class="player-info">
+          <h4>{{ leaderboardData.leaderboard[1].pseudo }}</h4>
+          <p>{{ leaderboardData.leaderboard[1].totalScore }} pts</p>
+          <span class="player-level {{ getPlayerLevelClass(leaderboardData.leaderboard[1].totalScore) }}">
+          {{ getPlayerLevel(leaderboardData.leaderboard[1].totalScore) }}
+          </span>
+          </div>
+          </div>
+
+          <!-- 1ère place -->
+          <div class="podium-player first-place" *ngIf="leaderboardData.leaderboard.length >= 1">
+          <div class="player-avatar">
+          <img [src]="'assets/avatars/' + leaderboardData.leaderboard[0].avatar + '.svg'"
+          [alt]="leaderboardData.leaderboard[0].pseudo">
+          <div class="medal gold">
+          <i class="fas fa-crown"></i>
+          <span>1</span>
+          </div>
+          </div>
+          <div class="player-info">
+          <h4>{{ leaderboardData.leaderboard[0].pseudo }}</h4>
+          <p>{{ leaderboardData.leaderboard[0].totalScore }} pts</p>
+          <span class="player-level {{ getPlayerLevelClass(leaderboardData.leaderboard[0].totalScore) }}">
+          {{ getPlayerLevel(leaderboardData.leaderboard[0].totalScore) }}
+          </span>
+          </div>
+          <div class="crown-effect"></div>
+          </div>
+
+          <!-- 3ème place -->
+          <div class="podium-player third-place" *ngIf="leaderboardData.leaderboard.length >= 3">
+          <div class="player-avatar">
+          <img [src]="'assets/avatars/' + leaderboardData.leaderboard[2].avatar + '.svg'"
+          [alt]="leaderboardData.leaderboard[2].pseudo">
+          <div class="medal bronze">
+          <i class="fas fa-award"></i>
+          <span>3</span>
+          </div>
+          </div>
+          <div class="player-info">
+          <h4>{{ leaderboardData.leaderboard[2].pseudo }}</h4>
+          <p>{{ leaderboardData.leaderboard[2].totalScore }} pts</p>
+          <span class="player-level {{ getPlayerLevelClass(leaderboardData.leaderboard[2].totalScore) }}">
+          {{ getPlayerLevel(leaderboardData.leaderboard[2].totalScore) }}
+          </span>
+          </div>
+          </div>
+
+            <!-- Places vides si moins de 3 joueurs -->
+            <div class="podium-player empty-place second-place" *ngIf="leaderboardData.leaderboard.length < 2">
+              <div class="player-avatar empty">
+                <div class="medal silver">
+                  <i class="fas fa-medal"></i>
+                  <span>2</span>
+                </div>
+              </div>
+              <div class="player-info">
+                <h4>En attente...</h4>
+                <p>0 pts</p>
+              </div>
+            </div>
+
+            <div class="podium-player empty-place third-place" *ngIf="leaderboardData.leaderboard.length < 3">
+              <div class="player-avatar empty">
+                <div class="medal bronze">
+                  <i class="fas fa-award"></i>
+                  <span>3</span>
+                </div>
+              </div>
+              <div class="player-info">
+                <h4>En attente...</h4>
+                <p>0 pts</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ma Position -->
+      <div class="my-position-section" *ngIf="leaderboardData.currentUser">
+        <div class="my-position-card">
+          <div class="card-header">
+            <h3>
+              <i class="fas fa-user"></i>
+              Ma Position
+            </h3>
+          </div>
+          <div class="position-content">
+            <div class="position-rank">
+              <div class="rank-number">
+                {{ leaderboardData.currentUser.position }}
+                <sup>{{ getPositionSuffix(leaderboardData.currentUser.position) }}</sup>
+              </div>
+              <div class="rank-info">
+                <p>sur {{ leaderboardData.currentUser.totalUsers }} joueurs</p>
+              </div>
+            </div>
+            <div class="position-details">
+              <div class="detail-item">
+                <i class="fas fa-star"></i>
+                <span>{{ leaderboardData.currentUser.data?.totalScore || 0 }} points</span>
+              </div>
+              <div class="detail-item">
+                <i class="fas fa-chart-line"></i>
+                <span>{{ leaderboardData.currentUser.data?.averageScore || 0 }} pts/quiz</span>
+              </div>
+              <div class="detail-item">
+                <i class="fas fa-trophy"></i>
+                <span>{{ leaderboardData.currentUser.data?.badgesCount || 0 }} badges</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Classement Complet -->
+      <div class="ranking-section">
+        <div class="ranking-card">
+          <div class="card-header">
+            <h3>
+              <i class="fas fa-list-ol"></i>
+              Classement Complet
+            </h3>
+            <span class="total-count">{{ leaderboardData.meta.totalUsers }} joueurs</span>
+          </div>
+
+          <div class="ranking-list">
+        <div class="ranking-item"
+             *ngFor="let player of leaderboardData.leaderboard; trackBy: trackByPlayerId"
+             [class.current-user]="player.isCurrentUser"
+             [class.top-three]="player.position <= 3">
+
+              <div class="player-rank">
+                <div class="rank-badge" [class]="getMedalClass(player.position)">
+                  <i *ngIf="player.position <= 3" [class]="getMedalIcon(player.position)"></i>
+                  <span *ngIf="player.position > 3">{{ player.position }}</span>
+                </div>
+              </div>
+
+              <div class="player-avatar-small">
+                <img [src]="'assets/avatars/' + player.avatar + '.svg'" [alt]="player.pseudo">
+                <div class="online-indicator" *ngIf="player.isCurrentUser"></div>
+              </div>
+
+              <div class="player-details">
+                <h4 class="player-name">
+                  {{ player.pseudo }}
+                  <span class="you-indicator" *ngIf="player.isCurrentUser">(Vous)</span>
+                </h4>
+                <div class="player-stats">
+                  <span class="stat">
+                    <i class="fas fa-gamepad"></i>
+                    {{ player.quizzesCompleted }} quiz
+                  </span>
+                  <span class="stat">
+                    <i class="fas fa-medal"></i>
+                    {{ player.badgesCount }} badges
+                  </span>
+                </div>
+              </div>
+
+              <div class="player-scores">
+                <div class="total-score">
+                  {{ player.totalScore }}
+                  <span>pts total</span>
+                </div>
+                <div class="average-score">
+                  {{ player.averageScore }}
+                  <span>pts/quiz</span>
+                </div>
+              </div>
+
+              <div class="player-level">
+                <span class="level-badge {{ getPlayerLevelClass(player.totalScore) }}">
+                  {{ getPlayerLevel(player.totalScore) }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer Stats -->
+      <div class="footer-stats">
+        <div class="stat-item">
+          <i class="fas fa-users"></i>
+          <span>{{ leaderboardData.meta.totalUsers }} joueurs actifs</span>
+        </div>
+        <div class="stat-item">
+          <i class="fas fa-clock"></i>
+          <span>Mis à jour le {{ leaderboardData.meta.generatedAt | date:'dd/MM/yyyy à HH:mm' }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

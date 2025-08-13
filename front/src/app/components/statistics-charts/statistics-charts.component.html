@@ -1,0 +1,55 @@
+<div class="charts-container" *ngIf="userStatistics">
+  
+  <div class="charts-grid">
+    <!-- Graphique d'évolution des scores -->
+    <div class="chart-section" *ngIf="hasScoreHistory()">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-icon">
+            <i class="fas fa-chart-line"></i>
+          </div>
+          <div class="chart-info">
+            <h3>Évolution de vos scores</h3>
+            <p>Suivez l'évolution de vos scores au fil du temps</p>
+          </div>
+        </div>
+        <div class="chart-wrapper">
+          <canvas #scoreEvolutionChart id="scoreEvolutionChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Graphique de performance par catégorie -->
+    <div class="chart-section" *ngIf="hasCategoryData()">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-icon">
+            <i class="fas fa-chart-pie"></i>
+          </div>
+          <div class="chart-info">
+            <h3>Performance par catégorie</h3>
+            <p>Découvrez vos points forts et axes d'amélioration</p>
+          </div>
+        </div>
+        <div class="chart-wrapper">
+          <canvas #categoryChart id="categoryChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Message si pas de données -->
+  <div class="no-data-message" *ngIf="!hasScoreHistory() && !hasCategoryData()">
+    <div class="no-data-card">
+      <div class="no-data-icon">
+        <i class="fas fa-chart-line"></i>
+      </div>
+      <h3>Aucune donnée à afficher</h3>
+      <p>Vos graphiques de performance apparaîtront ici après avoir complété quelques quiz.</p>
+      <div class="suggestion">
+        <i class="fas fa-lightbulb"></i>
+        <span>Commencez par faire un quiz pour voir vos premiers résultats !</span>
+      </div>
+    </div>
+  </div>
+</div>

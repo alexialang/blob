@@ -1,6 +1,6 @@
 .back-button {
   background: transparent;
-  border: 2px solid #333;
+  border: 2px solid var(--text-primary);
   border-radius: 25px;
   padding: 0.8rem 1.5rem;
   display: flex;
@@ -8,14 +8,14 @@
   gap: 0.5rem;
   cursor: pointer;
   transition: all 0.3s ease;
-  color: #333;
+  color: var(--color-dark);
   font-size: 1rem;
   font-weight: 500;
 
   .arrow-icon {
     width: 20px;
     height: 20px;
-    color: #333;
+    color: var(--color-dark);
     flex-shrink: 0;
   }
 
@@ -34,12 +34,12 @@
   }
 
   &:hover {
-    border-color: #007bff;
-    color: #007bff;
+    border-color: var(--color-accent);
+    color: var(--color-accent);
     padding: 0.8rem 3rem;
 
     .arrow-icon {
-      color: #007bff;
+      color:var(--color-accent);
     }
 
     .arrow-line {
@@ -47,7 +47,7 @@
     }
 
     .text {
-      color: #007bff;
+      color: var(--color-accent);
     }
   }
 }

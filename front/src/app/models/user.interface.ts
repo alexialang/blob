@@ -1,4 +1,5 @@
 export interface User {
+  pseudo?: string;
   id: number;
   email: string;
   firstName: string;
@@ -6,19 +7,31 @@ export interface User {
   roles: string[];
   dateRegistration: string;
   lastAccess?: string;
-  isAdmin: boolean;
+  isAdmin: boolean; // Propriété calculée côté backend
   isActive: boolean;
   isVerified: boolean;
   companyId?: number;
   companyName?: string;
+  avatar?: string;
+  avatarShape?: string;
+  avatarColor?: string;
   badges?: Badge[];
   quizs?: Quiz[];
   groups?: Group[];
+  userAnswers?: UserAnswer[];
+  userPermissions?: UserPermission[];
+}
+
+export interface UserPermission {
+  id: number;
+  permission: string;
 }
 
 export interface Badge {
   id: number;
   name: string;
+  description?: string;
+  image?: string;
 }
 
 export interface Quiz {
@@ -33,4 +46,14 @@ export interface Quiz {
 export interface Group {
   id: number;
   name: string;
+}
+
+export interface UserAnswer {
+  id: number;
+  answerSelected: string;
+  isCorrect: boolean;
+  question: {
+    id: number;
+    text: string;
+  };
 }

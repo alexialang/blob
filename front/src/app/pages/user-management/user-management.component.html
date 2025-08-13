@@ -174,7 +174,7 @@
         </td>
         <td tuiTd class="td-stats">
           <button tuiButton appearance="action-grayscale" size="s">
-            {{ row.stats }} <span>Voir plus</span>
+            {{ getUserStats(row) }} <span>Voir plus</span>
           </button>
         </td>
         <td tuiTd class="td-rights">
@@ -187,6 +187,16 @@
         <td tuiTd class="td-action">
           <div class="d-flex gap-2">
             <a class="link-profile">Voir le profil</a>
+            <button
+              tuiButton
+              appearance="action"
+              size="xs"
+              iconStart="@tui.user"
+              tuiIconButton
+              class="btn-roles"
+              (click)="openRolesModal(row)"
+              title="Gérer les rôles"
+            ></button>
             <button
               tuiButton
               appearance="action"
@@ -224,4 +234,15 @@
     ></app-pagination>
   </div>
 </div>
+
+
+<app-user-roles-modal
+  [user]="selectedUserForRoles"
+  [isOpen]="showRolesModal"
+  [availableRoles]="availableRoles"
+  [availablePermissions]="availablePermissions"
+  (closeModal)="closeRolesModal()"
+  (saveChanges)="saveUserRoles($event)"
+></app-user-roles-modal>
+
 </div>

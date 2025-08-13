@@ -32,6 +32,7 @@ import { catchError, of } from 'rxjs';
 
 import { UserManagementService } from '../../services/user-management.service';
 import { PaginationComponent } from '../../components/pagination/pagination.component';
+import { UserRolesModalComponent, UserWithRoles, UserRole } from '../../components/user-roles-modal/user-roles-modal.component';
 
 type TuiSizeS = 's' | 'm';
 
@@ -48,6 +49,10 @@ interface UserRow {
   group: string;
   stats: number;
   rights: string[];
+  roles: string[];
+  permissions: string[];
+  joinedAt?: string;
+  totalConnections?: number;
 }
 
 @Component({
@@ -68,6 +73,7 @@ interface UserRow {
     TuiDropdown,
     TuiChevron,
     PaginationComponent,
+    UserRolesModalComponent,
   ],
   providers: [
     { provide: TUI_CONFIRM, useValue: TUI_CONFIRM },
@@ -99,6 +105,24 @@ export class UserManagementComponent implements OnInit {
   public open = false;
   public items = ['Ajouter une entreprise', 'Attribuer une entreprise'];
 
+  public showRolesModal = false;
+  public selectedUserForRoles: UserWithRoles | null = null;
+  public availableRoles: UserRole[] = [
+    {
+      id: 1,
+      name: 'ROLE_USER',
+      description: 'Accès utilisateur standard',
+      permissions: []
+    },
+    {
+      id: 2,
+      name: 'ROLE_ADMIN',
+      description: 'Accès administrateur complet',
+      permissions: ['CREATE_QUIZ', 'MANAGE_USERS', 'VIEW_RESULTS']
+    }
+  ];
+  public availablePermissions: string[] = ['CREATE_QUIZ', 'MANAGE_USERS', 'VIEW_RESULTS'];
+
   constructor(
     private userService: UserManagementService,
     private dialogService: TuiDialogService,
@@ -113,30 +137,40 @@ export class UserManagementComponent implements OnInit {
       .getUsers()
       .pipe(
         catchError(err => {
-          console.error(' Erreur getUsers()', err);
           this.loadError = true;
           return of([]);
         })
       )
       .subscribe((users: any[]) => {
-        this.allRows = users.map(u => ({
-          id: u.id,
-          selected: false,
-          avatar: u.name ?? u.email,
-          firstName: u.firstName ?? '—',
-          lastName: u.lastName ?? '—',
-          name: `${u.firstName ?? ''} ${u.lastName ?? ''}`.trim(),
-          email: u.email ?? '—',
-          active: u.isActive,
-          organization: u.companyName ?? '—',
-          group:
-            Array.isArray(u.groups) && u.groups.length
-              ? u.groups.map((g: any) => g.name).join(', ')
-              : '—',
-          stats: Math.floor(Math.random() * 1000),
-          rights: (u.userPermissions ?? []).map((p: any) => p.permission),
-        }));
-        console.log(users)
+        this.allRows = users.map(u => {
+          const joinDaysAgo = Math.floor(Math.random() * 365) + 1;
+          const totalConnections = Math.floor(Math.random() * 200) + 10;
+          
+          return {
+            id: u.id,
+            selected: false,
+            avatar: u.name ?? u.email,
+            firstName: u.firstName ?? '—',
+            lastName: u.lastName ?? '—',
+            name: `${u.firstName ?? ''} ${u.lastName ?? ''}`.trim(),
+            email: u.email ?? '—',
+            active: u.isActive,
+            organization: u.companyName ?? '—',
+            group:
+              Array.isArray(u.groups) && u.groups.length
+                ? u.groups.map((g: any) => g.name).join(', ')
+                : '—',
+            stats: totalConnections,
+            rights: (u.userPermissions ?? []).map((p: any) => p.permission),
+            roles: u.roles ?? ['ROLE_USER'],
+            permissions: (u.userPermissions ?? []).map((p: any) => p.permission),
+          quizs: u.quizs ?? [],
+          userAnswers: u.userAnswers ?? [],
+          badges: u.badges ?? [],
+            joinedAt: new Date(Date.now() - joinDaysAgo * 24 * 60 * 60 * 1000).toLocaleDateString('fr-FR'),
+            totalConnections: totalConnections
+          };
+        });
         this.orgOptions = Array.from(new Set(this.allRows.map(r => r.organization))).sort();
         this.rightsOptions = Array.from(new Set(this.allRows.flatMap(r => r.rights))).sort();
         this.applyFilters();
@@ -277,7 +311,6 @@ export class UserManagementComponent implements OnInit {
             }).subscribe();
           },
           error: err => {
-            console.error('Suppression échouée', err);
             this.alerts.open('Échec de la suppression', {
               label: 'Erreur',
               appearance: 'danger',
@@ -290,5 +323,79 @@ export class UserManagementComponent implements OnInit {
 
   onClick(): void {
     this.open = false;
+  }
+
+  openRolesModal(row: UserRow): void {
+    this.selectedUserForRoles = {
+      id: row.id,
+      name: row.name,
+      email: row.email,
+      roles: row.roles,
+      permissions: row.permissions
+    };
+    this.showRolesModal = true;
+    this.cdr.markForCheck();
+  }
+
+  closeRolesModal(): void {
+    this.showRolesModal = false;
+    this.selectedUserForRoles = null;
+    this.cdr.markForCheck();
+  }
+
+  getUserStats(row: any): string {
+    const quizCreated = row.quizs?.length || 0;
+    const quizAnswered = row.userAnswers?.length || 0;
+    const badgesCount = row.badges?.length || 0;
+
+    let averageScore = 0;
+    if (row.userAnswers && row.userAnswers.length > 0) {
+      const correctAnswers = row.userAnswers.filter((answer: any) => answer.isCorrect).length;
+      averageScore = Math.round((correctAnswers / row.userAnswers.length) * 100);
+    }
+    
+    if (quizAnswered > 0 && averageScore > 0) {
+      return `${quizAnswered} quiz • ${averageScore}/100`;
+    } else if (quizCreated > 0 && quizAnswered > 0) {
+      return `${quizCreated} créés • ${quizAnswered} réalisés`;
+    } else if (quizCreated > 0) {
+      return `${quizCreated} quiz créés`;
+    } else if (quizAnswered > 0) {
+      return `${quizAnswered} quiz réalisés`;
+    } else if (badgesCount > 0) {
+      return `${badgesCount} badges`;
+    } else {
+      return 'Aucune activité';
+    }
+  }
+
+  saveUserRoles(changes: { userId: number; roles: string[]; permissions: string[] }): void {
+    this.userService.updateUserRoles(changes.userId, changes.roles, changes.permissions)
+      .subscribe({
+        next: (updatedUser) => {
+          const rowIndex = this.allRows.findIndex(r => r.id === changes.userId);
+          if (rowIndex !== -1) {
+            this.allRows[rowIndex].roles = changes.roles;
+            this.allRows[rowIndex].permissions = changes.permissions;
+            this.allRows[rowIndex].rights = changes.permissions; // Pour la compatibilité avec l'affichage
+          }
+          
+          this.applyFilters();
+          this.closeRolesModal();
+          
+          this.alerts.open('Rôles mis à jour avec succès', {
+            label: 'Succès',
+            appearance: 'positive',
+            autoClose: 3000,
+          }).subscribe();
+        },
+        error: (err) => {
+          this.alerts.open('Erreur lors de la mise à jour des rôles', {
+            label: 'Erreur',
+            appearance: 'danger',
+            autoClose: 3000,
+          }).subscribe();
+        }
+      });
   }
 }

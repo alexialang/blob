@@ -176,14 +176,223 @@ class UserService
     public function confirmToken(string $token): ?User
     {
         $user = $this->userRepository->findOneBy(['confirmationToken' => $token]);
+        
         if (null === $user) {
+            return null;
+        }
+
+        if ($user->isVerified()) {
             return null;
         }
 
         $user->setIsVerified(true);
         $user->setConfirmationToken(null);
         $this->em->flush();
-
+        
         return $user;
+    }
+
+    public function updateProfile(User $user, array $data): User
+    {
+        if (isset($data['pseudo']) && \is_string($data['pseudo'])) {
+            $user->setPseudo($data['pseudo']);
+        }
+        if (isset($data['firstName']) && \is_string($data['firstName'])) {
+            $user->setFirstName($data['firstName']);
+        }
+        if (isset($data['lastName']) && \is_string($data['lastName'])) {
+            $user->setLastName($data['lastName']);
+        }
+        if (isset($data['avatar']) && \is_string($data['avatar'])) {
+            $user->setAvatar($data['avatar']);
+        }
+        
+        // Gérer les données d'avatar séparées (shape et color)
+        if (isset($data['avatarShape']) && isset($data['avatarColor'])) {
+            $avatarData = [
+                'shape' => $data['avatarShape'],
+                'color' => $data['avatarColor']
+            ];
+            $user->setAvatar(json_encode($avatarData));
+        }
+
+        $this->em->flush();
+        return $user;
+    }
+
+    public function getUserStatistics(User $user): array
+    {
+        $totalQuizzesCreated = $user->getQuizs()->count();
+        $totalQuizzesCompleted = $user->getUserAnswers()->count();
+        
+        $totalScore = 0;
+        $scoreHistory = [];
+        $categoryPerformance = [];
+        
+        foreach ($user->getUserAnswers() as $userAnswer) {
+            $score = $userAnswer->getTotalScore() ?? 0;
+            $totalScore += $score;
+            
+            // Historique des scores avec date
+            $scoreHistory[] = [
+                'date' => $userAnswer->getDateAttempt()->format('Y-m-d'),
+                'score' => $score,
+                'quizTitle' => $userAnswer->getQuiz()?->getTitle() ?? 'Quiz inconnu'
+            ];
+            
+            // Performance par catégorie (si disponible)
+            if ($userAnswer->getQuiz() && $userAnswer->getQuiz()->getCategory()) {
+                $categoryName = $userAnswer->getQuiz()->getCategory()->getName();
+                if (!isset($categoryPerformance[$categoryName])) {
+                    $categoryPerformance[$categoryName] = ['total' => 0, 'count' => 0];
+                }
+                $categoryPerformance[$categoryName]['total'] += $score;
+                $categoryPerformance[$categoryName]['count']++;
+            }
+        }
+        
+        // Trier l'historique par date
+        usort($scoreHistory, function($a, $b) {
+            return strtotime($a['date']) - strtotime($b['date']);
+        });
+        
+        // Calculer les moyennes par catégorie
+        $categoryAverages = [];
+        foreach ($categoryPerformance as $category => $data) {
+            $categoryAverages[] = [
+                'category' => $category,
+                'average' => round($data['total'] / $data['count'], 1),
+                'count' => $data['count']
+            ];
+        }
+        
+        $averageScore = $totalQuizzesCompleted > 0 ? round($totalScore / $totalQuizzesCompleted, 1) : 0;
+        $badgesEarned = $user->getBadges()->count();
+        
+        return [
+            'totalQuizzesCreated' => $totalQuizzesCreated,
+            'totalQuizzesCompleted' => $totalQuizzesCompleted,
+            'totalScore' => $totalScore,
+            'averageScore' => $averageScore,
+            'badgesEarned' => $badgesEarned,
+            'memberSince' => $user->getDateRegistration()->format('Y-m-d'),
+            'lastAccess' => $user->getLastAccess()?->format('Y-m-d H:i:s'),
+            'scoreHistory' => $scoreHistory,
+            'categoryPerformance' => $categoryAverages
+        ];
+    }
+
+    public function getLeaderboard(int $limit, User $currentUser): array
+    {
+        // Récupérer tous les utilisateurs actifs avec leurs scores
+        $users = $this->userRepository->createQueryBuilder('u')
+            ->where('u.deletedAt IS NULL')
+            ->andWhere('u.isActive = true')
+            ->getQuery()
+            ->getResult();
+
+        $leaderboardData = [];
+        
+        foreach ($users as $user) {
+            $totalScore = 0;
+            $quizzesCompleted = 0;
+            $totalAnswers = $user->getUserAnswers()->count();
+            
+            foreach ($user->getUserAnswers() as $userAnswer) {
+                $totalScore += $userAnswer->getTotalScore() ?? 0;
+                $quizzesCompleted++;
+            }
+            
+            $averageScore = $quizzesCompleted > 0 ? round($totalScore / $quizzesCompleted, 1) : 0;
+            $badgesCount = $user->getBadges()->count();
+            
+            // Calculer un score de classement (combinaison de total, moyenne et badges)
+            $rankingScore = $totalScore + ($averageScore * 2) + ($badgesCount * 50);
+            
+            $leaderboardData[] = [
+                'id' => $user->getId(),
+                'pseudo' => $user->getPseudo() ?: ($user->getFirstName() . ' ' . substr($user->getLastName(), 0, 1) . '.'),
+                'firstName' => $user->getFirstName(),
+                'lastName' => $user->getLastName(),
+                'avatar' => $user->getAvatar() ?: 'avatar-1',
+                'totalScore' => $totalScore,
+                'averageScore' => $averageScore,
+                'quizzesCompleted' => $quizzesCompleted,
+                'badgesCount' => $badgesCount,
+                'rankingScore' => $rankingScore,
+                'memberSince' => $user->getDateRegistration()->format('Y-m-d'),
+                'isCurrentUser' => $user->getId() === $currentUser->getId()
+            ];
+        }
+        
+        // Trier par score de classement décroissant
+        usort($leaderboardData, function($a, $b) {
+            return $b['rankingScore'] - $a['rankingScore'];
+        });
+        
+        // Ajouter les positions
+        foreach ($leaderboardData as $index => &$userData) {
+            $userData['position'] = $index + 1;
+        }
+        
+        // Trouver la position de l'utilisateur actuel
+        $currentUserPosition = null;
+        $currentUserData = null;
+        foreach ($leaderboardData as $userData) {
+            if ($userData['isCurrentUser']) {
+                $currentUserPosition = $userData['position'];
+                $currentUserData = $userData;
+                break;
+            }
+        }
+        
+        // Limiter aux N premiers utilisateurs
+        $topUsers = array_slice($leaderboardData, 0, $limit);
+        
+        return [
+            'leaderboard' => $topUsers,
+            'currentUser' => [
+                'position' => $currentUserPosition,
+                'data' => $currentUserData,
+                'totalUsers' => count($leaderboardData)
+            ],
+            'meta' => [
+                'totalUsers' => count($leaderboardData),
+                'limit' => $limit,
+                'generatedAt' => (new \DateTime())->format('Y-m-d H:i:s')
+            ]
+        ];
+    }
+
+    public function getGameHistory(User $user): array
+    {
+        $userAnswers = $this->em->getRepository(\App\Entity\UserAnswer::class)
+            ->createQueryBuilder('ua')
+            ->select('ua', 'q')
+            ->leftJoin('ua.quiz', 'q')
+            ->where('ua.user = :user')
+            ->setParameter('user', $user)
+            ->orderBy('ua.date_attempt', 'DESC')
+            ->setMaxResults(50)
+            ->getQuery()
+            ->getResult();
+
+        $history = [];
+        foreach ($userAnswers as $userAnswer) {
+            $quiz = $userAnswer->getQuiz();
+            $history[] = [
+                'id' => $userAnswer->getId(),
+                'quiz' => [
+                    'id' => $quiz->getId(),
+                    'title' => $quiz->getTitle(),
+                    'description' => $quiz->getDescription()
+                ],
+                'score' => $userAnswer->getTotalScore(),
+                'date' => $userAnswer->getDateAttempt()->format('Y-m-d H:i:s'),
+                'timestamp' => $userAnswer->getDateAttempt()->getTimestamp()
+            ];
+        }
+
+        return $history;
     }
 }
