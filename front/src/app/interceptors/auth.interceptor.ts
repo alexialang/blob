@@ -21,6 +21,21 @@ export class AuthInterceptor implements HttpInterceptor {
     req: HttpRequest<any>,
     next: HttpHandler
   ): Observable<HttpEvent<any>> {
+    const publicUrls = [
+      'average-rating',
+      'public-leaderboard',
+      'login_check',
+      'token/refresh',
+      'quiz/list',
+      'quiz/organized'
+    ];
+
+    const isPublicUrl = publicUrls.some(url => req.url.includes(url));
+    
+    if (isPublicUrl) {
+      return next.handle(req);
+    }
+
     const token = this.auth.getToken();
     let authReq = req;
     if (token) {
