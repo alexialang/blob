@@ -19,6 +19,7 @@ import { Question, Answer } from '../../models/quiz.model';
 import { SlideButtonComponent } from '../../components/slide-button/slide-button.component';
 import { BackButtonComponent } from '../../components/back-button/back-button.component';
 import { TuiIcon } from '@taiga-ui/core';
+import { AlertService } from '../../services/alert.service';
 
 
 @Component({
@@ -92,7 +93,8 @@ export class QuizGameComponent implements OnInit, OnDestroy {
         private route: ActivatedRoute,
         private router: Router,
         private quizGameService: QuizGameService,
-        private quizResultsService: QuizResultsService
+        private quizResultsService: QuizResultsService,
+        private alertService: AlertService
     ) { }
 
     ngOnInit(): void {
@@ -368,8 +370,7 @@ export class QuizGameComponent implements OnInit, OnDestroy {
                 url: quizUrl
             });
         } else {
-            navigator.clipboard.writeText(quizUrl);
-            alert('Lien copié dans le presse-papier !');
+            this.copyQuizLink();
         }
     }
 
@@ -403,6 +404,15 @@ export class QuizGameComponent implements OnInit, OnDestroy {
 
         this.router.navigate(['/quiz', this.quizData.id, 'results'], {
             state: resultData
+        });
+    }
+
+    copyQuizLink(): void {
+        const url = window.location.href;
+        navigator.clipboard.writeText(url).then(() => {
+            this.alertService.success('Lien copié dans le presse-papier !');
+        }).catch(() => {
+            this.alertService.error('Erreur lors de la copie du lien');
         });
     }
 }
