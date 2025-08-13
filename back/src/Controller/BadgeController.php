@@ -113,4 +113,22 @@ class BadgeController extends AbstractController
 
         return $this->json(null, 204);
     }
+
+    /**
+     * @OA\Post(summary="Initialiser les badges par défaut", tags={"Badge"})
+     * @OA\Response(response=200, description="Badges initialisés")
+     * @OA\Security(name="bearerAuth")
+     */
+    #[Route('/initialize', name: 'badge_initialize', methods: ['POST'])]
+    public function initialize(): JsonResponse
+    {
+        try {
+            $this->badgeService->initializeBadges();
+            return $this->json(['message' => 'Badges initialisés avec succès'], 200);
+        } catch (\Exception $e) {
+            return $this->json(['error' => 'Erreur lors de l\'initialisation: ' . $e->getMessage()], 500);
+        }
+    }
+
+
 }
