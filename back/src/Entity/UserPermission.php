@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Enum\Permission;
 use App\Repository\UserPermissionRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -15,8 +16,9 @@ class UserPermission
     #[Groups(['user:read', 'user_permission:read'])]
     private ?int $id = null;
 
-    #[ORM\Column(length: 100)]
-    private ?string $permission = null;
+    #[ORM\Column(type: 'string', enumType: Permission::class)]
+    #[Groups(['user:read', 'user_permission:read'])]
+    private ?Permission $permission = null;
 
     #[ORM\ManyToOne(inversedBy: 'userPermissions')]
     #[Groups(['user:read', 'user_permission:read'])]
