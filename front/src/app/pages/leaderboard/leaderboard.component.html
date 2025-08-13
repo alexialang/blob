@@ -1,6 +1,6 @@
 <div class="leaderboard-container">
   <div class="container">
-    <!-- En-tête -->
+
     <div class="header-section">
       <div class="header-content">
         <div class="header-icon">
@@ -16,13 +16,13 @@
       </div>
     </div>
 
-    <!-- Loading State -->
+
     <div class="loading-container" *ngIf="isLoading">
       <div class="spinner"></div>
       <p>Chargement du classement...</p>
     </div>
 
-    <!-- Error State -->
+
     <div class="error-container" *ngIf="error && !isLoading">
       <div class="error-card">
         <i class="fas fa-exclamation-triangle"></i>
@@ -32,10 +32,10 @@
       </div>
     </div>
 
-    <!-- Leaderboard Content -->
+
     <div class="leaderboard-content" *ngIf="leaderboardData && !isLoading">
 
-      <!-- Podium (Top 3) -->
+
       <div class="podium-section">
         <div class="podium-card">
           <h2 class="podium-title">
@@ -44,7 +44,7 @@
           </h2>
 
           <div class="podium" *ngIf="leaderboardData.leaderboard.length > 0">
-          <!-- 2ème place -->
+
           <div class="podium-player second-place" *ngIf="leaderboardData.leaderboard.length >= 2">
           <div class="player-avatar">
           <img [src]="'assets/avatars/' + leaderboardData.leaderboard[1].avatar + '.svg'"
@@ -63,7 +63,7 @@
           </div>
           </div>
 
-          <!-- 1ère place -->
+
           <div class="podium-player first-place" *ngIf="leaderboardData.leaderboard.length >= 1">
           <div class="player-avatar">
           <img [src]="'assets/avatars/' + leaderboardData.leaderboard[0].avatar + '.svg'"
@@ -83,7 +83,7 @@
           <div class="crown-effect"></div>
           </div>
 
-          <!-- 3ème place -->
+
           <div class="podium-player third-place" *ngIf="leaderboardData.leaderboard.length >= 3">
           <div class="player-avatar">
           <img [src]="'assets/avatars/' + leaderboardData.leaderboard[2].avatar + '.svg'"
@@ -102,7 +102,7 @@
           </div>
           </div>
 
-            <!-- Places vides si moins de 3 joueurs -->
+
             <div class="podium-player empty-place second-place" *ngIf="leaderboardData.leaderboard.length < 2">
               <div class="player-avatar empty">
                 <div class="medal silver">
@@ -132,7 +132,7 @@
         </div>
       </div>
 
-      <!-- Ma Position -->
+
       <div class="my-position-section" *ngIf="leaderboardData.currentUser">
         <div class="my-position-card">
           <div class="card-header">
@@ -169,7 +169,7 @@
         </div>
       </div>
 
-      <!-- Classement Complet -->
+
       <div class="ranking-section">
         <div class="ranking-card">
           <div class="card-header">
@@ -236,7 +236,7 @@
         </div>
       </div>
 
-      <!-- Footer Stats -->
+
       <div class="footer-stats">
         <div class="stat-item">
           <i class="fas fa-users"></i>

@@ -22,7 +22,6 @@ export class StatisticsChartsComponent implements OnInit, AfterViewInit, OnDestr
   ngOnInit() {}
   
   ngAfterViewInit() {
-    // Attendre que Chart.js soit chargé
     this.loadChartJs().then(() => {
       if (this.userStatistics) {
         this.createCharts();
@@ -41,7 +40,6 @@ export class StatisticsChartsComponent implements OnInit, AfterViewInit, OnDestr
   
   private async loadChartJs(): Promise<void> {
     if (typeof Chart === 'undefined') {
-      // Charger Chart.js dynamiquement
       const script = document.createElement('script');
       script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
       document.head.appendChild(script);
@@ -68,8 +66,6 @@ export class StatisticsChartsComponent implements OnInit, AfterViewInit, OnDestr
     if (!this.scoreChart || !this.userStatistics?.scoreHistory) return;
     
     const ctx = this.scoreChart.nativeElement.getContext('2d');
-    
-    // Détruire le graphique existant s'il existe
     if (this.scoreEvolutionChartInstance) {
       this.scoreEvolutionChartInstance.destroy();
     }
@@ -159,8 +155,6 @@ export class StatisticsChartsComponent implements OnInit, AfterViewInit, OnDestr
     if (!this.categoryChart || !this.userStatistics?.categoryPerformance) return;
     
     const ctx = this.categoryChart.nativeElement.getContext('2d');
-    
-    // Détruire le graphique existant s'il existe
     if (this.categoryChartInstance) {
       this.categoryChartInstance.destroy();
     }
@@ -168,8 +162,6 @@ export class StatisticsChartsComponent implements OnInit, AfterViewInit, OnDestr
     const categoryData = this.userStatistics.categoryPerformance || [];
     const labels = categoryData.map((item: any) => item.category);
     const averages = categoryData.map((item: any) => item.average);
-    
-    // Couleurs dynamiques pour chaque catégorie
     const colors = [
       'rgba(102, 126, 234, 0.8)',
       'rgba(76, 175, 80, 0.8)',
@@ -254,8 +246,8 @@ export class StatisticsChartsComponent implements OnInit, AfterViewInit, OnDestr
     }
     
     const scores = this.userStatistics.scoreHistory;
-    const recentScores = scores.slice(-3); // 3 derniers scores
-    const olderScores = scores.slice(0, -3); // Scores précédents
+    const recentScores = scores.slice(-3);
+    const olderScores = scores.slice(0, -3);
     
     if (olderScores.length === 0) return 0;
     
@@ -267,17 +259,12 @@ export class StatisticsChartsComponent implements OnInit, AfterViewInit, OnDestr
   
   getRecommendedTarget(): number {
     if (!this.hasScoreHistory()) {
-      return 80; // Objectif par défaut
+      return 80;
     }
     
     const scores = this.userStatistics.scoreHistory.map((item: any) => item.score);
     const averageScore = scores.reduce((sum: number, score: number) => sum + score, 0) / scores.length;
     const maxScore = Math.max(...scores);
-    
-    // Recommander un objectif légèrement supérieur à la moyenne ou au max
     return Math.min(100, Math.round(Math.max(averageScore + 10, maxScore + 5)));
   }
-  
-  // Méthode pour exposer Math.abs dans le template
-  Math = Math;
 }

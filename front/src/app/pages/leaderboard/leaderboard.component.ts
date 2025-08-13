@@ -58,7 +58,6 @@ export class LeaderboardComponent implements OnInit {
     this.http.get<LeaderboardResponse>(`${environment.apiBaseUrl}/leaderboard?limit=50`)
       .subscribe({
         next: (data) => {
-          // S'assurer qu'il n'y a pas de doublons en utilisant l'ID utilisateur
           if (data.leaderboard) {
             const uniqueUsers = new Map();
             data.leaderboard.forEach(user => {
@@ -67,8 +66,6 @@ export class LeaderboardComponent implements OnInit {
               }
             });
             data.leaderboard = Array.from(uniqueUsers.values());
-            
-            // Réassigner les positions après déduplication
             data.leaderboard.forEach((user, index) => {
               user.position = index + 1;
             });
@@ -78,7 +75,6 @@ export class LeaderboardComponent implements OnInit {
           this.isLoading = false;
         },
         error: (error) => {
-          console.error('Erreur lors du chargement du classement:', error);
           this.error = 'Impossible de charger le classement';
           this.isLoading = false;
         }

@@ -1,7 +1,6 @@
 <div class="charts-container" *ngIf="userStatistics">
   
   <div class="charts-grid">
-    <!-- Graphique d'évolution des scores -->
     <div class="chart-section" *ngIf="hasScoreHistory()">
       <div class="chart-card">
         <div class="chart-header">
@@ -19,7 +18,7 @@
       </div>
     </div>
 
-    <!-- Graphique de performance par catégorie -->
+
     <div class="chart-section" *ngIf="hasCategoryData()">
       <div class="chart-card">
         <div class="chart-header">
@@ -38,7 +37,7 @@
     </div>
   </div>
 
-  <!-- Message si pas de données -->
+
   <div class="no-data-message" *ngIf="!hasScoreHistory() && !hasCategoryData()">
     <div class="no-data-card">
       <div class="no-data-icon">

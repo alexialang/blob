@@ -133,7 +133,6 @@
 
 
 
-// Responsive
 @media (max-width: 768px) {
   .charts-grid {
     grid-template-columns: 1fr;
@@ -173,7 +172,7 @@
   }
 }
 
-// Animations pour les graphiques
+
 @keyframes chartFadeIn {
   from {
     opacity: 0;
