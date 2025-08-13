@@ -55,9 +55,12 @@ security:
         - { path: ^/api/quiz/list$, methods: [ GET ], roles: PUBLIC_ACCESS }
         - { path: ^/api/quiz/[0-9]+$, methods: [ GET ], roles: PUBLIC_ACCESS }
         - { path: ^/api/quiz/organized$, methods: [ GET ], roles: PUBLIC_ACCESS }
+        - { path: ^/api/quiz/[0-9]+/average-rating$, methods: [ GET ], roles: PUBLIC_ACCESS }
+        - { path: ^/api/quiz/[0-9]+/public-leaderboard$, methods: [ GET ], roles: PUBLIC_ACCESS }
         - { path: ^/api/category-quiz, methods: [ GET ], roles: PUBLIC_ACCESS }
 
         - { path: ^/api/game, roles: PUBLIC_ACCESS }
+        - { path: ^/api/donations, roles: PUBLIC_ACCESS }
 
         - { path: ^/api, roles: ROLE_USER }
 

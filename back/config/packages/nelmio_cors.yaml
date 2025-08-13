@@ -9,9 +9,9 @@ nelmio_cors:
         allow_credentials: false
     paths:
         '^/api/':
-            allow_origin: [ '*' ]
-            allow_headers: [ 'Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin' ]
-            allow_methods: [ 'GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH' ]
+            allow_origin: ['*']
+            allow_headers: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin']
+            allow_methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH']
             max_age: 3600
             allow_credentials: false
 
