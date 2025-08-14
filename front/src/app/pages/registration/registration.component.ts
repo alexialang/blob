@@ -3,18 +3,28 @@ import {
   FormBuilder,
   FormGroup,
   Validators,
-  ReactiveFormsModule
+  ReactiveFormsModule,
+  AbstractControl
 } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { NgIf } from '@angular/common';
-import {SlideButtonComponent} from '../../components/slide-button/slide-button.component';
+import { SlideButtonComponent } from '../../components/slide-button/slide-button.component';
+import { PasswordInputComponent } from '../../components/password-input/password-input.component';
+import { PasswordStrengthIndicatorComponent } from '../../components/password-strength-indicator/password-strength-indicator.component';
 import { isPlatformBrowser } from '@angular/common';
 
 @Component({
   standalone: true,
   selector: 'app-registration',
-  imports: [ReactiveFormsModule, NgIf, RouterLink, SlideButtonComponent],
+  imports: [
+    ReactiveFormsModule, 
+    NgIf, 
+    RouterLink, 
+    SlideButtonComponent,
+    PasswordInputComponent,
+    PasswordStrengthIndicatorComponent
+  ],
   templateUrl: './registration.component.html',
   styleUrls: ['./registration.component.scss']
 })
@@ -33,7 +43,7 @@ export class RegistrationComponent implements OnInit {
       firstName: ['', [Validators.required]],
       lastName:  ['', [Validators.required]],
       email:     ['', [Validators.required, Validators.email]],
-      password:  ['', [Validators.required, Validators.minLength(6)]],
+      password:  ['', [Validators.required, Validators.minLength(8), this.passwordStrengthValidator()]],
       confirm:   ['', [Validators.required]],
       tos:       [false, [Validators.requiredTrue]],
       recaptcha: ['', [Validators.required]]
@@ -64,6 +74,24 @@ export class RegistrationComponent implements OnInit {
       : { mismatch: true };
   }
 
+  private passwordStrengthValidator() {
+    return (control: AbstractControl): {[key: string]: any} | null => {
+      const password = control.value;
+      if (!password) return null;
+
+      const hasUpperCase = /[A-Z]/.test(password);
+      const hasLowerCase = /[a-z]/.test(password);
+      const hasNumbers = /\d/.test(password);
+      const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+      if (!hasUpperCase || !hasLowerCase || !hasNumbers || !hasSpecialChar) {
+        return { passwordStrength: true };
+      }
+
+      return null;
+    };
+  }
+
   onSubmit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -81,6 +109,7 @@ export class RegistrationComponent implements OnInit {
   onCaptchaResolved(captchaResponse: string | null): void {
     this.form.patchValue({ recaptcha: captchaResponse });
   }
+
   showError(fieldName: string): boolean {
     const field = this.form.get(fieldName);
     return field ? field.invalid && field.touched : false;
@@ -88,11 +117,26 @@ export class RegistrationComponent implements OnInit {
 
   showPasswordError(): boolean {
     const password = this.form.get('password');
-    return password ? password.hasError('minlength') && password.touched : false;
+    return password ? (password.hasError('minlength') || password.hasError('passwordStrength')) && password.touched : false;
   }
 
   showConfirmError(): boolean {
     const confirm = this.form.get('confirm');
     return this.form.hasError('mismatch') && confirm ? confirm.touched : false;
+  }
+
+  getPasswordErrorMessage(): string {
+    const password = this.form.get('password');
+    if (!password) return '';
+
+    if (password.hasError('minlength')) {
+      return 'Le mot de passe doit contenir au moins 8 caractères';
+    }
+
+    if (password.hasError('passwordStrength')) {
+      return 'Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un caractère spécial';
+    }
+
+    return '';
   }
 }

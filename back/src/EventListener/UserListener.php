@@ -21,7 +21,11 @@ class UserListener
     public function onPostPersist(User $user): void
     {
         if (null !== $user->getConfirmationToken() && !$user->isVerified()) {
-            $this->userService->sendQueueEmail($user);
+            $this->userService->sendEmail(
+                $user->getEmail(),
+                $user->getFirstName(),
+                $user->getConfirmationToken()
+            );
         }
     }
 }

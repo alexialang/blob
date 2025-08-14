@@ -49,17 +49,21 @@ class UserController extends AbstractController
         try {
             $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
             
-            if (isset($data['recaptchaToken'])) {
-                if (!$this->userService->verifyCaptcha($data['recaptchaToken'])) {
-                    return $this->json(['error' => 'Échec de la vérification CAPTCHA'], 400);
-                }
-            }
+             if (isset($data['recaptchaToken'])) {
+                 if (!$this->userService->verifyCaptcha($data['recaptchaToken'])) {
+                     return $this->json(['error' => 'Échec de la vérification CAPTCHA'], 400);
+                 }
+             }
             
             $user = $this->userService->create($data);
 
             return $this->json($user, 201, [], ['groups' => ['user:read']]);
         } catch (\JsonException $e) {
             return $this->json(['error' => 'Invalid JSON'], 400);
+        } catch (\InvalidArgumentException $e) {
+            return $this->json(['error' => $e->getMessage()], 400);
+        } catch (\Exception $e) {
+            return $this->json(['error' => 'Erreur lors de la création de l\'utilisateur'], 500);
         }
     }
 

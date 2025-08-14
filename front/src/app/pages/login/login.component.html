@@ -32,13 +32,12 @@
         placeholder="Email"
         required
       />
-      <input
-        type="password"
-        name="password"
-        [(ngModel)]="password"
+      <app-password-input
         placeholder="Mot de passe"
-        required
-      />
+        [value]="password"
+        (valueChange)="onPasswordChange($event)"
+        [required]="true">
+      </app-password-input>
       <a class="forgot" routerLink="/mot-de-passe-oublie">Mot de passe oublié ?</a>
       <app-slide-button
         label="Se connecter"

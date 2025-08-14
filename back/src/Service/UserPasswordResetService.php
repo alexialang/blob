@@ -57,6 +57,10 @@ class UserPasswordResetService
             return false;
         }
 
+        if (!$this->isPasswordValid($newPassword)) {
+            return false;
+        }
+
         $user = $this->userRepository->findOneBy(['passwordResetToken' => $token]);
         if (!$user || $this->tokenExpired($user)) {
             return false;
@@ -67,6 +71,31 @@ class UserPasswordResetService
         $user->setPassword($this->passwordHasher->hashPassword($user, $newPassword));
 
         $this->em->flush();
+        return true;
+    }
+
+    private function isPasswordValid(string $password): bool
+    {
+        if (strlen($password) < 8) {
+            return false;
+        }
+
+        if (!preg_match('/[A-Z]/', $password)) {
+            return false;
+        }
+
+        if (!preg_match('/[a-z]/', $password)) {
+            return false;
+        }
+
+        if (!preg_match('/\d/', $password)) {
+            return false;
+        }
+
+        if (!preg_match('/[!@#$%^&*(),.?":{}|<>]/', $password)) {
+            return false;
+        }
+
         return true;
     }
 

@@ -4,10 +4,11 @@ import { AuthService } from '../../services/auth.service';
 import { FormsModule } from '@angular/forms';
 import { NgIf } from '@angular/common';
 import { SlideButtonComponent } from '../../components/slide-button/slide-button.component';
+import { PasswordInputComponent } from '../../components/password-input/password-input.component';
 
 @Component({
   standalone: true,
-  imports: [FormsModule, NgIf, SlideButtonComponent, RouterLink],
+  imports: [FormsModule, NgIf, SlideButtonComponent, RouterLink, PasswordInputComponent],
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
@@ -22,6 +23,10 @@ export class LoginComponent {
     private readonly auth: AuthService,
     private readonly router: Router
   ) {}
+
+  onPasswordChange(value: string): void {
+    this.password = value;
+  }
 
   onSubmit() {
     this.error = undefined;
@@ -44,5 +49,4 @@ export class LoginComponent {
     this.auth.setGuestMode();
     this.router.navigate(['/quiz']);
   }
-
 }

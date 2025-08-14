@@ -27,19 +27,30 @@
         Email invalide
       </div>
 
-      <input
-        type="password"
+      <app-password-input
         formControlName="password"
-        placeholder="Mot de passe" />
-      <div *ngIf="showPasswordError()" class="error">
-        Minimum 6 caractères
+        placeholder="Mot de passe"
+        [hasError]="showPasswordError()"
+        aria-describedby="password-error">
+      </app-password-input>
+
+      <div *ngIf="showPasswordError()" class="error" id="password-error">
+        {{ getPasswordErrorMessage() }}
       </div>
 
-      <input
-        type="password"
+      <app-password-strength-indicator
+        [password]="form.get('password')?.value"
+        theme="dark">
+      </app-password-strength-indicator>
+
+      <app-password-input
         formControlName="confirm"
-        placeholder="Confirmez le mot de passe" />
-      <div *ngIf="showConfirmError()" class="error">
+        placeholder="Confirmez le mot de passe"
+        [hasError]="showConfirmError()"
+        aria-describedby="confirm-error">
+      </app-password-input>
+
+      <div *ngIf="showConfirmError()" class="error" id="confirm-error">
         Les mots de passe ne correspondent pas
       </div>
 
@@ -51,7 +62,7 @@
         Vous devez accepter les conditions
       </div>
 
-      <div class="g-recaptcha" 
+      <div class="g-recaptcha"
            data-sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"
            data-callback="onCaptchaCallback">
       </div>
@@ -70,13 +81,8 @@
 
       <p class="no-account">
         Vous avez déjà un compte ?
-        <app-slide-button
-          label="Se connecter"
-          [negative]="false">
-        </app-slide-button>
+        <a routerLink="/connexion">Se connecter</a>
       </p>
-
-      <a class="skip" routerLink="/">Passer cette étape</a>
     </form>
   </div>
 

@@ -38,10 +38,35 @@ class PasswordResetController extends AbstractController
             return $this->json(['error' => 'Mots de passe manquants'], 400);
         }
 
+        if ($data['password'] !== $data['confirmPassword']) {
+            return $this->json(['error' => 'Les mots de passe ne correspondent pas'], 400);
+        }
+
+        $password = $data['password'];
+        if (strlen($password) < 8) {
+            return $this->json(['error' => 'Le mot de passe doit contenir au moins 8 caractères'], 400);
+        }
+
+        if (!preg_match('/[A-Z]/', $password)) {
+            return $this->json(['error' => 'Le mot de passe doit contenir au moins une majuscule'], 400);
+        }
+
+        if (!preg_match('/[a-z]/', $password)) {
+            return $this->json(['error' => 'Le mot de passe doit contenir au moins une minuscule'], 400);
+        }
+
+        if (!preg_match('/\d/', $password)) {
+            return $this->json(['error' => 'Le mot de passe doit contenir au moins un chiffre'], 400);
+        }
+
+        if (!preg_match('/[!@#$%^&*(),.?":{}|<>]/', $password)) {
+            return $this->json(['error' => 'Le mot de passe doit contenir au moins un caractère spécial'], 400);
+        }
+
         $success = $this->resetService->resetPassword($token, $data['password'], $data['confirmPassword']);
 
         if (!$success) {
-            return $this->json(['error' => 'Lien invalide, expiré ou mots de passe différents'], 400);
+            return $this->json(['error' => 'Lien invalide ou expiré'], 400);
         }
 
         return $this->json(['message' => 'Mot de passe réinitialisé avec succès']);

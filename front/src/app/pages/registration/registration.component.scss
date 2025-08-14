@@ -7,8 +7,6 @@
     font-family: "LCMogiA", serif;
   }
 
-
-
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
     grid-template-rows: auto 1fr;
@@ -89,6 +87,64 @@
         }
       }
 
+      .password-container {
+        position: relative;
+        width: 100%;
+
+        input {
+          padding-right: 3rem;
+        }
+
+        .password-toggle {
+          position: absolute;
+          right: 1rem;
+          top: 50%;
+          transform: translateY(-50%);
+          background: none;
+          border: none;
+          color: white;
+          cursor: pointer;
+          font-size: 1.2rem;
+          padding: 0.5rem;
+          border-radius: 50%;
+          transition: background-color 0.2s;
+
+          &:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+          }
+
+          &:focus {
+            outline: none;
+            background-color: rgba(255, 255, 255, 0.2);
+          }
+        }
+      }
+
+      .password-strength {
+        margin-top: 0.5rem;
+        text-align: center;
+
+        .strength-bar {
+          width: 100%;
+          height: 4px;
+          background-color: rgba(255, 255, 255, 0.3);
+          border-radius: 2px;
+          overflow: hidden;
+          margin-bottom: 0.5rem;
+
+          .strength-fill {
+            height: 100%;
+            transition: width 0.3s ease, background-color 0.3s ease;
+            border-radius: 2px;
+          }
+        }
+
+        .strength-text {
+          font-size: 0.8rem;
+          font-weight: 500;
+        }
+      }
+
       .tos {
         font-size: 0.8rem;
         display: flex;
@@ -120,9 +176,14 @@
         text-align: center;
         color: white;
 
-        app-slide-button {
-          margin-top: 1rem;
-          width: 100%;
+        a {
+          color: white;
+          text-decoration: underline;
+          transition: opacity 0.2s;
+
+          &:hover {
+            opacity: 0.8;
+          }
         }
       }
 
@@ -167,6 +228,20 @@
           min-height: 45px;
         }
 
+        .password-container {
+          width: 80%;
+          margin: 0 auto;
+
+          input {
+            padding-right: 3rem;
+          }
+        }
+
+        .password-strength {
+          width: 80%;
+          margin: 0.5rem auto 0;
+        }
+
         .tos,
         .error,
         app-slide-button {
@@ -202,6 +277,16 @@
           width: 85%;
           padding: 0.8rem 1.2rem;
           font-size: 0.9rem;
+        }
+
+        .password-container {
+          width: 85%;
+          margin: 0 auto;
+        }
+
+        .password-strength {
+          width: 85%;
+          margin: 0.5rem auto 0;
         }
 
         .tos,
@@ -327,7 +412,6 @@
     }
   }
 }
-
 
 h1 {
   color: white;
