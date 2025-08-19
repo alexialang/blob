@@ -9,6 +9,9 @@ use App\Repository\QuizRepository;
 use App\Repository\UserAnswerRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Exception\ValidationFailedException;
 
 class GameService
 {
@@ -20,11 +23,13 @@ class GameService
     public function __construct(
         EntityManagerInterface $em,
         QuizRepository $quizRepository,
-        UserAnswerRepository $userAnswerRepository
+        UserAnswerRepository $userAnswerRepository,
+        ValidatorInterface $validator
     ) {
         $this->em = $em;
         $this->quizRepository = $quizRepository;
         $this->userAnswerRepository = $userAnswerRepository;
+        $this->validator = $validator;
     }
 
     public function startGame(int $quizId, User $user): array
@@ -122,6 +127,7 @@ class GameService
 
     public function submitAnswer(string $sessionId, User $user, array $data): array
     {
+        $this->validateGameAnswerData($data);
         if (!isset($this->gameSessions[$sessionId])) {
             throw new BadRequestException('Session de jeu non trouvée');
         }
@@ -411,4 +417,27 @@ class GameService
         }
     }
 
+    private function validateGameAnswerData(array $data): void
+    {
+        $constraints = new Assert\Collection([
+            'answer' => [
+                new Assert\NotBlank(['message' => 'La réponse est requise']),
+                new Assert\Length(['max' => 1000, 'maxMessage' => 'La réponse ne peut pas dépasser 1000 caractères'])
+            ],
+            'question_id' => [
+                new Assert\NotBlank(['message' => 'L\'ID de la question est requis']),
+                new Assert\Type(['type' => 'integer', 'message' => 'L\'ID de la question doit être un entier'])
+            ],
+            'time_spent' => [
+                new Assert\Optional([
+                    new Assert\Type(['type' => 'integer', 'message' => 'Le temps passé doit être un entier'])
+                ])
+            ]
+        ]);
+
+        $errors = $this->validator->validate($data, $constraints);
+        if (count($errors) > 0) {
+            throw new ValidationFailedException($constraints, $errors);
+        }
+    }
 }

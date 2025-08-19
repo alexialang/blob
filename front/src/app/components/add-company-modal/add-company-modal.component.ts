@@ -1,15 +1,17 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Output, ElementRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TuiDialogService, TuiAlertService } from '@taiga-ui/core';
 import { CompanyService } from '../../services/company.service';
+import { ModalAccessibilityDirective } from '../../directives/modal-accessibility.directive';
 
 @Component({
   selector: 'app-add-company-modal',
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule
+    FormsModule,
+    ModalAccessibilityDirective
   ],
   templateUrl: './add-company-modal.component.html',
   styleUrls: ['./add-company-modal.component.scss']
@@ -23,8 +25,14 @@ export class AddCompanyModalComponent {
   constructor(
     private companyService: CompanyService,
     private dialogService: TuiDialogService,
-    private alerts: TuiAlertService
+    private alerts: TuiAlertService,
+    private elementRef: ElementRef
   ) {}
+
+  @HostListener('modalEscape')
+  onModalEscape() {
+    this.cancel();
+  }
 
   save(): void {
     if (!this.companyName?.trim()) return;

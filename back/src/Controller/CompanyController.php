@@ -5,8 +5,8 @@ namespace App\Controller;
 use App\Entity\Company;
 use App\Service\CompanyService;
 use App\Service\UserService;
-use App\Service\InputSanitizerService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Validator\Exception\ValidationFailedException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -19,8 +19,7 @@ class CompanyController extends AbstractController
     public function __construct(
         private CompanyService $companyService,
         private UserService $userService,
-        private InputSanitizerService $inputSanitizer
-    ) {}
+        ) {}
 
     #[Route('/companies', methods: ['GET'])]
     public function list(): JsonResponse
@@ -189,16 +188,7 @@ class CompanyController extends AbstractController
         try {
             $data = json_decode($request->getContent(), true);
             
-            $sanitizedData = $this->inputSanitizer->sanitizeCompanyData($data);
-            
-            if (!isset($sanitizedData['name']) || empty(trim($sanitizedData['name']))) {
-                return $this->json([
-                    'success' => false,
-                    'message' => 'Le nom de l\'entreprise est requis'
-                ], 400);
-            }
-
-            $company = $this->companyService->create($sanitizedData);
+            $company = $this->companyService->create($data);
             
             return $this->json([
                 'success' => true,
@@ -210,6 +200,16 @@ class CompanyController extends AbstractController
                 ]
             ], 201);
 
+        } catch (ValidationFailedException $e) {
+            $errorMessages = [];
+            foreach ($e->getViolations() as $violation) {
+                $errorMessages[] = $violation->getMessage();
+            }
+            return $this->json([
+                'success' => false,
+                'message' => 'Données invalides',
+                'details' => $errorMessages
+            ], 400);
         } catch (\Exception $e) {
             return $this->json([
                 'success' => false,
@@ -224,16 +224,7 @@ class CompanyController extends AbstractController
         try {
             $data = json_decode($request->getContent(), true);
             
-            $sanitizedData = $this->inputSanitizer->sanitizeCompanyData($data);
-            
-            if (!isset($sanitizedData['name']) || empty(trim($sanitizedData['name']))) {
-                return $this->json([
-                    'success' => false,
-                    'message' => 'Le nom de l\'entreprise est requis'
-                ], 400);
-            }
-
-            $this->companyService->update($company, $sanitizedData);
+            $this->companyService->update($company, $data);
             
             return $this->json([
                 'success' => true,
@@ -244,6 +235,16 @@ class CompanyController extends AbstractController
                 ]
             ]);
 
+        } catch (ValidationFailedException $e) {
+            $errorMessages = [];
+            foreach ($e->getViolations() as $violation) {
+                $errorMessages[] = $violation->getMessage();
+            }
+            return $this->json([
+                'success' => false,
+                'message' => 'Données invalides',
+                'details' => $errorMessages
+            ], 400);
         } catch (\Exception $e) {
             return $this->json([
                 'success' => false,

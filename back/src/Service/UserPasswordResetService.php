@@ -13,6 +13,9 @@ use Symfony\Component\Uid\Uuid;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Exception\ValidationFailedException;
 
 class UserPasswordResetService
 {
@@ -26,6 +29,7 @@ class UserPasswordResetService
         private readonly string $frontendUrl,
         #[Autowire('%mailer_from%')]
         private readonly string $mailerFrom,
+        private readonly ValidatorInterface $validator,
     ) {}
 
     /**
@@ -33,6 +37,8 @@ class UserPasswordResetService
      */
     public function requestPasswordReset(string $email): void
     {
+        $this->validateEmailData(['email' => $email]);
+        
         $user = $this->userRepository->findOneBy(['email' => $email]);
         if (!$user) {
             return;
@@ -53,6 +59,8 @@ class UserPasswordResetService
 
     public function resetPassword(string $token, string $newPassword, string $confirmPassword): bool
     {
+        $this->validatePasswordData(['password' => $newPassword, 'confirmPassword' => $confirmPassword]);
+        
         if ($newPassword !== $confirmPassword) {
             return false;
         }
@@ -120,5 +128,38 @@ class UserPasswordResetService
             ]);
 
         $this->mailer->send($emailObject);
+    }
+
+    private function validateEmailData(array $data): void
+    {
+        $constraints = new Assert\Collection([
+            'email' => [
+                new Assert\NotBlank(['message' => 'L\'email est requis']),
+                new Assert\Email(['message' => 'L\'email n\'est pas valide'])
+            ]
+        ]);
+
+        $errors = $this->validator->validate($data, $constraints);
+        if (count($errors) > 0) {
+            throw new ValidationFailedException($constraints, $errors);
+        }
+    }
+
+    private function validatePasswordData(array $data): void
+    {
+        $constraints = new Assert\Collection([
+            'password' => [
+                new Assert\NotBlank(['message' => 'Le mot de passe est requis']),
+                new Assert\Length(['min' => 8, 'minMessage' => 'Le mot de passe doit contenir au moins 8 caractères'])
+            ],
+            'confirmPassword' => [
+                new Assert\NotBlank(['message' => 'La confirmation du mot de passe est requise'])
+            ]
+        ]);
+
+        $errors = $this->validator->validate($data, $constraints);
+        if (count($errors) > 0) {
+            throw new ValidationFailedException($constraints, $errors);
+        }
     }
 }

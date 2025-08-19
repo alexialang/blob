@@ -4,8 +4,8 @@ namespace App\Controller;
 
 use App\Entity\UserPermission;
 use App\Service\UserPermissionService;
-use App\Service\InputSanitizerService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Validator\Exception\ValidationFailedException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -16,8 +16,7 @@ class UserPermissionController extends AbstractController
 {
     public function __construct(
         private UserPermissionService $userPermissionService,
-        private InputSanitizerService $inputSanitizer
-    ) {}
+        ) {}
 
     /**
      * @OA\Get(summary="Lister les permissions utilisateur", tags={"UserPermission"})
@@ -49,13 +48,17 @@ class UserPermissionController extends AbstractController
         try {
             $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
             
-            $sanitizedData = $this->inputSanitizer->sanitizeUserPermissionData($data);
-            
-            $permission = $this->userPermissionService->create($sanitizedData);
+            $permission = $this->userPermissionService->create($data);
 
             return $this->json($permission, 201, [], ['groups' => ['user_permission:read']]);
         } catch (\JsonException $e) {
             return $this->json(['error' => 'Invalid JSON'], 400);
+        } catch (ValidationFailedException $e) {
+            $errorMessages = [];
+            foreach ($e->getViolations() as $violation) {
+                $errorMessages[] = $violation->getMessage();
+            }
+            return $this->json(['error' => 'Données invalides', 'details' => $errorMessages], 400);
         }
     }
 
@@ -88,13 +91,17 @@ class UserPermissionController extends AbstractController
         try {
             $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
             
-            $sanitizedData = $this->inputSanitizer->sanitizeUserPermissionData($data);
-            
-            $permission = $this->userPermissionService->update($userPermission, $sanitizedData);
+            $permission = $this->userPermissionService->update($userPermission, $data);
 
             return $this->json($permission, 200, [], ['groups' => ['user_permission:read']]);
         } catch (\JsonException $e) {
             return $this->json(['error' => 'Invalid JSON'], 400);
+        } catch (ValidationFailedException $e) {
+            $errorMessages = [];
+            foreach ($e->getViolations() as $violation) {
+                $errorMessages[] = $violation->getMessage();
+            }
+            return $this->json(['error' => 'Données invalides', 'details' => $errorMessages], 400);
         }
     }
 

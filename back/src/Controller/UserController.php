@@ -5,20 +5,19 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Service\UserService;
 use App\Service\LeaderboardService;
-use App\Service\InputSanitizerService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Validator\Exception\ValidationFailedException;
 
 #[Route('/api')]
 class UserController extends AbstractController
 {
     public function __construct(
         private UserService $userService,
-        private LeaderboardService $leaderboardService,
-        private InputSanitizerService $inputSanitizer
+        private LeaderboardService $leaderboardService
     ) {}
 
     #[Route('/user', name: 'user_index', methods: ['GET'])]
@@ -70,19 +69,24 @@ class UserController extends AbstractController
         try {
             $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
             
-            $sanitizedData = $this->inputSanitizer->sanitizeUserData($data);
-            
-             if (isset($sanitizedData['recaptchaToken'])) {
-                 if (!$this->userService->verifyCaptcha($sanitizedData['recaptchaToken'])) {
+
+             if (isset($data['recaptchaToken'])) {
+                 if (!$this->userService->verifyCaptcha($data['recaptchaToken'])) {
                      return $this->json(['error' => 'Échec de la vérification CAPTCHA'], 400);
                  }
              }
             
-            $user = $this->userService->create($sanitizedData);
+            $user = $this->userService->create($data);
 
             return $this->json($user, 201, [], ['groups' => ['user:read']]);
         } catch (\JsonException $e) {
             return $this->json(['error' => 'Invalid JSON'], 400);
+        } catch (ValidationFailedException $e) {
+            $errorMessages = [];
+            foreach ($e->getViolations() as $violation) {
+                $errorMessages[] = $violation->getMessage();
+            }
+            return $this->json(['error' => 'Données invalides', 'details' => $errorMessages], 400);
         } catch (\InvalidArgumentException $e) {
             return $this->json(['error' => $e->getMessage()], 400);
         } catch (\Exception $e) {
@@ -118,10 +122,8 @@ class UserController extends AbstractController
 
         try {
             $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
-            
-            $sanitizedData = $this->inputSanitizer->sanitizeUserData($data);
-            
-            $user = $this->userService->updateProfile($user, $sanitizedData);
+
+            $user = $this->userService->updateProfile($user, $data);
 
             return $this->json($user, 200, [], [
                 'groups' => ['user:read', 'company:read'],
@@ -164,14 +166,17 @@ class UserController extends AbstractController
     {
         try {
             $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
-            
-            $sanitizedData = $this->inputSanitizer->sanitizeUserData($data);
-            
-            $user = $this->userService->update($user, $sanitizedData);
+            $user = $this->userService->update($user, $data);
 
             return $this->json($user, 200, [], ['groups' => ['user:read']]);
         } catch (\JsonException $e) {
             return $this->json(['error' => 'Invalid JSON'], 400);
+        } catch (ValidationFailedException $e) {
+            $errorMessages = [];
+            foreach ($e->getViolations() as $violation) {
+                $errorMessages[] = $violation->getMessage();
+            }
+            return $this->json(['error' => 'Données invalides', 'details' => $errorMessages], 400);
         }
     }
 

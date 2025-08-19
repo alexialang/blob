@@ -4,8 +4,8 @@ namespace App\Controller;
 
 use App\Entity\UserAnswer;
 use App\Service\UserAnswerService;
-use App\Service\InputSanitizerService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Validator\Exception\ValidationFailedException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -16,8 +16,7 @@ class UserAnswerController extends AbstractController
 {
     public function __construct(
         private UserAnswerService $userAnswerService,
-        private InputSanitizerService $inputSanitizer
-    ) {}
+        ) {}
 
     #[Route('/', name: 'user_answer_index', methods: ['GET'])]
     public function index(): JsonResponse
@@ -33,13 +32,17 @@ class UserAnswerController extends AbstractController
         try {
             $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
             
-            $sanitizedData = $this->inputSanitizer->sanitizeUserAnswerData($data);
-            
-            $userAnswer = $this->userAnswerService->create($sanitizedData);
+            $userAnswer = $this->userAnswerService->create($data);
 
             return $this->json($userAnswer, 201, [], ['groups' => ['user_answer:read']]);
         } catch (\JsonException $e) {
             return $this->json(['error' => 'Invalid JSON'], 400);
+        } catch (ValidationFailedException $e) {
+            $errorMessages = [];
+            foreach ($e->getViolations() as $violation) {
+                $errorMessages[] = $violation->getMessage();
+            }
+            return $this->json(['error' => 'Données invalides', 'details' => $errorMessages], 400);
         }
     }
 
@@ -57,13 +60,17 @@ class UserAnswerController extends AbstractController
         try {
             $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
             
-            $sanitizedData = $this->inputSanitizer->sanitizeUserAnswerData($data);
-            
-            $userAnswer = $this->userAnswerService->update($userAnswer, $sanitizedData);
+            $userAnswer = $this->userAnswerService->update($userAnswer, $data);
 
             return $this->json($userAnswer, 200, [], ['groups' => ['user_answer:read']]);
         } catch (\JsonException $e) {
             return $this->json(['error' => 'Invalid JSON'], 400);
+        } catch (ValidationFailedException $e) {
+            $errorMessages = [];
+            foreach ($e->getViolations() as $violation) {
+                $errorMessages[] = $violation->getMessage();
+            }
+            return $this->json(['error' => 'Données invalides', 'details' => $errorMessages], 400);
         }
     }
 
@@ -87,11 +94,9 @@ class UserAnswerController extends AbstractController
         try {
             $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
             
-            $sanitizedData = $this->inputSanitizer->sanitizeUserAnswerData($data);
+            $data['user'] = $user;
             
-            $sanitizedData['user'] = $user;
-            
-            $userAnswer = $this->userAnswerService->saveGameResult($sanitizedData);
+            $userAnswer = $this->userAnswerService->saveGameResult($data);
 
             return $this->json([
                 'message' => 'Résultat de jeu sauvegardé',
@@ -102,6 +107,12 @@ class UserAnswerController extends AbstractController
             ], 201);
         } catch (\JsonException $e) {
             return $this->json(['error' => 'Invalid JSON'], 400);
+        } catch (ValidationFailedException $e) {
+            $errorMessages = [];
+            foreach ($e->getViolations() as $violation) {
+                $errorMessages[] = $violation->getMessage();
+            }
+            return $this->json(['error' => 'Données invalides', 'details' => $errorMessages], 400);
         } catch (\Exception $e) {
             return $this->json(['error' => $e->getMessage()], 500);
         }

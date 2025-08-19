@@ -3,23 +3,21 @@
 namespace App\Controller;
 
 use App\Service\PaymentService;
-use App\Service\InputSanitizerService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Component\Validator\Exception\ValidationFailedException;
 
 #[Route('/api/donations', name: 'api_donations_')]
 class DonationController extends AbstractController
 {
     public function __construct(
-        private PaymentService $paymentService,
-        private InputSanitizerService $inputSanitizer
+        private PaymentService $paymentService
     ) {}
 
     #[Route('/create-payment-link', name: 'create_payment_link', methods: ['POST'])]
-    public function createPaymentLink(Request $request, ValidatorInterface $validator): JsonResponse
+    public function createPaymentLink(Request $request): JsonResponse
     {
         try {
             $data = json_decode($request->getContent(), true);
@@ -28,35 +26,24 @@ class DonationController extends AbstractController
                 error_log('Données JSON invalides reçues dans createPaymentLink');
                 return new JsonResponse(['error' => 'Données JSON invalides'], 400);
             }
-            
-            $sanitizedData = $this->inputSanitizer->sanitizeDonationData($data);
-            
-            if (!$sanitizedData) {
-                error_log('Échec de la sanitisation des données de don');
-                return new JsonResponse(['error' => 'Données JSON invalides'], 400);
-            }
 
-            if (!isset($sanitizedData['amount']) || $sanitizedData['amount'] <= 0) {
-                error_log('Montant invalide reçu: ' . ($sanitizedData['amount'] ?? 'non défini'));
-                return new JsonResponse(['error' => 'Montant invalide'], 400);
-            }
-
-            if ($sanitizedData['amount'] > 10000) {
-                error_log('Montant trop élevé reçu: ' . $sanitizedData['amount']);
-                return new JsonResponse(['error' => 'Montant trop élevé'], 400);
-            }
-
-            error_log('Tentative de création de lien de paiement pour un don de ' . $sanitizedData['amount'] . '€');
+            error_log('Tentative de création de lien de paiement pour un don de ' . $data['amount'] . '€');
 
             $result = $this->paymentService->createPaymentLink(
-                (float) $sanitizedData['amount'],
-                $sanitizedData['donor_email'] ?? null,
-                $sanitizedData['donor_name'] ?? null
+                (float) $data['amount'],
+                $data['donor_email'] ?? null,
+                $data['donor_name'] ?? null
             );
 
             error_log('Lien de paiement créé avec succès: ' . $result['payment_link_id']);
 
             return new JsonResponse($result);
+        } catch (ValidationFailedException $e) {
+            $errorMessages = [];
+            foreach ($e->getViolations() as $violation) {
+                $errorMessages[] = $violation->getMessage();
+            }
+            return new JsonResponse(['error' => 'Données invalides', 'details' => $errorMessages], 400);
             
         } catch (\InvalidArgumentException $e) {
             error_log('Argument invalide dans createPaymentLink: ' . $e->getMessage());

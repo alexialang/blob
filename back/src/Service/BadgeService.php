@@ -2,23 +2,28 @@
 
 namespace App\Service;
 
+use AllowDynamicProperties;
 use App\Entity\Badge;
 use App\Entity\User;
 use App\Repository\BadgeRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
+
+#[AllowDynamicProperties]
 class BadgeService
 {
     private EntityManagerInterface $em;
     private BadgeRepository $badgeRepository;
     private UserRepository $userRepository;
 
-    public function __construct(EntityManagerInterface $em, BadgeRepository $badgeRepository, UserRepository $userRepository)
+    public function __construct(EntityManagerInterface $em, BadgeRepository $badgeRepository, UserRepository $userRepository, ValidatorInterface $validator)
     {
         $this->em = $em;
         $this->badgeRepository = $badgeRepository;
         $this->userRepository = $userRepository;
+        $this->validator = $validator;
     }
 
     public function list(): array
@@ -31,35 +36,6 @@ class BadgeService
         return $this->badgeRepository->find($id);
     }
 
-    public function create(array $data): Badge
-    {
-        $badge = new Badge();
-        $badge->setName($data['name']);
-        $badge->setDescription($data['description'] ?? '');
-        $badge->setImage($data['image'] ?? '');
-
-        $this->em->persist($badge);
-        $this->em->flush();
-
-        return $badge;
-    }
-
-    public function update(Badge $badge, array $data): Badge
-    {
-        if (isset($data['name'])) {
-            $badge->setName($data['name']);
-        }
-        if (isset($data['description'])) {
-            $badge->setDescription($data['description']);
-        }
-        if (isset($data['image'])) {
-            $badge->setImage($data['image']);
-        }
-
-        $this->em->flush();
-
-        return $badge;
-    }
 
     public function delete(Badge $badge): void
     {
@@ -71,19 +47,19 @@ class BadgeService
     {
         foreach ($user->getBadges() as $badge) {
             if ($badge->getName() === $badgeName) {
-                return false; // Badge déjà attribué
+                return false;
             }
         }
 
         $badge = $this->badgeRepository->findOneBy(['name' => $badgeName]);
         if (!$badge) {
-            return false; // Badge non trouvé
+            return false;
         }
 
         $user->addBadge($badge);
         $this->em->flush();
 
-        return true; // Badge attribué avec succès
+        return true;
     }
 
     public function initializeBadges(): void
@@ -129,6 +105,5 @@ class BadgeService
         }
         $this->em->flush();
     }
-
 
 }

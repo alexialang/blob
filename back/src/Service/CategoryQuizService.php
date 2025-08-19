@@ -2,19 +2,25 @@
 
 namespace App\Service;
 
+use AllowDynamicProperties;
 use App\Entity\CategoryQuiz;
 use App\Repository\CategoryQuizRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Exception\ValidationFailedException;
 
+#[AllowDynamicProperties]
 class CategoryQuizService
 {
     private EntityManagerInterface $em;
     private CategoryQuizRepository $categoryQuizRepository;
 
-    public function __construct(EntityManagerInterface $em, CategoryQuizRepository $categoryQuizRepository)
+    public function __construct(EntityManagerInterface $em, CategoryQuizRepository $categoryQuizRepository, ValidatorInterface $validator)
     {
         $this->em = $em;
         $this->categoryQuizRepository = $categoryQuizRepository;
+        $this->validator = $validator;
     }
 
     public function list(): array
@@ -27,31 +33,4 @@ class CategoryQuizService
         return $this->categoryQuizRepository->find($id);
     }
 
-    public function create(array $data): CategoryQuiz
-    {
-        $category = new CategoryQuiz();
-        $category->setName($data['name']);
-
-        $this->em->persist($category);
-        $this->em->flush();
-
-        return $category;
-    }
-
-    public function update(CategoryQuiz $category, array $data): CategoryQuiz
-    {
-        if (isset($data['name'])) {
-            $category->setName($data['name']);
-        }
-
-        $this->em->flush();
-
-        return $category;
-    }
-
-    public function delete(CategoryQuiz $category): void
-    {
-        $this->em->remove($category);
-        $this->em->flush();
-    }
 }

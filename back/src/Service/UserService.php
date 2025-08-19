@@ -2,8 +2,8 @@
 
 namespace App\Service;
 
+use AllowDynamicProperties;
 use App\Entity\User;
-use App\Message\Mailer\RegistrationConfirmationEmailMessage;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -14,7 +14,11 @@ use Symfony\Component\Uid\Uuid;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Exception\ValidationFailedException;
 
+#[AllowDynamicProperties]
 class UserService
 {
     private EntityManagerInterface      $em;
@@ -36,7 +40,8 @@ class UserService
         MessageBusInterface           $bus,
         MailerInterface               $mailer,
         HttpClientInterface           $httpClient,
-        ParameterBagInterface         $params
+        ParameterBagInterface         $params,
+        ValidatorInterface            $validator
 
     ) {
         $this->em             = $em;
@@ -47,6 +52,7 @@ class UserService
         $this->httpClient     = $httpClient;
         $this->mailerFrom     = $mailerFrom;
         $this->recaptchaSecretKey = $recaptchaSecretKey;
+        $this->validator      = $validator;
 
         $this->frontendUrl = rtrim($params->get('app.frontend_url'), '/');
     }
@@ -99,6 +105,7 @@ class UserService
 
     public function create(array $data): User
     {
+        $this->validateUserData($data);
 
         foreach (['firstName', 'lastName', 'email', 'password'] as $field) {
             if (empty($data[$field]) || !\is_string($data[$field])) {
@@ -141,6 +148,8 @@ class UserService
 
     public function update(User $user, array $data): User
     {
+        $this->validateUserData($data);
+        
         if (isset($data['email']) && \is_string($data['email'])) {
             $user->setEmail($data['email']);
         }
@@ -188,8 +197,8 @@ class UserService
         $user->setFirstName('Utilisateur');
         $user->setLastName('Anonyme');
         $user->setPseudo('Utilisateur_' . substr(hash('sha256', $user->getId()), 0, 8));
-        $user->setPassword(''); // Rendre impossible la connexion
-        $user->setRoles(['ROLE_ANONYMOUS']); // Rôle minimal
+        $user->setPassword('');
+        $user->setRoles(['ROLE_ANONYMOUS']);
 
         $this->em->flush();
     }
@@ -545,6 +554,52 @@ class UserService
             return $result['success'] ?? false;
         } catch (\Exception $e) {
             return false;
+        }
+    }
+
+    private function validateUserData(array $data): void
+    {
+        $constraints = new Assert\Collection([
+            'fields' => [
+                'firstName' => [
+                    new Assert\Optional([
+                        new Assert\NotBlank(['message' => 'Le prénom ne peut pas être vide']),
+                        new Assert\Length(['max' => 100, 'maxMessage' => 'Le prénom ne peut pas dépasser 100 caractères'])
+                    ])
+                ],
+                'lastName' => [
+                    new Assert\Optional([
+                        new Assert\NotBlank(['message' => 'Le nom ne peut pas être vide']),
+                        new Assert\Length(['max' => 100, 'maxMessage' => 'Le nom ne peut pas dépasser 100 caractères'])
+                    ])
+                ],
+                'email' => [
+                    new Assert\Optional([
+                        new Assert\Email(['message' => 'L\'email n\'est pas valide']),
+                        new Assert\Length(['max' => 180, 'maxMessage' => 'L\'email ne peut pas dépasser 100 caractères'])
+                    ])
+                ],
+                'password' => [
+                    new Assert\Optional([
+                        new Assert\Length(['min' => 8, 'max' => 255, 'minMessage' => 'Le mot de passe doit contenir au moins 8 caractères'])
+                    ])
+                ],
+                'avatar' => [
+                    new Assert\Optional([
+                        new Assert\Length(['max' => 255, 'maxMessage' => 'L\'avatar ne peut pas dépasser 255 caractères'])
+                    ])
+                ],
+                'is_admin' => [
+                    new Assert\Optional([
+                        new Assert\Type(['type' => 'bool', 'message' => 'Le champ is_admin doit être un booléen'])
+                    ])
+                ]
+            ]
+        ]);
+
+        $errors = $this->validator->validate($data, $constraints);
+        if (count($errors) > 0) {
+            throw new ValidationFailedException($constraints, $errors);
         }
     }
 }

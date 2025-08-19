@@ -4,8 +4,8 @@ namespace App\Controller;
 
 use App\Entity\Question;
 use App\Service\QuestionService;
-use App\Service\InputSanitizerService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Validator\Exception\ValidationFailedException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -16,8 +16,7 @@ class QuestionController extends AbstractController
 {
     public function __construct(
         private QuestionService $questionService,
-        private InputSanitizerService $inputSanitizer
-    ) {}
+        ) {}
 
     /**
      * @OA\Get(summary="Lister toutes les questions", tags={"Question"})
@@ -54,11 +53,17 @@ class QuestionController extends AbstractController
             return $this->json(['error' => 'Invalid JSON'], 400);
         }
 
-        $sanitizedData = $this->inputSanitizer->sanitizeQuestionData($data);
+        try {
+            $question = $this->questionService->create($data);
 
-        $question = $this->questionService->create($sanitizedData);
-
-        return $this->json($question, 201, [], ['groups' => ['question:read']]);
+            return $this->json($question, 201, [], ['groups' => ['question:read']]);
+        } catch (ValidationFailedException $e) {
+            $errorMessages = [];
+            foreach ($e->getViolations() as $violation) {
+                $errorMessages[] = $violation->getMessage();
+            }
+            return $this->json(['error' => 'Données invalides', 'details' => $errorMessages], 400);
+        }
     }
 
     /**
@@ -98,11 +103,17 @@ class QuestionController extends AbstractController
             return $this->json(['error' => 'Invalid JSON'], 400);
         }
 
-        $sanitizedData = $this->inputSanitizer->sanitizeQuestionData($data);
+        try {
+            $question = $this->questionService->update($question, $data);
 
-        $question = $this->questionService->update($question, $sanitizedData);
-
-        return $this->json($question, 200, [], ['groups' => ['question:read']]);
+            return $this->json($question, 200, [], ['groups' => ['question:read']]);
+        } catch (ValidationFailedException $e) {
+            $errorMessages = [];
+            foreach ($e->getViolations() as $violation) {
+                $errorMessages[] = $violation->getMessage();
+            }
+            return $this->json(['error' => 'Données invalides', 'details' => $errorMessages], 400);
+        }
     }
 
     /**

@@ -5,12 +5,13 @@ namespace App\Service;
 use App\Entity\UserAnswer;
 use App\Entity\QuizRating;
 use App\Event\QuizCompletedEvent;
-use App\Service\UserService;
-use App\Service\QuizService;
 use App\Repository\UserAnswerRepository;
 use App\Repository\QuizRatingRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Exception\ValidationFailedException;
 
 class UserAnswerService
 {
@@ -21,7 +22,7 @@ class UserAnswerService
     private QuizService $quizService;
     private EventDispatcherInterface $eventDispatcher;
 
-    public function __construct(EntityManagerInterface $em, UserAnswerRepository $userAnswerRepository, QuizRatingRepository $quizRatingRepository, UserService $userService, QuizService $quizService, EventDispatcherInterface $eventDispatcher)
+    public function __construct(EntityManagerInterface $em, UserAnswerRepository $userAnswerRepository, QuizRatingRepository $quizRatingRepository, UserService $userService, QuizService $quizService, EventDispatcherInterface $eventDispatcher, ValidatorInterface $validator)
     {
         $this->em = $em;
         $this->userAnswerRepository = $userAnswerRepository;
@@ -29,6 +30,7 @@ class UserAnswerService
         $this->userService = $userService;
         $this->quizService = $quizService;
         $this->eventDispatcher = $eventDispatcher;
+        $this->validator = $validator;
     }
 
     public function list(): array
@@ -38,6 +40,8 @@ class UserAnswerService
 
     public function create(array $data): UserAnswer
     {
+        $this->validateUserAnswerData($data);
+        
         $userAnswer = new UserAnswer();
         $userAnswer->setDateAttempt(new \DateTimeImmutable());
         $userAnswer->setTotalScore($data['total_score']);
@@ -61,6 +65,8 @@ class UserAnswerService
 
     public function update(UserAnswer $userAnswer, array $data): UserAnswer
     {
+        $this->validateUserAnswerData($data);
+        
         if (isset($data['total_score'])) {
             $userAnswer->setTotalScore($data['total_score']);
         }
@@ -86,6 +92,8 @@ class UserAnswerService
 
     public function saveGameResult(array $data): UserAnswer
     {
+        $this->validateGameResultData($data);
+        
         if (!isset($data['user']) || !isset($data['quiz_id']) || !isset($data['total_score'])) {
             throw new \InvalidArgumentException('Missing required data: user, quiz_id, total_score');
         }
@@ -221,5 +229,68 @@ class UserAnswerService
             'totalRatings' => $totalRatings,
             'userRating' => $userRating
         ];
+    }
+
+    private function validateUserAnswerData(array $data): void
+    {
+        $constraints = new Assert\Collection([
+            'fields' => [
+                'total_score' => [
+                    new Assert\Optional([
+                        new Assert\Type(['type' => 'integer', 'message' => 'Le score total doit être un entier'])
+                    ])
+                ],
+                'user_id' => [
+                    new Assert\NotBlank(['message' => 'L\'ID de l\'utilisateur est requis']),
+                    new Assert\Type(['type' => 'integer', 'message' => 'L\'ID de l\'utilisateur doit être un entier'])
+                ],
+                'quiz_id' => [
+                    new Assert\NotBlank(['message' => 'L\'ID du quiz est requis']),
+                    new Assert\Type(['type' => 'integer', 'message' => 'L\'ID du quiz doit être un entier'])
+                ],
+                'question_id' => [
+                    new Assert\Optional([
+                        new Assert\Type(['type' => 'integer', 'message' => 'L\'ID de la question doit être un entier'])
+                    ])
+                ],
+                'answer' => [
+                    new Assert\Optional([
+                        new Assert\Length(['max' => 1000, 'maxMessage' => 'La réponse ne peut pas dépasser 1000 caractères'])
+                    ])
+                ],
+                'score' => [
+                    new Assert\Optional([
+                        new Assert\Type(['type' => 'integer', 'message' => 'Le score doit être un entier'])
+                    ])
+                ]
+            ]
+        ]);
+
+        $errors = $this->validator->validate($data, $constraints);
+        if (count($errors) > 0) {
+            throw new ValidationFailedException($constraints, $errors);
+        }
+    }
+
+    private function validateGameResultData(array $data): void
+    {
+        $constraints = new Assert\Collection([
+            'allowExtraFields' => true,
+            'fields' => [
+                'total_score' => [
+                    new Assert\NotBlank(['message' => 'Le score total est requis']),
+                    new Assert\Type(['type' => 'integer', 'message' => 'Le score total doit être un entier'])
+                ],
+                'quiz_id' => [
+                    new Assert\NotBlank(['message' => 'L\'ID du quiz est requis']),
+                    new Assert\Type(['type' => 'integer', 'message' => 'L\'ID du quiz doit être un entier'])
+                ]
+            ]
+        ]);
+
+        $errors = $this->validator->validate($data, $constraints);
+        if (count($errors) > 0) {
+            throw new ValidationFailedException($constraints, $errors);
+        }
     }
 }

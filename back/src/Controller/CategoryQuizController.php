@@ -4,8 +4,8 @@ namespace App\Controller;
 
 use App\Entity\CategoryQuiz;
 use App\Service\CategoryQuizService;
-use App\Service\InputSanitizerService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Validator\Exception\ValidationFailedException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -16,8 +16,7 @@ class CategoryQuizController extends AbstractController
 {
     public function __construct(
         private CategoryQuizService $categoryQuizService,
-        private InputSanitizerService $inputSanitizer
-    ) {}
+        ) {}
 
     /**
      * @OA\Get(summary="Lister les catégories de quiz", tags={"CategoryQuiz"})
@@ -32,33 +31,6 @@ class CategoryQuizController extends AbstractController
     }
 
     /**
-     * @OA\Post(summary="Créer une catégorie de quiz", tags={"CategoryQuiz"})
-     * @OA\RequestBody(
-     *     required=true,
-     *     @OA\JsonContent(
-     *         @OA\Property(property="name", type="string")
-     *     )
-     * )
-     * @OA\Response(response=201, description="Catégorie créée")
-     * @OA\Security(name="bearerAuth")
-     */
-    #[Route('/', name: 'category_quiz_create', methods: ['POST'])]
-    public function create(Request $request): JsonResponse
-    {
-        try {
-            $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
-            
-            $sanitizedData = $this->inputSanitizer->sanitizeCategoryQuizData($data);
-            
-            $category = $this->categoryQuizService->create($sanitizedData);
-
-            return $this->json($category, 201, [], ['groups' => ['quiz:read']]);
-        } catch (\JsonException $e) {
-            return $this->json(['error' => 'Invalid JSON'], 400);
-        }
-    }
-
-    /**
      * @OA\Get(summary="Afficher une catégorie de quiz", tags={"CategoryQuiz"})
      * @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer"))
      * @OA\Response(response=200, description="Catégorie affichée")
@@ -69,46 +41,5 @@ class CategoryQuizController extends AbstractController
         return $this->json($category, 200, [], ['groups' => ['quiz:read']]);
     }
 
-    /**
-     * @OA\Put(summary="Modifier une catégorie", tags={"CategoryQuiz"})
-     * @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer"))
-     * @OA\RequestBody(
-     *     required=true,
-     *     @OA\JsonContent(
-     *         @OA\Property(property="name", type="string")
-     *     )
-     * )
-     * @OA\Response(response=200, description="Catégorie modifiée")
-     * @OA\Security(name="bearerAuth")
-     */
-    #[Route('/{id}', name: 'category_quiz_update', methods: ['PUT', 'PATCH'])]
-    public function update(Request $request, CategoryQuiz $category): JsonResponse
-    {
-        try {
-            $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
-            
 
-            $sanitizedData = $this->inputSanitizer->sanitizeCategoryQuizData($data);
-            
-            $category = $this->categoryQuizService->update($category, $sanitizedData);
-
-            return $this->json($category, 200, [], ['groups' => ['quiz:read']]);
-        } catch (\JsonException $e) {
-            return $this->json(['error' => 'Invalid JSON'], 400);
-        }
-    }
-
-    /**
-     * @OA\Delete(summary="Supprimer une catégorie de quiz", tags={"CategoryQuiz"})
-     * @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer"))
-     * @OA\Response(response=204, description="Catégorie supprimée")
-     * @OA\Security(name="bearerAuth")
-     */
-    #[Route('/{id}', name: 'category_quiz_delete', methods: ['DELETE'])]
-    public function delete(CategoryQuiz $category): JsonResponse
-    {
-        $this->categoryQuizService->delete($category);
-
-        return $this->json(null, 204);
-    }
 }

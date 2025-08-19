@@ -2,22 +2,31 @@
 
 namespace App\Service;
 
+use AllowDynamicProperties;
 use App\Entity\Answer;
-use App\Service\QuestionService;
 use App\Repository\AnswerRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Exception\ValidationFailedException;
 
+#[AllowDynamicProperties]
 class AnswerService
 {
     private EntityManagerInterface $em;
     private AnswerRepository $answerRepository;
     private QuestionService $questionService;
 
-    public function __construct(EntityManagerInterface $em, AnswerRepository $answerRepository, QuestionService $questionService)
-    {
+    public function __construct(
+        EntityManagerInterface $em, 
+        AnswerRepository $answerRepository, 
+        QuestionService $questionService,
+        ValidatorInterface $validator
+    ) {
         $this->em = $em;
         $this->answerRepository = $answerRepository;
         $this->questionService = $questionService;
+        $this->validator = $validator;
     }
 
     public function list(): array
@@ -27,6 +36,8 @@ class AnswerService
 
     public function create(array $data): Answer
     {
+        $this->validateAnswerData($data);
+        
         $answer = new Answer();
         $answer->setAnswer($data['answer']);
         $answer->setIsCorrect($data['is_correct'] ?? null);
@@ -50,6 +61,8 @@ class AnswerService
 
     public function update(Answer $answer, array $data): Answer
     {
+        $this->validateAnswerData($data);
+        
         if (isset($data['answer'])) {
             $answer->setAnswer($data['answer']);
         }
@@ -79,5 +92,44 @@ class AnswerService
     {
         $this->em->remove($answer);
         $this->em->flush();
+    }
+
+    private function validateAnswerData(array $data): void
+    {
+        $constraints = new Assert\Collection([
+            'answer' => [
+                new Assert\NotBlank(['message' => 'La réponse est requise']),
+                new Assert\Length(['max' => 255, 'maxMessage' => 'La réponse ne peut pas dépasser 255 caractères'])
+            ],
+            'is_correct' => [
+                new Assert\Optional([
+                    new Assert\Type(['type' => 'bool', 'message' => 'Le champ is_correct doit être un booléen'])
+                ])
+            ],
+            'order_correct' => [
+                new Assert\Optional([
+                    new Assert\Length(['max' => 50, 'maxMessage' => 'L\'ordre correct ne peut pas dépasser 50 caractères'])
+                ])
+            ],
+            'pair_id' => [
+                new Assert\Optional([
+                    new Assert\Length(['max' => 20, 'maxMessage' => 'L\'ID de paire ne peut pas dépasser 20 caractères'])
+                ])
+            ],
+            'is_intrus' => [
+                new Assert\Optional([
+                    new Assert\Type(['type' => 'bool', 'message' => 'Le champ is_intrus doit être un booléen'])
+                ])
+            ],
+            'question_id' => [
+                new Assert\NotBlank(['message' => 'L\'ID de la question est requis']),
+                new Assert\Type(['type' => 'integer', 'message' => 'L\'ID de la question doit être un entier'])
+            ]
+        ]);
+
+        $errors = $this->validator->validate($data, $constraints);
+        if (count($errors) > 0) {
+            throw new ValidationFailedException($constraints, $errors);
+        }
     }
 }

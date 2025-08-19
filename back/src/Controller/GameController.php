@@ -3,8 +3,8 @@
 namespace App\Controller;
 
 use App\Service\GameService;
-use App\Service\InputSanitizerService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Validator\Exception\ValidationFailedException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -15,8 +15,7 @@ class GameController extends AbstractController
 {
     public function __construct(
         private GameService $gameService,
-        private InputSanitizerService $inputSanitizer
-    ) {}
+        ) {}
 
     #[Route('/start/{quizId}', name: 'game_start', methods: ['POST'])]
     #[IsGranted('ROLE_USER')]
@@ -67,12 +66,16 @@ class GameController extends AbstractController
         try {
             $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
             
-            $sanitizedData = $this->inputSanitizer->sanitizeGameData($data);
-            
-            $result = $this->gameService->submitAnswer($sessionId, $user, $sanitizedData);
+            $result = $this->gameService->submitAnswer($sessionId, $user, $data);
             return $this->json($result);
         } catch (\JsonException $e) {
             return $this->json(['error' => 'Invalid JSON'], 400);
+        } catch (ValidationFailedException $e) {
+            $errorMessages = [];
+            foreach ($e->getViolations() as $violation) {
+                $errorMessages[] = $violation->getMessage();
+            }
+            return $this->json(['error' => 'Données invalides', 'details' => $errorMessages], 400);
         } catch (\Exception $e) {
             return $this->json(['error' => $e->getMessage()], 400);
         }

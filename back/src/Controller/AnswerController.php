@@ -4,19 +4,18 @@ namespace App\Controller;
 
 use App\Entity\Answer;
 use App\Service\AnswerService;
-use App\Service\InputSanitizerService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Validator\Exception\ValidationFailedException;
 use OpenApi\Annotations as OA;
 
 #[Route('/api/answer')]
 class AnswerController extends AbstractController
 {
     public function __construct(
-        private AnswerService $answerService,
-        private InputSanitizerService $inputSanitizer
+        private AnswerService $answerService
     ) {}
 
     /**
@@ -54,14 +53,17 @@ class AnswerController extends AbstractController
         try {
             $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
             
-            // ✅ SANITISATION : Nettoyer les entrées utilisateur
-            $sanitizedData = $this->inputSanitizer->sanitizeAnswerData($data);
-            
-            $answer = $this->answerService->create($sanitizedData);
+            $answer = $this->answerService->create($data);
 
             return $this->json($answer, 201, [], ['groups' => ['answer:read']]);
         } catch (\JsonException $e) {
             return $this->json(['error' => 'Invalid JSON'], 400);
+        } catch (ValidationFailedException $e) {
+            $errorMessages = [];
+            foreach ($e->getViolations() as $violation) {
+                $errorMessages[] = $violation->getMessage();
+            }
+            return $this->json(['error' => 'Données invalides', 'details' => $errorMessages], 400);
         }
     }
 
@@ -98,13 +100,17 @@ class AnswerController extends AbstractController
         try {
             $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
             
-            $sanitizedData = $this->inputSanitizer->sanitizeAnswerData($data);
-            
-            $answer = $this->answerService->update($answer, $sanitizedData);
+            $answer = $this->answerService->update($answer, $data);
 
             return $this->json($answer, 200, [], ['groups' => ['answer:read']]);
         } catch (\JsonException $e) {
             return $this->json(['error' => 'Invalid JSON'], 400);
+        } catch (ValidationFailedException $e) {
+            $errorMessages = [];
+            foreach ($e->getViolations() as $violation) {
+                $errorMessages[] = $violation->getMessage();
+            }
+            return $this->json(['error' => 'Données invalides', 'details' => $errorMessages], 400);
         }
     }
 

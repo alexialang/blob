@@ -9,6 +9,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Exception\ValidationFailedException;
 
 class CompanyService
 {
@@ -60,6 +62,8 @@ class CompanyService
 
     public function create(array $data): Company
     {
+        $this->validateCompanyData($data);
+        
         $company = new Company();
         $company->setName($data['name']);
         $company->setDateCreation(new \DateTime());
@@ -72,6 +76,8 @@ class CompanyService
 
     public function update(Company $company, array $data): Company
     {
+        $this->validateCompanyData($data);
+        
         if (isset($data['name'])) {
             $company->setName($data['name']);
         }
@@ -324,5 +330,20 @@ class CompanyService
         }
 
         return $availableUsers;
+    }
+
+    private function validateCompanyData(array $data): void
+    {
+        $constraints = new Assert\Collection([
+            'name' => [
+                new Assert\NotBlank(['message' => 'Le nom de l\'entreprise est requis']),
+                new Assert\Length(['max' => 255, 'maxMessage' => 'Le nom ne peut pas dépasser 255 caractères'])
+            ]
+        ]);
+
+        $errors = $this->validator->validate($data, $constraints);
+        if (count($errors) > 0) {
+            throw new ValidationFailedException($constraints, $errors);
+        }
     }
 }
