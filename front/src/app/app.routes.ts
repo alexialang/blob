@@ -26,6 +26,7 @@ import {MultiplayerRoomComponent} from './pages/multiplayer-room/multiplayer-roo
 import {MultiplayerGameComponent} from './pages/multiplayer-game/multiplayer-game.component';
 import {QuizResultsComponent} from './pages/quiz-results/quiz-results.component';
 import {DonationComponent} from './pages/donation/donation.component';
+import {NotFoundComponent} from './pages/not-found';
 
 export const routes: Routes = [
   { path: 'connexion', component: LoginComponent, data: { hideNavbar: true } },
@@ -69,6 +70,11 @@ export const routes: Routes = [
   {
     path: 'profil/avatar',
     component: AvatarSelectionComponent,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'profil/:id',
+    component: UserProfileComponent,
     canActivate: [authGuard],
   },
   {
@@ -127,8 +133,12 @@ export const routes: Routes = [
     path: 'faire-un-don', data: { hideNavbar: true },
     component: DonationComponent,
   },
-  { path: 'company/:id', component: CompanyDetailsComponent },
+  {
+    path: 'company/:id',
+    component: CompanyDetailsComponent,
+    canActivate: [authGuard, adminGuard]
+  },
 
   { path: '',   redirectTo: 'quiz', pathMatch: 'full' },
-  { path: '**', redirectTo: 'connexion' },
+  { path: '**', component: NotFoundComponent },
 ];

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
 import { tap, catchError, map } from 'rxjs/operators';
+import { Router } from '@angular/router';
 import { environment } from '../../environments/environment';
 import { User } from '../models/user.interface';
 
@@ -11,7 +12,7 @@ import { User } from '../models/user.interface';
 export class AuthService {
   private readonly base = environment.apiBaseUrl;
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, private router: Router) {
   }
 
   login(email: string, password: string): Observable<void> {
@@ -52,6 +53,8 @@ export class AuthService {
     localStorage.removeItem('JWT_TOKEN');
     localStorage.removeItem('REFRESH_TOKEN');
     this.clearGuestMode();
+
+    this.router.navigate(['/connexion']);
   }
 
   getToken(): string | null {
@@ -96,6 +99,23 @@ export class AuthService {
   }
 
   getCurrentUser(): Observable<User> {
+    if (this.isGuest() && !this.isLoggedIn()) {
+      return of({
+        id: 0,
+        email: 'guest@example.com',
+        firstName: 'Invité',
+        lastName: '',
+        pseudo: 'Invité',
+        avatar: './assets/avatars/blob_circle.svg',
+        avatarShape: 'circle',
+        roles: ['ROLE_GUEST'],
+        userPermissions: [],
+        dateRegistration: new Date().toISOString(),
+        isAdmin: false,
+        isActive: true,
+        isVerified: true
+      } as User);
+    }
     return this.http.get<User>(`${this.base}/user/profile`);
   }
   register(

@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\UserPermission;
 use App\Service\UserPermissionService;
+use App\Service\InputSanitizerService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -13,12 +14,10 @@ use OpenApi\Annotations as OA;
 #[Route('/api/user-permission')]
 class UserPermissionController extends AbstractController
 {
-    private UserPermissionService $userPermissionService;
-
-    public function __construct(UserPermissionService $userPermissionService)
-    {
-        $this->userPermissionService = $userPermissionService;
-    }
+    public function __construct(
+        private UserPermissionService $userPermissionService,
+        private InputSanitizerService $inputSanitizer
+    ) {}
 
     /**
      * @OA\Get(summary="Lister les permissions utilisateur", tags={"UserPermission"})
@@ -49,7 +48,10 @@ class UserPermissionController extends AbstractController
     {
         try {
             $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
-            $permission = $this->userPermissionService->create($data);
+            
+            $sanitizedData = $this->inputSanitizer->sanitizeUserPermissionData($data);
+            
+            $permission = $this->userPermissionService->create($sanitizedData);
 
             return $this->json($permission, 201, [], ['groups' => ['user_permission:read']]);
         } catch (\JsonException $e) {
@@ -85,7 +87,10 @@ class UserPermissionController extends AbstractController
     {
         try {
             $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
-            $permission = $this->userPermissionService->update($userPermission, $data);
+            
+            $sanitizedData = $this->inputSanitizer->sanitizeUserPermissionData($data);
+            
+            $permission = $this->userPermissionService->update($userPermission, $sanitizedData);
 
             return $this->json($permission, 200, [], ['groups' => ['user_permission:read']]);
         } catch (\JsonException $e) {

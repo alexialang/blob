@@ -37,7 +37,7 @@ class QuizRepository extends ServiceEntityRepository
             return [];
         }
 
-        return $this->createQueryBuilder('q')
+        $query = $this->createQueryBuilder('q')
             ->join('q.groups', 'g')
             ->where('q.isPublic = false')
             ->andWhere('q.status = :status')
@@ -46,8 +46,13 @@ class QuizRepository extends ServiceEntityRepository
             ->setParameter('groupIds', $userGroupIds)
             ->distinct()
             ->orderBy('q.date_creation', 'DESC')
-            ->getQuery()
-            ->getResult();
+            ->getQuery();
+
+        $result = $query->getResult();
+        
+        error_log('findPrivateQuizzesForUserGroups - Groupes: ' . implode(',', $userGroupIds) . ' - Résultats: ' . count($result));
+        
+        return $result;
     }
 
 

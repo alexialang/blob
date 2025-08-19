@@ -26,8 +26,7 @@ export class AuthInterceptor implements HttpInterceptor {
       'public-leaderboard',
       'login_check',
       'token/refresh',
-      'quiz/list',
-      'quiz/organized'
+      'quiz/list'
     ];
 
     const isPublicUrl = publicUrls.some(url => req.url.includes(url));

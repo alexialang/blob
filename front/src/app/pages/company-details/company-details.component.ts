@@ -1,19 +1,21 @@
 import {
   Component,
   OnInit,
-  ChangeDetectionStrategy,
+  OnDestroy,
+  ViewChild,
   ChangeDetectorRef
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
-import { catchError, of } from 'rxjs';
-import { TuiDialogService, TuiAlertService } from '@taiga-ui/core';
-import { TuiBadge, TuiTabsHorizontal } from '@taiga-ui/kit';
-import { TuiTable, } from '@taiga-ui/addon-table';
-import { TuiButton } from '@taiga-ui/core';
-import { CompanyManagementService } from '../../services/company-management.service';
+import { Router, ActivatedRoute } from '@angular/router';
+import {  Subject, takeUntil, catchError, of } from 'rxjs';
+import { GlobalStatisticsComponent } from '../../components/global-statistics/global-statistics.component';
+import { CompanyService } from '../../services/company.service';
 import { PaginationComponent } from '../../components/pagination/pagination.component';
+import { AddMemberModalComponent } from '../../components/add-member-modal/add-member-modal.component';
+import { TuiDialogService, TuiAlertService } from '@taiga-ui/core';
+import { TuiTable } from '@taiga-ui/addon-table';
+import { TuiButton } from '@taiga-ui/core';
 
 interface Collaborator {
   id: number;
@@ -21,10 +23,17 @@ interface Collaborator {
   email: string;
   isActive: boolean;
   groups: string[];
-  rights: string[];
+  rights: any[];
   quizs?: any[];
   userAnswers?: any[];
   badges?: any[];
+}
+
+interface Company {
+  id: number | null;
+  name: string;
+  users?: any[];
+  groups?: any[];
 }
 
 @Component({
@@ -34,49 +43,49 @@ interface Collaborator {
     CommonModule,
     FormsModule,
     PaginationComponent,
-    TuiTabsHorizontal,
-    TuiBadge,
+    AddMemberModalComponent,
+    GlobalStatisticsComponent,
     TuiTable,
-
     TuiButton,
+
   ],
   templateUrl: './company-details.component.html',
-  styleUrls: ['./company-details.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  styleUrls: ['./company-details.component.scss']
 })
-export class CompanyDetailsComponent implements OnInit {
-  company: any = null;
-  loadError = false;
-  activeTabIndex = 0;
+export class CompanyDetailsComponent implements OnInit, OnDestroy {
+  @ViewChild(GlobalStatisticsComponent) globalStats!: GlobalStatisticsComponent;
 
-  filterByGroup = '';
-  filterByStatus = '';
-  searchKeyword = '';
-  groupList: string[] = [];
-
-  page = 1;
-  pageSize = 20;
+  company: Company | null = null;
   allCollaborators: Collaborator[] = [];
   filteredCollaborators: Collaborator[] = [];
+  availableMembersForNewGroup: any[] = [];
+  groupList: string[] = [];
 
-  sortColumn: keyof Collaborator | '' = '';
+  searchKeyword = '';
+  filterByGroup = '';
+  filterByStatus = '';
+  sortColumn: keyof Collaborator = 'name';
   sortDirection: 'asc' | 'desc' = 'asc';
+
+  page = 1;
+  pageSize = 10;
+  loadError = false;
 
   showAddMemberModal = false;
   showCreateGroupModal = false;
-  selectedGroupId: number | null = null;
-  selectedUserId: number | null = null;
-  availableMembersForNewGroup: any[] = [];
   newGroupName = '';
   newGroupDescription = '';
-  selectedMemberIds: number[] = [];
+  selectedMembersForGroup: number[] = [];
 
   highlightColor: string = '';
+  activeTabIndex = 0;
+
+  private destroy$ = new Subject<void>();
 
   constructor(
     private readonly route: ActivatedRoute,
     private readonly router: Router,
-    private readonly companyService: CompanyManagementService,
+    private readonly companyService: CompanyService,
     private readonly cdr: ChangeDetectorRef,
     private readonly alertService: TuiAlertService,
     private readonly dialogService: TuiDialogService
@@ -88,36 +97,52 @@ export class CompanyDetailsComponent implements OnInit {
     if (companyId) this.loadCompany(companyId);
   }
 
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   private loadCompany(companyId: number): void {
-    this.companyService.getCompanyDetailed(companyId)
-      .pipe(catchError(() => {
-        this.loadError = true;
-        return of(null);
-      }))
-      .subscribe(data => {
-        if (!data) return;
-        this.company = data;
-        this.company.groups?.forEach((group: any) => group.expanded = false);
+    this.companyService.getCompany(companyId)
+      .pipe(
+        takeUntil(this.destroy$),
+        catchError(() => {
+          this.loadError = true;
+          return of(null);
+        })
+      )
+      .subscribe((data: any) => {
+        if (!data || !data.success) return;
+        this.company = data.data;
+        if (this.company && this.company.groups) {
+          this.company.groups.forEach((group: any) => group.expanded = false);
+        }
         this.prepareCollaborators();
-        this.allCollaborators = this.allCollaborators.map(collab => {
-          const fullUser = data.users?.find((u: any) => u.id === collab.id);
-          return {
-            ...collab,
-            quizs: fullUser?.quizs ?? [],
-            userAnswers: fullUser?.userAnswers ?? [],
-            badges: fullUser?.badges ?? []
-          };
-        });
-        
+        if (this.company && data.data.users) {
+          this.allCollaborators = this.allCollaborators.map(collab => {
+            const fullUser = data.data.users.find((u: any) => u.id === collab.id);
+            return {
+              ...collab,
+              quizs: fullUser?.quizs ?? [],
+              userAnswers: fullUser?.userAnswers ?? [],
+              badges: fullUser?.badges ?? []
+            };
+          });
+        }
+
         this.cdr.markForCheck();
       });
   }
 
   private prepareCollaborators(): void {
-    const groupNameMap = new Map<number, string>();
-    this.company.groups?.forEach((group: any) => groupNameMap.set(group.id, group.name));
+    if (!this.company) return;
+    if (!this.company.users) this.company.users = [];
+    if (!this.company.groups) this.company.groups = [];
 
-    const collaborators: Collaborator[] = (this.company.users || []).map((user: any) => {
+    const groupNameMap = new Map<number, string>();
+    this.company.groups.forEach((group: any) => groupNameMap.set(group.id, group.name));
+
+    const collaborators: Collaborator[] = this.company.users.map((user: any) => {
       const groupNames = Array.isArray(user.groups)
         ? user.groups.map((g: any) => g.name || g)
         : user.groupId && groupNameMap.has(user.groupId)
@@ -137,7 +162,7 @@ export class CompanyDetailsComponent implements OnInit {
     this.groupList = [...new Set(collaborators.flatMap(c => c.groups))].sort();
     this.allCollaborators = collaborators;
     this.filteredCollaborators = [...collaborators];
-    this.availableMembersForNewGroup = [...this.company.users || []];
+    this.availableMembersForNewGroup = [...this.company.users];
     this.applyFilters();
   }
 
@@ -188,53 +213,191 @@ export class CompanyDetailsComponent implements OnInit {
     return this.filteredCollaborators.slice(start, start + this.pageSize);
   }
 
-  onPageChange(newPage: number): void {
-    this.page = newPage;
-    this.cdr.markForCheck();
+  get totalPages(): number {
+    return Math.ceil(this.filteredCollaborators.length / this.pageSize);
   }
 
-  editCompany(): void {
-    if (this.company) {
-      this.router.navigate(['/admin/companies', this.company.id, 'edit']);
+  onPageChange(newPage: number): void {
+    this.page = newPage;
+  }
+
+  private generateRandomColor(): void {
+    const colors = [
+      'var(--color-primary)',
+      'var(--color-secondary)',
+      'var(--color-accent)',
+      'var(--color-pink)'
+    ];
+    const randomColor = colors[Math.floor(Math.random() * colors.length)];
+    this.highlightColor = randomColor;
+  }
+
+  toggleGroupExpansion(groupId: number): void {
+    const group = this.company?.groups?.find(g => g.id === groupId);
+    if (group) {
+      group.expanded = !group.expanded;
+      this.cdr.markForCheck();
     }
   }
 
-  deleteCompany(): void {
-    if (!this.company) return;
-    this.dialogService.open<boolean>('Confirmer la suppression de cette entreprise ?', {
-      label: 'Suppression',
-    }).subscribe(confirmed => {
-      if (confirmed) {
-        this.companyService.deleteCompany(this.company.id).subscribe({
-          next: () => {
-            this.alertService.open('Entreprise supprimée.');
-            this.router.navigate(['/admin/companies']);
-          },
-          error: () => {
-            this.alertService.open('Erreur lors de la suppression.');
-          }
-        });
+  showAddMemberModalAction(): void {
+    this.showAddMemberModal = true;
+  }
+
+  hideAddMemberModal(): void {
+    this.showAddMemberModal = false;
+  }
+
+  onMemberAdded(member: any): void {
+    this.hideAddMemberModal();
+    this.loadCompany(this.company?.id || 0);
+    this.alertService.open('Membre ajouté avec succès !').subscribe();
+  }
+
+  showCreateGroupModalAction(): void {
+    this.showCreateGroupModal = true;
+    if (this.company?.users) {
+      this.availableMembersForNewGroup = [...this.company.users];
+    }
+  }
+
+  hideCreateGroupModal(): void {
+    this.showCreateGroupModal = false;
+    this.newGroupName = '';
+    this.newGroupDescription = '';
+    this.selectedMembersForGroup = [];
+  }
+
+  toggleMemberSelection(memberId: number): void {
+    const index = this.selectedMembersForGroup.indexOf(memberId);
+    if (index > -1) {
+      this.selectedMembersForGroup.splice(index, 1);
+    } else {
+      this.selectedMembersForGroup.push(memberId);
+    }
+  }
+
+  createGroup(): void {
+    if (!this.newGroupName.trim()) {
+      this.alertService.open('Le nom du groupe est requis !').subscribe();
+      return;
+    }
+
+    if (!this.company?.id) {
+      this.alertService.open('ID de l\'entreprise manquant').subscribe();
+      return;
+    }
+
+    const groupData = {
+      name: this.newGroupName.trim(),
+      description: this.newGroupDescription.trim(),
+      userIds: this.selectedMembersForGroup
+    };
+
+    this.companyService.createGroup(this.company.id, groupData).subscribe({
+      next: (response) => {
+        this.alertService.open('Groupe créé avec succès !').subscribe();
+        this.hideCreateGroupModal();
+        this.loadCompany(this.company!.id!);
+      },
+      error: (error) => {
+        this.alertService.open('Erreur lors de la création du groupe').subscribe();
       }
     });
   }
 
+  deleteGroup(groupId: number): void {
+    if (!this.company?.id) {
+      this.alertService.open('ID de l\'entreprise manquant').subscribe();
+      return;
+    }
 
-  deleteCollaborator(userId: number): void {
-    this.dialogService.open<boolean>('Confirmer la suppression de ce collaborateur ?', {
-      label: 'Suppression',
-    }).subscribe(confirmed => {
-      if (confirmed) {
-        this.companyService.deleteUser(userId).subscribe({
-          next: () => {
-            this.alertService.open('Collaborateur supprimé.');
-            this.loadCompany(this.company.id);
-          },
-          error: () => {
-            this.alertService.open('Erreur lors de la suppression.');
-          }
-        });
+    this.alertService.open('Êtes-vous sûr de vouloir supprimer ce groupe ?').subscribe();
+    this.companyService.deleteGroup(this.company.id, groupId).subscribe({
+      next: () => {
+        this.alertService.open('Groupe supprimé avec succès !').subscribe();
+        this.loadCompany(this.company!.id!);
+      },
+      error: (error) => {
+        console.error('Erreur lors de la suppression du groupe:', error);
+        this.alertService.open('Erreur lors de la suppression du groupe').subscribe();
       }
     });
+  }
+
+  removeUserFromGroup(groupId: number, userId: number): void {
+    if (!this.company?.id) {
+      this.alertService.open('ID de l\'entreprise manquant').subscribe();
+      return;
+    }
+
+    this.alertService.open('Êtes-vous sûr de vouloir retirer cet utilisateur du groupe ?').subscribe();
+    this.companyService.removeUserFromGroup(this.company.id, groupId, userId).subscribe({
+      next: () => {
+        this.alertService.open('Utilisateur retiré du groupe avec succès !').subscribe();
+        this.loadCompany(this.company!.id!);
+      },
+      error: (error) => {
+        console.error('Erreur lors du retrait de l\'utilisateur:', error);
+        this.alertService.open('Erreur lors du retrait de l\'utilisateur').subscribe();
+      }
+    });
+  }
+
+  addUserToGroup(groupId: number, userId: number): void {
+    if (!this.company?.id) {
+      this.alertService.open('ID de l\'entreprise manquant').subscribe();
+      return;
+    }
+
+    this.companyService.addUserToGroup(this.company.id, groupId, userId).subscribe({
+      next: () => {
+        this.alertService.open('Utilisateur ajouté au groupe avec succès !').subscribe();
+        this.loadCompany(this.company!.id!);
+      },
+      error: (error) => {
+        this.alertService.open('Erreur lors de l\'ajout de l\'utilisateur').subscribe();
+      }
+    });
+  }
+
+  addMemberToGroup(groupId: number): void {
+    this.showAddMemberModal = true;
+    this.alertService.open('Sélectionnez l\'utilisateur à ajouter au groupe').subscribe();
+  }
+
+  selectAllMembers(): void {
+    this.selectedMembersForGroup = this.availableMembersForNewGroup.map(member => member.id);
+  }
+
+  deselectAllMembers(): void {
+    this.selectedMembersForGroup = [];
+  }
+
+  isMemberSelected(memberId: number): boolean {
+    return this.selectedMembersForGroup.includes(memberId);
+  }
+
+  cancelCreateGroup(): void {
+    this.hideCreateGroupModal();
+  }
+
+  confirmCreateGroup(): void {
+    this.createGroup();
+  }
+
+  deleteCollaborator(collaboratorId: number): void {
+    this.alertService.open('Êtes-vous sûr de vouloir supprimer ce collaborateur ?').subscribe();
+    this.alertService.open('Fonctionnalité de suppression de collaborateur à implémenter').subscribe();
+  }
+
+  onAddMemberCancelled(): void {
+    this.hideAddMemberModal();
+  }
+
+  getActiveUsersCount(): number {
+    if (!this.company || !this.company.users) return 0;
+    return this.company.users.filter(user => user.isActive).length;
   }
 
   toggleGroup(group: any): void {
@@ -242,163 +405,15 @@ export class CompanyDetailsComponent implements OnInit {
     this.cdr.markForCheck();
   }
 
-  deleteGroup(groupId: number): void {
-    this.dialogService.open<boolean>('Confirmer la suppression de ce groupe ?', {
-      label: 'Suppression',
-    }).subscribe(confirmed => {
-      if (confirmed) {
-        this.companyService.deleteGroup(groupId).subscribe({
-          next: () => {
-            this.alertService.open('Groupe supprimé.');
-            this.loadCompany(this.company.id);
-          },
-          error: () => {
-            this.alertService.open('Erreur lors de la suppression.');
-          }
-        });
-      }
-    });
+  getCollaboratorStats(collaborator: any): string {
+    return 'Voir plus';
   }
 
-  removeFromGroup(groupId: number, userId: number): void {
-    this.dialogService.open<boolean>('Retirer ce membre du groupe ?', {
-      label: 'Confirmation',
-    }).subscribe((confirmed) => {
-      if (confirmed) {
-        this.companyService.removeUserFromGroup(groupId, userId).subscribe({
-          next: () => {
-            this.alertService.open('Membre retiré du groupe.');
-            this.loadCompany(this.company.id);
-          },
-          error: () => {
-            this.alertService.open('Erreur lors du retrait du membre.');
-          }
-        });
-      }
-    });
+  editCompany(): void {
+    this.alertService.open('Fonctionnalité de modification d\'entreprise à implémenter !').subscribe();
   }
 
-  createGroup(): void {
-    this.showCreateGroupModal = true;
-    this.cdr.markForCheck();
-  }
-
-  cancelCreateGroup(): void {
-    this.showCreateGroupModal = false;
-    this.newGroupName = '';
-    this.newGroupDescription = '';
-    this.selectedMemberIds = [];
-    this.cdr.markForCheck();
-  }
-
-  confirmCreateGroup(): void {
-    if (!this.newGroupName.trim() || !this.company?.id) return;
-
-    const groupData = {
-      name: this.newGroupName.trim(),
-      description: this.newGroupDescription?.trim() || '',
-      companyId: this.company.id,
-      memberIds: this.selectedMemberIds
-    };
-
-    this.companyService.createGroup(groupData).subscribe({
-      next: () => {
-        this.alertService.open('Groupe créé avec succès.');
-        this.cancelCreateGroup();
-        this.loadCompany(this.company.id);
-      },
-      error: () => {
-        this.alertService.open('Erreur lors de la création du groupe.');
-      }
-    });
-  }
-
-  addMemberToGroup(groupId: number): void {
-    this.selectedGroupId = groupId;
-    this.showAddMemberModal = true;
-    this.cdr.markForCheck();
-  }
-
-  cancelAddMember(): void {
-    this.showAddMemberModal = false;
-    this.selectedGroupId = null;
-    this.selectedUserId = null;
-    this.cdr.markForCheck();
-  }
-
-  confirmAddMember(): void {
-    if (!this.selectedGroupId || !this.selectedUserId) return;
-
-    this.companyService.addUserToGroup(this.selectedGroupId, this.selectedUserId).subscribe({
-      next: () => {
-        this.alertService.open('Membre ajouté au groupe.');
-        this.cancelAddMember();
-        this.loadCompany(this.company.id);
-      },
-      error: () => {
-        this.alertService.open('Erreur lors de l\'ajout du membre.');
-      }
-    });
-  }
-
-  selectAllMembers(): void {
-    this.selectedMemberIds = this.availableMembersForNewGroup.map(u => u.id);
-    this.cdr.markForCheck();
-  }
-
-  deselectAllMembers(): void {
-    this.selectedMemberIds = [];
-    this.cdr.markForCheck();
-  }
-
-  isMemberSelected(userId: number): boolean {
-    return this.selectedMemberIds.includes(userId);
-  }
-
-  toggleMemberSelection(userId: number): void {
-    if (this.isMemberSelected(userId)) {
-      this.selectedMemberIds = this.selectedMemberIds.filter(id => id !== userId);
-    } else {
-      this.selectedMemberIds.push(userId);
-    }
-    this.cdr.markForCheck();
-  }
-
-  private generateRandomColor(): void {
-    const colors = [
-      '#257D54', '#FAA24B', '#D30D4C',
-    ];
-
-    const index = Math.floor(Math.random() * colors.length);
-    this.highlightColor = colors[index];
-  }
-
-  getCollaboratorStats(collaboratorId: number): string {
-    const collaborator = this.pagedCollaborators.find(c => c.id === collaboratorId);
-    if (!collaborator) return '—';
-    
-    const quizCreated = collaborator.quizs?.length || 0;
-    const quizAnswered = collaborator.userAnswers?.length || 0;
-    const badgesCount = collaborator.badges?.length || 0;
-    let averageScore = 0;
-    if (collaborator.userAnswers && collaborator.userAnswers.length > 0) {
-      const correctAnswers = collaborator.userAnswers.filter((answer: any) => answer.isCorrect).length;
-      averageScore = Math.round((correctAnswers / collaborator.userAnswers.length) * 100);
-    }
-    
-    if (quizAnswered > 0 && averageScore > 0) {
-      return `${quizAnswered} quiz • ${averageScore}/100`;
-    } else if (quizCreated > 0) {
-      return `${quizCreated} quiz créés`;
-    } else if (badgesCount > 0) {
-      return `${badgesCount} badges`;
-    } else {
-      return 'Aucune activité';
-    }
-  }
-
-  getActiveUsersCount(): number {
-    if (!this.company?.users) return 0;
-    return this.company.users.filter((user: any) => user.isActive).length;
+  deleteCompany(): void {
+    this.alertService.open('Fonctionnalité de suppression d\'entreprise à implémenter !').subscribe();
   }
 }

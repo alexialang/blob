@@ -157,7 +157,18 @@ class GameService
             'correct' => $score > 0
         ];
 
-        $session['score'] += $score;
+        $totalQuestions = count($session['questions']);
+        $correctAnswers = 0;
+        
+        foreach ($session['answers'] as $answer) {
+            if ($answer['correct']) {
+                $correctAnswers++;
+            }
+        }
+        
+        $normalizedScore = $totalQuestions > 0 ? round(($correctAnswers / $totalQuestions) * 100) : 0;
+        
+        $session['normalizedScore'] = $normalizedScore;
         $session['currentQuestionIndex']++;
 
         $isFinished = $session['currentQuestionIndex'] >= count($questions);
@@ -177,7 +188,8 @@ class GameService
         return [
             'correct' => $score > 0,
             'score' => $score,
-            'totalScore' => $session['score'],
+            'totalScore' => $session['normalizedScore'],
+            'rawTotalScore' => $session['score'],
             'finished' => $isFinished,
             'nextQuestion' => !$isFinished,
             'savedToDatabase' => true
@@ -208,18 +220,19 @@ class GameService
             $totalTimeSpent += $answer['timeSpent'];
         }
 
-        $percentage = $totalQuestions > 0 ? ($correctAnswers / $totalQuestions) * 100 : 0;
-
+        $normalizedTotalScore = $totalQuestions > 0 ? round(($correctAnswers / $totalQuestions) * 100) : 0;
+        
         return [
             'quiz' => [
                 'id' => $session['quiz']->getId(),
                 'title' => $session['quiz']->getTitle()
             ],
-            'totalScore' => $session['score'],
+            'totalScore' => $normalizedTotalScore,
+            'rawTotalScore' => $session['score'],
             'totalQuestions' => $totalQuestions,
             'answeredQuestions' => $answeredQuestions,
             'correctAnswers' => $correctAnswers,
-            'percentage' => round($percentage, 2),
+            'percentage' => $normalizedTotalScore,
             'totalTimeSpent' => $totalTimeSpent,
             'averageTimePerQuestion' => $answeredQuestions > 0 ? round($totalTimeSpent / $answeredQuestions, 2) : 0,
             'status' => $session['status'],
@@ -381,18 +394,19 @@ class GameService
         $session = $this->gameSessions[$sessionId];
         
         try {
-            $userAnswer = new UserAnswer();
-            $userAnswer->setUser($session['user']);
-            $userAnswer->setQuiz($session['quiz']);
-            $userAnswer->setTotalScore($session['score']);
-            $userAnswer->setDateAttempt(new \DateTime());
+            $totalQuestions = count($session['questions']);
+            $correctAnswers = 0;
             
-            $this->em->persist($userAnswer);
-            $this->em->flush();
+            foreach ($session['answers'] as $answer) {
+                if ($answer['correct']) {
+                    $correctAnswers++;
+                }
+            }
             
-            error_log("Game result saved: User {$session['user']->getId()}, Quiz {$session['quiz']->getId()}, Score {$session['score']}");
+            $finalScore = $totalQuestions > 0 ? round(($correctAnswers / $totalQuestions) * 100) : 0;
+            error_log("Game session completed: User {$session['user']->getId()}, Quiz {$session['quiz']->getId()}, Correct Answers: {$correctAnswers}/{$totalQuestions}, Final Score: {$finalScore}/100");
         } catch (\Exception $e) {
-            error_log("Error saving game results: " . $e->getMessage());
+            error_log("Error processing game session: " . $e->getMessage());
             throw $e;
         }
     }

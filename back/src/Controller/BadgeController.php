@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Badge;
 use App\Service\BadgeService;
+use App\Service\InputSanitizerService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -13,12 +14,10 @@ use OpenApi\Annotations as OA;
 #[Route('/api/badge')]
 class BadgeController extends AbstractController
 {
-    private BadgeService $badgeService;
-
-    public function __construct(BadgeService $badgeService)
-    {
-        $this->badgeService = $badgeService;
-    }
+    public function __construct(
+        private BadgeService $badgeService,
+        private InputSanitizerService $inputSanitizer
+    ) {}
 
     /**
      * @OA\Get(summary="Liste des badges", tags={"Badge"})
@@ -52,7 +51,9 @@ class BadgeController extends AbstractController
         try {
             $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
 
-            $badge = $this->badgeService->create($data);
+            $sanitizedData = $this->inputSanitizer->sanitizeBadgeData($data);
+
+            $badge = $this->badgeService->create($sanitizedData);
 
             return $this->json($badge, 201, [], ['groups' => ['badge:read']]);
         } catch (\JsonException $e) {
@@ -92,7 +93,9 @@ class BadgeController extends AbstractController
         try {
             $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
 
-            $badge = $this->badgeService->update($badge, $data);
+            $sanitizedData = $this->inputSanitizer->sanitizeBadgeData($data);
+
+            $badge = $this->badgeService->update($badge, $sanitizedData);
 
             return $this->json($badge, 200, [], ['groups' => ['badge:read']]);
         } catch (\JsonException $e) {

@@ -16,6 +16,7 @@ export class QuizTransitionComponent implements OnInit, OnDestroy {
   currentQuiz: QuizCard | null = null;
   cardPosition: any = null;
   isExiting = false;
+  cardColor: string = 'var(--color-primary)';
   
   private subscriptions: Subscription[] = [];
 
@@ -34,6 +35,9 @@ export class QuizTransitionComponent implements OnInit, OnDestroy {
       ),
       this.quizTransitionService.isExiting$.subscribe(
         exiting => this.isExiting = exiting
+      ),
+      this.quizTransitionService.cardColor$.subscribe(
+        color => this.cardColor = color
       )
     );
   }

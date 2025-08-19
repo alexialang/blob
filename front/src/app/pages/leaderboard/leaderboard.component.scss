@@ -2,7 +2,7 @@
   background: var(--color-light);
   min-height: 100vh;
   padding: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-family: var(--font-primary);
 }
 
 .container {
@@ -57,7 +57,7 @@
       transition: all 0.2s ease;
 
       &:hover {
-        background: var(--color-primary-light);
+        background: var(--color-secondary-dark);
         transform: translateY(-1px);
       }
 
@@ -104,7 +104,7 @@
 
   .error-card {
     background: white;
-    border-radius: 16px;
+    border-radius: 20px;
     padding: 40px;
     text-align: center;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
@@ -112,7 +112,7 @@
 
     i {
       font-size: 3rem;
-      color: var(--color-danger);
+      color: var(--color-accent-dark);
       margin-bottom: 20px;
     }
 
@@ -137,7 +137,7 @@
       transition: all 0.2s ease;
 
       &:hover {
-        background: var(--color-primary-light);
+        background: var(--color-secondary-dark);
       }
     }
   }
@@ -181,28 +181,47 @@
       flex-wrap: wrap;
 
       .podium-player {
-        background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
-        border-radius: 16px;
+        border-radius: 20px;
         padding: 30px 20px;
         text-align: center;
         color: white;
         position: relative;
         min-width: 200px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        transition: all 0.3s ease;
 
         &.first-place {
           order: 2;
           margin-bottom: 0;
           transform: scale(1.1);
+          background: var(--color-primary);
+          
+          &:hover {
+            transform: scale(1.15);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+          }
         }
 
         &.second-place {
           order: 1;
           margin-bottom: 20px;
+          background: var(--color-secondary-dark);
+          
+          &:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+          }
         }
 
         &.third-place {
           order: 3;
           margin-bottom: 20px;
+          background: var(--color-accent-dark);
+          
+          &:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+          }
         }
 
         .player-avatar {
@@ -210,24 +229,27 @@
           margin-bottom: 20px;
 
           img {
-            width: 80px;
-            height: 80px;
+            width: 100px;
+            height: 100px;
             border-radius: 50%;
-            border: 4px solid rgba(255, 255, 255, 0.3);
+            border: 6px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
           }
 
           .medal {
             position: absolute;
-            top: -10px;
-            right: -10px;
-            width: 40px;
-            height: 40px;
+            top: -15px;
+            right: -15px;
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
+            font-size: 20px;
             font-weight: bold;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
 
             &.gold {
               background: linear-gradient(135deg, #ffd700, #ffed4a);
@@ -248,23 +270,44 @@
 
         .player-info {
           h4 {
-            font-size: 20px;
+            font-size: 22px;
             margin-bottom: 8px;
             font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
           }
 
           p {
-            font-size: 16px;
+            font-size: 18px;
             margin-bottom: 12px;
-            opacity: 0.9;
+            opacity: 0.95;
+            font-weight: 600;
           }
 
           .player-level {
-            background: rgba(255, 255, 255, 0.2);
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 12px;
+            background: rgba(255, 255, 255, 0.25);
+            padding: 8px 16px;
+            border-radius: 25px;
+            font-size: 14px;
             font-weight: 600;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+          }
+        }
+
+        &.empty-place {
+          background: linear-gradient(135deg, #f0f0f0, #e0e0e0);
+          color: var(--text-secondary);
+          
+          .player-avatar.empty {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            border: 6px solid rgba(0, 0, 0, 0.1);
           }
         }
       }
@@ -277,7 +320,7 @@
 
   .my-position-card {
     background: white;
-    border-radius: 16px;
+    border-radius: 20px;
     overflow: hidden;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
     border: 1px solid rgba(0, 0, 0, 0.05);
@@ -354,13 +397,13 @@
 .ranking-section {
   .ranking-card {
     background: white;
-    border-radius: 16px;
+    border-radius: 20px;
     overflow: hidden;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
     border: 1px solid rgba(0, 0, 0, 0.05);
 
     .card-header {
-      background: var(--color-dark);
+      background: var(--color-secondary-dark);
       color: white;
       padding: 20px 30px;
       display: flex;
@@ -393,6 +436,7 @@
 
         &:hover {
           background: var(--bg-secondary);
+          transform: translateX(8px);
         }
 
         &.current-user {
@@ -406,6 +450,7 @@
 
         .player-rank {
           min-width: 60px;
+          text-align: center;
 
           .rank-badge {
             width: 40px;
@@ -414,8 +459,9 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 700;
+            font-weight: bold;
             font-size: 16px;
+            margin: 0 auto;
 
             &.gold {
               background: linear-gradient(135deg, #ffd700, #ffed4a);
@@ -432,22 +478,23 @@
               color: #8b4513;
             }
 
-            &:not(.gold):not(.silver):not(.bronze) {
-              background: var(--bg-secondary);
-              color: var(--color-dark);
+            &.rank-4-plus {
+              background: var(--color-accent-dark);
+              color: white;
             }
           }
         }
 
         .player-avatar-small {
-          margin: 0 20px;
           position: relative;
+          margin: 0 20px;
 
           img {
             width: 50px;
             height: 50px;
             border-radius: 50%;
-            border: 2px solid rgba(0, 0, 0, 0.1);
+            border: 3px solid var(--color-primary);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
           }
 
           .online-indicator {
@@ -456,9 +503,9 @@
             right: 2px;
             width: 12px;
             height: 12px;
-            background: #2ecc71;
-            border-radius: 50%;
+            background: var(--color-primary);
             border: 2px solid white;
+            border-radius: 50%;
           }
         }
 
@@ -469,7 +516,7 @@
             font-size: 18px;
             font-weight: 600;
             color: var(--color-dark);
-            margin-bottom: 6px;
+            margin-bottom: 4px;
 
             .you-indicator {
               color: var(--color-primary);
@@ -485,12 +532,12 @@
             .stat {
               display: flex;
               align-items: center;
-              gap: 5px;
+              gap: 6px;
               font-size: 14px;
               color: var(--text-secondary);
 
               i {
-                color: var(--color-primary);
+                color: var(--color-accent-dark);
               }
             }
           }
@@ -498,38 +545,18 @@
 
         .player-scores {
           text-align: right;
-          margin-right: 20px;
+          min-width: 120px;
 
           .total-score {
             font-size: 20px;
             font-weight: 700;
             color: var(--color-primary);
-
-            span {
-              font-size: 12px;
-              color: var(--text-secondary);
-              display: block;
-            }
+            margin-bottom: 4px;
           }
 
           .average-score {
             font-size: 14px;
             color: var(--text-secondary);
-
-            span {
-              font-size: 12px;
-            }
-          }
-        }
-
-        .player-level {
-          .level-badge {
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            background: var(--color-primary);
-            color: white;
           }
         }
       }

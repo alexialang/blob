@@ -43,7 +43,15 @@ class BadgeEventListener
         $userAnswer = $event->getUserAnswer();
         $score = $event->getScore();
         
-        $completedQuizCount = $user->getUserAnswers()->count();
+        $uniqueQuizIds = [];
+        foreach ($user->getUserAnswers() as $answer) {
+            $quizId = $answer->getQuiz()?->getId();
+            if ($quizId) {
+                $uniqueQuizIds[$quizId] = true;
+            }
+        }
+        $completedQuizCount = count($uniqueQuizIds);
+        
         if ($completedQuizCount === 1) {
             $this->badgeService->awardBadge($user, 'Première Victoire');
         }

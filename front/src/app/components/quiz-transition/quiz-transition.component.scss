@@ -6,7 +6,7 @@
   bottom: 0;
   width: 100vw;
   height: 100vh;
-  background: #1a1a1a;
+  background: var(--card-color, var(--color-primary));
   z-index: 2;
   display: flex;
   align-items: center;
@@ -28,7 +28,7 @@
 }
 
 .transition-card {
-  background: #1a1a1a;
+  background: var(--card-color, var(--color-primary));
   color: white;
   border-radius: 20px;
   padding: clamp(2rem, 8vw, 6rem) clamp(1rem, 5vw, 4rem) 2rem;

@@ -106,15 +106,15 @@ export class QuizCardsComponent implements OnInit, OnDestroy {
 
         this.originalCategories = (data.categories ?? []).map(
           (cat: any): CategoryWithPagination => ({
-            name: cat.name,
+            ...cat,
             quizzes: this.convertToQuizCards(cat.quizzes ?? []),
             currentPage: 1,
             itemsPerPage: this.pageSize,
-            pageSize: this.pageSize,
-            totalItems: cat.quizzes?.length ?? 0,
+            totalItems: (cat.quizzes ?? []).length,
+            totalPages: Math.ceil((cat.quizzes ?? []).length / this.pageSize)
           })
         );
-        this.categories = this.originalCategories.map(cat => ({ ...cat }));
+        this.categories = [...this.originalCategories];
 
         this.calculateAllBlobs();
         this.loadQuizRatings();
@@ -134,6 +134,23 @@ export class QuizCardsComponent implements OnInit, OnDestroy {
       const companyName = (q.company?.name ?? q.user?.company?.name) ?? 'Inconnu';
       const groupName   = q.groups?.[0]?.name ?? null;
       const isPublic    = q.is_public ?? q.isPublic ?? false;
+
+      let categoryName = 'Catégorie inconnue';
+      if (q.category) {
+        if (typeof q.category === 'string') {
+          categoryName = q.category;
+        } else if (q.category.name) {
+          categoryName = q.category.name;
+        } else {
+          categoryName = JSON.stringify(q.category);
+        }
+      }
+
+      let rating = 0;
+      if (q.rating !== undefined && q.rating !== null) {
+        rating = Math.round(q.rating);
+      }
+
       return {
         id: q.id,
         title: q.title,
@@ -141,9 +158,9 @@ export class QuizCardsComponent implements OnInit, OnDestroy {
         is_public: isPublic,
         company: companyName,
         groupName,
-        category: q.category?.name ?? 'Catégorie inconnue',
+        category: categoryName,
         difficulty: (q.difficultyLabel ?? q.difficulty) ?? 'Niveau non renseigné',
-        rating: 0,
+        rating: rating,
         questionCount: q.questionCount,
         isFlipped: this.flippedCardsCache.get(q.id) ?? false,
         playMode: 'solo' as const,
@@ -223,7 +240,7 @@ export class QuizCardsComponent implements OnInit, OnDestroy {
     const key = `${cat.name}-${cat.currentPage}`;
     const start = (cat.currentPage - 1) * cat.itemsPerPage;
     const slice = cat.quizzes.slice(start, start + cat.itemsPerPage);
-    this.categoriesWithBlobs[key] = this.addRandomBlobsLimited(slice, this.pageSize, key);
+    this.categoriesWithBlobs[key] = this.addRandomBlobsLimited(slice, cat.itemsPerPage, key);
   }
 
   private calculateAllBlobs(): void {
@@ -299,7 +316,7 @@ export class QuizCardsComponent implements OnInit, OnDestroy {
     );
 
     if (uniqueQuizzes.length === 0) return;
-    const ratingRequests = uniqueQuizzes.map(quiz => 
+    const ratingRequests = uniqueQuizzes.map(quiz =>
       this.quizResultsService.getPublicQuizRating(quiz.id)
     );
 
@@ -361,5 +378,13 @@ export class QuizCardsComponent implements OnInit, OnDestroy {
     };
 
     window.addEventListener('quiz-rating-updated', this.ratingUpdateListener);
+  }
+
+  getCardIndex(index: number): number {
+    return index % 4;
+  }
+
+  getCardRowIndex(index: number): number {
+    return Math.floor(index / 4);
   }
 }

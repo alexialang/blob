@@ -12,23 +12,27 @@ declare var Chart: any;
 })
 export class StatisticsChartsComponent implements OnInit, AfterViewInit, OnDestroy, OnChanges {
   @Input() userStatistics: any = null;
-  
+
   @ViewChild('scoreEvolutionChart', { static: false }) scoreChart!: ElementRef<HTMLCanvasElement>;
   @ViewChild('categoryChart', { static: false }) categoryChart!: ElementRef<HTMLCanvasElement>;
-  
+
   private scoreEvolutionChartInstance: any;
   private categoryChartInstance: any;
-  
+  private chartsCreated = false;
+
   ngOnInit() {}
-  
+
   ngAfterViewInit() {
     this.loadChartJs().then(() => {
-      if (this.userStatistics) {
-        this.createCharts();
-      }
+      setTimeout(() => {
+        if (this.userStatistics && this.scoreChart && this.categoryChart && !this.chartsCreated) {
+          this.createCharts();
+          this.chartsCreated = true;
+        }
+      }, 100);
     });
   }
-  
+
   ngOnDestroy() {
     if (this.scoreEvolutionChartInstance) {
       this.scoreEvolutionChartInstance.destroy();
@@ -36,44 +40,55 @@ export class StatisticsChartsComponent implements OnInit, AfterViewInit, OnDestr
     if (this.categoryChartInstance) {
       this.categoryChartInstance.destroy();
     }
+    this.chartsCreated = false;
   }
-  
+
   private async loadChartJs(): Promise<void> {
     if (typeof Chart === 'undefined') {
       const script = document.createElement('script');
       script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
       document.head.appendChild(script);
-      
+
       return new Promise((resolve) => {
         script.onload = () => resolve();
       });
     }
     return Promise.resolve();
   }
-  
+
   ngOnChanges() {
-    if (this.userStatistics && typeof Chart !== 'undefined') {
+    if (this.userStatistics && typeof Chart !== 'undefined' && this.scoreChart && this.categoryChart) {
+      if (this.scoreEvolutionChartInstance) {
+        this.scoreEvolutionChartInstance.destroy();
+        this.scoreEvolutionChartInstance = null;
+      }
+      if (this.categoryChartInstance) {
+        this.categoryChartInstance.destroy();
+        this.categoryChartInstance = null;
+      }
+
       this.createCharts();
+      this.chartsCreated = true;
     }
   }
-  
+
   private createCharts() {
     this.createScoreEvolutionChart();
     this.createCategoryPerformanceChart();
   }
-  
+
   private createScoreEvolutionChart() {
     if (!this.scoreChart || !this.userStatistics?.scoreHistory) return;
-    
+
     const ctx = this.scoreChart.nativeElement.getContext('2d');
     if (this.scoreEvolutionChartInstance) {
       this.scoreEvolutionChartInstance.destroy();
     }
-    
+
     const scoreHistory = this.userStatistics.scoreHistory || [];
     const labels = scoreHistory.map((item: any) => this.formatDate(item.date));
     const scores = scoreHistory.map((item: any) => item.score);
-    
+
     this.scoreEvolutionChartInstance = new Chart(ctx, {
       type: 'line',
       data: {
@@ -150,15 +165,15 @@ export class StatisticsChartsComponent implements OnInit, AfterViewInit, OnDestr
       }
     });
   }
-  
+
   private createCategoryPerformanceChart() {
     if (!this.categoryChart || !this.userStatistics?.categoryPerformance) return;
-    
+
     const ctx = this.categoryChart.nativeElement.getContext('2d');
     if (this.categoryChartInstance) {
       this.categoryChartInstance.destroy();
     }
-    
+
     const categoryData = this.userStatistics.categoryPerformance || [];
     const labels = categoryData.map((item: any) => item.category);
     const averages = categoryData.map((item: any) => item.average);
@@ -170,7 +185,7 @@ export class StatisticsChartsComponent implements OnInit, AfterViewInit, OnDestr
       'rgba(255, 87, 34, 0.8)',
       'rgba(156, 39, 176, 0.8)'
     ];
-    
+
     this.categoryChartInstance = new Chart(ctx, {
       type: 'doughnut',
       data: {
@@ -222,7 +237,7 @@ export class StatisticsChartsComponent implements OnInit, AfterViewInit, OnDestr
       }
     });
   }
-  
+
   private formatDate(dateString: string): string {
     const date = new Date(dateString);
     return date.toLocaleDateString('fr-FR', {
@@ -231,37 +246,37 @@ export class StatisticsChartsComponent implements OnInit, AfterViewInit, OnDestr
       year: '2-digit'
     });
   }
-  
+
   hasScoreHistory(): boolean {
     return this.userStatistics?.scoreHistory && this.userStatistics.scoreHistory.length > 0;
   }
-  
+
   hasCategoryData(): boolean {
     return this.userStatistics?.categoryPerformance && this.userStatistics.categoryPerformance.length > 0;
   }
-  
+
   getProgressTrend(): number {
     if (!this.hasScoreHistory() || this.userStatistics.scoreHistory.length < 2) {
       return 0;
     }
-    
+
     const scores = this.userStatistics.scoreHistory;
     const recentScores = scores.slice(-3);
     const olderScores = scores.slice(0, -3);
-    
+
     if (olderScores.length === 0) return 0;
-    
+
     const recentAvg = recentScores.reduce((sum: number, item: any) => sum + item.score, 0) / recentScores.length;
     const olderAvg = olderScores.reduce((sum: number, item: any) => sum + item.score, 0) / olderScores.length;
-    
+
     return Math.round(((recentAvg - olderAvg) / olderAvg) * 100);
   }
-  
+
   getRecommendedTarget(): number {
     if (!this.hasScoreHistory()) {
       return 80;
     }
-    
+
     const scores = this.userStatistics.scoreHistory.map((item: any) => item.score);
     const averageScore = scores.reduce((sum: number, score: number) => sum + score, 0) / scores.length;
     const maxScore = Math.max(...scores);

@@ -1,0 +1,113 @@
+<div class="modal-content">
+  <h3>Ajouter un membre à l'entreprise</h3>
+  
+  <div class="form-group">
+    <label>Sélectionner un utilisateur</label>
+    <ng-container *ngIf="availableUsers$ | async as availableUsers">
+      <div class="users-list" *ngIf="availableUsers.length > 0; else noUsersTpl">
+        <div 
+          *ngFor="let user of availableUsers; trackBy: trackByUserId" 
+          class="user-item"
+          [class.selected]="selectedUserId === user.id"
+          (click)="selectUser(user.id)"
+        >
+          <div class="user-info">
+            <div class="user-name">{{ user.firstName }} {{ user.lastName }}</div>
+            <div class="user-email">{{ user.email }}</div>
+            <div class="user-company" *ngIf="user.currentCompany">
+              <small>Actuellement dans : {{ user.currentCompany.name }}</small>
+            </div>
+          </div>
+          <div class="user-avatar">{{ user.firstName.charAt(0) }}{{ user.lastName.charAt(0) }}</div>
+        </div>
+      </div>
+      <ng-template #noUsersTpl>
+        <div class="no-users">
+          <p>Aucun utilisateur disponible pour cette entreprise.</p>
+          <p>Tous les utilisateurs sont déjà assignés à une entreprise.</p>
+        </div>
+      </ng-template>
+    </ng-container>
+  </div>
+
+  <div class="form-group" *ngIf="selectedUserId">
+    <label>Rôles</label>
+    <div class="roles-list">
+      <label class="role-item">
+        <input 
+          type="checkbox" 
+          [(ngModel)]="selectedRoles['ROLE_USER']" 
+          [disabled]="true"
+        />
+        <span>Utilisateur (obligatoire)</span>
+      </label>
+      <label class="role-item">
+        <input 
+          type="checkbox" 
+          [(ngModel)]="selectedRoles['ROLE_ADMIN']"
+        />
+        <span>Administrateur</span>
+      </label>
+    </div>
+  </div>
+
+  <div class="form-group" *ngIf="selectedUserId">
+    <label>Permissions</label>
+    <div class="permissions-list">
+      <label class="permission-item">
+        <input 
+          type="checkbox" 
+          [(ngModel)]="selectedPermissions['CREATE_QUIZ']"
+        />
+        <span>Créer des quiz</span>
+      </label>
+      <label class="permission-item">
+        <input 
+          type="checkbox" 
+          [(ngModel)]="selectedPermissions['MANAGE_USERS']"
+        />
+        <span>Gérer les utilisateurs</span>
+      </label>
+      <label class="permission-item">
+        <input 
+          type="checkbox" 
+          [(ngModel)]="selectedPermissions['VIEW_RESULTS']"
+        />
+        <span>Voir les résultats</span>
+      </label>
+      <label class="permission-item">
+        <input 
+          type="checkbox" 
+          [(ngModel)]="selectedPermissions['MANAGE_COMPANY']"
+        />
+        <span>Gérer l'entreprise</span>
+      </label>
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <button 
+      type="button" 
+      class="btn btn-secondary" 
+      (click)="closeModal()"
+    >
+      Annuler
+    </button>
+    <button 
+      type="button" 
+      class="btn btn-primary" 
+      [disabled]="!selectedUserId || loading"
+      (click)="addMember()"
+    >
+      <span *ngIf="!loading">Ajouter le membre</span>
+      <span *ngIf="loading">Ajout en cours...</span>
+    </button>
+  </div>
+
+  <div class="error-message" *ngIf="errorMessage">
+    {{ errorMessage }}
+  </div>
+</div>
+
+
+

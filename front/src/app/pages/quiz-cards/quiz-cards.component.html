@@ -30,9 +30,11 @@
       <h2>Les Plus Populaires ({{popularQuizzes.length}})</h2>
       <div class="cards-grid grid grid-cols-4 gap-4"
            *ngIf="popularQuizzesWithBlobs.length">
-        <ng-container *ngFor="let it of popularQuizzesWithBlobs">
+        <ng-container *ngFor="let it of popularQuizzesWithBlobs; let i = index">
           <app-quiz-card *ngIf="it.type==='quiz'"
                          [quiz]="it.data"
+                         [index]="getCardIndex(i)"
+                         [rowIndex]="getCardRowIndex(i)"
                          (quizStart)="startQuiz($event)"
                          (quizFlip)="flipCard($event)"
                          (playModeChange)="togglePlayMode($event)">
@@ -57,8 +59,10 @@
       <h2>Mes Quiz ({{myQuizzes.length}})</h2>
       <a routerLink="/creation-quiz" class="btn-create">+ Créer</a>
       <div class="cards-grid grid grid-cols-4 gap-4">
-        <ng-container *ngFor="let it of myQuizzesWithBlobs">
+        <ng-container *ngFor="let it of myQuizzesWithBlobs; let i = index">
           <app-quiz-card *ngIf="it.type==='quiz'" [quiz]="it.data"
+                         [index]="getCardIndex(i)"
+                         [rowIndex]="getCardRowIndex(i)"
                          (quizStart)="startQuiz($event)"
                          (quizFlip)="flipCard($event)"
                          (playModeChange)="togglePlayMode($event)">
@@ -81,8 +85,10 @@
       <h2>Récemment Ajoutés ({{recentQuizzes.length}})</h2>
       <div class="cards-grid grid grid-cols-4 gap-4"
            *ngIf="recentQuizzesWithBlobs.length">
-        <ng-container *ngFor="let it of recentQuizzesWithBlobs">
+        <ng-container *ngFor="let it of recentQuizzesWithBlobs; let i = index">
           <app-quiz-card *ngIf="it.type==='quiz'" [quiz]="it.data"
+                         [index]="getCardIndex(i)"
+                         [rowIndex]="getCardRowIndex(i)"
                          (quizStart)="startQuiz($event)"
                          (quizFlip)="flipCard($event)"
                          (playModeChange)="togglePlayMode($event)">
@@ -105,8 +111,10 @@
       <h2>{{cat.name}} ({{cat.totalItems}})</h2>
       <div class="cards-grid grid grid-cols-4 gap-4"
            *ngIf="getSectionPage(cat.quizzes, cat.currentPage).length">
-        <ng-container *ngFor="let it of categoriesWithBlobs[cat.name + '-' + cat.currentPage]">
+        <ng-container *ngFor="let it of categoriesWithBlobs[cat.name + '-' + cat.currentPage]; let i = index">
           <app-quiz-card *ngIf="it.type==='quiz'" [quiz]="it.data"
+                         [index]="getCardIndex(i)"
+                         [rowIndex]="getCardRowIndex(i)"
                          (quizStart)="startQuiz($event)"
                          (quizFlip)="flipCard($event)"
                          (playModeChange)="togglePlayMode($event)">
@@ -116,9 +124,9 @@
           </div>
         </ng-container>
       </div>
-      <app-pagination *ngIf="cat.totalItems>cat.pageSize"
+      <app-pagination *ngIf="cat.totalItems>cat.itemsPerPage"
                       [totalItems]="cat.totalItems"
-                      [pageSize]="cat.pageSize"
+                      [pageSize]="cat.itemsPerPage"
                       [page]="cat.currentPage"
                       [activePadding]="2"
                       (pageChange)="onCategoryPageChange(cat, $event)">

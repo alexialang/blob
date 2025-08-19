@@ -6,6 +6,9 @@
   cursor: pointer;
   transition: transform 0.3s ease;
 
+  --card-bg-color: var(--color-dark);
+  --card-text-color: white;
+
   &:hover {
     transform: scale(1.02);
   }
@@ -35,14 +38,14 @@
 }
 
 .card-front {
-  background: var(--color-dark);
-  color: var(--color-white);
+  background: var(--card-bg-color);
+  color: var(--card-text-color);
   transform: rotateY(0deg);
 }
 
 .card-back {
-  background: var(--color-dark);
-  color: var(--color-white);
+  background: var(--card-bg-color);
+  color: var(--card-text-color);
   transform: rotateY(180deg);
 }
 
@@ -53,7 +56,7 @@
   position: absolute;
   top: 12px;
   left: 12px;
-  color: white;
+  color: var(--card-text-color);
 }
 
 .card-content {
@@ -67,7 +70,7 @@
 .quiz-title {
   font-size: 32px;
   font-weight: 900;
-  color: var(--color-light);
+  color: var(--card-text-color);
   font-family: var(--font-primary);
   margin: 0;
   line-height: 1.2;
@@ -87,6 +90,14 @@
   margin: 12px 0 0;
   opacity: 0.8;
   text-transform: capitalize;
+  color: var(--card-text-color);
+}
+
+.quiz-category {
+  small {
+    color: var(--card-text-color);
+    opacity: 0.8;
+  }
 }
 
 .quiz-rating {
@@ -100,13 +111,13 @@
     .star {
       font-size: 20px;
       color: transparent;
-      -webkit-text-stroke: 1px white;
-      text-stroke: 1px white;
+      -webkit-text-stroke: 1px var(--card-text-color);
+      text-stroke: 1px var(--card-text-color);
 
       &.filled {
-        color: white;
-        -webkit-text-stroke: 1px white;
-        text-stroke: 1px white;
+        color: var(--card-text-color);
+        -webkit-text-stroke: 1px var(--card-text-color);
+        text-stroke: 1px var(--card-text-color);
       }
     }
   }
@@ -119,7 +130,7 @@
   .details-btn {
     background: none;
     border: none;
-    color: white;
+    color: var(--card-text-color);
     font-size: 24px;
     cursor: pointer;
     border-radius: 50%;
@@ -141,6 +152,14 @@
   line-height: 1.6;
   opacity: 0.9;
   margin-bottom: 24px;
+  color: var(--card-text-color);
+}
+
+.quiz-info {
+  p {
+    color: var(--card-text-color);
+    opacity: 0.9;
+  }
 }
 
 .play-mode-section {
@@ -150,6 +169,7 @@
     font-size: 14px;
     margin: 0 0 12px;
     opacity: 0.8;
+    color: var(--card-text-color);
   }
 
   .mode-toggle {
@@ -162,7 +182,7 @@
       border: 1px solid rgba(255, 255, 255, 0.2);
       border-radius: 20px;
       background: transparent;
-      color: white;
+      color: var(--card-text-color);
       font-size: 12px;
       cursor: pointer;
       transition: all 0.3s ease;
@@ -188,7 +208,7 @@
   .back-btn {
     background: none;
     border: none;
-    color: white;
+    color: var(--card-text-color);
     font-size: 20px;
     cursor: pointer;
     padding: 8px;

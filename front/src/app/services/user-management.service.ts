@@ -12,9 +12,8 @@ export class UserManagementService {
   getUsers(): Observable<any[]> {
     return this.http.get<any[]>(`${this.baseUrl}`);
   }
-
-  softDeleteUser(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrl}/${id}`);
+  anonymizeUser(id: number): Observable<void> {
+    return this.http.patch<void>(`${this.baseUrl}/${id}/anonymize`, {});
   }
 
   updateUserRoles(userId: number, roles: string[], permissions: string[]): Observable<any> {

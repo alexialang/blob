@@ -27,6 +27,10 @@ export class UserService {
     );
   }
 
+  getUserProfileById(userId: number): Observable<User> {
+    return this.http.get<User>(`${this.baseUrl}/${userId}`);
+  }
+
   updateUserProfile(userData: Partial<User>): Observable<User> {
     return this.http.put<User>(`${this.baseUrl}/profile/update`, userData).pipe(
       tap(user => this.setCurrentUser(user))

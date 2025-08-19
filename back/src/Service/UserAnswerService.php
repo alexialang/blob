@@ -160,18 +160,7 @@ class UserAnswerService
             throw new \InvalidArgumentException('Quiz not found');
         }
 
-        $qb = $this->em->createQueryBuilder();
-        $results = $qb->select('MAX(ua.total_score) as score, u.pseudo as name, u.firstName as firstName, u.lastName as lastName, c.name as company, u.id as userId, MIN(ua.date_attempt) as firstAttempt')
-            ->from(UserAnswer::class, 'ua')
-            ->join('ua.user', 'u')
-            ->leftJoin('u.company', 'c')
-            ->where('ua.quiz = :quiz')
-            ->setParameter('quiz', $quiz)
-            ->groupBy('u.id')
-            ->orderBy('score', 'DESC')
-            ->addOrderBy('firstAttempt', 'ASC')
-            ->getQuery()
-            ->getResult();
+        $results = $this->userAnswerRepository->findQuizLeaderboard($quizId);
 
         $leaderboard = [];
         $currentUserRank = null;
@@ -208,16 +197,7 @@ class UserAnswerService
 
     private function getCurrentUserScore(int $quizId, int $userId): int
     {
-        $result = $this->em->createQueryBuilder()
-            ->select('MAX(ua.total_score) as maxScore')
-            ->from(UserAnswer::class, 'ua')
-            ->where('ua.quiz = :quiz AND ua.user = :user')
-            ->setParameter('quiz', $quizId)
-            ->setParameter('user', $userId)
-            ->getQuery()
-            ->getSingleScalarResult();
-
-        return $result ?: 0;
+        return $this->userAnswerRepository->findMaxScoreForUserAndQuiz($quizId, $userId);
     }
 
     public function getQuizRating(int $quizId, $currentUser = null): array

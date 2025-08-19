@@ -13,7 +13,7 @@
       </div>
       <div class="score">
         <span class="score-icon">🏆</span>
-        <span class="score-text">{{ currentScore }} pts</span>
+        <span class="score-text">{{ getCurrentNormalizedScore() }}/100</span>
       </div>
     </div>
 
@@ -152,7 +152,7 @@
         {{ overlayCorrect ? 'Bonne réponse!' : 'Mauvaise réponse!' }}
       </h1>
 
-      <p class="ff-score">Score: {{ currentScore }} pts</p>
+      <p class="ff-score">Score: {{ getCurrentNormalizedScore() }}/100</p>
 
       <div *ngIf="showCorrectAnswer" class="ff-correct-list">
         <h3>Bonne(s) réponse(s)&nbsp;:</h3>
@@ -174,7 +174,7 @@
           <div class="score-circle">
             <span class="score-text">Votre score est de :</span>
             <span class="score-number">{{ totalScore }}</span>
-            <span class="score-max">/ {{ totalQuestions * 10 }}</span>
+            <span class="score-max">/ 100</span>
           </div>
         </div>
 

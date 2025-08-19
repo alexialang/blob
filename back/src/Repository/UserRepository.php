@@ -33,13 +33,26 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $this->getEntityManager()->flush();
     }
 
-    //    /**
-    //     */
-    //    {
-    //        ;
-    //    }
+    public function findActiveUsersForLeaderboard(): array
+    {
+        return $this->createQueryBuilder('u')
+            ->where('u.deletedAt IS NULL')
+            ->andWhere('u.isActive = true')
+            ->getQuery()
+            ->getResult();
+    }
 
-    //    {
-    //        ;
-    //    }
+    public function findUserGameHistory(User $user, int $limit = 50): array
+    {
+        return $this->createQueryBuilder('u')
+            ->select('ua', 'q')
+            ->leftJoin('u.userAnswers', 'ua')
+            ->leftJoin('ua.quiz', 'q')
+            ->where('u = :user')
+            ->setParameter('user', $user)
+            ->orderBy('ua.date_attempt', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
 }

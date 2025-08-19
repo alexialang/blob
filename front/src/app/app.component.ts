@@ -1,37 +1,40 @@
-import { Component } from '@angular/core';
-import {ActivatedRoute, NavigationEnd, Router, RouterOutlet} from '@angular/router';
-import { TuiRoot } from '@taiga-ui/core';
+import { Component, OnInit } from '@angular/core';
+import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
+import { CommonModule } from '@angular/common';
 import { NavbarComponent } from './components/navbar/navbar.component';
-
-import { QuizTransitionComponent } from './components/quiz-transition/quiz-transition.component';
 import { GameInvitationToastComponent } from './components/game-invitation-toast/game-invitation-toast.component';
-import {NgIf} from '@angular/common';
-import {filter} from 'rxjs/operators';
-import { NgChartsModule } from 'ng2-charts';
-
+import { QuizTransitionComponent } from './components/quiz-transition/quiz-transition.component';
+import { AccessibilityDirective } from './directives/accessibility.directive';
+import { filter } from 'rxjs/operators';
+import { AuthService } from './services/auth.service';
 
 @Component({
-  standalone: true,
   selector: 'app-root',
-  imports: [TuiRoot, RouterOutlet, NavbarComponent, QuizTransitionComponent, GameInvitationToastComponent, NgIf, NgChartsModule],
+  standalone: true,
+  imports: [CommonModule, RouterOutlet, NavbarComponent, GameInvitationToastComponent, QuizTransitionComponent, AccessibilityDirective],
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss'],
+  styleUrls: ['./app.component.scss']
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   title = 'blob-front';
-  showNavbar = true;
-  constructor(
-    private readonly router: Router,
-    private readonly route: ActivatedRoute
-  ) {
-    this.router.events
-      .pipe(filter(e => e instanceof NavigationEnd))
-      .subscribe(() => {
-        let current = this.route.root;
-        while (current.firstChild) {
-          current = current.firstChild;
-        }
-        this.showNavbar = !current.snapshot.data['hideNavbar'];
-      });
+  showNavbar: boolean = true;
+
+  constructor(private router: Router, private authService: AuthService) {}
+
+  ngOnInit() {
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe((event: any) => {
+      const route = this.router.routerState.root;
+      let currentRoute = route;
+
+      while (currentRoute.children.length > 0) {
+        currentRoute = currentRoute.children[0];
+      }
+
+      const hideNavbar = currentRoute.snapshot.data['hideNavbar'];
+
+      this.showNavbar = !hideNavbar;
+    });
   }
 }

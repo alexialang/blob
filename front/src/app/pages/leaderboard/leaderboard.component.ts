@@ -9,6 +9,8 @@ interface LeaderboardUser {
   firstName: string;
   lastName: string;
   avatar: string;
+  avatarShape?: string;
+  avatarColor?: string;
   totalScore: number;
   averageScore: number;
   quizzesCompleted: number;
@@ -42,7 +44,7 @@ interface LeaderboardResponse {
 })
 export class LeaderboardComponent implements OnInit {
   private http = inject(HttpClient);
-  
+
   leaderboardData: LeaderboardResponse | null = null;
   isLoading = true;
   error: string | null = null;
@@ -54,7 +56,7 @@ export class LeaderboardComponent implements OnInit {
   loadLeaderboard() {
     this.isLoading = true;
     this.error = null;
-    
+
     this.http.get<LeaderboardResponse>(`${environment.apiBaseUrl}/leaderboard?limit=50`)
       .subscribe({
         next: (data) => {
@@ -70,7 +72,7 @@ export class LeaderboardComponent implements OnInit {
               user.position = index + 1;
             });
           }
-          
+
           this.leaderboardData = data;
           this.isLoading = false;
         },
@@ -97,6 +99,20 @@ export class LeaderboardComponent implements OnInit {
       case 3: return 'bronze';
       default: return '';
     }
+  }
+
+  getUserAvatarShape(user: LeaderboardUser): string {
+    if (user.avatarShape) {
+      return user.avatarShape;
+    }
+    return 'blob_circle';
+  }
+
+  getUserAvatarColor(user: LeaderboardUser): string {
+    if (user.avatarColor) {
+      return user.avatarColor;
+    }
+    return '#257D54';
   }
 
   getPositionSuffix(position: number): string {

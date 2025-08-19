@@ -118,19 +118,7 @@
               "
           ></button>
         </th>
-        <th tuiTh (click)="sortBy('stats')" class="th-stats">
-          Statistiques
-          <button
-            tuiIconButton
-            size="xs"
-            appearance="ghost"
-            class="sort-btn"
-            *ngIf="sortColumn === 'stats'"
-            [iconStart]="
-                sortDirection === 'asc' ? 'tuiIconChevronUp' : 'tuiIconChevronDown'
-              "
-          ></button>
-        </th>
+
         <th tuiTh class="th-rights">Droits</th>
         <th tuiTh class="th-action">
           Action
@@ -172,11 +160,7 @@
         <td tuiTd class="td-org">
           {{ row.organization }}<br /><span class="group">{{ row.group }}</span>
         </td>
-        <td tuiTd class="td-stats">
-          <button tuiButton appearance="action-grayscale" size="s">
-            {{ getUserStats(row) }} <span>Voir plus</span>
-          </button>
-        </td>
+
         <td tuiTd class="td-rights">
           <tui-items-with-more [style.gap.rem]="'0.25'">
             <ng-container *ngFor="let perm of row.rights">
@@ -186,7 +170,7 @@
         </td>
         <td tuiTd class="td-action">
           <div class="d-flex gap-2">
-            <a class="link-profile">Voir le profil</a>
+            <a class="link-profile" (click)="viewUserProfile(row.id)" style="cursor: pointer;">Voir le profil</a>
             <button
               tuiButton
               appearance="action"

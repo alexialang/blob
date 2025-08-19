@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Group;
 use App\Service\GroupService;
 use App\Service\UserService;
+use App\Service\InputSanitizerService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -15,14 +16,11 @@ use OpenApi\Annotations as OA;
 #[Route('/api/group')]
 class GroupController extends AbstractController
 {
-    private GroupService $groupService;
-    private UserService $userService;
-
-    public function __construct(GroupService $groupService, UserService $userService)
-    {
-        $this->groupService = $groupService;
-        $this->userService = $userService;
-    }
+    public function __construct(
+        private GroupService $groupService,
+        private UserService $userService,
+        private InputSanitizerService $inputSanitizer
+    ) {}
 
     /**
      * @OA\Get(summary="Lister les groupes", tags={"Group"})
@@ -75,7 +73,11 @@ class GroupController extends AbstractController
     {
         try {
             $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
-            $group = $this->groupService->create($data);
+            
+            // ✅ SANITISATION : Nettoyer les entrées utilisateur
+            $sanitizedData = $this->inputSanitizer->sanitizeGroupData($data);
+            
+            $group = $this->groupService->create($sanitizedData);
 
             return $this->json($group, 201, [], ['groups' => ['group:read']]);
         } catch (\JsonException $e) {
@@ -112,7 +114,9 @@ class GroupController extends AbstractController
     {
         try {
             $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
-            $group = $this->groupService->update($group, $data);
+            $sanitizedData = $this->inputSanitizer->sanitizeGroupData($data);
+            
+            $group = $this->groupService->update($group, $sanitizedData);
 
             return $this->json($group, 200, [], ['groups' => ['group:read']]);
         } catch (\JsonException $e) {

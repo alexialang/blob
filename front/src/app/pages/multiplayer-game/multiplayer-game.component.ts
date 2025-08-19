@@ -422,7 +422,6 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
 
       },
       error: (error) => {
-        console.error('❌ Erreur soumission réponse:', error);
       }
     });
   }
@@ -495,6 +494,11 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
   getProgressPercentage(): number {
     if (this.totalQuestions === 0) return 0;
     return ((this.currentQuestionIndex + 1) / this.totalQuestions) * 100;
+  }
+
+  getCurrentNormalizedScore(): number {
+    const correctAnswers = Math.floor(this.currentScore / 10);
+    return this.totalQuestions > 0 ? Math.round((correctAnswers / this.totalQuestions) * 100) : 0;
   }
 
   onAnswerSelected(answer: any): void {
@@ -585,7 +589,6 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
       next: (result) => {
       },
       error: (error) => {
-        console.error('❌ Erreur lors de la fin du jeu côté serveur:', error);
       }
     });
   }

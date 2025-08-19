@@ -287,7 +287,7 @@ class MultiplayerGameService
         if (isset(self::$submittedAnswers[$sessionKey])) {
             throw new \Exception('Réponse déjà soumise pour cette question');
         }
-        
+
         self::$submittedAnswers[$sessionKey] = true;
 
         $question = $this->entityManager->getRepository(\App\Entity\Question::class)->find($questionId);
@@ -314,6 +314,9 @@ class MultiplayerGameService
                 $totalScore += $answerData['points'];
             }
         }
+        
+        $totalQuestions = count($questions);
+        $normalizedTotalScore = $totalQuestions > 0 ? round($totalScore / $totalQuestions) : 0;
 
         $leaderboard = $this->updateLeaderboard($gameSession);
 
@@ -341,12 +344,13 @@ class MultiplayerGameService
         $allPlayersInRoom = [];
         foreach ($room->getPlayers() as $player) {
             $userId = $player->getUser()->getId();
+            $userName = $this->getUserDisplayName($player->getUser());
             $sessionKey = 'game_' . $gameCode . '_user_' . $userId . '_question_' . $questionId;
             $hasAnswered = isset(self::$submittedAnswers[$sessionKey]);
             
             $allPlayersInRoom[] = [
                 'userId' => $userId,
-                'userName' => $this->getUserDisplayName($player->getUser()),
+                'userName' => $userName,
                 'hasAnswered' => $hasAnswered,
                 'sessionKey' => $sessionKey
             ];
@@ -354,7 +358,7 @@ class MultiplayerGameService
         
         $answeredPlayersCount = count(array_filter($allPlayersInRoom, fn($p) => $p['hasAnswered']));
         $totalPlayersCount = count($allPlayersInRoom);
-        
+
         if ($answeredPlayersCount >= $totalPlayersCount) {
             $this->startFeedbackPhase($gameSession);
         } else {
@@ -371,7 +375,8 @@ class MultiplayerGameService
         return [
             'isCorrect' => $isCorrect,
             'points' => $points,
-            'currentScore' => $totalScore,
+            'currentScore' => $normalizedTotalScore,
+            'rawCurrentScore' => $totalScore,
             'leaderboard' => $leaderboard
         ];
     }

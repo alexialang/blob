@@ -4,7 +4,7 @@
   <div *ngIf="company">
     <h1 class="page-title">Détails <br /> de <span class="company-highlight" [ngStyle]="{ 'color': highlightColor }">{{ company.name }}</span></h1>
     <div class="company-info">
-      <p class="company-address">{{ company.address || 'Adresse non renseignée' }}</p>
+      <p class="company-address">Adresse non renseignée</p>
       <div class="company-stats">
         <div class="stat-item">
           <span class="stat-number">{{ company.users?.length || 0 }}</span>
@@ -22,22 +22,35 @@
     </div>
 
     <div class="actions d-flex gap-2 mb-4">
-      <button tuiButton size="s" appearance="primary" (click)="editCompany()">
+      <button class="btn btn-primary" (click)="editCompany()">
         Modifier
       </button>
-      <button tuiButton size="s" appearance="secondary" (click)="deleteCompany()">
+      <button class="btn btn-danger" (click)="deleteCompany()">
         Supprimer
       </button>
     </div>
 
-    <tui-tabs [(activeItemIndex)]="activeTabIndex" class="mb-4">
-      <button tuiTab>Groupes</button>
-    </tui-tabs>
+    <div class="company-statistics-section mb-4">
+      <h3 class="section-title">Statistiques de l'entreprise</h3>
+      <app-global-statistics [companyId]="company?.id ?? null"></app-global-statistics>
+    </div>
+
+    <div class="tabs-container mb-4">
+      <div class="tabs-header">
+        <button
+          class="tab-button"
+          [class.active]="activeTabIndex === 0"
+          (click)="activeTabIndex = 0"
+        >
+          Groupes
+        </button>
+      </div>
+    </div>
 
     <ng-container *ngIf="activeTabIndex === 0">
       <div class="d-flex justify-content-between align-items-center mb-3">
         <h3>Groupes de l'entreprise</h3>
-        <button tuiButton size="s" appearance="primary" (click)="createGroup()">
+        <button tuiButton size="s" appearance="primary" (click)="showCreateGroupModalAction()">
           Créer un groupe
         </button>
       </div>
@@ -81,9 +94,9 @@
                 <td>{{ m.email }}</td>
                 <td>{{ m.isActive ? 'Actif' : 'Inactif' }}</td>
                 <td>
-                  <button tuiButton size="xs" appearance="secondary" (click)="removeFromGroup(g.id, m.id)">
-                    Retirer
-                  </button>
+                  <button tuiButton size="xs" appearance="secondary" (click)="removeUserFromGroup(g.id, m.id)">
+                  Retirer
+                </button>
                 </td>
               </tr>
               </tbody>
@@ -94,7 +107,12 @@
     </ng-container>
 
     <div class="collaborators-section mt-5">
-      <h2>Collaborateurs</h2>
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Collaborateurs</h2>
+        <button tuiButton size="s" appearance="primary" (click)="showAddMemberModalAction()">
+          Ajouter un membre
+        </button>
+      </div>
       <div class="filters d-flex gap-2 mb-3">
         <select class="form-control" [(ngModel)]="filterByGroup" (ngModelChange)="applyFilters()">
           <option value="">Tous groupes</option>
@@ -196,15 +214,13 @@
     </div>
 
     <div *ngIf="showAddMemberModal" class="modal-overlay">
-      <div class="modal-content">
-        <h3>Ajouter un membre</h3>
-        <select class="form-control mb-3" [(ngModel)]="selectedUserId">
-          <option *ngFor="let u of availableMembersForNewGroup" [value]="u.id">{{ u.firstName }} {{ u.lastName }} ({{ u.email }})</option>
-        </select>
-        <div class="d-flex justify-content-end gap-2">
-          <button tuiButton size="s" appearance="secondary" (click)="cancelAddMember()">Annuler</button>
-          <button tuiButton size="s" appearance="primary" (click)="confirmAddMember()">Valider</button>
-        </div>
+      <div class="modal-container">
+        <ng-container *ngIf="company?.id as companyId">
+          <app-add-member-modal
+            [companyId]="companyId"
+            (memberAdded)="onMemberAdded($event)"
+          ></app-add-member-modal>
+        </ng-container>
       </div>
     </div>
   </div>

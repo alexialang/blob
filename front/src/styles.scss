@@ -15,6 +15,10 @@
   --color-danger-light: #EF4444;
   --color-danger-dark: #B91C1C;
 
+  --color-accent-dark: #E67E22;
+  --color-secondary-dark: #5BC0BE;
+  --color-pink-dark: #B91C5C;
+
   --color-success: var(--color-primary);
   --color-warning: var(--color-accent);
   --color-error: var(--color-danger);
@@ -102,4 +106,53 @@ h3 {
   letter-spacing: var(--letter-spacing-h3);
   color: var(--text-primary);
   font-weight: var(--font-weight-normal);
+}
+
+
+/* Focus visible uniquement au clavier (pas à la souris) */
+.focus-visible:focus:not(:focus-visible) {
+  outline: none !important;
+}
+
+.focus-visible:focus-visible {
+  outline: 2px solid #007acc !important;
+  outline-offset: 2px !important;
+  border-radius: 4px !important;
+}
+
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: #007acc;
+  color: white;
+  padding: 8px 16px;
+  text-decoration: none;
+  border-radius: 4px;
+  font-weight: 500;
+  z-index: 1000;
+  transition: top 0.3s ease;
+}
+
+.skip-link:focus {
+  top: 6px;
+}
+
+/* Focus sur les éléments interactifs uniquement */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid #007acc !important;
+  outline-offset: 2px !important;
+  border-radius: 4px !important;
+}
+
+/* Pas de focus sur les éléments non-interactifs */
+div:focus,
+span:focus,
+p:focus {
+  outline: none !important;
 }

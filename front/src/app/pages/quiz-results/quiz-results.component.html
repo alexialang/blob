@@ -16,7 +16,7 @@
       <div class="main-score">
         <div class="score-circle">
           <div class="score-value">{{ resultData.totalScore }}</div>
-          <div class="score-total">/ {{ resultData.totalQuestions * 10 }}</div>
+          <div class="score-total">/ 100</div>
           <div class="score-percentage">{{ getScorePercentage() }}%</div>
         </div>
       </div>
@@ -24,7 +24,7 @@
       <div class="score-details">
         <div class="detail-item">
           <span class="label">Questions correctes</span>
-          <span class="value">{{ Math.floor(resultData.totalScore / 10) }} / {{ resultData.totalQuestions }}</span>
+          <span class="value">{{ Math.floor((resultData.totalScore / 100) * resultData.totalQuestions) }} / {{ resultData.totalQuestions }}</span>
         </div>
         <div class="detail-item">
           <span class="label">Niveau atteint</span>

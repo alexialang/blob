@@ -30,33 +30,22 @@
     </div>
 
     <div class="dropdown-wrapper">
-      <div
-        tuiDropdownLimitWidth="fixed"
-        tuiGroup
-        [tuiDropdown]="dropdown"
-        [(tuiDropdownOpen)]="open"
-        class="dropdown-container"
-      >
-        <button class="custom-dropdown-btn">Actions</button>
-        <button
-          tuiChevron
-          tuiIconButton
-          class="custom-dropdown-chevron"
-          type="button"
-        ></button>
-      </div>
-      <ng-template #dropdown>
-        <tui-data-list>
+      <div class="custom-dropdown" [class.open]="open">
+        <button class="custom-dropdown-btn" (click)="toggleDropdown()">
+          Actions
+          <span class="dropdown-arrow">▼</span>
+        </button>
+        <div class="dropdown-menu" *ngIf="open">
           <button
             *ngFor="let item of items"
-            tuiOption
+            class="dropdown-item"
             type="button"
-            (click)="onClick()"
+            (click)="onDropdownAction(item)"
           >
             {{ item }}
           </button>
-        </tui-data-list>
-      </ng-template>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -108,9 +97,6 @@
         <th tuiTh class="th-groups">
           Groupes
         </th>
-        <th tuiTh class="th-stats">
-          Statistiques
-        </th>
         <th tuiTh class="th-action">
           Action
           <button
@@ -140,7 +126,7 @@
           </div>
         </td>
         <td tuiTd class="td-users">
-          <tui-icon icon="tuiIconUserLarge" class="mr-1"></tui-icon>
+          <span class="user-icon">👤</span>
           {{ row.userCount }} utilisateur{{ row.userCount > 1 ? 's' : '' }}
         </td>
         <td tuiTd class="td-groups">
@@ -162,11 +148,6 @@
               +{{ getRemainingGroupsCount(row.groups) }}
             </tui-chip>
           </div>
-        </td>
-        <td tuiTd class="td-stats">
-          <button tuiButton appearance="action-grayscale" size="s">
-            {{ getCompanyStats(row) }} <span>Voir plus</span>
-          </button>
         </td>
         <td tuiTd class="td-action">
           <div class="d-flex gap-2">
@@ -192,7 +173,7 @@
         </td>
       </tr>
       <tr *ngIf="rows.length === 0">
-        <td tuiTd colspan="7" class="no-data">Aucune entreprise trouvée.</td>
+        <td tuiTd colspan="6" class="no-data">Aucune entreprise trouvée.</td>
       </tr>
       </tbody>
     </table>
@@ -206,6 +187,33 @@
       [activePadding]="2"
       (pageChange)="onPageChange($event)"
     ></app-pagination>
+  </div>
+</div>
+
+<div *ngIf="showAddCompanyModal" class="modal-overlay">
+  <div class="modal-container">
+    <app-add-company-modal
+      (companyCreated)="onCompanyCreated($event)"
+      (cancelled)="onAddCompanyCancelled()"
+    ></app-add-company-modal>
+  </div>
+</div>
+
+<div *ngIf="showImportModal" class="modal-overlay">
+  <div class="modal-container">
+    <div class="modal-content">
+      <h3>Importer des entreprises</h3>
+      <p>Format CSV attendu : Nom de l'entreprise</p>
+      <input type="file" accept=".csv" (change)="onFileSelected($event)" />
+      <div class="actions">
+        <button tuiButton appearance="secondary" (click)="onImportCancelled()">
+          Annuler
+        </button>
+        <button tuiButton appearance="primary" [disabled]="!selectedFile" (click)="importCsvFile()">
+          Importer
+        </button>
+      </div>
+    </div>
   </div>
 </div>
 

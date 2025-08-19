@@ -4,8 +4,10 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MultiplayerService } from '../../services/multiplayer.service';
 import { QuizManagementService } from '../../services/quiz-management.service';
-import { CompanyManagementService } from '../../services/company-management.service';
+import { CompanyService } from '../../services/company.service';
 import { UserService } from '../../services/user.service';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-multiplayer-room-create',
@@ -32,12 +34,15 @@ export class MultiplayerRoomCreateComponent implements OnInit {
 
   highlightColor: string = '';
 
+  private destroy$ = new Subject<void>();
+  private company: any;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private multiplayerService: MultiplayerService,
     private quizService: QuizManagementService,
-    private companyService: CompanyManagementService,
+    private companyService: CompanyService,
     private userService: UserService
   ) {}
 
@@ -67,7 +72,7 @@ export class MultiplayerRoomCreateComponent implements OnInit {
       next: (user) => {
         this.currentUser = user;
         if (user.companyId) {
-          this.loadCompanyData(user.companyId);
+          this.loadCompany(user.companyId);
         }
       },
       error: (error) => {
@@ -76,28 +81,57 @@ export class MultiplayerRoomCreateComponent implements OnInit {
     });
   }
 
-  private loadCompanyData(companyId: number): void {
-    this.companyService.getCompanyDetailed(companyId).subscribe({
-      next: (company) => {
-        this.availableGroups = company.groups || [];
-        this.availableUsers = (company.users || []).filter((user: any) => user.id !== this.currentUser?.id);
-
-        const maxPossiblePlayers = this.availableUsers.length + 1;
-        if (this.maxPlayers > maxPossiblePlayers) {
-          this.maxPlayers = Math.min(maxPossiblePlayers, 8);
+  private loadCompany(companyId: number): void {
+    this.companyService.getCompanyGroups(companyId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (groups: any[]) => {
+          this.availableGroups = Array.isArray(groups) ? groups : [];
+        },
+        error: (error: any) => {
+          console.error('Erreur lors du chargement des groupes:', error);
+          this.availableGroups = [];
         }
-      },
-      error: (error) => {
-        console.error('Erreur chargement entreprise:', error);
-      }
-    });
+      });
+
+    this.companyService.getCompanyUsers(companyId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response: any) => {
+
+          let users: any[] = [];
+          if (response && response.success && Array.isArray(response.data)) {
+            users = response.data;
+          } else if (Array.isArray(response)) {
+            users = response;
+          } else {
+            console.error('Format de réponse inattendu:', response);
+            users = [];
+          }
+
+          if (Array.isArray(users)) {
+            this.availableUsers = users.filter((user: any) => user.id !== this.currentUser?.id);
+
+            const maxPossiblePlayers = this.availableUsers.length + 1;
+            if (this.maxPlayers > maxPossiblePlayers) {
+              this.maxPlayers = Math.min(maxPossiblePlayers, 8);
+            }
+          } else {
+            console.error('La réponse API n\'est pas un tableau:', users);
+            this.availableUsers = [];
+          }
+        },
+        error: (error: any) => {
+          console.error('Erreur lors du chargement des utilisateurs:', error);
+          this.availableUsers = [];
+        }
+      });
   }
 
   createRoom(): void {
     if (!this.quizData || this.creating) return;
 
     this.creating = true;
-
 
     this.testAPI().then(() => {
       this.multiplayerService.createRoom(
@@ -112,7 +146,6 @@ export class MultiplayerRoomCreateComponent implements OnInit {
           if (this.selectedUserIds.length > 0) {
             this.multiplayerService.sendInvitation(room.id, this.selectedUserIds).subscribe({
               next: () => {
-
               },
               error: (error) => {
                 console.error('Erreur envoi invitations:', error);
@@ -144,7 +177,6 @@ export class MultiplayerRoomCreateComponent implements OnInit {
       if (!response.ok) throw new Error('API non accessible');
       return response.json();
     }).then(data => {
-
     });
   }
 
@@ -184,6 +216,7 @@ export class MultiplayerRoomCreateComponent implements OnInit {
           .map((user: any) => user.id);
 
         this.maxPlayers = Math.min(this.selectedUserIds.length + 1, 8);
+
       }
     }
   }

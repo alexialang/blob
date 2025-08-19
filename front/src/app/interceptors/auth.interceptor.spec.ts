@@ -1,12 +1,27 @@
 import { TestBed } from '@angular/core/testing';
-import { HttpInterceptorFn } from '@angular/common/http';
+import { AuthInterceptor } from './auth.interceptor';
+import { AuthService } from '../services/auth.service';
 
-describe('authInterceptor', () => {
-  const interceptor: HttpInterceptorFn = (req, next) =>
-    TestBed.runInInjectionContext(() => authInterceptor(req, next));
+describe('AuthInterceptor', () => {
+  let interceptor: AuthInterceptor;
+  let authService: any;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    const authServiceSpy = {
+      getToken: jasmine.createSpy('getToken'),
+      refresh: jasmine.createSpy('refresh'),
+      logout: jasmine.createSpy('logout')
+    };
+
+    TestBed.configureTestingModule({
+      providers: [
+        AuthInterceptor,
+        { provide: AuthService, useValue: authServiceSpy }
+      ]
+    });
+
+    interceptor = TestBed.inject(AuthInterceptor);
+    authService = TestBed.inject(AuthService);
   });
 
   it('should be created', () => {

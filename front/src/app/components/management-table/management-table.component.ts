@@ -1,8 +1,6 @@
 import { Component, Input, Output, EventEmitter, TemplateRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { TuiTableModule, TuiModule } from '@taiga-ui/kit';
-import { TuiButtonModule, TuiGroupModule, TuiDropdownModule, TuiDataListModule } from '@taiga-ui/core';
 import { PaginationComponent } from '../pagination/pagination.component';
 
 export interface TableColumn {
@@ -36,12 +34,6 @@ export interface ManagementTableConfig {
   imports: [
     CommonModule,
     FormsModule,
-    TuiTableModule,
-    TuiModule,
-    TuiButtonModule,
-    TuiGroupModule,
-    TuiDropdownModule,
-    TuiDataListModule,
     PaginationComponent
   ],
   templateUrl: './management-table.component.html',
@@ -53,7 +45,6 @@ export class ManagementTableComponent {
   @Input() loading = false;
   @Input() error = false;
   @Input() pageSize = 20;
-  
   @Output() filterChange = new EventEmitter<{[key: string]: any}>();
   @Output() sortChange = new EventEmitter<{column: string, direction: 'asc' | 'desc'}>();
   @Output() actionClick = new EventEmitter<{action: string, item?: any}>();
@@ -83,9 +74,9 @@ export class ManagementTableComponent {
   }
 
   applyFilters() {
-    const allFilters = { 
-      ...this.filters, 
-      keyword: this.keywordFilter 
+    const allFilters = {
+      ...this.filters,
+      keyword: this.keywordFilter
     };
     this.filterChange.emit(allFilters);
   }

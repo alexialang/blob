@@ -94,12 +94,14 @@ services:
       - adimeo_local_proxy
     ports:
       - "3000:8080"
+    env_file:
+      - back/.env.dev
     environment:
       SERVER_NAME: :8080
       ADDR: :8080
       DEMO: 1
-      MERCURE_PUBLISHER_JWT_KEY: b3zxO05Kh6sZsymfjQjAdx0SOwyJjPuF
-      MERCURE_SUBSCRIBER_JWT_KEY: b3zxO05Kh6sZsymfjQjAdx0SOwyJjPuF
+      MERCURE_PUBLISHER_JWT_KEY: ${MERCURE_PUBLISHER_JWT_KEY}
+      MERCURE_SUBSCRIBER_JWT_KEY: ${MERCURE_SUBSCRIBER_JWT_KEY}
       MERCURE_EXTRA_DIRECTIVES: |
         cors_origins *
         anonymous

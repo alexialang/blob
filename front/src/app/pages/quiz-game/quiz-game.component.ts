@@ -266,7 +266,9 @@ export class QuizGameComponent implements OnInit, OnDestroy {
     }
 
     private finishQuiz(): void {
-        this.totalScore = this.currentScore;
+        const correctAnswers = Math.floor(this.currentScore / 10);
+        this.totalScore = this.totalQuestions > 0 ? Math.round((correctAnswers / this.totalQuestions) * 100) : 0;
+
         this.quizCompleted = true;
         this.loadPlayerRanking();
         this.quizGameService.saveGameResult(this.quizData.id, this.totalScore).subscribe();
@@ -293,7 +295,12 @@ export class QuizGameComponent implements OnInit, OnDestroy {
     }
 
     getScorePercentage(): number {
-        return Math.round((this.totalScore / (this.totalQuestions * 10)) * 100);
+        return this.totalScore;
+    }
+
+    getCurrentNormalizedScore(): number {
+        const correctAnswers = Math.floor(this.currentScore / 10);
+        return this.totalQuestions > 0 ? Math.round((correctAnswers / this.totalQuestions) * 100) : 0;
     }
 
     private loadPlayerRanking(): void {

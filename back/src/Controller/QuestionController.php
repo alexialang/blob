@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Question;
 use App\Service\QuestionService;
+use App\Service\InputSanitizerService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -13,12 +14,10 @@ use OpenApi\Annotations as OA;
 #[Route('/api/question')]
 class QuestionController extends AbstractController
 {
-    private QuestionService $questionService;
-
-    public function __construct(QuestionService $questionService)
-    {
-        $this->questionService = $questionService;
-    }
+    public function __construct(
+        private QuestionService $questionService,
+        private InputSanitizerService $inputSanitizer
+    ) {}
 
     /**
      * @OA\Get(summary="Lister toutes les questions", tags={"Question"})
@@ -55,7 +54,9 @@ class QuestionController extends AbstractController
             return $this->json(['error' => 'Invalid JSON'], 400);
         }
 
-        $question = $this->questionService->create($data);
+        $sanitizedData = $this->inputSanitizer->sanitizeQuestionData($data);
+
+        $question = $this->questionService->create($sanitizedData);
 
         return $this->json($question, 201, [], ['groups' => ['question:read']]);
     }
@@ -97,7 +98,9 @@ class QuestionController extends AbstractController
             return $this->json(['error' => 'Invalid JSON'], 400);
         }
 
-        $question = $this->questionService->update($question, $data);
+        $sanitizedData = $this->inputSanitizer->sanitizeQuestionData($data);
+
+        $question = $this->questionService->update($question, $sanitizedData);
 
         return $this->json($question, 200, [], ['groups' => ['question:read']]);
     }

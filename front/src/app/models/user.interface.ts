@@ -7,7 +7,7 @@ export interface User {
   roles: string[];
   dateRegistration: string;
   lastAccess?: string;
-  isAdmin: boolean; // Propriété calculée côté backend
+  isAdmin: boolean;
   isActive: boolean;
   isVerified: boolean;
   companyId?: number;

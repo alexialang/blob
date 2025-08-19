@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Service\GameService;
+use App\Service\InputSanitizerService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -12,12 +13,10 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[Route('/api/game')]
 class GameController extends AbstractController
 {
-    private GameService $gameService;
-
-    public function __construct(GameService $gameService)
-    {
-        $this->gameService = $gameService;
-    }
+    public function __construct(
+        private GameService $gameService,
+        private InputSanitizerService $inputSanitizer
+    ) {}
 
     #[Route('/start/{quizId}', name: 'game_start', methods: ['POST'])]
     #[IsGranted('ROLE_USER')]
@@ -67,7 +66,10 @@ class GameController extends AbstractController
 
         try {
             $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
-            $result = $this->gameService->submitAnswer($sessionId, $user, $data);
+            
+            $sanitizedData = $this->inputSanitizer->sanitizeGameData($data);
+            
+            $result = $this->gameService->submitAnswer($sessionId, $user, $sanitizedData);
             return $this->json($result);
         } catch (\JsonException $e) {
             return $this->json(['error' => 'Invalid JSON'], 400);

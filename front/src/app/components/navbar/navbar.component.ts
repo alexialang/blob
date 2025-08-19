@@ -1,121 +1,84 @@
-import {
-  ChangeDetectionStrategy,
-  Component, OnInit,
-  signal
-} from '@angular/core';
-import {
-  TuiButton,
-  TuiLink,
-  TuiPopup,
-} from '@taiga-ui/core';
-import {
-  TuiAvatar,
-  TuiDrawer, TuiProgressBar,
-} from '@taiga-ui/kit';
-import {TuiIcon} from '@taiga-ui/core/components/icon';
-import {RouterModule, Router} from '@angular/router';
-import {AuthService} from '../../services/auth.service';
-import {CommonModule} from '@angular/common';
-import {Observable} from 'rxjs';
-
+import { Component, OnInit } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { AuthService } from '../../services/auth.service';
+import { Observable, of } from 'rxjs';
+import { map, switchMap, catchError } from 'rxjs/operators';
 
 @Component({
-  selector: 'navbar',
+  selector: 'app-navbar',
   standalone: true,
+  imports: [RouterLink, CommonModule],
   templateUrl: './navbar.component.html',
-  styleUrls: ['./navbar.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    TuiButton,
-    TuiLink,
-    TuiDrawer,
-    TuiPopup,
-    TuiAvatar,
-    TuiProgressBar,
-    TuiIcon,
-    RouterModule,
-    CommonModule,
-  ],
+  styleUrls: ['./navbar.component.scss']
 })
 export class NavbarComponent implements OnInit {
-  protected readonly open = signal(false);
-  showGestionDropdown = false;
-  showProfileDropdown = false;
-  userName = 'Chargement...';
+  userName$: Observable<string> = of('');
+  userAvatar$: Observable<string> = of('./assets/svg/logo.svg');
+  isGuest$: Observable<boolean> = of(true);
+  showGestionDropdown: boolean = false;
+  showProfileDropdown: boolean = false;
+  isMobileMenuOpen: boolean = false;
 
-  canCreateQuiz$: Observable<boolean>;
-  canManageUsers$: Observable<boolean>;
-  canViewResults$: Observable<boolean>;
-  isAdmin$: Observable<boolean>;
-  isGuest: boolean = false;
+  canCreateQuiz$: Observable<boolean> = of(false);
+  canManageUsers$: Observable<boolean> = of(false);
+  isAdmin$: Observable<boolean> = of(false);
+  canViewResults$: Observable<boolean> = of(false);
 
-  constructor(
-    private readonly authService: AuthService,
-    private readonly router: Router
-  ) {
+  randomColor: string = '#0B0C1E';
+
+  constructor(private authService: AuthService) {
+  }
+
+  ngOnInit() {
+    this.generateRandomColor();
+    this.loadUserData();
+  }
+
+  generateRandomColor() {
+    const colors = ['#0B0C1E', '#257D54', '#91DEDA', '#FAA24B', '#D30D4C'];
+    this.randomColor = colors[Math.floor(Math.random() * colors.length)];
+  }
+
+  loadUserData() {
+    this.isGuest$ = of(this.authService.isGuest());
+
+    this.userName$ = this.authService.getCurrentUser().pipe(
+      map(user => {
+        // Priorité au pseudo, puis au nom complet
+        return user.pseudo || user.firstName || user.email || 'Utilisateur';
+      }),
+      catchError(() => of('Utilisateur'))
+    );
+
+    this.userAvatar$ = this.authService.getCurrentUser().pipe(
+      map(user => {
+        if (user.avatar) return user.avatar;
+        return `./assets/avatars/blob_${user.avatarShape || 'circle'}.svg`;
+      }),
+      catchError(() => of('./assets/svg/logo.svg'))
+    );
+
     this.canCreateQuiz$ = this.authService.hasPermission('CREATE_QUIZ');
     this.canManageUsers$ = this.authService.hasPermission('MANAGE_USERS');
-    this.canViewResults$ = this.authService.hasPermission('VIEW_RESULTS');
     this.isAdmin$ = this.authService.isAdmin();
+    this.canViewResults$ = this.authService.hasPermission('VIEW_RESULTS');
   }
 
-  toggle(): void {
-    this.open.set(!this.open());
-  }
-
-  close(): void {
-    this.open.set(false);
-  }
-
-  randomColor: string = '';
-
-  ngOnInit(): void {
-    this.randomColor = this.getRandomColor();
-    this.checkUserStatus();
-  }
-
-  checkUserStatus(): void {
-    this.isGuest = this.authService.isGuest();
-    
-    if (this.isGuest) {
-      this.userName = 'Visiteur';
-    } else {
-      const cachedName = localStorage.getItem('USER_NAME');
-      if (cachedName) {
-        this.userName = cachedName;
-      }
-      this.loadUserData();
-    }
-  }
-
-  loadUserData(): void {
-    if (this.authService.isLoggedIn()) {
-      this.authService.getCurrentUser().subscribe({
-        next: (user) => {
-          const fullName = user.pseudo ?? `${user.firstName} ${user.lastName}`.trim() ?? 'Utilisateur';
-          this.userName = fullName;
-          localStorage.setItem('USER_NAME', fullName);
-        },
-        error: (error) => {
-          this.userName = 'Utilisateur connecté';
-        }
-      });
-    } else {
-      this.userName = 'Utilisateur';
-      localStorage.removeItem('USER_NAME');
-    }
-  }
-
-  logout(): void {
+  logout() {
     this.authService.logout();
-    localStorage.removeItem('USER_NAME');
-    this.router.navigate(['/connexion']);
   }
 
-  getRandomColor(): string {
-    const colors = ['#257D54', '#FAA24B', '#D30D4C'];
-    return colors[Math.floor(Math.random() * colors.length)];
+  toggle() {
+    this.isMobileMenuOpen = !this.isMobileMenuOpen;
   }
 
+  close() {
+    this.isMobileMenuOpen = false;
+  }
+
+  open() {
+    return this.isMobileMenuOpen;
+  }
 }
 

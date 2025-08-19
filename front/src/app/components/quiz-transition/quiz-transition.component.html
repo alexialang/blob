@@ -1,10 +1,12 @@
-<div *ngIf="showTransition" class="quiz-transition-overlay">
+<div *ngIf="showTransition" class="quiz-transition-overlay"
+     [style.--card-color]="cardColor">
   <div class="transition-content" *ngIf="currentQuiz">
     <div class="transition-card" 
          [style.--start-x]="cardPosition?.x + 'px'"
          [style.--start-y]="cardPosition?.y + 'px'"
          [style.--start-width]="cardPosition?.width + 'px'"
-         [style.--start-height]="cardPosition?.height + 'px'">
+         [style.--start-height]="cardPosition?.height + 'px'"
+         [style.--card-color]="cardColor">
       <div class="card-corner-badge" *ngIf="getCompanyBadgeText()">
         {{ getCompanyBadgeText() }}
       </div>

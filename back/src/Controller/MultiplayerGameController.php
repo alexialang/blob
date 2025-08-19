@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Service\MultiplayerGameService;
+use App\Service\InputSanitizerService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -14,7 +15,8 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class MultiplayerGameController extends AbstractController
 {
     public function __construct(
-        private MultiplayerGameService $multiplayerService
+        private MultiplayerGameService $multiplayerService,
+        private InputSanitizerService $inputSanitizer
     ) {
     }
 
@@ -23,6 +25,8 @@ class MultiplayerGameController extends AbstractController
     {
         try {
             $data = json_decode($request->getContent(), true);
+
+            $sanitizedData = $this->inputSanitizer->sanitizeMultiplayerGameData($data);
             
             $user = $this->getUser();
             
@@ -30,10 +34,10 @@ class MultiplayerGameController extends AbstractController
                 return $this->json(['error' => 'Utilisateur non connecté'], 401);
             }
             
-            $quizId = $data['quizId'] ?? 0;
-            $maxPlayers = $data['maxPlayers'] ?? 4;
-            $isTeamMode = $data['isTeamMode'] ?? false;
-            $roomName = $data['roomName'] ?? null;
+            $quizId = $sanitizedData['quizId'] ?? 0;
+            $maxPlayers = $sanitizedData['maxPlayers'] ?? 4;
+            $isTeamMode = $sanitizedData['isTeamMode'] ?? false;
+            $roomName = $sanitizedData['roomName'] ?? null;
             
             $room = $this->multiplayerService->createRoom(
                 $user,
@@ -53,10 +57,13 @@ class MultiplayerGameController extends AbstractController
     public function joinRoom(string $roomId, Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
+
+        $sanitizedData = $this->inputSanitizer->sanitizeMultiplayerGameData($data);
+        
         $user = $this->getUser();
         
         try {
-            $room = $this->multiplayerService->joinRoom($roomId, $user, $data['teamName'] ?? null);
+            $room = $this->multiplayerService->joinRoom($roomId, $user, $sanitizedData['teamName'] ?? null);
             return $this->json($room);
         } catch (\Exception $e) {
             return $this->json(['error' => $e->getMessage()], 400);
@@ -104,15 +111,18 @@ class MultiplayerGameController extends AbstractController
     public function submitAnswer(string $gameId, Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
+
+        $sanitizedData = $this->inputSanitizer->sanitizeMultiplayerGameData($data);
+        
         $user = $this->getUser();
         
         try {
             $result = $this->multiplayerService->submitAnswer(
                 $gameId,
                 $user,
-                $data['questionId'],
-                $data['answer'],
-                $data['timeSpent'] ?? 0
+                $sanitizedData['questionId'],
+                $sanitizedData['answer'],
+                $sanitizedData['timeSpent'] ?? 0
             );
             return $this->json($result);
         } catch (\Exception $e) {
@@ -171,10 +181,13 @@ class MultiplayerGameController extends AbstractController
     public function sendInvitation(string $roomId, Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
+
+        $sanitizedData = $this->inputSanitizer->sanitizeMultiplayerGameData($data);
+        
         $user = $this->getUser();
         
         try {
-            $this->multiplayerService->sendInvitation($roomId, $user, $data['invitedUserIds']);
+            $this->multiplayerService->sendInvitation($roomId, $user, $sanitizedData['invitedUserIds']);
             return $this->json(['success' => true]);
         } catch (\Exception $e) {
             return $this->json(['error' => $e->getMessage()], 400);

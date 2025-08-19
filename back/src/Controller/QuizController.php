@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Quiz;
 use App\Service\QuizService;
+use App\Service\InputSanitizerService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -20,7 +21,8 @@ class QuizController extends AbstractController
     public function __construct(
         private QuizService $quizService,
         private LoggerInterface $logger,
-        private EntityManagerInterface $entityManager
+        private EntityManagerInterface $entityManager,
+        private InputSanitizerService $inputSanitizer
     ) {}
 
     #[Route('/quiz/list', name: 'quiz_index', methods: ['GET'])]
@@ -55,7 +57,13 @@ class QuizController extends AbstractController
             return $this->json(['error' => 'User not authenticated'], 401);
         }
 
-        $quiz = $this->quizService->createWithQuestions($data, $user);
+        try {
+            $sanitizedData = $this->sanitizeQuizInput($data);
+        } catch (\InvalidArgumentException $e) {
+            return $this->json(['error' => 'Données invalides: ' . $e->getMessage()], 400);
+        }
+
+        $quiz = $this->quizService->createWithQuestions($sanitizedData, $user);
 
         return $this->json($quiz, 201, [], ['groups' => ['quiz:read']]);
     }
@@ -64,30 +72,25 @@ class QuizController extends AbstractController
     public function getOrganizedQuizzes(): JsonResponse
     {
         try {
-            $user = $this->getUser();
+            $user = null;
+            try {
+                $user = $this->getUser();
+            } catch (\Exception $e) {
+            }
 
             $popularQuizzes = $this->quizService->getMostPopularQuizzes(8);
 
             $recentQuizzes = $this->quizService->getMostRecentQuizzes(6);
 
-            $allQuizzes = $this->quizService->list();
+            $allQuizzes = $this->quizService->list(false); // Seulement les quiz publics
+            $privateQuizzes = [];
             if ($user) {
                 $privateQuizzes = $this->quizService->getPrivateQuizzesForUser($user);
-                $allQuizzes = array_merge($allQuizzes, $privateQuizzes);
             }
 
             $categoriesData = [];
 
-            $publicQuizzes = [];
-            $privateQuizzes = [];
-
-            foreach ($allQuizzes as $quiz) {
-                if ($quiz->isPublic()) {
-                    $publicQuizzes[] = $quiz;
-                } else {
-                    $privateQuizzes[] = $quiz;
-                }
-            }
+            $publicQuizzes = $allQuizzes;
 
             if (!empty($privateQuizzes) && $user) {
                 $userCompany = $user->getCompany();
@@ -116,7 +119,18 @@ class QuizController extends AbstractController
                 }
             }
 
-            $myQuizzes = $user ? $this->quizService->getMyQuizzes($user) : [];
+            $myQuizzes = [];
+            if ($user) {
+                $myQuizzes = $this->quizService->getMyQuizzes($user);
+                $privateQuizzesForUser = $this->quizService->getPrivateQuizzesForUser($user);
+                
+                $myQuizzesIds = array_map(fn($q) => $q->getId(), $myQuizzes);
+                foreach ($privateQuizzesForUser as $privateQuiz) {
+                    if (!in_array($privateQuiz->getId(), $myQuizzesIds)) {
+                        $myQuizzes[] = $privateQuiz;
+                    }
+                }
+            }
 
             $result = [
                 'popular' => $popularQuizzes,
@@ -253,5 +267,49 @@ class QuizController extends AbstractController
             'leaderboard' => $formattedLeaderboard,
             'totalPlayers' => count($userBestScores)
         ]);
+    }
+
+    /**
+     * Sanitise et valide les données d'entrée d'un quiz
+     * @param array $data
+     * @return array
+     * @throws \InvalidArgumentException
+     */
+    private function sanitizeQuizInput(array $data): array
+    {
+        // ✅ VALIDATION DES CHAMPS OBLIGATOIRES
+        $requiredFields = ['title', 'description'];
+        foreach ($requiredFields as $field) {
+            if (!isset($data[$field]) || empty(trim($data[$field]))) {
+                throw new \InvalidArgumentException("Le champ '$field' est obligatoire");
+            }
+        }
+
+        // ✅ SANITISATION VIA LE SERVICE SPÉCIALISÉ
+        $sanitizedData = $this->inputSanitizer->sanitizeQuizData($data);
+
+        // ✅ VALIDATION DES LONGUEURS
+        if (mb_strlen($sanitizedData['title']) < 3) {
+            throw new \InvalidArgumentException('Le titre doit contenir au moins 3 caractères');
+        }
+
+        if (mb_strlen($sanitizedData['description']) < 10) {
+            throw new \InvalidArgumentException('La description doit contenir au moins 10 caractères');
+        }
+
+        // ✅ VALIDATION DES TYPES
+        if (isset($sanitizedData['isPublic']) && !is_bool($sanitizedData['isPublic'])) {
+            throw new \InvalidArgumentException('Le champ isPublic doit être un booléen');
+        }
+
+        if (isset($sanitizedData['maxPlayers'])) {
+            $maxPlayers = filter_var($sanitizedData['maxPlayers'], FILTER_VALIDATE_INT);
+            if ($maxPlayers === false || $maxPlayers < 1 || $maxPlayers > 10) {
+                throw new \InvalidArgumentException('Le nombre maximum de joueurs doit être entre 1 et 10');
+            }
+            $sanitizedData['maxPlayers'] = $maxPlayers;
+        }
+
+        return $sanitizedData;
     }
 }

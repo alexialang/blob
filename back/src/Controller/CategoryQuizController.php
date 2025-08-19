@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\CategoryQuiz;
 use App\Service\CategoryQuizService;
+use App\Service\InputSanitizerService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -13,12 +14,10 @@ use OpenApi\Annotations as OA;
 #[Route('/api/category-quiz')]
 class CategoryQuizController extends AbstractController
 {
-    private CategoryQuizService $categoryQuizService;
-
-    public function __construct(CategoryQuizService $categoryQuizService)
-    {
-        $this->categoryQuizService = $categoryQuizService;
-    }
+    public function __construct(
+        private CategoryQuizService $categoryQuizService,
+        private InputSanitizerService $inputSanitizer
+    ) {}
 
     /**
      * @OA\Get(summary="Lister les catégories de quiz", tags={"CategoryQuiz"})
@@ -48,7 +47,10 @@ class CategoryQuizController extends AbstractController
     {
         try {
             $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
-            $category = $this->categoryQuizService->create($data);
+            
+            $sanitizedData = $this->inputSanitizer->sanitizeCategoryQuizData($data);
+            
+            $category = $this->categoryQuizService->create($sanitizedData);
 
             return $this->json($category, 201, [], ['groups' => ['quiz:read']]);
         } catch (\JsonException $e) {
@@ -84,7 +86,11 @@ class CategoryQuizController extends AbstractController
     {
         try {
             $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
-            $category = $this->categoryQuizService->update($category, $data);
+            
+
+            $sanitizedData = $this->inputSanitizer->sanitizeCategoryQuizData($data);
+            
+            $category = $this->categoryQuizService->update($category, $sanitizedData);
 
             return $this->json($category, 200, [], ['groups' => ['quiz:read']]);
         } catch (\JsonException $e) {

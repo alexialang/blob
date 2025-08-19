@@ -1,4 +1,4 @@
-<div class="quiz-card" [class.flipped]="quiz.isFlipped">
+<div class="quiz-card" [class.flipped]="quiz.isFlipped" [style.--card-bg-color]="cardColor" [style.--card-text-color]="cardTextColor">
   <div class="card-face card-front">
     <div class="card-corner-badge" *ngIf="getCompanyBadgeText()">{{ getCompanyBadgeText() }}</div>
     <div class="card-content">

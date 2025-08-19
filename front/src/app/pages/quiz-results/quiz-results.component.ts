@@ -56,7 +56,7 @@ export class QuizResultsComponent implements OnInit {
 
   getScorePercentage(): number {
     if (!this.resultData) return 0;
-    return Math.round((this.resultData.totalScore / (this.resultData.totalQuestions * 10)) * 100);
+    return this.resultData.totalScore;
   }
 
   getPositionSuffix(position: number): string {

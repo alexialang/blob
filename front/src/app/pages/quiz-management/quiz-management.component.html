@@ -1,11 +1,6 @@
 <div class="quiz-page">
 
 <div class="container">
-  <div class="stats-graph-container" style="margin-bottom: 20px;">
-    <h3>Statistiques globales</h3>
-    <canvas height="200"></canvas>
-  </div>
-
   <h1 class="page-title">Gestion <br /> des <span class="quiz-highlight" [ngStyle]="{ 'color': highlightColor }">Quiz</span></h1>
 
   <div class="filters-container">
@@ -117,16 +112,6 @@
             [iconStart]="sortDirection === 'asc' ? 'tuiIconChevronUp' : 'tuiIconChevronDown'"
           ></button>
         </th>
-        <th tuiTh (click)="sortBy('stats')" class="th-stats">
-          Statistique du quiz
-          <button
-            tuiIconButton
-            size="xs"
-            class="sort-btn"
-            *ngIf="sortColumn === 'stats'"
-            [iconStart]="sortDirection === 'asc' ? 'tuiIconChevronUp' : 'tuiIconChevronDown'"
-          ></button>
-        </th>
         <th tuiTh>Public</th>
         <th tuiTh>Statut</th>
         <th tuiTh class="th-action">
@@ -183,11 +168,6 @@
           </div>
         </td>
         <td tuiTd class="td-category">{{ row.category || '—' }}</td>
-        <td tuiTd class="td-stats">
-          <button tuiButton appearance="action-grayscale" size="s">
-            {{ getQuizStats(row) }} <span>Voir plus</span>
-          </button>
-        </td>
         <td tuiTd class="td-public">{{ row.isPublic ? 'Oui' : 'Non' }}</td>
         <td tuiTd class="td-status">{{ row.status }}</td>
         <td tuiTd class="td-action">
@@ -216,7 +196,7 @@
         </td>
       </tr>
       <tr *ngIf="rows.length === 0">
-        <td tuiTd colspan="9" class="no-data">Aucun quiz trouvé.</td>
+        <td tuiTd colspan="8" class="no-data">Aucun quiz trouvé.</td>
       </tr>
       </tbody>
     </table>

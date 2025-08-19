@@ -1,23 +1,22 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { UserService } from '../../services/user.service';
 import { User, Badge } from '../../models/user.interface';
 import { UserStatistics } from '../../models/user-statistics.interface';
-import { BackButtonComponent } from '../../components/back-button/back-button.component';
 import { AlertService } from '../../services/alert.service';
 import { StatisticsChartsComponent } from '../../components/statistics-charts/statistics-charts.component';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-user-profile',
   standalone: true,
   imports: [
-    CommonModule, 
-    FormsModule, 
-    ReactiveFormsModule, 
-    RouterLink, 
-    BackButtonComponent, 
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    RouterLink,
     StatisticsChartsComponent
   ],
   templateUrl: './user-profile.component.html',
@@ -26,17 +25,17 @@ import { StatisticsChartsComponent } from '../../components/statistics-charts/st
 export class UserProfileComponent implements OnInit {
   private userService = inject(UserService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private alertService = inject(AlertService);
   private fb = inject(FormBuilder);
+  private authService = inject(AuthService);
 
   user: User | null = null;
   isLoading = false;
   isEditing = false;
-  editForm = {
-    firstName: '',
-    lastName: '',
-    pseudo: ''
-  };
+  isAdmin = false;
+  isOwnProfile = true;
+  targetUserId: number | null = null;
   profileForm: FormGroup;
   userStatistics: UserStatistics | null = null;
   allBadges: Badge[] = [];
@@ -52,23 +51,58 @@ export class UserProfileComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.loadUserProfile();
+    this.route.params.subscribe(params => {
+      if (params['id']) {
+        this.targetUserId = +params['id'];
+        this.isOwnProfile = false;
+        this.loadSpecificUserProfile(this.targetUserId);
+      } else {
+        this.isOwnProfile = true;
+        this.loadUserProfile();
+      }
+    });
+
     this.loadUserStatistics();
     this.loadAllBadges();
+    this.checkAdminStatus();
+  }
+
+  checkAdminStatus() {
+    this.authService.isAdmin().subscribe(isAdmin => {
+      this.isAdmin = isAdmin;
+    });
   }
 
   loadUserProfile() {
     this.userService.getUserProfile().subscribe({
       next: (user) => {
         this.user = user;
-        this.editForm = {
-          firstName: user.firstName,
-          lastName: user.lastName,
-          pseudo: user.pseudo || ''
-        };
+        this.profileForm.patchValue({
+          firstName: user.firstName || '',
+          lastName: user.lastName || '',
+          pseudo: user.pseudo || '',
+          email: user.email || '',
+          avatar: user.avatar || ''
+        });
       },
       error: (error) => {
-        console.error('Erreur lors du chargement du profil utilisateur:', error);
+      }
+    });
+  }
+
+  loadSpecificUserProfile(userId: number) {
+    this.userService.getUserProfileById(userId).subscribe({
+      next: (user: User) => {
+        this.user = user;
+        this.profileForm.patchValue({
+          firstName: user.firstName || '',
+          lastName: user.lastName || '',
+          pseudo: user.pseudo || '',
+          email: user.email || '',
+          avatar: user.avatar || ''
+        });
+      },
+      error: (error: any) => {
       }
     });
   }
@@ -96,17 +130,19 @@ export class UserProfileComponent implements OnInit {
   toggleEdit() {
     this.isEditing = !this.isEditing;
     if (this.isEditing && this.user) {
-      this.editForm = {
+      this.profileForm.patchValue({
         firstName: this.user.firstName || '',
         lastName: this.user.lastName || '',
-        pseudo: this.user.pseudo || ''
-      };
+        pseudo: this.user.pseudo || '',
+        email: this.user.email || '',
+        avatar: this.user.avatar || ''
+      });
     }
   }
 
   onSubmit() {
-    if (this.user) {
-      const updateData = this.editForm;
+    if (this.profileForm.valid && this.user) {
+      const updateData = this.profileForm.value;
 
       this.userService.updateUserProfile(updateData).subscribe({
         next: (updatedUser) => {
@@ -115,7 +151,6 @@ export class UserProfileComponent implements OnInit {
           this.alertService.success('Profil mis à jour avec succès!');
         },
         error: (error) => {
-          console.error('Erreur lors de la mise à jour du profil:', error);
           this.alertService.error('Erreur lors de la mise à jour du profil.');
         }
       });

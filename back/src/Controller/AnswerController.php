@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Answer;
 use App\Service\AnswerService;
+use App\Service\InputSanitizerService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -13,12 +14,10 @@ use OpenApi\Annotations as OA;
 #[Route('/api/answer')]
 class AnswerController extends AbstractController
 {
-    private AnswerService $answerService;
-
-    public function __construct(AnswerService $answerService)
-    {
-        $this->answerService = $answerService;
-    }
+    public function __construct(
+        private AnswerService $answerService,
+        private InputSanitizerService $inputSanitizer
+    ) {}
 
     /**
      * @OA\Get(summary="Lister toutes les réponses", tags={"Answer"})
@@ -54,7 +53,11 @@ class AnswerController extends AbstractController
     {
         try {
             $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
-            $answer = $this->answerService->create($data);
+            
+            // ✅ SANITISATION : Nettoyer les entrées utilisateur
+            $sanitizedData = $this->inputSanitizer->sanitizeAnswerData($data);
+            
+            $answer = $this->answerService->create($sanitizedData);
 
             return $this->json($answer, 201, [], ['groups' => ['answer:read']]);
         } catch (\JsonException $e) {
@@ -94,7 +97,10 @@ class AnswerController extends AbstractController
     {
         try {
             $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
-            $answer = $this->answerService->update($answer, $data);
+            
+            $sanitizedData = $this->inputSanitizer->sanitizeAnswerData($data);
+            
+            $answer = $this->answerService->update($answer, $sanitizedData);
 
             return $this->json($answer, 200, [], ['groups' => ['answer:read']]);
         } catch (\JsonException $e) {

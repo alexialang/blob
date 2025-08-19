@@ -1,39 +1,17 @@
-import {
-  Component,
-  OnInit,
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-} from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, HostListener, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { TuiTable } from '@taiga-ui/addon-table';
+import { TuiButton, TuiGroup, TuiDataList, TuiDialogService, TuiAlertService, TuiHintDirective, TuiSizeS } from '@taiga-ui/core';
+import { TuiAvatar, TuiCheckbox, TuiChip } from '@taiga-ui/kit';
 import { TuiCell } from '@taiga-ui/layout';
-import {
-  TuiAvatar,
-  TuiChip,
-  TuiCheckbox,
-  TuiItemsWithMore,
-} from '@taiga-ui/kit';
-import {
-  TuiChevron,
-} from '@taiga-ui/kit';
-import {
-  TuiDialogService,
-  TuiAlertService,
-  TuiDropdown,
-  TuiGroup,
-  TuiButton,
-  TuiDataList,
-  TuiIcon,
-  TuiHintDirective,
-} from '@taiga-ui/core';
-import { TUI_CONFIRM } from '@taiga-ui/kit';
-import { catchError, of, forkJoin } from 'rxjs';
+import { CompanyService } from '../../services/company.service';
 import { PaginationComponent } from '../../components/pagination/pagination.component';
-import { CompanyManagementService } from '../../services/company-management.service';
-import { RouterLink } from '@angular/router';
-
-type TuiSizeS = 's' | 'm';
+import { FileDownloadService } from '../../services/file-download.service';
+import { Subject, takeUntil, forkJoin } from 'rxjs';
+import { RouterModule } from '@angular/router';
+import { AddCompanyModalComponent } from '../../components/add-company-modal/add-company-modal.component';
 
 interface Group {
   id: number;
@@ -59,66 +37,74 @@ interface CompanyRow {
     CommonModule,
     FormsModule,
     TuiTable,
-    TuiCell,
-    TuiAvatar,
+    TuiButton,
     TuiCheckbox,
     TuiChip,
-    TuiButton,
-    TuiDataList,
-    TuiGroup,
-    TuiDropdown,
-    TuiChevron,
-    TuiIcon,
-    PaginationComponent,
+    TuiAvatar,
+    TuiCell,
     TuiHintDirective,
-    RouterLink,
+    PaginationComponent,
+    RouterModule,
+    AddCompanyModalComponent,
   ],
-  providers: [
-    { provide: TUI_CONFIRM, useValue: TUI_CONFIRM },
-  ],
+  providers: [],
   templateUrl: './company-management.component.html',
   styleUrls: ['./company-management.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CompanyManagementComponent implements OnInit {
-  readonly sizes: TuiSizeS[] = ['m', 's'];
-  size: TuiSizeS = 'm';
-
-  private allRows: {
-    id: number;
-    selected: boolean;
-    name: string;
-    collaboratorCount: number;
-    groupName: string | null;
-    groups: Group[];
-    users: any[];
-  }[] = [];
-
+export class CompanyManagementComponent implements OnInit, OnDestroy {
   public rows: CompanyRow[] = [];
-  public loadError = false;
-  public page = 1;
-  public pageSize = 20;
   public filterStatus = '';
   public filterKeyword = '';
-  public statusOptions: string[] = [];
+  public statusOptions: string[] = ['Actif', 'Inactif'];
+
+  public size: TuiSizeS = 's';
+
+  public page = 1;
+  public pageSize = 10;
   public sortColumn: keyof CompanyRow | '' = '';
   public sortDirection: 'asc' | 'desc' = 'asc';
   public open = false;
-  public items = ['Ajouter une entreprise', 'Exporter la liste'];
+  public items = ['Ajouter une entreprise', 'Exporter CSV', 'Exporter JSON', 'Importer CSV'];
+
+  public highlightColor: string = '';
+
+  public loadError = false;
+
+  public showAddCompanyModal = false;
+  public showImportModal = false;
+  public selectedFile: File | null = null;
+  public isDeleting = false; // Protection contre les appels multiples
+
   private readonly MAX_VISIBLE_GROUPS = 2;
-  
-  highlightColor: string = '';
+  private destroy$ = new Subject<void>();
 
   constructor(
-    private readonly companyService: CompanyManagementService,
-    private readonly dialogService: TuiDialogService,
-    private readonly cdr: ChangeDetectorRef,
-    private readonly alerts: TuiAlertService
+    private companyService: CompanyService,
+    private dialogService: TuiDialogService,
+    private cdr: ChangeDetectorRef,
+    private alerts: TuiAlertService,
+    private router: Router,
+    private elementRef: ElementRef,
+    private fileDownloadService: FileDownloadService
   ) {}
 
   ngOnInit(): void {
     this.generateRandomColor();
     this.loadCompanies();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: Event): void {
+    const target = event.target as any;
+    if (target && typeof target.closest === 'function' && !target.closest('.custom-dropdown')) {
+      this.open = false;
+    }
   }
 
   private generateRandomColor(): void {
@@ -130,76 +116,163 @@ export class CompanyManagementComponent implements OnInit {
     this.highlightColor = colors[index];
   }
 
+  onDropdownAction(action: string): void {
+    switch (action) {
+      case 'Ajouter une entreprise':
+        this.showAddCompanyModal = true;
+        break;
+      case 'Exporter CSV':
+        this.exportCsv();
+        break;
+      case 'Exporter JSON':
+        this.exportJson();
+        break;
+      case 'Importer CSV':
+        this.showImportModal = true;
+        break;
+    }
+    this.open = false;
+  }
+
+  toggleDropdown(): void {
+    this.open = !this.open;
+  }
+
+  private exportCsv(): void {
+    this.companyService.exportCompaniesCsv()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (csvContent: string) => {
+          const filename = `entreprises_${new Date().toISOString().split('T')[0]}.csv`;
+          this.fileDownloadService.downloadCsv(csvContent, filename);
+          this.alerts.open('Export CSV réussi !', { appearance: 'success' }).subscribe();
+        },
+        error: (error: any) => {
+          console.error('Erreur export CSV:', error);
+          this.alerts.open('Erreur lors de l\'export CSV', { appearance: 'error' }).subscribe();
+        }
+      });
+  }
+
+    // Export JSON
+  private exportJson(): void {
+    this.companyService.exportCompaniesJson()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (result: any) => {
+          const filename = `entreprises_${new Date().toISOString().split('T')[0]}.json`;
+          this.fileDownloadService.downloadJson(result.data, filename);
+          this.alerts.open('Export JSON réussi !', { appearance: 'success' }).subscribe();
+        },
+        error: (error: any) => {
+          console.error('Erreur export JSON:', error);
+          this.alerts.open('Erreur lors de l\'export JSON', { appearance: 'error' }).subscribe();
+        }
+      });
+  }
+
+
+
+  onCompanyCreated(company: any): void {
+    this.showAddCompanyModal = false;
+    this.loadCompanies();
+  }
+
+  onAddCompanyCancelled(): void {
+    this.showAddCompanyModal = false;
+  }
+
+  onImportCancelled(): void {
+    this.showImportModal = false;
+  }
+
+  onFileSelected(event: any): void {
+    const file = event.target.files[0];
+    if (file && file.type === 'text/csv') {
+      this.selectedFile = file;
+    } else {
+      this.alerts.open('Veuillez sélectionner un fichier CSV valide', { appearance: 'warning' }).subscribe();
+      this.selectedFile = null;
+    }
+  }
+
+  importCsvFile(): void {
+    if (!this.selectedFile) return;
+
+    this.companyService.importCompaniesCsv(this.selectedFile)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+      next: (result: any) => {
+        this.alerts.open(
+          `Import terminé ! ${result.success} entreprises créées${result.errors.length > 0 ? `, ${result.errors.length} erreurs` : ''}`,
+          { appearance: 'success' }
+        ).subscribe();
+
+        if (result.success > 0) {
+          this.loadCompanies();
+        }
+
+        this.showImportModal = false;
+        this.selectedFile = null;
+      },
+      error: (error: any) => {
+        console.error('Erreur import CSV:', error);
+        this.alerts.open('Erreur lors de l\'import CSV', { appearance: 'error' }).subscribe();
+      }
+    });
+  }
+
   private loadCompanies(): void {
     this.companyService
       .getCompanies()
-      .pipe(
-        catchError(err => {
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response: any) => {
+          // Vérifier le format de réponse
+          const companies = response.data || response;
+          this.rows = companies.map((c: any) => {
+            const userCount = c.users?.length ?? 0;
+            const groups: Group[] = c.groups ?? [];
+            const groupName = groups.length ? groups[0].name : null;
+
+            return {
+              id: c.id,
+              selected: false,
+              name: c.name ?? '—',
+              userCount: userCount,
+              groups: groups,
+              users: c.users ?? [],
+              activeUsers: Math.floor(userCount * (0.6 + Math.random() * 0.35)),
+              createdAt: new Date(Date.now() - (Math.floor(Math.random() * 1000) + 30) * 24 * 60 * 60 * 1000).toLocaleDateString('fr-FR'),
+              lastActivity: new Date(Date.now() - Math.floor(Math.random() * 7) * 24 * 60 * 60 * 1000).toLocaleDateString('fr-FR'),
+            };
+          });
+
+          this.applyFilters();
+        },
+        error: (error: any) => {
           this.loadError = true;
-          return of([]);
-        })
-      )
-      .subscribe((companies: any[]) => {
-        this.allRows = companies.map(c => {
-          const userCount = c.users?.length ?? 0;
-          const groups: Group[] = c.groups ?? [];
-          const groupName = groups.length ? groups[0].name : null;
-
-          return {
-            id: c.id,
-            selected: false,
-            name: c.name ?? '—',
-            collaboratorCount: userCount,
-            groupName: groupName,
-            groups: groups,
-            users: c.users ?? [],
-          };
-        });
-
-        const uniqueGroups = [...new Set(
-          this.allRows
-            .map(r => r.groupName)
-            .filter(g => g !== null)
-        )];
-        this.statusOptions = uniqueGroups;
-
-        this.applyFilters();
+          this.cdr.markForCheck();
+        }
       });
   }
 
   applyFilters(): void {
-    let filtered = this.allRows;
+    let filtered = this.rows;
 
     if (this.filterStatus) {
-      filtered = filtered.filter(r => r.groupName === this.filterStatus);
+      filtered = filtered.filter(r => r.groups.some(g => g.name === this.filterStatus));
     }
 
     if (this.filterKeyword) {
       const kw = this.filterKeyword.toLowerCase();
       filtered = filtered.filter(r =>
         r.name.toLowerCase().includes(kw) ||
-        (r.groupName?.toLowerCase().includes(kw) ?? false)
+        r.groups.some(g => g.name.toLowerCase().includes(kw))
       );
     }
 
-    this.rows = filtered.map(r => {
-      const activePercentage = 0.6 + Math.random() * 0.35;
-      const daysOld = Math.floor(Math.random() * 1000) + 30;
-      const lastActivityDays = Math.floor(Math.random() * 7);
-      
-      return {
-        id: r.id,
-        selected: r.selected,
-        name: r.name,
-        userCount: r.collaboratorCount,
-        groups: r.groups,
-        users: r.users ?? [],
-        activeUsers: Math.floor(r.collaboratorCount * activePercentage),
-        createdAt: new Date(Date.now() - daysOld * 24 * 60 * 60 * 1000).toLocaleDateString('fr-FR'),
-        lastActivity: new Date(Date.now() - lastActivityDays * 24 * 60 * 60 * 1000).toLocaleDateString('fr-FR'),
-      };
-    });
-
+    this.rows = filtered;
     this.applySort();
     this.page = 1;
     this.cdr.markForCheck();
@@ -271,51 +344,53 @@ export class CompanyManagementComponent implements OnInit {
   }
 
   confirmDelete(ids: number[]): void {
+    if (this.isDeleting) {
+      return;
+    }
+
     const count = ids.length;
-    this.dialogService
-      .open<boolean>(
-        TUI_CONFIRM,
-        {
-          label: 'Confirmation',
-          data: {
-            content: `Supprimer ${count} entreprise${count > 1 ? 's' : ''} ?`,
-            yes: 'Supprimer',
-            no: 'Annuler',
-          },
-        }
-      )
-      .subscribe(confirmed => {
-        if (!confirmed) return;
 
-        const deleteObservables = ids.map(id =>
-          this.companyService.deleteCompany(id)
-        );
+    // Utiliser une confirmation simple au lieu du service de dialogue
+    const confirmed = window.confirm(`Supprimer ${count} entreprise${count > 1 ? 's' : ''} ?`);
 
-        forkJoin(deleteObservables).subscribe({
-          next: () => {
-            this.allRows = this.allRows.filter(r => !ids.includes(r.id));
-            this.applyFilters();
-            this.rows.forEach(r => r.selected = false);
-            this.cdr.markForCheck();
+    if (!confirmed) {
+      return;
+    }
 
-            this.alerts.open(
-              `${count} entreprise${count > 1 ? 's' : ''} supprimée${count > 1 ? 's' : ''}`,
-              {
-                label: 'Succès',
-                appearance: 'positive',
-                autoClose: 3000,
-              }
-            ).subscribe();
-          },
-          error: () => {
-            this.alerts.open('Échec de la suppression', {
-              label: 'Erreur',
-              appearance: 'danger',
-              autoClose: 3000,
-            }).subscribe();
-          },
-        });
-      });
+    this.isDeleting = true;
+
+    const deleteObservables = ids.map(id =>
+      this.companyService.deleteCompany(id)
+    );
+
+    forkJoin(deleteObservables)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+      next: (results) => {
+        this.isDeleting = false;
+        this.loadCompanies();
+        this.rows.forEach(r => r.selected = false);
+        this.cdr.markForCheck();
+
+        this.alerts.open(
+          `${count} entreprise${count > 1 ? 's' : ''} supprimée${count > 1 ? 's' : ''}`,
+          {
+            label: 'Succès',
+            appearance: 'positive',
+            autoClose: 3000,
+          }
+        ).subscribe();
+      },
+      error: (error) => {
+        this.isDeleting = false;
+
+        this.alerts.open('Échec de la suppression', {
+          label: 'Erreur',
+          appearance: 'danger',
+          autoClose: 3000,
+        }).subscribe();
+      },
+    });
   }
 
   getVisibleGroups(groups: Group[]): Group[] {
@@ -332,16 +407,5 @@ export class CompanyManagementComponent implements OnInit {
     return remainingGroups.map(g => g.name).join(', ');
   }
 
-  getCompanyStats(company: CompanyRow): string {
-    const allUserAnswers = company.users?.flatMap((user: any) => user.userAnswers || []) || [];
-    
-    if (allUserAnswers.length > 0) {
-      const correctAnswers = allUserAnswers.filter((answer: any) => answer.isCorrect).length;
-      const averageScore = Math.round((correctAnswers / allUserAnswers.length) * 100);
-      return `${averageScore}/100 moy.`;
-    } else if (company.userCount > 0) {
-      return `${company.userCount} employés`;
-    }
-    return 'Aucun employé';
-  }
+
 }

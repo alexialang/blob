@@ -60,23 +60,52 @@ class QuizService
     public function getPrivateQuizzesForUser(User $user): array
     {
         try {
+            $this->logger->info('=== DEBUG getPrivateQuizzesForUser ===');
+            $this->logger->info('Utilisateur: ' . $user->getId() . ' (' . $user->getEmail() . ')');
+            
             if (!$user->getCompany()) {
+                $this->logger->info('PROBLÈME: Utilisateur sans entreprise');
                 return [];
             }
+            
+            $this->logger->info('Entreprise: ' . $user->getCompany()->getName() . ' (ID: ' . $user->getCompany()->getId() . ')');
 
             $userGroups = $user->getGroups();
+            $this->logger->info('Nombre de groupes utilisateur: ' . $userGroups->count());
+            
             if ($userGroups->isEmpty()) {
+                $this->logger->info('PROBLÈME: Utilisateur sans groupes');
                 return [];
             }
 
             $userGroupIds = [];
             foreach ($userGroups as $group) {
                 $userGroupIds[] = $group->getId();
+                $this->logger->info('Groupe utilisateur: ' . $group->getName() . ' (ID: ' . $group->getId() . ')');
             }
 
-            return $this->quizRepository->findPrivateQuizzesForUserGroups($userGroupIds);
+            $allPrivateQuizzes = $this->quizRepository->findBy(['isPublic' => false, 'status' => Status::PUBLISHED]);
+            $this->logger->info('Total quiz privés publiés: ' . count($allPrivateQuizzes));
+            
+            foreach ($allPrivateQuizzes as $quiz) {
+                $quizGroups = $quiz->getGroups();
+                $this->logger->info('Quiz "' . $quiz->getTitle() . '" (ID: ' . $quiz->getId() . ') a ' . $quizGroups->count() . ' groupes');
+                foreach ($quizGroups as $group) {
+                    $this->logger->info('  - Groupe: ' . $group->getName() . ' (ID: ' . $group->getId() . ')');
+                }
+            }
+
+            $privateQuizzes = $this->quizRepository->findPrivateQuizzesForUserGroups($userGroupIds);
+            $this->logger->info('Quiz privés trouvés pour l\'utilisateur: ' . count($privateQuizzes));
+            
+            foreach ($privateQuizzes as $quiz) {
+                $this->logger->info('Quiz privé accessible: ' . $quiz->getTitle() . ' (ID: ' . $quiz->getId() . ')');
+            }
+            
+            return $privateQuizzes;
         } catch (\Exception $e) {
             $this->logger->error('Erreur getPrivateQuizzesForUser: ' . $e->getMessage());
+            $this->logger->error('Stack trace: ' . $e->getTraceAsString());
             return [];
         }
     }

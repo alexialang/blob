@@ -18,7 +18,6 @@ import {
   TuiHintDirective,
 } from '@taiga-ui/core';
 import {
-  TUI_CONFIRM,
   TuiAvatar,
   TuiCheckbox,
   TuiChip,
@@ -69,7 +68,7 @@ interface QuizRow {
     TuiHintDirective,
     PaginationComponent,
   ],
-  providers: [{ provide: TUI_CONFIRM, useValue: TUI_CONFIRM }],
+  providers: [],
   templateUrl: './quiz-management.component.html',
   styleUrls: ['./quiz-management.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -87,10 +86,11 @@ export class QuizManagementComponent implements OnInit {
   public sortColumn: keyof QuizRow | '' = '';
   public sortDirection: 'asc' | 'desc' = 'asc';
   public open = false;
-  
+
   highlightColor: string = '';
 
   public loadError = false;
+  public isDeleting = false;
 
   private readonly MAX_VISIBLE_GROUPS = 2;
 
@@ -118,9 +118,9 @@ export class QuizManagementComponent implements OnInit {
 
   getQuizStats(row: any): string {
     const totalAttempts = row.userAnswers?.length || 0;
-    const uniquePlayers = row.userAnswers ? 
+    const uniquePlayers = row.userAnswers ?
       new Set(row.userAnswers.map((answer: any) => answer.userId || answer.user?.id)).size : 0;
-    
+
     if (totalAttempts > 0 && uniquePlayers > 0) {
       return `${uniquePlayers} joueurs • ${totalAttempts} parties`;
     } else if (totalAttempts > 0) {
@@ -138,7 +138,7 @@ export class QuizManagementComponent implements OnInit {
         this.rows = quizzes.map(quiz => {
           const createdDaysAgo = Math.floor(Math.random() * 180) + 1;
           const questionsCount = Math.floor(Math.random() * 15) + 5;
-          
+
           return {
             id: quiz.id,
             selected: false,
@@ -242,36 +242,44 @@ export class QuizManagementComponent implements OnInit {
   }
 
   confirmDelete(ids: number[]): void {
-    const count = ids.length;
-    this.dialogService.open<boolean>(TUI_CONFIRM, {
-      label: 'Confirmation',
-      data: {
-        content: `Supprimer ${count} quiz${count > 1 ? 's' : ''} ?`,
-        yes: 'Supprimer',
-        no: 'Annuler',
-      },
-    }).subscribe(confirmed => {
-      if (!confirmed) return;
+    if (this.isDeleting) {
+      return;
+    }
 
-      const deletes$ = ids.map(id => this.quizService.deleteQuiz(id));
-      forkJoin(deletes$).subscribe({
-        next: () => {
-          this.rows = this.rows.filter(r => !ids.includes(r.id));
-          this.rows.forEach(r => r.selected = false);
-          this.applyFilters();
-          this.alerts.open(
-            `${count} quiz${count > 1 ? 's' : ''} supprimé${count > 1 ? 's' : ''}`,
-            { label: 'Succès', appearance: 'positive', autoClose: 3000 }
-          ).subscribe();
-        },
-        error: () => {
-          this.alerts.open('Erreur lors de la suppression.', {
-            label: 'Erreur',
-            appearance: 'danger',
-            autoClose: 3000
-          }).subscribe();
-        },
-      });
+    const count = ids.length;
+
+    const confirmed = window.confirm(`Supprimer ${count} quiz${count > 1 ? 's' : ''} ?`);
+
+    if (!confirmed) {
+      return;
+    }
+
+    this.isDeleting = true;
+
+    const deletes$ = ids.map(id => this.quizService.deleteQuiz(id));
+    forkJoin(deletes$).subscribe({
+      next: (results) => {
+        this.isDeleting = false;
+
+        this.loadQuizzes();
+
+        this.rows.forEach(r => r.selected = false);
+        this.cdr.markForCheck();
+
+        this.alerts.open(
+          `${count} quiz${count > 1 ? 's' : ''} supprimé${count > 1 ? 's' : ''}`,
+          { label: 'Succès', appearance: 'positive', autoClose: 3000 }
+        ).subscribe();
+      },
+      error: (error) => {
+        this.isDeleting = false;
+
+        this.alerts.open('Erreur lors de la suppression.', {
+          label: 'Erreur',
+          appearance: 'danger',
+          autoClose: 3000
+        }).subscribe();
+      },
     });
   }
 

@@ -1,6 +1,7 @@
 parameters:
     app.frontend_url: 'https://angular.dev.local'
     mailer_from: 'no-reply@exemple.com'
+    recaptcha_secret_key: '%env(RECAPTCHA_SECRET_KEY)%'
 
 services:
     _defaults:

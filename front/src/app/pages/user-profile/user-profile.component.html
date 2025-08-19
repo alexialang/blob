@@ -1,6 +1,6 @@
 <div class="profile-container">
   <div class="container">
-    <h1 class="main-title">Mon Profil</h1>
+    <h1 class="main-title">{{ isOwnProfile ? 'Mon Profil' : 'Profil de ' + getDisplayName() }}</h1>
 
     <ng-container *ngIf="user; else loadingTpl">
 
@@ -10,7 +10,7 @@
         <div class="profile-card personal-info">
           <div class="card-header d-flex justify-content-between align-items-center">
             <h5>Informations Personnelles</h5>
-            <button class="btn-modern btn-secondary" (click)="toggleEdit()">
+            <button *ngIf="isOwnProfile" class="btn-modern btn-secondary" (click)="toggleEdit()">
               <i class="fas" [class.fa-edit]="!isEditing" [class.fa-times]="isEditing"></i>
               {{ isEditing ? 'Annuler' : 'Modifier' }}
             </button>
@@ -91,7 +91,7 @@
                     </defs>
                   </svg>
                 </div>
-                <a class="avatar-edit-btn" [routerLink]="['/profil/avatar']">
+                <a *ngIf="isOwnProfile" class="avatar-edit-btn" [routerLink]="['/profil/avatar']">
                   <i class="fas fa-camera"></i>
                 </a>
               </div>
@@ -132,37 +132,72 @@
               </div>
             </form>
 
-
-            <ng-template #displayMode>
-              <div class="profile-info">
-                <div class="row">
-                  <div class="col-md-6 mb-3">
-                    <div class="info-item">
-                      <span class="info-label">Pseudo :</span>
-                      <span class="info-value">{{ user.pseudo || 'Non défini' }}</span>
-                    </div>
+            <div *ngIf="!isEditing" class="profile-info">
+              <div class="row">
+                <div class="col-md-12 mb-2">
+                  <div class="info-item">
+                    <span class="info-label">Pseudo :</span>
+                    <span class="info-value">{{ user.pseudo || 'Non défini' }}</span>
                   </div>
-                  <div class="col-md-6 mb-3">
-                    <div class="info-item">
-                      <span class="info-label">Nom complet :</span>
-                      <span class="info-value">{{ user.firstName }} {{ user.lastName }}</span>
-                    </div>
+                </div>
+                <div class="col-md-12 mb-2">
+                  <div class="info-item">
+                    <span class="info-label">Nom complet :</span>
+                    <span class="info-value">{{ user.firstName }} {{ user.lastName }}</span>
                   </div>
-                  <div class="col-md-6 mb-3">
-                    <div class="info-item">
-                      <span class="info-label">Entreprise :</span>
-                      <span class="info-value">{{ user.companyName || 'Aucune' }}</span>
-                    </div>
+                </div>
+                <div class="col-md-12 mb-2">
+                  <div class="info-item">
+                    <span class="info-label">Email :</span>
+                    <span class="info-value">{{ user.email }}</span>
                   </div>
-                  <div class="col-md-6 mb-3">
-                    <div class="info-item">
-                      <span class="info-label">Membre depuis :</span>
-                      <span class="info-value">{{ user.dateRegistration | date:'dd/MM/yyyy' }}</span>
-                    </div>
+                </div>
+                <div class="col-md-12 mb-2">
+                  <div class="info-item">
+                    <span class="info-label">Entreprise :</span>
+                    <span class="info-value">{{ user.companyName || 'Aucune' }}</span>
+                  </div>
+                </div>
+                <div class="col-md-12 mb-2">
+                  <div class="info-item">
+                    <span class="info-label">Membre depuis :</span>
+                    <span class="info-value">{{ user.dateRegistration | date:'dd/MM/yyyy' }}</span>
+                  </div>
+                </div>
+                <div class="col-md-12 mb-2" *ngIf="isAdmin">
+                  <div class="info-item admin-info">
+                    <span class="info-label">Dernière connexion :</span>
+                    <span class="info-value">
+                      {{ user.lastAccess ? (user.lastAccess | date:'dd/MM/yyyy HH:mm') : 'Jamais' }}
+                    </span>
+                  </div>
+                </div>
+                <div class="col-md-12 mb-2" *ngIf="isAdmin">
+                  <div class="info-item admin-info">
+                    <span class="info-label">Statut :</span>
+                    <span class="info-value" [class]="user.isActive ? 'status-active' : 'status-inactive'">
+                      {{ user.isActive ? 'Actif' : 'Inactif' }}
+                    </span>
+                  </div>
+                </div>
+                <div class="col-md-12 mb-2" *ngIf="isAdmin">
+                  <div class="info-item admin-info">
+                    <span class="info-label">Rôles :</span>
+                    <span class="info-value">
+                      <span class="role-badge" *ngFor="let role of user.roles">{{ role }}</span>
+                    </span>
+                  </div>
+                </div>
+                <div class="col-md-12 mb-2" *ngIf="isAdmin">
+                  <div class="info-item admin-info">
+                    <span class="info-label">Vérifié :</span>
+                    <span class="info-value" [class]="user.isVerified ? 'status-active' : 'status-inactive'">
+                      {{ user.isVerified ? 'Oui' : 'Non' }}
+                    </span>
                   </div>
                 </div>
               </div>
-            </ng-template>
+            </div>
           </div>
         </div>
 
@@ -182,7 +217,7 @@
                 <div class="stat-label">Quiz complétés</div>
               </div>
               <div class="stat-card warning">
-                <div class="stat-number">{{ userStatistics.averageScore }}</div>
+                <div class="stat-number">{{ userStatistics.averageScore }}/100</div>
                 <div class="stat-label">Score moyen</div>
               </div>
               <div class="stat-card secondary">

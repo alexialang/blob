@@ -6,6 +6,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 
 import { TuiTable } from '@taiga-ui/addon-table';
 import { TuiCell } from '@taiga-ui/layout';
@@ -26,7 +27,6 @@ import {
   TuiButton,
   TuiDataList,
 } from '@taiga-ui/core';
-import { TUI_CONFIRM } from '@taiga-ui/kit';
 
 import { catchError, of } from 'rxjs';
 
@@ -47,12 +47,11 @@ interface UserRow {
   active: boolean;
   organization: string;
   group: string;
-  stats: number;
+
   rights: string[];
   roles: string[];
   permissions: string[];
   joinedAt?: string;
-  totalConnections?: number;
 }
 
 @Component({
@@ -76,7 +75,6 @@ interface UserRow {
     UserRolesModalComponent,
   ],
   providers: [
-    { provide: TUI_CONFIRM, useValue: TUI_CONFIRM },
   ],
   templateUrl: './user-management.component.html',
   styleUrls: ['./user-management.component.scss'],
@@ -107,6 +105,7 @@ export class UserManagementComponent implements OnInit {
 
   public showRolesModal = false;
   public selectedUserForRoles: UserWithRoles | null = null;
+  public isDeleting = false; // Protection contre les appels multiples
   public availableRoles: UserRole[] = [
     {
       id: 1,
@@ -127,12 +126,16 @@ export class UserManagementComponent implements OnInit {
     private userService: UserManagementService,
     private dialogService: TuiDialogService,
     private cdr: ChangeDetectorRef,
-    private alerts: TuiAlertService
+    private alerts: TuiAlertService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
     this.generateRandomColor();
+    this.loadUsers();
+  }
 
+  loadUsers(): void {
     this.userService
       .getUsers()
       .pipe(
@@ -144,8 +147,7 @@ export class UserManagementComponent implements OnInit {
       .subscribe((users: any[]) => {
         this.allRows = users.map(u => {
           const joinDaysAgo = Math.floor(Math.random() * 365) + 1;
-          const totalConnections = Math.floor(Math.random() * 200) + 10;
-          
+
           return {
             id: u.id,
             selected: false,
@@ -160,15 +162,13 @@ export class UserManagementComponent implements OnInit {
               Array.isArray(u.groups) && u.groups.length
                 ? u.groups.map((g: any) => g.name).join(', ')
                 : '—',
-            stats: totalConnections,
+
             rights: (u.userPermissions ?? []).map((p: any) => p.permission),
             roles: u.roles ?? ['ROLE_USER'],
             permissions: (u.userPermissions ?? []).map((p: any) => p.permission),
-          quizs: u.quizs ?? [],
-          userAnswers: u.userAnswers ?? [],
-          badges: u.badges ?? [],
-            joinedAt: new Date(Date.now() - joinDaysAgo * 24 * 60 * 60 * 1000).toLocaleDateString('fr-FR'),
-            totalConnections: totalConnections
+
+            joinedAt: new Date(Date.now() - joinDaysAgo * 24 * 60 * 60 * 1000).toLocaleDateString('fr-FR')
+
           };
         });
         this.orgOptions = Array.from(new Set(this.allRows.map(r => r.organization))).sort();
@@ -283,46 +283,53 @@ export class UserManagementComponent implements OnInit {
   }
 
   confirmDelete(ids: number[]): void {
+    if (this.isDeleting) {
+      return;
+    }
+
     const count = ids.length;
-    this.dialogService
-      .open<boolean>(
-        TUI_CONFIRM,
-        {
-          label: 'Confirmation',
-          data: {
-            content: `Supprimer ${count} utilisateur${count > 1 ? 's' : ''} ?`,
-            yes: 'Supprimer',
-            no: 'Annuler',
-          },
-        }
-      )
-      .subscribe(confirmed => {
-        if (!confirmed) return;
-        this.userService.softDeleteUser(ids[0]).subscribe({
-          next: () => {
-            this.allRows = this.allRows.filter(r => !ids.includes(r.id));
-            this.applyFilters();
-            this.rows.forEach(r => r.selected = false);
-            this.cdr.markForCheck();
-            this.alerts.open('Suppression terminée', {
-              label: 'Info',
-              appearance: 'positive',
-              autoClose: 2000,
-            }).subscribe();
-          },
-          error: err => {
-            this.alerts.open('Échec de la suppression', {
-              label: 'Erreur',
-              appearance: 'danger',
-              autoClose: 2000,
-            }).subscribe();
-          },
-        });
-      });
+
+    const confirmed = window.confirm(`Anonymiser ${count} utilisateur${count > 1 ? 's' : ''} ? (Les données seront conservées mais l'utilisateur sera désactivé)`);
+
+    if (!confirmed) {
+      return;
+    }
+
+    this.isDeleting = true;
+
+    this.userService.anonymizeUser(ids[0]).subscribe({
+              next: () => {
+          this.isDeleting = false;
+
+        this.loadUsers();
+
+        this.rows.forEach(r => r.selected = false);
+        this.cdr.markForCheck();
+
+        this.alerts.open('Utilisateur anonymisé avec succès', {
+          label: 'Info',
+          appearance: 'positive',
+          autoClose: 2000,
+        }).subscribe();
+      },
+      error: (err) => {
+        this.isDeleting = false;
+
+        this.alerts.open('Échec de l\'anonymisation', {
+          label: 'Erreur',
+          appearance: 'danger',
+          autoClose: 2000,
+        }).subscribe();
+      },
+    });
   }
 
   onClick(): void {
     this.open = false;
+  }
+
+  viewUserProfile(userId: number): void {
+    this.router.navigate(['/profil', userId]);
   }
 
   openRolesModal(row: UserRow): void {
@@ -343,31 +350,7 @@ export class UserManagementComponent implements OnInit {
     this.cdr.markForCheck();
   }
 
-  getUserStats(row: any): string {
-    const quizCreated = row.quizs?.length || 0;
-    const quizAnswered = row.userAnswers?.length || 0;
-    const badgesCount = row.badges?.length || 0;
 
-    let averageScore = 0;
-    if (row.userAnswers && row.userAnswers.length > 0) {
-      const correctAnswers = row.userAnswers.filter((answer: any) => answer.isCorrect).length;
-      averageScore = Math.round((correctAnswers / row.userAnswers.length) * 100);
-    }
-    
-    if (quizAnswered > 0 && averageScore > 0) {
-      return `${quizAnswered} quiz • ${averageScore}/100`;
-    } else if (quizCreated > 0 && quizAnswered > 0) {
-      return `${quizCreated} créés • ${quizAnswered} réalisés`;
-    } else if (quizCreated > 0) {
-      return `${quizCreated} quiz créés`;
-    } else if (quizAnswered > 0) {
-      return `${quizAnswered} quiz réalisés`;
-    } else if (badgesCount > 0) {
-      return `${badgesCount} badges`;
-    } else {
-      return 'Aucune activité';
-    }
-  }
 
   saveUserRoles(changes: { userId: number; roles: string[]; permissions: string[] }): void {
     this.userService.updateUserRoles(changes.userId, changes.roles, changes.permissions)
@@ -379,10 +362,10 @@ export class UserManagementComponent implements OnInit {
             this.allRows[rowIndex].permissions = changes.permissions;
             this.allRows[rowIndex].rights = changes.permissions; // Pour la compatibilité avec l'affichage
           }
-          
+
           this.applyFilters();
           this.closeRolesModal();
-          
+
           this.alerts.open('Rôles mis à jour avec succès', {
             label: 'Succès',
             appearance: 'positive',

@@ -122,7 +122,8 @@
 
           <div class="form-group" *ngIf="invitationType === 'users'">
             <label>Choisir des utilisateurs ({{getSelectedUsersCount()}}/{{maxPlayers}})</label>
-            <div class="users-list">
+
+            <div class="users-list" *ngIf="availableUsers && availableUsers.length > 0; else noUsersMessage">
               <div
                 *ngFor="let user of availableUsers"
                 class="user-item"
@@ -140,6 +141,13 @@
                 </div>
               </div>
             </div>
+
+            <ng-template #noUsersMessage>
+              <div class="no-users-message" style="text-align: center; padding: 20px; color: #666;">
+                <p>Aucun utilisateur disponible dans votre entreprise.</p>
+                <p>Vérifiez que vous avez bien des collègues dans votre entreprise.</p>
+              </div>
+            </ng-template>
           </div>
         </div>
 

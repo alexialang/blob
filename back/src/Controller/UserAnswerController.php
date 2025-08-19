@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\UserAnswer;
 use App\Service\UserAnswerService;
+use App\Service\InputSanitizerService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -13,12 +14,10 @@ use OpenApi\Annotations as OA;
 #[Route('/api/user-answer')]
 class UserAnswerController extends AbstractController
 {
-    private UserAnswerService $userAnswerService;
-
-    public function __construct(UserAnswerService $userAnswerService)
-    {
-        $this->userAnswerService = $userAnswerService;
-    }
+    public function __construct(
+        private UserAnswerService $userAnswerService,
+        private InputSanitizerService $inputSanitizer
+    ) {}
 
     #[Route('/', name: 'user_answer_index', methods: ['GET'])]
     public function index(): JsonResponse
@@ -33,7 +32,10 @@ class UserAnswerController extends AbstractController
     {
         try {
             $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
-            $userAnswer = $this->userAnswerService->create($data);
+            
+            $sanitizedData = $this->inputSanitizer->sanitizeUserAnswerData($data);
+            
+            $userAnswer = $this->userAnswerService->create($sanitizedData);
 
             return $this->json($userAnswer, 201, [], ['groups' => ['user_answer:read']]);
         } catch (\JsonException $e) {
@@ -54,7 +56,10 @@ class UserAnswerController extends AbstractController
     {
         try {
             $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
-            $userAnswer = $this->userAnswerService->update($userAnswer, $data);
+            
+            $sanitizedData = $this->inputSanitizer->sanitizeUserAnswerData($data);
+            
+            $userAnswer = $this->userAnswerService->update($userAnswer, $sanitizedData);
 
             return $this->json($userAnswer, 200, [], ['groups' => ['user_answer:read']]);
         } catch (\JsonException $e) {
@@ -82,9 +87,11 @@ class UserAnswerController extends AbstractController
         try {
             $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
             
-            $data['user'] = $user;
+            $sanitizedData = $this->inputSanitizer->sanitizeUserAnswerData($data);
             
-            $userAnswer = $this->userAnswerService->saveGameResult($data);
+            $sanitizedData['user'] = $user;
+            
+            $userAnswer = $this->userAnswerService->saveGameResult($sanitizedData);
 
             return $this->json([
                 'message' => 'Résultat de jeu sauvegardé',

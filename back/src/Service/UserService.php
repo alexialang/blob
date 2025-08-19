@@ -25,9 +25,11 @@ class UserService
     private HttpClientInterface         $httpClient;
     private string                      $mailerFrom;
     private string                      $frontendUrl;
+    private string                      $recaptchaSecretKey;
 
     public function __construct(
         #[Autowire('%mailer_from%')]  string       $mailerFrom,
+        #[Autowire('%recaptcha_secret_key%')] string $recaptchaSecretKey,
         EntityManagerInterface        $em,
         UserRepository                $userRepository,
         UserPasswordHasherInterface   $passwordHasher,
@@ -44,6 +46,7 @@ class UserService
         $this->mailer         = $mailer;
         $this->httpClient     = $httpClient;
         $this->mailerFrom     = $mailerFrom;
+        $this->recaptchaSecretKey = $recaptchaSecretKey;
 
         $this->frontendUrl = rtrim($params->get('app.frontend_url'), '/');
     }
@@ -56,6 +59,38 @@ class UserService
 
         return $this->userRepository->findBy(['deletedAt' => null]);
     }
+
+    public function listWithStats(bool $includeDeleted = false): array
+    {
+        $users = $this->list($includeDeleted);
+        $usersWithStats = [];
+
+        foreach ($users as $user) {
+            $stats = $this->getUserStatistics($user);
+            $usersWithStats[] = [
+                'id' => $user->getId(),
+                'firstName' => $user->getFirstName(),
+                'lastName' => $user->getLastName(),
+                'email' => $user->getEmail(),
+                'isActive' => $user->isActive(),
+                'dateRegistration' => $user->getDateRegistration(),
+                'lastAccess' => $user->getLastAccess(),
+                'avatar' => $user->getAvatar(),
+                'company' => $user->getCompany(),
+                'groups' => $user->getGroups(),
+                'roles' => $user->getRoles(),
+                'permissions' => $user->getUserPermissions(),
+                'quizs' => $user->getQuizs(),
+                'userAnswers' => $user->getUserAnswers(),
+                'badges' => $user->getBadges(),
+                'stats' => $stats
+            ];
+        }
+
+        return $usersWithStats;
+    }
+
+
 
     public function find(int $id): ?User
     {
@@ -144,17 +179,17 @@ class UserService
         return $user;
     }
 
-
-    public function delete(User $user): void
+    public function anonymizeUser(User $user): void
     {
         $user->setDeletedAt(new \DateTimeImmutable());
         $user->setIsActive(false);
 
-        $user->setEmail('deleted_user_' . $user->getId() . '@example.com');
-        $user->setFirstName('Deleted');
-        $user->setLastName('User');
-        $user->setPassword('');
-        $user->setRoles([]);
+        $user->setEmail('anon_' . hash('sha256', $user->getEmail() . time()) . '@example.com');
+        $user->setFirstName('Utilisateur');
+        $user->setLastName('Anonyme');
+        $user->setPseudo('Utilisateur_' . substr(hash('sha256', $user->getId()), 0, 8));
+        $user->setPassword(''); // Rendre impossible la connexion
+        $user->setRoles(['ROLE_ANONYMOUS']); // Rôle minimal
 
         $this->em->flush();
     }
@@ -224,35 +259,58 @@ class UserService
 
     public function getUserStatistics(User $user): array
     {
-        $totalQuizzesCreated = $user->getQuizs()->count();
-        $totalQuizzesCompleted = $user->getUserAnswers()->count();
+        static $statsCache = [];
+        $userId = $user->getId();
         
-        $totalScore = 0;
-        $scoreHistory = [];
+        if (isset($statsCache[$userId])) {
+            return $statsCache[$userId];
+        }
+        
+        $totalQuizzesCreated = $user->getQuizs()->count();
+        
+        $uniqueQuizIds = [];
+        $quizScores = [];
+        $scoreHistory = []; 
         $categoryPerformance = [];
+        $totalAttempts = 0;
         
         foreach ($user->getUserAnswers() as $userAnswer) {
-            $score = $userAnswer->getTotalScore() ?? 0;
-            $totalScore += $score;
-            
-            $scoreHistory[] = [
-                'date' => $userAnswer->getDateAttempt()->format('Y-m-d'),
-                'score' => $score,
-                'quizTitle' => $userAnswer->getQuiz()?->getTitle() ?? 'Quiz inconnu'
-            ];
+            $quizId = $userAnswer->getQuiz()?->getId();
+            if ($quizId) {
+                $currentScore = $userAnswer->getTotalScore() ?? 0;
+                $totalAttempts++;
+                
+                if (!isset($quizScores[$quizId]) || $currentScore > $quizScores[$quizId]) {
+                    $quizScores[$quizId] = $currentScore;
+                }
+                
+                $scoreHistory[] = [
+                    'date' => $userAnswer->getDateAttempt()->format('Y-m-d H:i:s'),
+                    'score' => $currentScore,
+                    'quizTitle' => $userAnswer->getQuiz()?->getTitle() ?? 'Quiz inconnu',
+                    'quizId' => $quizId,
+                    'attemptNumber' => $this->getAttemptNumber($user, $quizId, $userAnswer->getDateAttempt())
+                ];
+            }
             
             if ($userAnswer->getQuiz() && $userAnswer->getQuiz()->getCategory()) {
                 $categoryName = $userAnswer->getQuiz()->getCategory()->getName();
                 if (!isset($categoryPerformance[$categoryName])) {
                     $categoryPerformance[$categoryName] = ['total' => 0, 'count' => 0];
                 }
-                $categoryPerformance[$categoryName]['total'] += $score;
-                $categoryPerformance[$categoryName]['count']++;
+                $categoryKey = $quizId . '_cat_' . $categoryName;
+                if (!isset($uniqueQuizIds[$categoryKey])) {
+                    $uniqueQuizIds[$categoryKey] = true;
+                    $categoryPerformance[$categoryName]['total'] += ($userAnswer->getTotalScore() ?? 0);
+                    $categoryPerformance[$categoryName]['count']++;
+                }
             }
         }
         
+        $totalQuizzesCompleted = count($quizScores);
+        
         usort($scoreHistory, function($a, $b) {
-            return strtotime($a['date']) - strtotime($b['date']);
+            return strtotime($b['date']) - strtotime($a['date']);
         });
         
         $categoryAverages = [];
@@ -264,12 +322,14 @@ class UserService
             ];
         }
         
+        $totalScore = array_sum($quizScores);
         $averageScore = $totalQuizzesCompleted > 0 ? round($totalScore / $totalQuizzesCompleted, 1) : 0;
         $badgesEarned = $user->getBadges()->count();
         
-        return [
+        $stats = [
             'totalQuizzesCreated' => $totalQuizzesCreated,
             'totalQuizzesCompleted' => $totalQuizzesCompleted,
+            'totalAttempts' => $totalAttempts,
             'totalScore' => $totalScore,
             'averageScore' => $averageScore,
             'badgesEarned' => $badgesEarned,
@@ -278,27 +338,57 @@ class UserService
             'scoreHistory' => $scoreHistory,
             'categoryPerformance' => $categoryAverages
         ];
+        
+        $statsCache[$userId] = $stats;
+        
+        return $stats;
+    }
+    
+    /**
+     * Détermine le numéro de tentative pour un quiz donné
+     */
+    private function getAttemptNumber(User $user, int $quizId, \DateTime $attemptDate): int
+    {
+        $attempts = [];
+        foreach ($user->getUserAnswers() as $userAnswer) {
+            if ($userAnswer->getQuiz()?->getId() === $quizId) {
+                $attempts[] = $userAnswer->getDateAttempt();
+            }
+        }
+        
+        usort($attempts, function($a, $b) {
+            return $a <=> $b;
+        });
+        
+        foreach ($attempts as $index => $date) {
+            if ($date == $attemptDate) {
+                return $index + 1;
+            }
+        }
+        
+        return 1;
     }
 
     public function getLeaderboard(int $limit, User $currentUser): array
     {
-        $users = $this->userRepository->createQueryBuilder('u')
-            ->where('u.deletedAt IS NULL')
-            ->andWhere('u.isActive = true')
-            ->getQuery()
-            ->getResult();
+        $users = $this->userRepository->findActiveUsersForLeaderboard();
 
         $leaderboardData = [];
         
         foreach ($users as $user) {
-            $totalScore = 0;
-            $quizzesCompleted = 0;
-            $totalAnswers = $user->getUserAnswers()->count();
+            $uniqueQuizIds = [];
+            $quizScores = [];
             
             foreach ($user->getUserAnswers() as $userAnswer) {
-                $totalScore += $userAnswer->getTotalScore() ?? 0;
-                $quizzesCompleted++;
+                $quizId = $userAnswer->getQuiz()?->getId();
+                if ($quizId && !isset($uniqueQuizIds[$quizId])) {
+                    $uniqueQuizIds[$quizId] = true;
+                    $quizScores[$quizId] = $userAnswer->getTotalScore() ?? 0;
+                }
             }
+            
+            $quizzesCompleted = count($quizScores);
+            $totalScore = array_sum($quizScores);
             
             $averageScore = $quizzesCompleted > 0 ? round($totalScore / $quizzesCompleted, 1) : 0;
             $badgesCount = $user->getBadges()->count();
@@ -358,16 +448,7 @@ class UserService
 
     public function getGameHistory(User $user): array
     {
-        $userAnswers = $this->em->getRepository(\App\Entity\UserAnswer::class)
-            ->createQueryBuilder('ua')
-            ->select('ua', 'q')
-            ->leftJoin('ua.quiz', 'q')
-            ->where('ua.user = :user')
-            ->setParameter('user', $user)
-            ->orderBy('ua.date_attempt', 'DESC')
-            ->setMaxResults(50)
-            ->getQuery()
-            ->getResult();
+        $userAnswers = $this->userRepository->findUserGameHistory($user, 50);
 
         $history = [];
         foreach ($userAnswers as $userAnswer) {
@@ -391,30 +472,31 @@ class UserService
     public function updateUserRoles(User $user, array $data): User
     {
         if (isset($data['roles']) && \is_array($data['roles'])) {
-            $roles = $data['roles'];
-            if (!in_array('ROLE_USER', $roles)) {
-                $roles[] = 'ROLE_USER';
-            }
-            $user->setRoles($roles);
+            $validRoles = $this->validateAndCleanRoles($data['roles']);
+            $user->setRoles($validRoles);
         }
 
         if (isset($data['permissions']) && \is_array($data['permissions'])) {
+            $validPermissions = [];
+            foreach ($data['permissions'] as $permission) {
+                try {
+                    $permissionEnum = \App\Enum\Permission::from($permission);
+                    $validPermissions[] = $permissionEnum;
+                } catch (\ValueError $e) {
+                    continue;
+                }
+            }
+            
             foreach ($user->getUserPermissions() as $userPermission) {
                 $this->em->remove($userPermission);
             }
             $this->em->flush();
 
-            foreach ($data['permissions'] as $permission) {
-                try {
-                    $userPermission = new \App\Entity\UserPermission();
-                    $userPermission->setUser($user);
-                    
-                    $permissionEnum = \App\Enum\Permission::from($permission);
-                    $userPermission->setPermission($permissionEnum);
-                    $this->em->persist($userPermission);
-                } catch (\ValueError $e) {
-                    continue;
-                }
+            foreach ($validPermissions as $permissionEnum) {
+                $userPermission = new \App\Entity\UserPermission();
+                $userPermission->setUser($user);
+                $userPermission->setPermission($permissionEnum);
+                $this->em->persist($userPermission);
             }
         }
 
@@ -422,14 +504,39 @@ class UserService
         return $user;
     }
 
+    /**
+     * Valide et nettoie les rôles utilisateur
+     * @param array $roles
+     * @return array
+     * @throws \InvalidArgumentException
+     */
+    private function validateAndCleanRoles(array $roles): array
+    {
+        $allowedRoles = ['ROLE_USER', 'ROLE_ADMIN'];
+        
+        $unauthorizedRoles = array_diff($roles, $allowedRoles);
+        if (!empty($unauthorizedRoles)) {
+            throw new \InvalidArgumentException(
+                'Rôles non autorisés détectés: ' . implode(', ', $unauthorizedRoles)
+            );
+        }
+        
+        $cleanRoles = array_unique($roles);
+        sort($cleanRoles);
+        
+        if (!in_array('ROLE_USER', $cleanRoles)) {
+            $cleanRoles[] = 'ROLE_USER';
+        }
+        
+        return $cleanRoles;
+    }
+
     public function verifyCaptcha(string $token): bool
     {
-        $secretKey = '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe';
-        
         try {
             $response = $this->httpClient->request('POST', 'https://www.google.com/recaptcha/api/siteverify', [
                 'body' => [
-                    'secret' => $secretKey,
+                    'secret' => $this->recaptchaSecretKey,
                     'response' => $token,
                 ],
             ]);
