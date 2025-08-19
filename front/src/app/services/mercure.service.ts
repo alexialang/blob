@@ -1,6 +1,5 @@
 import { Injectable, NgZone } from '@angular/core';
 import { BehaviorSubject, Subject } from 'rxjs';
-import { SecureLoggerService } from './secure-logger.service';
 
 @Injectable({
   providedIn: 'root'
@@ -15,10 +14,7 @@ export class MercureService {
   public gameEvent$ = new Subject<any>();
   public gameSync$ = new Subject<any>();
 
-  constructor(
-    private zone: NgZone,
-    private logger: SecureLoggerService
-  ) {}
+  constructor(private zone: NgZone) {}
 
   connect(): void {
 
@@ -45,7 +41,6 @@ export class MercureService {
 
     const userId = this.getCurrentUserId();
     if (!userId) {
-      this.logger.error('Pas d\'ID utilisateur pour la connexion Mercure');
       return;
     }
 
@@ -98,23 +93,18 @@ export class MercureService {
 
           this.zone.run(() => this.handleMessage(data));
         } catch (err) {
-          this.logger.error('Erreur parsing message Mercure', { error: err, rawData: event.data });
         }
       };
 
       this.eventSource.onerror = (error) => {
-        this.logger.error('Erreur connexion Mercure', error);
         this.isConnected$.next(false);
         this.disconnect();
       };
     } catch (error) {
-      this.logger.error('Erreur création EventSource', error);
     }
   }
 
   private handleMessage(data: any): void {
-
-
 
 
     if (data.type === 'invitation') {
