@@ -14,6 +14,9 @@ use App\Repository\UserAnswerRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Mercure\HubInterface;
 use Symfony\Component\Mercure\Update;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Exception\ValidationFailedException;
 
 class MultiplayerGameService
 {
@@ -25,7 +28,8 @@ class MultiplayerGameService
         private HubInterface $mercureHub,
         private RoomRepository $roomRepository,
         private GameSessionRepository $gameSessionRepository,
-        private UserAnswerRepository $userAnswerRepository
+        private UserAnswerRepository $userAnswerRepository,
+        private ValidatorInterface $validator
     ) {}
 
     private function getUserDisplayName(User $user): string
@@ -41,6 +45,8 @@ class MultiplayerGameService
 
     public function createRoom(User $creator, int $quizId, int $maxPlayers = 4, bool $isTeamMode = false, ?string $roomName = null): array
     {
+        $this->validateRoomData(['quizId' => $quizId, 'maxPlayers' => $maxPlayers, 'isTeamMode' => $isTeamMode, 'roomName' => $roomName]);
+        
         if ($quizId <= 0) {
             throw new \Exception('Quiz ID invalide');
         }
@@ -81,6 +87,8 @@ class MultiplayerGameService
 
     public function joinRoom(string $roomCode, User $user, ?string $teamName = null): array
     {
+        $this->validateJoinRoomData(['teamName' => $teamName]);
+        
         $room = $this->roomRepository->findByRoomCode($roomCode);
         if (!$room) {
             throw new \Exception('Salon non trouvé');
@@ -246,6 +254,8 @@ class MultiplayerGameService
 
     public function submitAnswer(string $gameCode, User $user, int $questionId, $answer, int $timeSpent = 0): array
     {
+        $this->validateAnswerData(['questionId' => $questionId, 'answer' => $answer, 'timeSpent' => $timeSpent]);
+        
         $gameSession = $this->gameSessionRepository->findByGameCode($gameCode);
         if (!$gameSession) {
             throw new \Exception('Jeu non trouvé');
@@ -470,6 +480,8 @@ class MultiplayerGameService
 
     public function sendInvitation(string $roomCode, User $sender, array $invitedUserIds): void
     {
+        $this->validateInvitationData(['invitedUserIds' => $invitedUserIds]);
+        
         $room = $this->roomRepository->findByRoomCode($roomCode);
         if (!$room) {
             throw new \Exception('Salon non trouvé');
@@ -578,6 +590,8 @@ class MultiplayerGameService
 
             $this->mercureHub->publish($update);
         } catch (\Exception $e) {
+            // Log l'erreur pour debug
+            error_log("Erreur Mercure pour le topic {$topic}: " . $e->getMessage());
         }
     }
 
@@ -836,4 +850,89 @@ class MultiplayerGameService
         $this->endGame($gameSession);
     }
 
+    private function validateRoomData(array $data): void
+    {
+        $constraints = new Assert\Collection([
+            'quizId' => [
+                new Assert\NotBlank(['message' => 'L\'ID du quiz est requis']),
+                new Assert\Type(['type' => 'integer', 'message' => 'L\'ID du quiz doit être un entier'])
+            ],
+            'maxPlayers' => [
+                new Assert\Optional([
+                    new Assert\Type(['type' => 'integer', 'message' => 'Le nombre maximum de joueurs doit être un entier']),
+                    new Assert\Range(['min' => 2, 'max' => 10, 'notInRangeMessage' => 'Le nombre de joueurs doit être entre 2 et 10'])
+                ])
+            ],
+            'isTeamMode' => [
+                new Assert\Optional([
+                    new Assert\Type(['type' => 'bool', 'message' => 'Le mode équipe doit être un booléen'])
+                ])
+            ],
+            'roomName' => [
+                new Assert\Optional([
+                    new Assert\Length(['max' => 255, 'maxMessage' => 'Le nom de la salle ne peut pas dépasser 255 caractères'])
+                ])
+            ]
+        ]);
+
+        $errors = $this->validator->validate($data, $constraints);
+        if (count($errors) > 0) {
+            throw new ValidationFailedException($constraints, $errors);
+        }
+    }
+
+    private function validateAnswerData(array $data): void
+    {
+        $constraints = new Assert\Collection([
+            'questionId' => [
+                new Assert\NotBlank(['message' => 'L\'ID de la question est requis']),
+                new Assert\Type(['type' => 'integer', 'message' => 'L\'ID de la question doit être un entier'])
+            ],
+            'answer' => [
+                new Assert\NotBlank(['message' => 'La réponse est requise']),
+                new Assert\Type(['type' => 'integer', 'message' => 'La réponse doit être un entier'])
+            ],
+            'timeSpent' => [
+                new Assert\Optional([
+                    new Assert\Type(['type' => 'integer', 'message' => 'Le temps passé doit être un entier'])
+                ])
+            ]
+        ]);
+
+        $errors = $this->validator->validate($data, $constraints);
+        if (count($errors) > 0) {
+            throw new ValidationFailedException($constraints, $errors);
+        }
+    }
+
+    private function validateJoinRoomData(array $data): void
+    {
+        $constraints = new Assert\Collection([
+            'teamName' => [
+                new Assert\Optional([
+                    new Assert\Length(['max' => 100, 'maxMessage' => 'Le nom de l\'équipe ne peut pas dépasser 100 caractères'])
+                ])
+            ]
+        ]);
+
+        $errors = $this->validator->validate($data, $constraints);
+        if (count($errors) > 0) {
+            throw new ValidationFailedException($constraints, $errors);
+        }
+    }
+
+    private function validateInvitationData(array $data): void
+    {
+        $constraints = new Assert\Collection([
+            'invitedUserIds' => [
+                new Assert\NotBlank(['message' => 'Les utilisateurs à inviter sont requis']),
+                new Assert\Type(['type' => 'array', 'message' => 'Les utilisateurs à inviter doivent être un tableau'])
+            ]
+        ]);
+
+        $errors = $this->validator->validate($data, $constraints);
+        if (count($errors) > 0) {
+            throw new ValidationFailedException($constraints, $errors);
+        }
+    }
 }

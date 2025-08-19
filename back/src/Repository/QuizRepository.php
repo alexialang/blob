@@ -95,4 +95,53 @@ class QuizRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+
+
+    public function getPublicLeaderboard(Quiz $quiz): array
+    {
+        $leaderboard = $this->getEntityManager()
+            ->createQueryBuilder()
+            ->select('u.firstName, u.lastName, u.pseudo, c.name as companyName, ua.total_score as score, ua.date_attempt')
+            ->from('App\Entity\UserAnswer', 'ua')
+            ->join('ua.user', 'u')
+            ->leftJoin('u.company', 'c')
+            ->where('ua.quiz = :quiz')
+            ->setParameter('quiz', $quiz)
+            ->orderBy('ua.total_score', 'DESC')
+            ->addOrderBy('ua.date_attempt', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        $userBestScores = [];
+        foreach ($leaderboard as $entry) {
+            $userId = $entry['firstName'] . ' ' . $entry['lastName'];
+            if (!isset($userBestScores[$userId]) || $entry['score'] > $userBestScores[$userId]['score']) {
+                $userBestScores[$userId] = $entry;
+            }
+        }
+
+        uasort($userBestScores, function($a, $b) {
+            return $b['score'] <=> $a['score'];
+        });
+
+        $formattedLeaderboard = [];
+        $rank = 1;
+        foreach ($userBestScores as $entry) {
+            $displayName = $entry['pseudo'] ?? ($entry['firstName'] . ' ' . substr($entry['lastName'], 0, 1) . '.');
+            $formattedLeaderboard[] = [
+                'rank' => $rank,
+                'name' => $displayName,
+                'company' => $entry['companyName'] ?? 'Indépendant',
+                'score' => (int)$entry['score'],
+                'isCurrentUser' => false
+            ];
+            $rank++;
+        }
+
+        return [
+            'leaderboard' => $formattedLeaderboard,
+            'totalPlayers' => count($userBestScores)
+        ];
+    }
 }

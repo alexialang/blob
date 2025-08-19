@@ -13,11 +13,14 @@ use App\Event\QuizCreatedEvent;
 use App\Repository\CategoryQuizRepository;
 use App\Repository\GroupRepository;
 use App\Repository\QuizRepository;
+use App\Repository\QuizRatingRepository;
 use App\Repository\TypeQuestionRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Exception\ValidationFailedException;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 class QuizService
@@ -37,6 +40,7 @@ class QuizService
         CategoryQuizRepository $categoryQuizRepository,
         TypeQuestionRepository $typeQuestionRepository,
         GroupRepository $groupRepository,
+        QuizRatingRepository $quizRatingRepository,
         ValidatorInterface $validator,
         LoggerInterface $logger,
         EventDispatcherInterface $eventDispatcher
@@ -46,6 +50,7 @@ class QuizService
         $this->categoryQuizRepository = $categoryQuizRepository;
         $this->typeQuestionRepository = $typeQuestionRepository;
         $this->groupRepository = $groupRepository;
+        $this->quizRatingRepository = $quizRatingRepository;
         $this->validator = $validator;
         $this->logger = $logger;
         $this->eventDispatcher = $eventDispatcher;
@@ -238,32 +243,45 @@ class QuizService
 
     private function validateQuizData(array $data): void
     {
-        if (empty($data['title'])) {
-            throw new BadRequestException('Le titre du quiz est requis');
-        }
+        $constraints = new Assert\Collection([
+            'fields' => [
+                'title' => [
+                    new Assert\NotBlank(['message' => 'Le titre est requis']),
+                    new Assert\Length(['min' => 3, 'max' => 255, 'minMessage' => 'Le titre doit contenir au moins 3 caractères', 'maxMessage' => 'Le titre ne peut pas dépasser 255 caractères'])
+                ],
+                'description' => [
+                    new Assert\NotBlank(['message' => 'La description est requise']),
+                    new Assert\Length(['min' => 10, 'max' => 1000, 'minMessage' => 'La description doit contenir au moins 10 caractères', 'maxMessage' => 'La description ne peut pas dépasser 1000 caractères'])
+                ],
+                'status' => [
+                    new Assert\NotBlank(['message' => 'Le statut est requis'])
+                ],
+                'isPublic' => [
+                    new Assert\Optional([
+                        new Assert\Type(['type' => 'bool', 'message' => 'Le champ isPublic doit être un booléen'])
+                    ])
+                ],
+                'category' => [
+                    new Assert\Optional([
+                        new Assert\Type(['type' => 'integer', 'message' => 'L\'ID de la catégorie doit être un entier'])
+                    ])
+                ],
+                'groups' => [
+                    new Assert\Optional([
+                        new Assert\Type(['type' => 'array', 'message' => 'Les groupes doivent être un tableau'])
+                    ])
+                ],
+                'questions' => [
+                    new Assert\Optional([
+                        new Assert\Type(['type' => 'array', 'message' => 'Les questions doivent être un tableau'])
+                    ])
+                ]
+            ]
+        ]);
 
-        if (empty($data['description'])) {
-            throw new BadRequestException('La description du quiz est requise');
-        }
-
-        if (empty($data['status'])) {
-            throw new BadRequestException('Le statut du quiz est requis');
-        }
-
-        if (!isset($data['isPublic']) || !is_bool($data['isPublic'])) {
-            throw new BadRequestException('Le statut public/privé du quiz est requis');
-        }
-
-        if (isset($data['questions']) && !is_array($data['questions'])) {
-            throw new BadRequestException('Les questions doivent être un tableau');
-        }
-
-        if (empty($data['questions'])) {
-            throw new BadRequestException('Au moins une question est requise');
-        }
-
-        foreach ($data['questions'] as $index => $questionData) {
-            $this->validateQuestionData($questionData, $index);
+        $errors = $this->validator->validate($data, $constraints);
+        if (count($errors) > 0) {
+            throw new ValidationFailedException($constraints, $errors);
         }
     }
 
@@ -273,9 +291,18 @@ class QuizService
             throw new BadRequestException("La question #{$index} est requise");
         }
 
-        $validTypes = array_column(TypeQuestionName::cases(), 'value');
-        if (!in_array($questionData['type_question'], $validTypes)) {
-            throw new BadRequestException("Type de question invalide : {$questionData['type_question']}");
+        if (isset($questionData['type_question_id']) && is_numeric($questionData['type_question_id'])) {
+            $typeQuestion = $this->em->getRepository(TypeQuestion::class)->find($questionData['type_question_id']);
+            if (!$typeQuestion) {
+                throw new BadRequestException("Type de question avec l'ID {$questionData['type_question_id']} introuvable");
+            }
+        } elseif (isset($questionData['type_question']) && is_string($questionData['type_question'])) {
+            $validTypes = array_column(TypeQuestionName::cases(), 'value');
+            if (!in_array($questionData['type_question'], $validTypes)) {
+                throw new BadRequestException("Type de question invalide : {$questionData['type_question']}");
+            }
+        } else {
+            throw new BadRequestException("Type de question manquant (type_question ou type_question_id requis)");
         }
 
         if (empty($questionData['answers']) || !is_array($questionData['answers'])) {
@@ -292,7 +319,7 @@ class QuizService
     private function validateAnswersByType(array $questionData, int $index): void
     {
         $answers = $questionData['answers'];
-        $type = $questionData['type_question'];
+        $type = $this->getQuestionTypeFromData($questionData);
 
         foreach ($answers as $answerIndex => $answerData) {
             if (empty($answerData['answer'])) {
@@ -324,6 +351,22 @@ class QuizService
                     throw new BadRequestException("Au moins une réponse correcte est requise pour la question #{$index}");
                 }
         }
+    }
+
+    private function getQuestionTypeFromData(array $questionData): string
+    {
+        if (isset($questionData['type_question_id']) && is_numeric($questionData['type_question_id'])) {
+            $typeQuestion = $this->em->getRepository(TypeQuestion::class)->find($questionData['type_question_id']);
+            if ($typeQuestion) {
+                return $typeQuestion->getName();
+            }
+        }
+
+        if (isset($questionData['type_question']) && is_string($questionData['type_question'])) {
+            return $questionData['type_question'];
+        }
+
+        throw new BadRequestException('Type de question manquant ou invalide');
     }
 
     private function validateFindIntruderAnswers(array $answers, int $index): void
@@ -382,7 +425,7 @@ class QuizService
 
     private function createQuestion(Quiz $quiz, array $questionData): Question
     {
-        $typeQuestion = $this->findOrCreateTypeQuestion($questionData['type_question']);
+        $typeQuestion = $this->getTypeQuestionFromData($questionData);
 
         $question = new Question();
         $question->setQuestion($questionData['question']);
@@ -406,6 +449,22 @@ class QuizService
         $this->em->flush();
 
         return $question;
+    }
+
+    private function getTypeQuestionFromData(array $questionData): TypeQuestion
+    {
+        if (isset($questionData['type_question_id']) && is_numeric($questionData['type_question_id'])) {
+            $typeQuestion = $this->em->getRepository(TypeQuestion::class)->find($questionData['type_question_id']);
+            if ($typeQuestion) {
+                return $typeQuestion;
+            }
+        }
+
+        if (isset($questionData['type_question']) && is_string($questionData['type_question'])) {
+            return $this->findOrCreateTypeQuestion($questionData['type_question']);
+        }
+
+        throw new BadRequestException('Type de question manquant ou invalide');
     }
 
     private function createAnswer(Question $question, array $answerData): Answer
@@ -520,5 +579,21 @@ class QuizService
             $this->em->rollback();
             throw new BadRequestException('Erreur lors de la mise à jour du quiz: ' . $e->getMessage());
         }
+    }
+
+    public function getAverageRating(Quiz $quiz): array
+    {
+        $averageRating = $this->quizRatingRepository->findAverageRatingForQuiz($quiz->getId());
+        $ratingCount = $this->quizRatingRepository->countRatingsForQuiz($quiz->getId());
+
+        return [
+            'averageRating' => $averageRating ?? 0,
+            'ratingCount' => $ratingCount
+        ];
+    }
+
+    public function getPublicLeaderboard(Quiz $quiz): array
+    {
+        return $this->quizRepository->getPublicLeaderboard($quiz);
     }
 }

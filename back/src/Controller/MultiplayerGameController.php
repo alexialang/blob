@@ -3,8 +3,9 @@
 namespace App\Controller;
 
 use App\Service\MultiplayerGameService;
-use App\Service\InputSanitizerService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+
+use Symfony\Component\Validator\Exception\ValidationFailedException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -16,8 +17,7 @@ class MultiplayerGameController extends AbstractController
 {
     public function __construct(
         private MultiplayerGameService $multiplayerService,
-        private InputSanitizerService $inputSanitizer
-    ) {
+        ) {
     }
 
     #[Route('/room/create', name: 'create_game_room', methods: ['POST'])]
@@ -26,18 +26,16 @@ class MultiplayerGameController extends AbstractController
         try {
             $data = json_decode($request->getContent(), true);
 
-            $sanitizedData = $this->inputSanitizer->sanitizeMultiplayerGameData($data);
-            
             $user = $this->getUser();
             
             if (!$user) {
                 return $this->json(['error' => 'Utilisateur non connecté'], 401);
             }
             
-            $quizId = $sanitizedData['quizId'] ?? 0;
-            $maxPlayers = $sanitizedData['maxPlayers'] ?? 4;
-            $isTeamMode = $sanitizedData['isTeamMode'] ?? false;
-            $roomName = $sanitizedData['roomName'] ?? null;
+            $quizId = $data['quizId'] ?? 0;
+            $maxPlayers = $data['maxPlayers'] ?? 4;
+            $isTeamMode = $data['isTeamMode'] ?? false;
+            $roomName = $data['roomName'] ?? null;
             
             $room = $this->multiplayerService->createRoom(
                 $user,
@@ -48,6 +46,12 @@ class MultiplayerGameController extends AbstractController
             );
 
             return $this->json($room);
+        } catch (ValidationFailedException $e) {
+            $errorMessages = [];
+            foreach ($e->getViolations() as $violation) {
+                $errorMessages[] = $violation->getMessage();
+            }
+            return $this->json(['error' => 'Données invalides', 'details' => $errorMessages], 400);
         } catch (\Exception $e) {
             return $this->json(['error' => $e->getMessage()], 500);
         }
@@ -56,15 +60,19 @@ class MultiplayerGameController extends AbstractController
     #[Route('/room/{roomId}/join', name: 'join_game_room', methods: ['POST'])]
     public function joinRoom(string $roomId, Request $request): JsonResponse
     {
-        $data = json_decode($request->getContent(), true);
-
-        $sanitizedData = $this->inputSanitizer->sanitizeMultiplayerGameData($data);
-        
-        $user = $this->getUser();
-        
         try {
-            $room = $this->multiplayerService->joinRoom($roomId, $user, $sanitizedData['teamName'] ?? null);
+            $data = json_decode($request->getContent(), true);
+            
+            $user = $this->getUser();
+        
+            $room = $this->multiplayerService->joinRoom($roomId, $user, $data['teamName'] ?? null);
             return $this->json($room);
+        } catch (ValidationFailedException $e) {
+            $errorMessages = [];
+            foreach ($e->getViolations() as $violation) {
+                $errorMessages[] = $violation->getMessage();
+            }
+            return $this->json(['error' => 'Données invalides', 'details' => $errorMessages], 400);
         } catch (\Exception $e) {
             return $this->json(['error' => $e->getMessage()], 400);
         }
@@ -110,21 +118,25 @@ class MultiplayerGameController extends AbstractController
     #[Route('/game/{gameId}/answer', name: 'submit_multiplayer_answer', methods: ['POST'])]
     public function submitAnswer(string $gameId, Request $request): JsonResponse
     {
-        $data = json_decode($request->getContent(), true);
-
-        $sanitizedData = $this->inputSanitizer->sanitizeMultiplayerGameData($data);
-        
-        $user = $this->getUser();
-        
         try {
+            $data = json_decode($request->getContent(), true);
+            
+            $user = $this->getUser();
+        
             $result = $this->multiplayerService->submitAnswer(
                 $gameId,
                 $user,
-                $sanitizedData['questionId'],
-                $sanitizedData['answer'],
-                $sanitizedData['timeSpent'] ?? 0
+                $data['questionId'],
+                $data['answer'],
+                $data['timeSpent'] ?? 0
             );
             return $this->json($result);
+        } catch (ValidationFailedException $e) {
+            $errorMessages = [];
+            foreach ($e->getViolations() as $violation) {
+                $errorMessages[] = $violation->getMessage();
+            }
+            return $this->json(['error' => 'Données invalides', 'details' => $errorMessages], 400);
         } catch (\Exception $e) {
             return $this->json(['error' => $e->getMessage()], 400);
         }
@@ -180,20 +192,23 @@ class MultiplayerGameController extends AbstractController
     #[Route('/invite/{roomId}', name: 'send_room_invitation', methods: ['POST'])]
     public function sendInvitation(string $roomId, Request $request): JsonResponse
     {
-        $data = json_decode($request->getContent(), true);
-
-        $sanitizedData = $this->inputSanitizer->sanitizeMultiplayerGameData($data);
-        
-        $user = $this->getUser();
-        
         try {
-            $this->multiplayerService->sendInvitation($roomId, $user, $sanitizedData['invitedUserIds']);
+            $data = json_decode($request->getContent(), true);
+            
+            $user = $this->getUser();
+        
+            $this->multiplayerService->sendInvitation($roomId, $user, $data['invitedUserIds']);
             return $this->json(['success' => true]);
+        } catch (ValidationFailedException $e) {
+            $errorMessages = [];
+            foreach ($e->getViolations() as $violation) {
+                $errorMessages[] = $violation->getMessage();
+            }
+            return $this->json(['error' => 'Données invalides', 'details' => $errorMessages], 400);
         } catch (\Exception $e) {
             return $this->json(['error' => $e->getMessage()], 400);
         }
     }
-
 
     #[Route('/game/{gameId}/end', name: 'end_game', methods: ['POST'])]
     public function endGame(string $gameId): JsonResponse
