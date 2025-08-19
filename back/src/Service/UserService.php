@@ -105,18 +105,13 @@ class UserService
 
     public function create(array $data): User
     {
+        // Validation des données avec Symfony
         $this->validateUserData($data);
-
-        foreach (['firstName', 'lastName', 'email', 'password'] as $field) {
-            if (empty($data[$field]) || !\is_string($data[$field])) {
-                throw new \InvalidArgumentException(sprintf('Le champ "%s" est obligatoire.', $field));
-            }
-        }
-
-
-        $existing = $this->userRepository->findOneBy(['email' => $data['email']]);
-        if (null !== $existing) {
-            throw new \InvalidArgumentException('Cette adresse e-mail est déjà utilisée.');
+        
+        // Vérifier si l'email existe déjà
+        $existingUser = $this->userRepository->findOneBy(['email' => $data['email']]);
+        if ($existingUser) {
+            throw new \InvalidArgumentException('Cet email est déjà utilisé');
         }
 
 
@@ -148,8 +143,17 @@ class UserService
 
     public function update(User $user, array $data): User
     {
+        // Validation des données avec Symfony
         $this->validateUserData($data);
         
+        // Si l'email change, vérifier qu'il n'existe pas déjà
+        if (isset($data['email']) && $data['email'] !== $user->getEmail()) {
+            $existingUser = $this->userRepository->findOneBy(['email' => $data['email']]);
+            if ($existingUser) {
+                throw new \InvalidArgumentException('Cet email est déjà utilisé');
+            }
+        }
+
         if (isset($data['email']) && \is_string($data['email'])) {
             $user->setEmail($data['email']);
         }
@@ -203,6 +207,9 @@ class UserService
         $this->em->flush();
     }
 
+
+
+
     public function sendEmail(string $email, string $firstName, string $confirmationToken): void
     {
         $confirmationUrl = $this->frontendUrl . '/confirmation-compte/' . $confirmationToken;
@@ -241,6 +248,15 @@ class UserService
 
     public function updateProfile(User $user, array $data): User
     {
+        $this->validateUserData($data);
+        
+        if (isset($data['email']) && $data['email'] !== $user->getEmail()) {
+            $existingUser = $this->userRepository->findOneBy(['email' => $data['email']]);
+            if ($existingUser) {
+                throw new \InvalidArgumentException('Cet email est déjà utilisé');
+            }
+        }
+        
         if (isset($data['pseudo']) && \is_string($data['pseudo'])) {
             $user->setPseudo($data['pseudo']);
         }

@@ -1,5 +1,6 @@
 import { Injectable, NgZone } from '@angular/core';
 import { BehaviorSubject, Subject } from 'rxjs';
+import { SecureLoggerService } from './secure-logger.service';
 
 @Injectable({
   providedIn: 'root'
@@ -14,25 +15,26 @@ export class MercureService {
   public gameEvent$ = new Subject<any>();
   public gameSync$ = new Subject<any>();
 
-  constructor(private zone: NgZone) {
-  
-  }
+  constructor(
+    private zone: NgZone,
+    private logger: SecureLoggerService
+  ) {}
 
   connect(): void {
-  
+
     if (this.eventSource) {
-      if (this.eventSource.readyState === EventSource.OPEN || 
+      if (this.eventSource.readyState === EventSource.OPEN ||
           this.eventSource.readyState === EventSource.CONNECTING) {
 
         return;
       }
-      
+
       this.eventSource.close();
     }
 
 
 
-    
+
     this.cleanupOldRoomData();
 
     const token = localStorage.getItem('JWT_TOKEN');
@@ -43,7 +45,7 @@ export class MercureService {
 
     const userId = this.getCurrentUserId();
     if (!userId) {
-      console.error('❌ Pas d\'ID utilisateur');
+      this.logger.error('Pas d\'ID utilisateur pour la connexion Mercure');
       return;
     }
 
@@ -88,32 +90,31 @@ export class MercureService {
 
       this.eventSource.onmessage = (event) => {
 
-        
-        
+
+
 
         try {
           const data = JSON.parse(event.data);
 
           this.zone.run(() => this.handleMessage(data));
         } catch (err) {
-          console.error('❌ Erreur parsing:', err);
-          console.error('❌ Raw data:', event.data);
+          this.logger.error('Erreur parsing message Mercure', { error: err, rawData: event.data });
         }
       };
 
       this.eventSource.onerror = (error) => {
-        console.error('❌ ERREUR MERCURE:', error);
+        this.logger.error('Erreur connexion Mercure', error);
         this.isConnected$.next(false);
         this.disconnect();
       };
     } catch (error) {
-      console.error('❌ Erreur création EventSource:', error);
+      this.logger.error('Erreur création EventSource', error);
     }
   }
 
   private handleMessage(data: any): void {
 
-    
+
 
 
     if (data.type === 'invitation') {
@@ -176,7 +177,7 @@ export class MercureService {
       this.eventSource.close();
       this.eventSource = undefined;
       this.isConnected$.next(false);
-  
+
     }
   }
 
@@ -219,7 +220,7 @@ export class MercureService {
 
     const roomId = sessionStorage.getItem('currentRoomId');
     if (roomId) {
-      
+
       return roomId;
     }
 
@@ -242,9 +243,9 @@ export class MercureService {
   disconnectFromGame(): void {
 
     localStorage.removeItem('current_game_id');
-    
+
     setTimeout(() => {
-      this.connect(); // Reconnexion sans les topics de jeu
+      this.connect();
     }, 100);
   }
 

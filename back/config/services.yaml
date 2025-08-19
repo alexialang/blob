@@ -1,3 +1,4 @@
+
 parameters:
     app.frontend_url: 'https://angular.dev.local'
     mailer_from: 'no-reply@exemple.com'
@@ -6,7 +7,8 @@ parameters:
 services:
     _defaults:
         autowire: true
-        autoconfigure: true
+        autoconfigure: true c.
+
     App\:
         resource: '../src/'
         exclude:

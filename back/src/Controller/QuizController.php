@@ -4,9 +4,8 @@ namespace App\Controller;
 
 use App\Entity\Quiz;
 use App\Service\QuizService;
-use App\Service\InputSanitizerService;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Validator\Exception\ValidationFailedException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -21,9 +20,7 @@ class QuizController extends AbstractController
     public function __construct(
         private QuizService $quizService,
         private LoggerInterface $logger,
-        private EntityManagerInterface $entityManager,
-        private InputSanitizerService $inputSanitizer
-    ) {}
+        ) {}
 
     #[Route('/quiz/list', name: 'quiz_index', methods: ['GET'])]
     public function index(): JsonResponse
@@ -47,25 +44,25 @@ class QuizController extends AbstractController
     {
         try {
             $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
+
+            $user = $this->getUser();
+
+            if (!$user) {
+                return $this->json(['error' => 'User not authenticated'], 401);
+            }
+
+            $quiz = $this->quizService->createWithQuestions($data, $user);
+
+            return $this->json($quiz, 201, [], ['groups' => ['quiz:read']]);
         } catch (\JsonException $e) {
             return $this->json(['error' => 'Invalid JSON'], 400);
+        } catch (ValidationFailedException $e) {
+            $errorMessages = [];
+            foreach ($e->getViolations() as $violation) {
+                $errorMessages[] = $violation->getMessage();
+            }
+            return $this->json(['error' => 'Données invalides', 'details' => $errorMessages], 400);
         }
-
-        $user = $this->getUser();
-
-        if (!$user) {
-            return $this->json(['error' => 'User not authenticated'], 401);
-        }
-
-        try {
-            $sanitizedData = $this->sanitizeQuizInput($data);
-        } catch (\InvalidArgumentException $e) {
-            return $this->json(['error' => 'Données invalides: ' . $e->getMessage()], 400);
-        }
-
-        $quiz = $this->quizService->createWithQuestions($sanitizedData, $user);
-
-        return $this->json($quiz, 201, [], ['groups' => ['quiz:read']]);
     }
 
     #[Route('/quiz/organized', name: 'quiz_organized', methods: ['GET'])]
@@ -82,7 +79,7 @@ class QuizController extends AbstractController
 
             $recentQuizzes = $this->quizService->getMostRecentQuizzes(6);
 
-            $allQuizzes = $this->quizService->list(false); // Seulement les quiz publics
+            $allQuizzes = $this->quizService->list(false);
             $privateQuizzes = [];
             if ($user) {
                 $privateQuizzes = $this->quizService->getPrivateQuizzesForUser($user);
@@ -206,110 +203,14 @@ class QuizController extends AbstractController
     #[Route('/quiz/{id}/average-rating', name: 'quiz_average_rating', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function getAverageRating(Quiz $quiz): JsonResponse
     {
-        $result = $this->entityManager
-            ->createQuery('
-                SELECT AVG(qr.rating) as averageRating, COUNT(qr.id) as ratingCount
-                FROM App\Entity\QuizRating qr 
-                WHERE qr.quiz = :quiz
-            ')
-            ->setParameter('quiz', $quiz)
-            ->getSingleResult();
-
-        return $this->json([
-            'averageRating' => round($result['averageRating'] ?? 0, 1),
-            'ratingCount' => $result['ratingCount'] ?? 0
-        ]);
+        $result = $this->quizService->getAverageRating($quiz);
+        return $this->json($result);
     }
 
     #[Route('/quiz/{id}/public-leaderboard', name: 'quiz_public_leaderboard', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function getPublicLeaderboard(Quiz $quiz): JsonResponse
     {
-        $leaderboard = $this->entityManager
-            ->createQuery('
-                SELECT u.firstName, u.lastName, u.pseudo, c.name as companyName, 
-                       ua.total_score as score, ua.date_attempt
-                FROM App\Entity\UserAnswer ua
-                JOIN ua.user u
-                LEFT JOIN u.company c
-                WHERE ua.quiz = :quiz
-                ORDER BY ua.total_score DESC, ua.date_attempt ASC
-            ')
-            ->setParameter('quiz', $quiz)
-            ->getResult();
-
-        $userBestScores = [];
-        foreach ($leaderboard as $entry) {
-            $userId = $entry['firstName'] . ' ' . $entry['lastName'];
-            if (!isset($userBestScores[$userId]) || $entry['score'] > $userBestScores[$userId]['score']) {
-                $userBestScores[$userId] = $entry;
-            }
-        }
-
-        uasort($userBestScores, function($a, $b) {
-            return $b['score'] <=> $a['score'];
-        });
-
-        $formattedLeaderboard = [];
-        $rank = 1;
-        foreach ($userBestScores as $entry) {
-            $displayName = $entry['pseudo'] ?? ($entry['firstName'] . ' ' . substr($entry['lastName'], 0, 1) . '.');
-            $formattedLeaderboard[] = [
-                'rank' => $rank,
-                'name' => $displayName,
-                'company' => $entry['companyName'] ?? 'Indépendant',
-                'score' => (int)$entry['score'],
-                'isCurrentUser' => false
-            ];
-            $rank++;
-        }
-
-        return $this->json([
-            'leaderboard' => $formattedLeaderboard,
-            'totalPlayers' => count($userBestScores)
-        ]);
-    }
-
-    /**
-     * Sanitise et valide les données d'entrée d'un quiz
-     * @param array $data
-     * @return array
-     * @throws \InvalidArgumentException
-     */
-    private function sanitizeQuizInput(array $data): array
-    {
-        // ✅ VALIDATION DES CHAMPS OBLIGATOIRES
-        $requiredFields = ['title', 'description'];
-        foreach ($requiredFields as $field) {
-            if (!isset($data[$field]) || empty(trim($data[$field]))) {
-                throw new \InvalidArgumentException("Le champ '$field' est obligatoire");
-            }
-        }
-
-        // ✅ SANITISATION VIA LE SERVICE SPÉCIALISÉ
-        $sanitizedData = $this->inputSanitizer->sanitizeQuizData($data);
-
-        // ✅ VALIDATION DES LONGUEURS
-        if (mb_strlen($sanitizedData['title']) < 3) {
-            throw new \InvalidArgumentException('Le titre doit contenir au moins 3 caractères');
-        }
-
-        if (mb_strlen($sanitizedData['description']) < 10) {
-            throw new \InvalidArgumentException('La description doit contenir au moins 10 caractères');
-        }
-
-        // ✅ VALIDATION DES TYPES
-        if (isset($sanitizedData['isPublic']) && !is_bool($sanitizedData['isPublic'])) {
-            throw new \InvalidArgumentException('Le champ isPublic doit être un booléen');
-        }
-
-        if (isset($sanitizedData['maxPlayers'])) {
-            $maxPlayers = filter_var($sanitizedData['maxPlayers'], FILTER_VALIDATE_INT);
-            if ($maxPlayers === false || $maxPlayers < 1 || $maxPlayers > 10) {
-                throw new \InvalidArgumentException('Le nombre maximum de joueurs doit être entre 1 et 10');
-            }
-            $sanitizedData['maxPlayers'] = $maxPlayers;
-        }
-
-        return $sanitizedData;
+        $result = $this->quizService->getPublicLeaderboard($quiz);
+        return $this->json($result);
     }
 }
