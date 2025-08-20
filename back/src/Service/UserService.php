@@ -2,7 +2,6 @@
 
 namespace App\Service;
 
-use AllowDynamicProperties;
 use App\Entity\User;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -18,7 +17,6 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Exception\ValidationFailedException;
 
-#[AllowDynamicProperties]
 class UserService
 {
     private EntityManagerInterface      $em;
@@ -30,6 +28,7 @@ class UserService
     private string                      $mailerFrom;
     private string                      $frontendUrl;
     private string                      $recaptchaSecretKey;
+    private ValidatorInterface          $validator;
 
     public function __construct(
         #[Autowire('%mailer_from%')]  string       $mailerFrom,
@@ -105,10 +104,8 @@ class UserService
 
     public function create(array $data): User
     {
-        // Validation des données avec Symfony
         $this->validateUserData($data);
         
-        // Vérifier si l'email existe déjà
         $existingUser = $this->userRepository->findOneBy(['email' => $data['email']]);
         if ($existingUser) {
             throw new \InvalidArgumentException('Cet email est déjà utilisé');
@@ -146,7 +143,6 @@ class UserService
         // Validation des données avec Symfony
         $this->validateUserData($data);
         
-        // Si l'email change, vérifier qu'il n'existe pas déjà
         if (isset($data['email']) && $data['email'] !== $user->getEmail()) {
             $existingUser = $this->userRepository->findOneBy(['email' => $data['email']]);
             if ($existingUser) {

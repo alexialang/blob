@@ -2,7 +2,6 @@
 
 namespace App\Service;
 
-use AllowDynamicProperties;
 use App\Entity\Group;
 use App\Entity\User;
 use App\Entity\Company;
@@ -12,12 +11,12 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Exception\ValidationFailedException;
 
-#[AllowDynamicProperties]
 class GroupService
 {
     private EntityManagerInterface $em;
     private GroupRepository $groupRepository;
     private CompanyService $companyService;
+    private ValidatorInterface $validator;
 
     public function __construct(EntityManagerInterface $em, GroupRepository $groupRepository, CompanyService $companyService, ValidatorInterface $validator)
     {

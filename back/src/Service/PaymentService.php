@@ -2,7 +2,6 @@
 
 namespace App\Service;
 
-use AllowDynamicProperties;
 use Stripe\Exception\ApiErrorException;
 use Stripe\PaymentLink;
 use Stripe\Price;
@@ -12,10 +11,10 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Exception\ValidationFailedException;
 
-#[AllowDynamicProperties]
 class PaymentService
 {
     private string $stripeSecretKey;
+    private ValidatorInterface $validator;
 
     public function __construct(string $stripeSecretKey, ValidatorInterface $validator)
     {

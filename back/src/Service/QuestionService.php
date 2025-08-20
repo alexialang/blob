@@ -17,6 +17,7 @@ class QuestionService
     private EntityManagerInterface $em;
     private QuestionRepository $questionRepository;
     private ManagerRegistry $registry;
+    private ValidatorInterface $validator;
 
     public function __construct(EntityManagerInterface $em, QuestionRepository $questionRepository, ManagerRegistry $registry, ValidatorInterface $validator)
     {

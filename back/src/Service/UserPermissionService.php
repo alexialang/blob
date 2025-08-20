@@ -15,6 +15,7 @@ class UserPermissionService
     private EntityManagerInterface $em;
     private UserPermissionRepository $userPermissionRepository;
     private UserService $userService;
+    private ValidatorInterface $validator;
 
     public function __construct(
         EntityManagerInterface $em,

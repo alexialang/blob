@@ -2,7 +2,6 @@
 
 namespace App\Service;
 
-use AllowDynamicProperties;
 use App\Entity\Badge;
 use App\Entity\User;
 use App\Repository\BadgeRepository;
@@ -11,7 +10,6 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 
-#[AllowDynamicProperties]
 class BadgeService
 {
     private EntityManagerInterface $em;
@@ -23,7 +21,6 @@ class BadgeService
         $this->em = $em;
         $this->badgeRepository = $badgeRepository;
         $this->userRepository = $userRepository;
-        $this->validator = $validator;
     }
 
     public function list(): array

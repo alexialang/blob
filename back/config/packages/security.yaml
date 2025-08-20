@@ -56,8 +56,6 @@ security:
         - { path: ^/api/login,          roles: PUBLIC_ACCESS }
         - { path: ^/api/forgot-password, methods: [ POST ], roles: PUBLIC_ACCESS }
         - { path: ^/api/reset-password/, methods: [ POST ], roles: PUBLIC_ACCESS }
-        - { path: ^/api/quiz/organized, methods: [ GET ], roles: PUBLIC_ACCESS }
-
         - { path: ^/api/quiz/list$, methods: [ GET ], roles: PUBLIC_ACCESS }
         - { path: ^/api/quiz/[0-9]+$, methods: [ GET ], roles: PUBLIC_ACCESS }
         - { path: ^/api/quiz/organized$, methods: [ GET ], roles: PUBLIC_ACCESS }
@@ -65,7 +63,7 @@ security:
         - { path: ^/api/quiz/[0-9]+/public-leaderboard$, methods: [ GET ], roles: PUBLIC_ACCESS }
         - { path: ^/api/category-quiz, methods: [ GET ], roles: PUBLIC_ACCESS }
 
-        - { path: ^/api/game, roles: PUBLIC_ACCESS }
+
         - { path: ^/api/donations, roles: PUBLIC_ACCESS }
 
         - { path: ^/api/companies, roles: ROLE_ADMIN }

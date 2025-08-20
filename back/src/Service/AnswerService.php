@@ -2,7 +2,6 @@
 
 namespace App\Service;
 
-use AllowDynamicProperties;
 use App\Entity\Answer;
 use App\Repository\AnswerRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -10,12 +9,12 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Exception\ValidationFailedException;
 
-#[AllowDynamicProperties]
 class AnswerService
 {
     private EntityManagerInterface $em;
     private AnswerRepository $answerRepository;
     private QuestionService $questionService;
+    private ValidatorInterface $validator;
 
     public function __construct(
         EntityManagerInterface $em, 

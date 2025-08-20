@@ -3,7 +3,7 @@ import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
 import { Observable, of } from 'rxjs';
-import { map, switchMap, catchError } from 'rxjs/operators';
+import { map, catchError } from 'rxjs/operators';
 
 @Component({
   selector: 'app-navbar',
@@ -33,6 +33,11 @@ export class NavbarComponent implements OnInit {
   ngOnInit() {
     this.generateRandomColor();
     this.loadUserData();
+
+    // Écouter les changements de statut de connexion
+    this.authService.loginStatus$.subscribe(() => {
+      this.loadUserData();
+    });
   }
 
   generateRandomColor() {
@@ -43,30 +48,43 @@ export class NavbarComponent implements OnInit {
   loadUserData() {
     this.isGuest$ = of(this.authService.isGuest());
 
-    this.userName$ = this.authService.getCurrentUser().pipe(
-      map(user => {
-        // Priorité au pseudo, puis au nom complet
-        return user.pseudo || user.firstName || user.email || 'Utilisateur';
-      }),
-      catchError(() => of('Utilisateur'))
-    );
+    if (this.authService.isLoggedIn()) {
+      this.userName$ = this.authService.getCurrentUser().pipe(
+        map(user => {
+          return user.pseudo || user.firstName || user.email || 'Utilisateur';
+        }),
+        catchError(() => of('Utilisateur'))
+      );
 
-    this.userAvatar$ = this.authService.getCurrentUser().pipe(
-      map(user => {
-        if (user.avatar) return user.avatar;
-        return `./assets/avatars/blob_${user.avatarShape || 'circle'}.svg`;
-      }),
-      catchError(() => of('./assets/svg/logo.svg'))
-    );
+      this.userAvatar$ = this.authService.getCurrentUser().pipe(
+        map(user => {
+          if (user.avatar) return user.avatar;
+          return `./assets/avatars/blob_${user.avatarShape || 'circle'}.svg`;
+        }),
+        catchError(() => of('./assets/svg/logo.svg'))
+      );
 
-    this.canCreateQuiz$ = this.authService.hasPermission('CREATE_QUIZ');
-    this.canManageUsers$ = this.authService.hasPermission('MANAGE_USERS');
-    this.isAdmin$ = this.authService.isAdmin();
-    this.canViewResults$ = this.authService.hasPermission('VIEW_RESULTS');
+      this.canCreateQuiz$ = this.authService.hasPermission('CREATE_QUIZ');
+      this.canManageUsers$ = this.authService.hasPermission('MANAGE_USERS');
+      this.isAdmin$ = this.authService.isAdmin();
+      this.canViewResults$ = this.authService.hasPermission('VIEW_RESULTS');
+    } else {
+      this.userName$ = of('Utilisateur');
+      this.userAvatar$ = of('./assets/svg/logo.svg');
+      this.canCreateQuiz$ = of(false);
+      this.canManageUsers$ = of(false);
+      this.isAdmin$ = of(false);
+      this.canViewResults$ = of(false);
+    }
   }
 
   logout() {
     this.authService.logout();
+    this.loadUserData();
+  }
+
+  refreshUserData() {
+    this.loadUserData();
   }
 
   toggle() {

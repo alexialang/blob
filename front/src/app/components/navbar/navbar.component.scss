@@ -3,10 +3,11 @@
   flex-direction: row;
   justify-content: space-between;
   padding: 2rem;
+  width: 100%;
 
 
   &__links {
-    width: 60%;
+    width: 100%;
     display: flex;
     column-gap: 10%;
 

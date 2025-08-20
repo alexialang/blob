@@ -21,6 +21,7 @@ class UserAnswerService
     private UserService $userService;
     private QuizService $quizService;
     private EventDispatcherInterface $eventDispatcher;
+    private ValidatorInterface $validator;
 
     public function __construct(EntityManagerInterface $em, UserAnswerRepository $userAnswerRepository, QuizRatingRepository $quizRatingRepository, UserService $userService, QuizService $quizService, EventDispatcherInterface $eventDispatcher, ValidatorInterface $validator)
     {
