@@ -22,12 +22,13 @@ a{
 
   .p-1 {
     font-family: "LCMogiA", serif;
-    font-size: 14em;
+    font-size: 12em;
     letter-spacing: 0.01em;
-    line-height: 1em;
+    line-height: 0.9em;
     color: var(--color-dark);
     font-weight: normal;
-
+    word-wrap: break-word;
+    overflow-wrap: break-word;
   }
   .p-2 {
     font-family: "LCMogiA", serif;
@@ -68,6 +69,17 @@ a{
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
     grid-template-rows: auto 1fr;
+  }
+  
+  @media (max-width: 1200px) {
+    .p-1 {
+      font-size: 10em;
+      line-height: 0.9em;
+    }
+    
+    .p-2 {
+      font-size: 2.8em;
+    }
   }
 
 
@@ -264,6 +276,15 @@ a{
 @media (max-width: 768px) {
   .diplay-none {
     display: none !important;
+  }
+  
+  .p-1 {
+    font-size: 8em;
+    line-height: 0.85em;
+  }
+  
+  .p-2 {
+    font-size: 2.5em;
   }
 
   .login-page {
