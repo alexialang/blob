@@ -436,7 +436,7 @@ export class QuizCreationComponent implements OnInit {
     action.subscribe({
       next: () => {
         this.isSubmitting = false;
-        this.router.navigate(['/quiz-management']);
+        this.router.navigate(['/quiz']);
       },
       error: () => {
         this.isSubmitting = false;

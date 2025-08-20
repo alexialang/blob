@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
 import { Observable, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
+import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-navbar',
@@ -14,7 +15,7 @@ import { map, catchError } from 'rxjs/operators';
 })
 export class NavbarComponent implements OnInit {
   userName$: Observable<string> = of('');
-  userAvatar$: Observable<string> = of('./assets/svg/logo.svg');
+  userAvatar$: Observable<SafeUrl> = of('./assets/svg/logo.svg');
   isGuest$: Observable<boolean> = of(true);
   showGestionDropdown: boolean = false;
   showProfileDropdown: boolean = false;
@@ -27,21 +28,23 @@ export class NavbarComponent implements OnInit {
 
   randomColor: string = '#0B0C1E';
 
-  constructor(private authService: AuthService) {
+  constructor(
+    private authService: AuthService,
+    private sanitizer: DomSanitizer
+  ) {
   }
 
   ngOnInit() {
     this.generateRandomColor();
     this.loadUserData();
 
-    // Écouter les changements de statut de connexion
     this.authService.loginStatus$.subscribe(() => {
       this.loadUserData();
     });
   }
 
   generateRandomColor() {
-    const colors = ['#0B0C1E', '#257D54', '#91DEDA', '#FAA24B', '#D30D4C'];
+    const colors = ['var(--color-primary)', 'var(--color-secondary)', 'var(--color-accent)', 'var(--color-pink)'];
     this.randomColor = colors[Math.floor(Math.random() * colors.length)];
   }
 
@@ -58,19 +61,29 @@ export class NavbarComponent implements OnInit {
 
       this.userAvatar$ = this.authService.getCurrentUser().pipe(
         map(user => {
-          if (user.avatar) return user.avatar;
-          return `./assets/avatars/blob_${user.avatarShape || 'circle'}.svg`;
+          if (user.avatar) {
+            return this.sanitizer.bypassSecurityTrustUrl(user.avatar);
+          }
+          const avatarPath = `./assets/avatars/blob_${user.avatarShape || 'circle'}.svg`;
+          return this.sanitizer.bypassSecurityTrustUrl(avatarPath);
         }),
-        catchError(() => of('./assets/svg/logo.svg'))
+        catchError(() => of(this.sanitizer.bypassSecurityTrustUrl('./assets/svg/logo.svg')))
       );
 
       this.canCreateQuiz$ = this.authService.hasPermission('CREATE_QUIZ');
       this.canManageUsers$ = this.authService.hasPermission('MANAGE_USERS');
       this.isAdmin$ = this.authService.isAdmin();
       this.canViewResults$ = this.authService.hasPermission('VIEW_RESULTS');
+    } else if (this.authService.isGuest()) {
+      this.userName$ = of('Invité');
+      this.userAvatar$ = of(this.sanitizer.bypassSecurityTrustUrl('./assets/avatars/head_guest.svg'));
+      this.canCreateQuiz$ = of(false);
+      this.canManageUsers$ = of(false);
+      this.isAdmin$ = of(false);
+      this.canViewResults$ = of(false);
     } else {
       this.userName$ = of('Utilisateur');
-      this.userAvatar$ = of('./assets/svg/logo.svg');
+      this.userAvatar$ = of(this.sanitizer.bypassSecurityTrustUrl('./assets/svg/logo.svg'));
       this.canCreateQuiz$ = of(false);
       this.canManageUsers$ = of(false);
       this.isAdmin$ = of(false);
@@ -80,10 +93,6 @@ export class NavbarComponent implements OnInit {
 
   logout() {
     this.authService.logout();
-    this.loadUserData();
-  }
-
-  refreshUserData() {
     this.loadUserData();
   }
 

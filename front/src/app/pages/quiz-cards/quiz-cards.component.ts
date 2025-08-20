@@ -86,6 +86,10 @@ export class QuizCardsComponent implements OnInit, OnDestroy {
     this.setupRatingListener();
   }
 
+  get isUserLoggedIn(): boolean {
+    return this.authService.isLoggedIn();
+  }
+
   ngOnDestroy(): void {
     if (this.ratingUpdateListener) {
       window.removeEventListener('quiz-rating-updated', this.ratingUpdateListener);
@@ -98,8 +102,13 @@ export class QuizCardsComponent implements OnInit, OnDestroy {
         this.originalPopularQuizzes = this.convertToQuizCards(data.popular ?? []);
         this.popularQuizzes = [...this.originalPopularQuizzes];
 
-        this.originalMyQuizzes = this.convertToQuizCards(data.myQuizzes ?? []);
-        this.myQuizzes = [...this.originalMyQuizzes];
+        if (this.isUserLoggedIn) {
+          this.originalMyQuizzes = this.convertToQuizCards(data.myQuizzes ?? []);
+          this.myQuizzes = [...this.originalMyQuizzes];
+        } else {
+          this.originalMyQuizzes = [];
+          this.myQuizzes = [];
+        }
 
         this.originalRecentQuizzes = this.convertToQuizCards(data.recent ?? []);
         this.recentQuizzes = [...this.originalRecentQuizzes];

@@ -95,6 +95,13 @@
   font-family: var(--font-primary);
   font-optical-sizing: auto;
   font-style: normal;
+  box-sizing: border-box;
+}
+
+html, body {
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100%;
 }
 
 input, textarea, select, button {

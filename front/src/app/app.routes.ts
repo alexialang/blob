@@ -30,6 +30,7 @@ import {NotFoundComponent} from './pages/not-found';
 
 export const routes: Routes = [
   { path: 'connexion', component: LoginComponent, data: { hideNavbar: true } },
+
   { path: 'inscription', component: RegistrationComponent,data: { hideNavbar: true } },
 
   {
@@ -139,6 +140,6 @@ export const routes: Routes = [
     canActivate: [authGuard, adminGuard]
   },
 
-  { path: '',   redirectTo: 'quiz', pathMatch: 'full' },
+  { path: '',  component: LoginComponent, pathMatch: 'full' },
   { path: '**', component: NotFoundComponent },
 ];
