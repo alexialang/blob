@@ -4,6 +4,7 @@ import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { GameInvitationToastComponent } from './components/game-invitation-toast/game-invitation-toast.component';
 import { QuizTransitionComponent } from './components/quiz-transition/quiz-transition.component';
+import { AlertComponent } from './components/alert/alert.component';
 import { AuthService } from './services/auth.service';
 import { filter } from 'rxjs/operators';
 
@@ -15,7 +16,8 @@ import { filter } from 'rxjs/operators';
     RouterOutlet,
     NavbarComponent,
     GameInvitationToastComponent,
-    QuizTransitionComponent
+    QuizTransitionComponent,
+    AlertComponent
   ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
