@@ -44,10 +44,6 @@ class CompanyService
         return [];
     }
 
-    public function countAll(): int
-    {
-        return $this->companyRepository->count([]);
-    }
 
     public function countByUser(User $user): int
     {

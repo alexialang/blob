@@ -140,7 +140,6 @@ class UserService
 
     public function update(User $user, array $data): User
     {
-        // Validation des données avec Symfony
         $this->validateUserData($data);
         
         if (isset($data['email']) && $data['email'] !== $user->getEmail()) {
@@ -390,83 +389,6 @@ class UserService
         return 1;
     }
 
-    public function getLeaderboard(int $limit, User $currentUser): array
-    {
-        $users = $this->userRepository->findActiveUsersForLeaderboard();
-
-        $leaderboardData = [];
-        
-        foreach ($users as $user) {
-            $uniqueQuizIds = [];
-            $quizScores = [];
-            
-            foreach ($user->getUserAnswers() as $userAnswer) {
-                $quizId = $userAnswer->getQuiz()?->getId();
-                if ($quizId && !isset($uniqueQuizIds[$quizId])) {
-                    $uniqueQuizIds[$quizId] = true;
-                    $quizScores[$quizId] = $userAnswer->getTotalScore() ?? 0;
-                }
-            }
-            
-            $quizzesCompleted = count($quizScores);
-            $totalScore = array_sum($quizScores);
-            
-            $averageScore = $quizzesCompleted > 0 ? round($totalScore / $quizzesCompleted, 1) : 0;
-            $badgesCount = $user->getBadges()->count();
-            
-            $rankingScore = $totalScore + ($averageScore * 2) + ($badgesCount * 50);
-            
-            $leaderboardData[] = [
-                'id' => $user->getId(),
-                'pseudo' => $user->getPseudo() ?: ($user->getFirstName() . ' ' . substr($user->getLastName(), 0, 1) . '.'),
-                'firstName' => $user->getFirstName(),
-                'lastName' => $user->getLastName(),
-                'avatar' => $user->getAvatar() ?: 'avatar-1',
-                'totalScore' => $totalScore,
-                'averageScore' => $averageScore,
-                'quizzesCompleted' => $quizzesCompleted,
-                'badgesCount' => $badgesCount,
-                'rankingScore' => $rankingScore,
-                'memberSince' => $user->getDateRegistration()->format('Y-m-d'),
-                'isCurrentUser' => $user->getId() === $currentUser->getId()
-            ];
-        }
-        
-        usort($leaderboardData, function($a, $b) {
-            return $b['rankingScore'] - $a['rankingScore'];
-        });
-        
-        foreach ($leaderboardData as $index => &$userData) {
-            $userData['position'] = $index + 1;
-        }
-        
-        $currentUserPosition = null;
-        $currentUserData = null;
-        foreach ($leaderboardData as $userData) {
-            if ($userData['isCurrentUser']) {
-                $currentUserPosition = $userData['position'];
-                $currentUserData = $userData;
-                break;
-            }
-        }
-        
-        $topUsers = array_slice($leaderboardData, 0, $limit);
-        
-        return [
-            'leaderboard' => $topUsers,
-            'currentUser' => [
-                'position' => $currentUserPosition,
-                'data' => $currentUserData,
-                'totalUsers' => count($leaderboardData)
-            ],
-            'meta' => [
-                'totalUsers' => count($leaderboardData),
-                'limit' => $limit,
-                'generatedAt' => (new \DateTime())->format('Y-m-d H:i:s')
-            ]
-        ];
-    }
-
     public function getGameHistory(User $user): array
     {
         $userAnswers = $this->userRepository->findUserGameHistory($user, 50);
@@ -525,12 +447,6 @@ class UserService
         return $user;
     }
 
-    /**
-     * Valide et nettoie les rôles utilisateur
-     * @param array $roles
-     * @return array
-     * @throws \InvalidArgumentException
-     */
     private function validateAndCleanRoles(array $roles): array
     {
         $allowedRoles = ['ROLE_USER', 'ROLE_ADMIN'];
