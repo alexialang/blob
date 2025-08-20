@@ -3,15 +3,14 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TuiDialogService, TuiAlertService } from '@taiga-ui/core';
 import { CompanyService } from '../../services/company.service';
-import { ModalAccessibilityDirective } from '../../directives/modal-accessibility.directive';
+
 
 @Component({
   selector: 'app-add-company-modal',
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
-    ModalAccessibilityDirective
+    FormsModule
   ],
   templateUrl: './add-company-modal.component.html',
   styleUrls: ['./add-company-modal.component.scss']

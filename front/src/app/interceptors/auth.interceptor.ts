@@ -1,47 +1,56 @@
-import { Injectable } from '@angular/core';
-import {
-  HttpInterceptor,
-  HttpRequest,
-  HttpHandler,
-  HttpEvent,
-  HttpErrorResponse
-} from '@angular/common/http';
+import { HttpRequest, HttpHandlerFn, HttpErrorResponse, HttpEvent } from '@angular/common/http';
 import { Observable, BehaviorSubject, throwError } from 'rxjs';
 import { catchError, filter, switchMap, take, finalize } from 'rxjs/operators';
+import { inject } from '@angular/core';
 import { AuthService } from '../services/auth.service';
 
-@Injectable()
-export class AuthInterceptor implements HttpInterceptor {
-  private isRefreshing = false;
-  private refreshSubject = new BehaviorSubject<string | null>(null);
 
-  constructor(private auth: AuthService) {}
+let isRefreshing = false;
+const refreshSubject = new BehaviorSubject<string | null>(null);
 
-  intercept(
-    req: HttpRequest<any>,
-    next: HttpHandler
-  ): Observable<HttpEvent<any>> {
+export function AuthInterceptor(
+  req: HttpRequest<unknown>,
+  next: HttpHandlerFn
+): Observable<HttpEvent<unknown>> {
     const publicUrls = [
       'average-rating',
       'public-leaderboard',
       'login_check',
       'token/refresh',
-      'quiz/list'
+      'quiz/list',
+      'quiz/organized',
+      'quiz/[0-9]+',
+      'quiz/[0-9]+/average-rating',
+      'quiz/[0-9]+/public-leaderboard',
+      'category-quiz',
+      'user-create',
+      'confirmation-compte',
+      'forgot-password',
+      'reset-password',
+      'donations'
     ];
 
-    const isPublicUrl = publicUrls.some(url => req.url.includes(url));
-    
+    const isPublicUrl = publicUrls.some(url => {
+      if (url.includes('[0-9]+')) {
+        // Gestion des patterns avec regex pour les URLs avec paramètres numériques
+        const regex = new RegExp(url.replace(/\[0-9\]\+/g, '\\d+'));
+        return regex.test(req.url);
+      }
+      return req.url.includes(url);
+    });
+
     if (isPublicUrl) {
-      return next.handle(req);
+      return next(req);
     }
 
-    const token = this.auth.getToken();
+    const auth = inject(AuthService);
+    const token = auth.getToken();
     let authReq = req;
     if (token) {
-      authReq = this.addTokenHeader(req, token);
+      authReq = addTokenHeader(req, token);
     }
 
-    return next.handle(authReq).pipe(
+    return next(authReq).pipe(
       catchError(err => {
         if (
           err instanceof HttpErrorResponse &&
@@ -49,54 +58,54 @@ export class AuthInterceptor implements HttpInterceptor {
           !req.url.endsWith('/token/refresh') &&
           !req.url.endsWith('/login_check')
         ) {
-          return this.handle401Error(authReq, next);
+          return handle401Error(authReq, next);
         }
         return throwError(() => err);
       })
     );
   }
 
-  private addTokenHeader(
-    request: HttpRequest<any>,
-    token: string
-  ): HttpRequest<any> {
-    return request.clone({
-      setHeaders: { Authorization: `Bearer ${token}` }
-    });
-  }
+function addTokenHeader(
+  request: HttpRequest<unknown>,
+  token: string
+): HttpRequest<unknown> {
+  return request.clone({
+    setHeaders: { Authorization: `Bearer ${token}` }
+  });
+}
 
-  private handle401Error(
-    request: HttpRequest<any>,
-    next: HttpHandler
-  ): Observable<HttpEvent<any>> {
-    if (!this.isRefreshing) {
-      this.isRefreshing = true;
-      this.refreshSubject.next(null);
+function handle401Error(
+  request: HttpRequest<unknown>,
+  next: HttpHandlerFn
+): Observable<HttpEvent<unknown>> {
+  const auth = inject(AuthService);
+  if (!isRefreshing) {
+    isRefreshing = true;
+    refreshSubject.next(null);
 
-      return this.auth.refresh().pipe(
+      return auth.refresh().pipe(
         switchMap(() => {
-          const newToken = this.auth.getToken();
+          const newToken = auth.getToken();
           if (newToken) {
-            this.refreshSubject.next(newToken);
-            return next.handle(this.addTokenHeader(request, newToken));
+            refreshSubject.next(newToken);
+            return next(addTokenHeader(request, newToken));
           }
-          this.auth.logout();
+          auth.logout();
           return throwError(() => new Error('No token after refresh'));
         }),
         catchError(err => {
-          this.auth.logout();
+          auth.logout();
           return throwError(() => err);
         }),
         finalize(() => {
-          this.isRefreshing = false;
+          isRefreshing = false;
         })
       );
     } else {
-      return this.refreshSubject.pipe(
+      return refreshSubject.pipe(
         filter(token => token !== null),
         take(1),
-        switchMap(token => next.handle(this.addTokenHeader(request, token!)))
+        switchMap(token => next(addTokenHeader(request, token!)))
       );
     }
   }
-}

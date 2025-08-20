@@ -51,6 +51,11 @@ export class UserProfileComponent implements OnInit {
   }
 
   ngOnInit() {
+    if (!this.authService.isLoggedIn()) {
+      this.router.navigate(['/connexion']);
+      return;
+    }
+
     this.route.params.subscribe(params => {
       if (params['id']) {
         this.targetUserId = +params['id'];
@@ -86,6 +91,11 @@ export class UserProfileComponent implements OnInit {
         });
       },
       error: (error) => {
+        if (error.status === 401) {
+          // Rediriger vers la connexion si non authentifié
+          this.authService.logout();
+          this.router.navigate(['/connexion']);
+        }
       }
     });
   }
@@ -113,7 +123,13 @@ export class UserProfileComponent implements OnInit {
         this.userStatistics = stats;
       },
       error: (error) => {
-        console.error('Erreur lors du chargement des statistiques:', error);
+        if (error.status === 401) {
+          // Rediriger vers la connexion si non authentifié
+          this.authService.logout();
+          this.router.navigate(['/connexion']);
+        } else {
+          console.error('Erreur lors du chargement des statistiques:', error);
+        }
       }
     });
   }

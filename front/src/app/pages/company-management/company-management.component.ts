@@ -154,7 +154,6 @@ export class CompanyManagementComponent implements OnInit, OnDestroy {
       });
   }
 
-    // Export JSON
   private exportJson(): void {
     this.companyService.exportCompaniesJson()
       .pipe(takeUntil(this.destroy$))
@@ -350,7 +349,6 @@ export class CompanyManagementComponent implements OnInit, OnDestroy {
 
     const count = ids.length;
 
-    // Utiliser une confirmation simple au lieu du service de dialogue
     const confirmed = window.confirm(`Supprimer ${count} entreprise${count > 1 ? 's' : ''} ?`);
 
     if (!confirmed) {

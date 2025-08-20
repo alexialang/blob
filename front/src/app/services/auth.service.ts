@@ -11,6 +11,8 @@ import { User } from '../models/user.interface';
 })
 export class AuthService {
   private readonly base = environment.apiBaseUrl;
+  private loginStatusSubject = new BehaviorSubject<boolean>(false);
+  public loginStatus$ = this.loginStatusSubject.asObservable();
 
   constructor(private http: HttpClient, private router: Router) {
   }
@@ -23,6 +25,7 @@ export class AuthService {
           localStorage.setItem('JWT_TOKEN', res.token);
           localStorage.setItem('REFRESH_TOKEN', res.refresh_token);
           this.clearGuestMode();
+          this.loginStatusSubject.next(true);
         }),
         map(() => {
           return void 0;
@@ -53,6 +56,7 @@ export class AuthService {
     localStorage.removeItem('JWT_TOKEN');
     localStorage.removeItem('REFRESH_TOKEN');
     this.clearGuestMode();
+    this.loginStatusSubject.next(false);
 
     this.router.navigate(['/connexion']);
   }
@@ -116,6 +120,11 @@ export class AuthService {
         isVerified: true
       } as User);
     }
+
+    if (!this.isLoggedIn()) {
+      return throwError(() => new Error('Utilisateur non connecté'));
+    }
+
     return this.http.get<User>(`${this.base}/user/profile`);
   }
   register(

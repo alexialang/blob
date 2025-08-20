@@ -1,25 +1,32 @@
 import { Component, OnInit } from '@angular/core';
-import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { GameInvitationToastComponent } from './components/game-invitation-toast/game-invitation-toast.component';
 import { QuizTransitionComponent } from './components/quiz-transition/quiz-transition.component';
-import { AccessibilityDirective } from './directives/accessibility.directive';
-import { filter } from 'rxjs/operators';
 import { AuthService } from './services/auth.service';
+import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, NavbarComponent, GameInvitationToastComponent, QuizTransitionComponent, AccessibilityDirective],
+  imports: [
+    CommonModule,
+    RouterOutlet,
+    NavbarComponent,
+    GameInvitationToastComponent,
+    QuizTransitionComponent
+  ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
-  title = 'blob-front';
   showNavbar: boolean = true;
 
-  constructor(private router: Router, private authService: AuthService) {}
+  constructor(
+    private router: Router,
+    private authService: AuthService
+  ) {}
 
   ngOnInit() {
     this.router.events.pipe(
@@ -33,7 +40,6 @@ export class AppComponent implements OnInit {
       }
 
       const hideNavbar = currentRoute.snapshot.data['hideNavbar'];
-
       this.showNavbar = !hideNavbar;
     });
   }
