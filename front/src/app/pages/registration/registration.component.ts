@@ -13,14 +13,15 @@ import { SlideButtonComponent } from '../../components/slide-button/slide-button
 import { PasswordInputComponent } from '../../components/password-input/password-input.component';
 import { PasswordStrengthIndicatorComponent } from '../../components/password-strength-indicator/password-strength-indicator.component';
 import { isPlatformBrowser } from '@angular/common';
+import {SeoService} from '../../services/seo.service';
 
 @Component({
   standalone: true,
   selector: 'app-registration',
   imports: [
-    ReactiveFormsModule, 
-    NgIf, 
-    RouterLink, 
+    ReactiveFormsModule,
+    NgIf,
+    RouterLink,
     SlideButtonComponent,
     PasswordInputComponent,
     PasswordStrengthIndicatorComponent
@@ -37,6 +38,7 @@ export class RegistrationComponent implements OnInit {
     private readonly fb: FormBuilder,
     private readonly auth: AuthService,
     private readonly router: Router,
+    private readonly seoService: SeoService,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {
     this.form = this.fb.group({
@@ -50,7 +52,17 @@ export class RegistrationComponent implements OnInit {
     }, { validators: this.passwordsMatch });
   }
 
+
+
   ngOnInit(): void {
+    this.seoService.updateSEO({
+      title: 'Blob - Inscription',
+      description: 'Rejoignez Blob et commencez à créer, partager et jouer à des quiz interactifs éducatifs.',
+      keywords: 'inscription, créer un compte, quiz, éducation, formation',
+      ogTitle: 'Inscrivez-vous sur Blob',
+      ogDescription: 'Créez votre compte Blob pour découvrir une nouvelle façon d’apprendre grâce aux quiz interactifs.',
+      ogUrl: '/inscription'
+    });
     if (isPlatformBrowser(this.platformId)) {
       this.loadRecaptcha();
     }
@@ -62,7 +74,7 @@ export class RegistrationComponent implements OnInit {
     script.async = true;
     script.defer = true;
     document.head.appendChild(script);
-    
+
     (window as any).onCaptchaCallback = (token: string) => {
       this.onCaptchaResolved(token);
     };

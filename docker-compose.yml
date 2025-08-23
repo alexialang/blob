@@ -37,6 +37,7 @@ services:
       - "traefik.http.routers.angular-secure.entrypoints=https"
       - "traefik.http.routers.angular-secure.rule=Host(`angular.dev.local`)"
       - "traefik.http.routers.angular-secure.tls=true"
+      - "traefik.http.services.angular.loadbalancer.server.port=4200"
     volumes:
       - ./front:/app
     networks:

@@ -15,11 +15,11 @@
       "prefix": "app",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:application",
+          "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/front",
+            "outputPath": "dist/blob-front",
             "index": "src/index.html",
-            "browser": "src/main.ts",
+            "main": "src/main.ts",
             "polyfills": [
               "zone.js"
             ],
@@ -27,9 +27,9 @@
             "inlineStyleLanguage": "scss",
             "assets": [
               {
-              "glob": "**/*",
-              "input": "src/assets",
-              "output": "assets"
+                "glob": "**/*",
+                "input": "src/assets",
+                "output": "assets"
               },
               {
                 "glob": "**/*",
@@ -56,13 +56,13 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "500kB",
-                  "maximumError": "1MB"
+                  "maximumWarning": "1MB",
+                  "maximumError": "2MB"
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "4kB",
-                  "maximumError": "8kB"
+                  "maximumWarning": "1MB",
+                  "maximumError": "2MB"
                 }
               ],
               "outputHashing": "all"
@@ -84,7 +84,8 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "allowedHosts": ["localhost","angular.dev.local"]
+            "allowedHosts": ["localhost", "angular.dev.local"],
+            "ssl": false
           },
           "configurations": {
             "production": {

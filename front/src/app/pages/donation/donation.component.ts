@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { DonationService } from '../../services/donation.service';
 import { catchError, finalize } from 'rxjs/operators';
 import { of } from 'rxjs';
+import { SeoService } from '../../services/seo.service';
 
 @Component({
   selector: 'app-donation',
@@ -24,12 +25,20 @@ export class DonationComponent implements OnInit {
 
   constructor(
     private donationService: DonationService,
-    private router: Router
+    private router: Router,
+    private readonly seoService: SeoService
   ) {}
 
   ngOnInit() {
+    this.seoService.updateSEO({
+      title: 'Blob - Faites un don pour soutenir notre plateforme',
+      description: 'Soutenez Blob et contribuez au développement des quiz interactifs éducatifs. Chaque don nous aide à innover et offrir plus de contenus.',
+      keywords: 'faire un don, contribution, financement, soutenir Blob, quiz éducatif, plateforme',
+      ogTitle: 'Faites un don à Blob',
+      ogDescription: 'Participez au développement de Blob et aidez-nous à offrir des quiz interactifs innovants pour l’apprentissage.',
+      ogUrl: '/faire-un-don'
+    });
   }
-
   selectAmount(amount: number) {
     this.amount = amount;
   }

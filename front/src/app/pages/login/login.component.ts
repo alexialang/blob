@@ -7,6 +7,7 @@ import { NgIf } from '@angular/common';
 import { SlideButtonComponent } from '../../components/slide-button/slide-button.component';
 import { PasswordInputComponent } from '../../components/password-input/password-input.component';
 import { HttpErrorResponse } from '@angular/common/http';
+import { SeoService } from '../../services/seo.service';
 
 @Component({
   standalone: true,
@@ -24,9 +25,21 @@ export class LoginComponent {
   constructor(
     private readonly auth: AuthService,
     private readonly alertService: AlertService,
-    private readonly router: Router
+    private readonly router: Router,
+    private readonly seoService: SeoService
   ) {}
+  ngOnInit(): void {
 
+
+    this.seoService.updateSEO({
+      title: 'Blob - Connexion',
+      description: 'Connectez-vous à votre compte Blob pour accéder à vos quiz personnalisés et suivre votre progression.',
+      keywords: 'connexion, login, compte, quiz, éducation, apprentissage',
+      ogTitle: 'Connectez-vous à Blob',
+      ogDescription: 'Accédez à votre compte Blob et profitez de vos quiz interactifs personnalisés.',
+      ogUrl: '/connexion'
+    });
+  }
   onPasswordChange(value: string): void {
     this.password = value;
   }

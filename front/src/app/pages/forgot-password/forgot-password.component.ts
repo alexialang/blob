@@ -6,6 +6,7 @@ import { HttpClient } from '@angular/common/http';
 import { SlideButtonComponent } from '../../components/slide-button/slide-button.component';
 import { BackButtonComponent } from '../../components/back-button/back-button.component';
 import {environment} from '../../../environments/environment';
+import {SeoService} from '../../services/seo.service';
 
 @Component({
   standalone: true,
@@ -20,7 +21,23 @@ export class ForgotPasswordComponent {
   success?: string;
   isLoading = false;
 
-  constructor(private readonly router: Router, private readonly http: HttpClient) {}
+
+  constructor(
+    private readonly router: Router,
+    private readonly http: HttpClient,
+    private readonly seoService: SeoService
+  ) {}
+
+  ngOnInit() {
+    this.seoService.updateSEO({
+      title: 'Blob - Mot de passe oublié',
+      description: 'Réinitialisez votre mot de passe pour retrouver l’accès à votre compte Blob et vos quiz.',
+      keywords: 'mot de passe oublié, réinitialisation, compte, connexion, quiz',
+      ogTitle: 'Réinitialisez votre mot de passe Blob',
+      ogDescription: 'Suivez les étapes pour récupérer l’accès à votre compte Blob et continuer à jouer à vos quiz interactifs.',
+      ogUrl: '/mot-de-passe-oublie'
+    });
+  }
   onReset() {
     this.onSubmit();
   }
