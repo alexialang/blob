@@ -53,6 +53,10 @@ export class UserService {
     return this.http.get<any>(`${this.baseUrl}/statistics`);
   }
 
+  getUserStatisticsById(userId: number): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/${userId}/statistics`);
+  }
+
   updateAvatar(avatar: { shape: string; color: string }): Observable<User> {
     return this.updateUserProfile({ avatarShape: avatar.shape, avatarColor: avatar.color });
   }

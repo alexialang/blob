@@ -169,6 +169,25 @@ class UserController extends AbstractController
         ]);
     }
 
+    #[Route('/user/{id}/statistics', name: 'user_statistics_by_id', methods: ['GET'])]
+    #[IsGranted('ROLE_USER')]
+    #[IsGranted('VIEW_RESULTS', subject: 'user')]
+    public function statisticsById(User $user): JsonResponse
+    {
+        if (!$user) {
+            return $this->json(['error' => 'Utilisateur non trouvé'], 404);
+        }
+
+        $statistics = $this->userService->getUserStatistics($user);
+
+        return $this->json($statistics, 200, [], [
+            'groups' => ['user:read'],
+            'circular_reference_handler' => function ($object) {
+                return $object->getId();
+            }
+        ]);
+    }
+
     #[Route('/user/{id}', name: 'user_show', methods: ['GET'])]
     #[IsGranted('ROLE_USER')]
     #[IsGranted('VIEW_RESULTS', subject: 'user')]

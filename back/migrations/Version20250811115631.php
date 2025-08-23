@@ -19,14 +19,12 @@ final class Version20250811115631 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        // this up() migration is auto-generated, please modify it to your needs
         $this->addSql('ALTER TABLE user DROP is_admin');
         $this->addSql('ALTER TABLE user_permission CHANGE permission permission VARCHAR(255) NOT NULL');
     }
 
     public function down(Schema $schema): void
     {
-        // this down() migration is auto-generated, please modify it to your needs
         $this->addSql('ALTER TABLE user_permission CHANGE permission permission VARCHAR(100) NOT NULL');
         $this->addSql('ALTER TABLE user ADD is_admin TINYINT(1) NOT NULL');
     }

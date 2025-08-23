@@ -76,30 +76,30 @@ export class MultiplayerService {
     points: number;
     leaderboard: LeaderboardEntry[];
   }>();
-  
+
   private gameQuestionChanged$ = new Subject<{
     questionIndex: number;
     question: any;
     timeLeft: number;
   }>();
-  
+
   private gamePhaseChanged$ = new Subject<{
     phase: 'question' | 'feedback' | 'results';
     data: any;
   }>();
-  
+
   private gameTimerUpdate$ = new Subject<{
     timeLeft: number;
     phase: string;
   }>();
 
   constructor(
-    private http: HttpClient, 
+    private http: HttpClient,
     private zone: NgZone,
     private mercureService: MercureService
   ) {
 
-    
+
     this.mercureService.invitationReceived$.subscribe(invitation => {
 
       this.invitations$.next(invitation);
@@ -211,6 +211,13 @@ export class MultiplayerService {
 
   endGame(gameId: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/multiplayer/game/${gameId}/end`, {});
+  }
+
+  getCompanyGroupsForMultiplayer(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/multiplayer/groups/company`);
+  }
+  getCompanyMembersForMultiplayer(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/multiplayer/members/company`);
   }
 
   private getCurrentUserId(): number | null {

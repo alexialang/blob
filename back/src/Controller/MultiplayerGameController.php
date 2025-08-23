@@ -3,6 +3,8 @@
 namespace App\Controller;
 
 use App\Service\MultiplayerGameService;
+use App\Service\GroupService;
+use App\Service\UserService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 use Symfony\Component\Validator\Exception\ValidationFailedException;
@@ -17,6 +19,8 @@ class MultiplayerGameController extends AbstractController
 {
     public function __construct(
         private MultiplayerGameService $multiplayerService,
+        private GroupService $groupService,
+        private UserService $userService
         ) {
     }
 
@@ -121,7 +125,12 @@ class MultiplayerGameController extends AbstractController
         try {
             $data = json_decode($request->getContent(), true);
             
+            error_log("Multiplayer submitAnswer - gameId: $gameId, data: " . json_encode($data));
+            
             $user = $this->getUser();
+            if (!$user) {
+                return $this->json(['error' => 'Utilisateur non connecté'], 401);
+            }
         
             $result = $this->multiplayerService->submitAnswer(
                 $gameId,
@@ -136,8 +145,10 @@ class MultiplayerGameController extends AbstractController
             foreach ($e->getViolations() as $violation) {
                 $errorMessages[] = $violation->getMessage();
             }
+            error_log("Multiplayer submitAnswer validation error: " . json_encode($errorMessages));
             return $this->json(['error' => 'Données invalides', 'details' => $errorMessages], 400);
         } catch (\Exception $e) {
+            error_log("Multiplayer submitAnswer error: " . $e->getMessage());
             return $this->json(['error' => $e->getMessage()], 400);
         }
     }
@@ -158,13 +169,6 @@ class MultiplayerGameController extends AbstractController
     {
         $rooms = $this->multiplayerService->getAvailableRooms();
         return $this->json($rooms);
-    }
-
-    #[Route('/test', name: 'test_multiplayer', methods: ['GET'])]
-    public function testMultiplayer(): JsonResponse
-    {
-        $user = $this->getUser();
-        return $this->json(['status' => 'Multiplayer API accessible', 'user' => $user ? $user->getUserIdentifier() : null]);
     }
 
     #[Route('/game/{gameId}/trigger-feedback', name: 'trigger_feedback', methods: ['POST'])]
@@ -213,15 +217,70 @@ class MultiplayerGameController extends AbstractController
     #[Route('/game/{gameId}/end', name: 'end_game', methods: ['POST'])]
     public function endGame(string $gameId): JsonResponse
     {
+        $user = $this->getUser();
+        
         try {
-            $gameSession = $this->multiplayerService->getGameSession($gameId);
-            if ($gameSession) {
-                $this->multiplayerService->endGameFromClient($gameSession);
-                return $this->json(['success' => true, 'message' => 'Jeu terminé']);
-            }
-            return $this->json(['error' => 'Jeu non trouvé'], 404);
+            $game = $this->multiplayerService->endGame($gameId, $user);
+            return $this->json($game);
         } catch (\Exception $e) {
             return $this->json(['error' => $e->getMessage()], 400);
         }
+    }
+
+    /**
+     * @OA\Get(summary="Lister tous les utilisateurs pour invitation multijoueur", tags={"Multiplayer"})
+     * @OA\Response(response=200, description="Liste de tous les utilisateurs")
+     * @OA\Security(name="bearerAuth")
+     */
+    #[Route('/users/available', name: 'get_available_users', methods: ['GET'])]
+    #[IsGranted('ROLE_USER')]
+    public function getAvailableUsers(): JsonResponse
+    {
+
+        $users = $this->userService->getActiveUsersForMultiplayer();
+        
+        return $this->json($users, 200, [], ['groups' => ['user:public']]);
+    }
+
+    /**
+     * @OA\Get(summary="Lister les groupes de son entreprise pour invitation multijoueur", tags={"Multiplayer"})
+     * @OA\Response(response=200, description="Liste des groupes de son entreprise")
+     * @OA\Security(name="bearerAuth")
+     */
+    #[Route('/groups/company', name: 'get_company_groups', methods: ['GET'])]
+    #[IsGranted('ROLE_USER')]
+    public function getCompanyGroups(): JsonResponse
+    {
+        $user = $this->getUser();
+        $userCompany = $user->getCompany();
+        
+        if (!$userCompany) {
+            return $this->json(['error' => 'Vous n\'appartenez à aucune entreprise'], 403);
+        }
+        
+        $groups = $this->groupService->getGroupsByCompany($userCompany);
+        
+        return $this->json($groups, 200, [], ['groups' => ['group:read']]);
+    }
+
+    /**
+     * @OA\Get(summary="Lister les membres de son entreprise pour invitation multijoueur", tags={"Multiplayer"})
+     * @OA\Response(response=200, description="Liste des membres de son entreprise")
+     * @OA\Security(name="bearerAuth")
+     */
+    #[Route('/members/company', name: 'get_company_members', methods: ['GET'])]
+    #[IsGranted('ROLE_USER')]
+    public function getCompanyMembers(): JsonResponse
+    {
+        $user = $this->getUser();
+        $userCompany = $user->getCompany();
+        
+        if (!$userCompany) {
+            return $this->json(['error' => 'Vous n\'appartenez à aucune entreprise'], 403);
+        }
+        
+        $members = $this->userService->getUsersByCompany($userCompany);
+        
+        return $this->json($members, 200, [], ['groups' => ['user:public']]);
     }
 }

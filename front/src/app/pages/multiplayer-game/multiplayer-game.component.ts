@@ -262,15 +262,19 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
     if (!this.playersAnswered.includes(username)) {
       this.playersAnswered.push(username);
 
-        if (this.playersAnswered.length >= this.totalPlayers) {
-          const simulatedLeaderboard = this.playersAnswered.map(username => ({
-            username: username,
-            score: Math.floor(Math.random() * 100),
-            isCorrect: Math.random() > 0.5
-          }));
+      if (this.hasAnswered) {
+        this.waitingForPlayers = true;
+      }
 
-          this.showFeedbackPhase(simulatedLeaderboard);
-        }
+      if (this.playersAnswered.length >= this.totalPlayers) {
+        const simulatedLeaderboard = this.playersAnswered.map(username => ({
+          username: username,
+          score: Math.floor(Math.random() * 100),
+          isCorrect: Math.random() > 0.5
+        }));
+
+        this.showFeedbackPhase(simulatedLeaderboard);
+      }
     }
   }
 
@@ -397,9 +401,15 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
       finalAnswer = this.selectedAnswer;
     }
 
-
-
     this.stopTimer();
+
+    this.hasAnswered = true;
+    this.waitingForPlayers = false;
+
+    console.log('État après soumission:', {
+      hasAnswered: this.hasAnswered,
+      waitingForPlayers: this.waitingForPlayers
+    });
 
     this.multiplayerService.submitAnswer(
       this.gameId,
@@ -408,34 +418,22 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
       timeSpent
     ).subscribe({
       next: (result) => {
-        this.hasAnswered = true;
         this.currentScore = result.currentScore || this.currentScore;
         this.lastAnswerCorrect = result.isCorrect;
         this.overlayCorrect = result.isCorrect;
-
-        this.waitingForPlayers = true;
 
         if (this.currentUser?.username) {
           this.onPlayerAnswered(this.currentUser.username);
         }
 
-
+        setTimeout(() => {
+          this.waitingForPlayers = true;
+        }, 2000);
       },
       error: (error) => {
+
       }
     });
-  }
-
-  wasSelected(answerId: number): boolean {
-    if (this.currentQuestion?.type_question?.name === 'multiple_choice') {
-      return this.selectedAnswers.includes(answerId);
-    } else {
-      return this.selectedAnswer === answerId;
-    }
-  }
-
-  backToQuiz(): void {
-    this.router.navigate(['/quiz']);
   }
 
   private resetAnswers(): void {
@@ -516,6 +514,7 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
   }
 
   validateAnswer(): void {
+    console.log('validateAnswer appelée dans le composant principal');
     this.submitAnswer();
   }
 
@@ -560,9 +559,6 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
     };
   }
 
-  backToQuizList(): void {
-    this.router.navigate(['/quiz']);
-  }
 
   replayQuiz(): void {
     if (this.currentGame?.roomId) {

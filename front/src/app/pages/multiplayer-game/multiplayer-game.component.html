@@ -8,6 +8,12 @@
     </div>
   </div>
 
+  <div *ngIf="hasAnswered && !waitingForPlayers && !quizCompleted && !showFeedback"
+       style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 9998; background: rgba(76, 175, 80, 0.9); color: white; padding: 20px; border-radius: 10px; text-align: center; animation: fadeIn 0.5s ease-in;">
+    <h3>Réponse validée !</h3>
+    <p>Votre réponse a été enregistrée.</p>
+    <p>Attendez que tous les joueurs répondent...</p>
+  </div>
 
 
   <div *ngIf="!quizCompleted && !showFeedback" class="quiz-header">

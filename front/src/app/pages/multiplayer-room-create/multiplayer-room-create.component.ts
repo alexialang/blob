@@ -76,25 +76,23 @@ export class MultiplayerRoomCreateComponent implements OnInit {
         }
       },
       error: (error) => {
-        console.error('Erreur chargement profil:', error);
       }
     });
   }
 
   private loadCompany(companyId: number): void {
-    this.companyService.getCompanyGroups(companyId)
+    this.multiplayerService.getCompanyGroupsForMultiplayer()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (groups: any[]) => {
           this.availableGroups = Array.isArray(groups) ? groups : [];
         },
         error: (error: any) => {
-          console.error('Erreur lors du chargement des groupes:', error);
           this.availableGroups = [];
         }
       });
 
-    this.companyService.getCompanyUsers(companyId)
+    this.multiplayerService.getCompanyMembersForMultiplayer()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response: any) => {
@@ -133,50 +131,30 @@ export class MultiplayerRoomCreateComponent implements OnInit {
 
     this.creating = true;
 
-    this.testAPI().then(() => {
-      this.multiplayerService.createRoom(
-        this.quizData.id,
-        this.maxPlayers,
-        this.isTeamMode,
-        this.roomName || undefined
-      ).subscribe({
-        next: (room) => {
-          this.multiplayerService.setCurrentRoom(room);
+    this.multiplayerService.createRoom(
+      this.quizData.id,
+      this.maxPlayers,
+      this.isTeamMode,
+      this.roomName || undefined
+    ).subscribe({
+      next: (room) => {
+        this.multiplayerService.setCurrentRoom(room);
 
-          if (this.selectedUserIds.length > 0) {
-            this.multiplayerService.sendInvitation(room.id, this.selectedUserIds).subscribe({
-              next: () => {
-              },
-              error: (error) => {
-                console.error('Erreur envoi invitations:', error);
-              }
-            });
-          }
-
-          this.router.navigate(['/multiplayer/room', room.id]);
-        },
-        error: (error) => {
-          console.error('Erreur création salon:', error);
-          this.creating = false;
-          alert('Erreur lors de la création du salon: ' + error.error?.error || error.message);
+        if (this.selectedUserIds.length > 0) {
+          this.multiplayerService.sendInvitation(room.id, this.selectedUserIds).subscribe({
+            next: () => {
+            },
+            error: (error) => {
+            }
+          });
         }
-      });
-    }).catch(error => {
-      console.error('Test API échoué:', error);
-      this.creating = false;
-      alert('API multiplayer non accessible');
-    });
-  }
 
-  private testAPI(): Promise<any> {
-    return fetch(`${this.quizService['apiUrl']}/multiplayer/test`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('JWT_TOKEN')}`
+        this.router.navigate(['/multiplayer/room', room.id]);
+      },
+      error: (error) => {
+        this.creating = false;
+        alert('Erreur lors de la création du salon: ' + (error.error?.error || error.message || 'Erreur inconnue'));
       }
-    }).then(response => {
-      if (!response.ok) throw new Error('API non accessible');
-      return response.json();
-    }).then(data => {
     });
   }
 

@@ -96,9 +96,14 @@ security:
         - { path: ^/api/multiplayer/room/[^/]+/join, methods: [ POST ], roles: ROLE_USER }
         - { path: ^/api/multiplayer/room/[^/]+/leave, methods: [ POST ], roles: ROLE_USER }
         - { path: ^/api/multiplayer/room/[^/]+/start, methods: [ POST ], roles: ROLE_USER }
+        - { path: ^/api/multiplayer/room/[^/]+$, methods: [ GET ], roles: ROLE_USER }
         - { path: ^/api/multiplayer/game/[^/]+/answer, methods: [ POST ], roles: ROLE_USER }
+        - { path: ^/api/multiplayer/game/[^/]+/status, methods: [ GET ], roles: ROLE_USER }
         - { path: ^/api/multiplayer/game/[^/]+/end, methods: [ POST ], roles: ROLE_USER }
+        - { path: ^/api/multiplayer/game/[^/]+/trigger-feedback, methods: [ POST ], roles: ROLE_USER }
+        - { path: ^/api/multiplayer/game/[^/]+/next-question, methods: [ POST ], roles: ROLE_USER }
         - { path: ^/api/multiplayer/invite/[^/]+$, methods: [ POST ], roles: ROLE_USER }
+        - { path: ^/api/multiplayer/rooms/available, methods: [ GET ], roles: ROLE_USER }
         - { path: ^/api/multiplayer/users/available, methods: [ GET ], roles: ROLE_USER }
         - { path: ^/api/multiplayer/groups/company, methods: [ GET ], roles: ROLE_USER }
         - { path: ^/api/multiplayer/members/company, methods: [ GET ], roles: ROLE_USER }

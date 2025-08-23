@@ -118,20 +118,30 @@ export class UserProfileComponent implements OnInit {
   }
 
   loadUserStatistics() {
-    this.userService.getUserStatistics().subscribe({
-      next: (stats) => {
-        this.userStatistics = stats;
-      },
-      error: (error) => {
-        if (error.status === 401) {
-          // Rediriger vers la connexion si non authentifié
-          this.authService.logout();
-          this.router.navigate(['/connexion']);
-        } else {
-          console.error('Erreur lors du chargement des statistiques:', error);
+    if (this.isOwnProfile) {
+      this.userService.getUserStatistics().subscribe({
+        next: (stats) => {
+          this.userStatistics = stats;
+        },
+        error: (error) => {
+          if (error.status === 401) {
+            this.authService.logout();
+            this.router.navigate(['/connexion']);
+          } else {
+            console.error('Erreur lors du chargement des statistiques:', error);
+          }
         }
-      }
-    });
+      });
+    } else if (this.targetUserId) {
+      this.userService.getUserStatisticsById(this.targetUserId).subscribe({
+        next: (stats: UserStatistics) => {
+          this.userStatistics = stats;
+        },
+        error: (error: any) => {
+          console.error('Erreur lors du chargement des statistiques de l\'utilisateur:', error);
+        }
+      });
+    }
   }
 
   loadAllBadges() {

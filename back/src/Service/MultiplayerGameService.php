@@ -7,7 +7,6 @@ use App\Entity\RoomPlayer;
 use App\Entity\GameSession;
 use App\Entity\Quiz;
 use App\Entity\User;
-use App\Entity\UserAnswer;
 use App\Repository\RoomRepository;
 use App\Repository\GameSessionRepository;
 use App\Repository\UserAnswerRepository;
@@ -290,6 +289,7 @@ class MultiplayerGameService
         }
         
         if (!in_array($questionId, $allowedQuestionIds)) {
+            throw new \Exception('Question non autorisée pour cette phase du jeu');
         }
 
         $sessionKey = 'game_' . $gameCode . '_user_' . $user->getId() . '_question_' . $questionId;
@@ -590,7 +590,7 @@ class MultiplayerGameService
 
             $this->mercureHub->publish($update);
         } catch (\Exception $e) {
-            // Log l'erreur pour debug
+            // Log l'erreur
             error_log("Erreur Mercure pour le topic {$topic}: " . $e->getMessage());
         }
     }
@@ -819,7 +819,13 @@ class MultiplayerGameService
             ],
             'answer' => [
                 new Assert\NotBlank(['message' => 'La réponse est requise']),
-                new Assert\Type(['type' => 'integer', 'message' => 'La réponse doit être un entier'])
+                new Assert\AtLeastOneOf([
+                    'constraints' => [
+                        new Assert\Type(['type' => 'integer', 'message' => 'La réponse doit être un entier']),
+                        new Assert\Type(['type' => 'array', 'message' => 'La réponse doit être un tableau'])
+                    ],
+                    'message' => 'La réponse doit être soit un entier soit un tableau'
+                ])
             ],
             'timeSpent' => [
                 new Assert\Optional([
