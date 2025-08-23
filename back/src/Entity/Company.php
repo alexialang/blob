@@ -15,15 +15,15 @@ class Company
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['quiz:read','company:read'])]
+    #[Groups(['quiz:read','company:read','user:admin_read'])]
     private ?int $id = null;
 
 
-    #[Groups(['quiz:read','company:read'])]
+    #[Groups(['quiz:read','company:read','user:admin_read'])]
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 
-    #[Groups(['company:read'])]
+    #[Groups(['company:read','user:admin_read'])]
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $dateCreation = null;
 

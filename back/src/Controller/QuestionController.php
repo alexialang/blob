@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Question;
 use App\Service\QuestionService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Validator\Exception\ValidationFailedException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -45,6 +46,7 @@ class QuestionController extends AbstractController
      * @OA\Security(name="bearerAuth")
      */
     #[Route('/', name: 'question_create', methods: ['POST'])]
+    #[IsGranted('CREATE_QUIZ')]
     public function create(Request $request): JsonResponse
     {
         try {
@@ -95,6 +97,7 @@ class QuestionController extends AbstractController
      * @OA\Security(name="bearerAuth")
      */
     #[Route('/{id}', name: 'question_update', methods: ['PUT', 'PATCH'])]
+    #[IsGranted('CREATE_QUIZ', subject: 'question')]
     public function update(Request $request, Question $question): JsonResponse
     {
         try {
@@ -104,7 +107,8 @@ class QuestionController extends AbstractController
         }
 
         try {
-            $question = $this->questionService->update($question, $data);
+            $user = $this->getUser();
+            $question = $this->questionService->update($question, $data, $user);
 
             return $this->json($question, 200, [], ['groups' => ['question:read']]);
         } catch (ValidationFailedException $e) {
@@ -123,8 +127,10 @@ class QuestionController extends AbstractController
      * @OA\Security(name="bearerAuth")
      */
     #[Route('/{id}', name: 'question_delete', methods: ['DELETE'])]
+    #[IsGranted('CREATE_QUIZ', subject: 'question')]
     public function delete(Question $question): JsonResponse
     {
+        $user = $this->getUser();
         $this->questionService->delete($question);
 
         return $this->json(null, 204);

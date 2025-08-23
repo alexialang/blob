@@ -20,6 +20,7 @@ export class AddMemberModalComponent implements OnInit, OnDestroy {
   @Output() modalClosed = new EventEmitter<void>();
 
   availableUsers$ = new BehaviorSubject<any[]>([]);
+  filteredUsers$ = new BehaviorSubject<any[]>([]);
   selectedUserId: number | null = null;
   selectedRoles: { [key: string]: boolean } = {
     'ROLE_USER': true
@@ -27,6 +28,7 @@ export class AddMemberModalComponent implements OnInit, OnDestroy {
   selectedPermissions: { [key: string]: boolean } = {};
   loading = false;
   errorMessage = '';
+  searchTerm = '';
 
   private destroy$ = new Subject<void>();
 
@@ -48,15 +50,59 @@ export class AddMemberModalComponent implements OnInit, OnDestroy {
     this.companyService.getAvailableUsers(this.companyId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (users: any[]) => {
+        next: (response: any) => {
+          let users: any[] = [];
+          if (response && response.success && Array.isArray(response.data)) {
+            users = response.data;
+          } else if (Array.isArray(response)) {
+            users = response;
+          } else {
+            users = [];
+          }
+          users = users.filter(user =>
+            user &&
+            user.id &&
+            user.isActive !== false &&
+            !user.deletedAt
+          );
+
           this.availableUsers$.next(users);
+          this.filteredUsers$.next(users);
+
           this.loading = false;
         },
         error: (error: any) => {
           this.errorMessage = 'Erreur lors du chargement des utilisateurs disponibles';
           this.loading = false;
+          this.availableUsers$.next([]);
+          this.filteredUsers$.next([]);
         }
       });
+  }
+
+  onSearchChange(searchTerm: string): void {
+    this.searchTerm = searchTerm;
+    const users = this.availableUsers$.value;
+
+    if (!Array.isArray(users)) {
+      console.warn('users n\'est pas un tableau:', users);
+      this.filteredUsers$.next([]);
+      return;
+    }
+
+    if (!searchTerm.trim()) {
+      this.filteredUsers$.next(users);
+      return;
+    }
+
+    const filtered = users.filter(user =>
+      user.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.pseudo?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    this.filteredUsers$.next(filtered);
   }
 
   selectUser(userId: number): void {

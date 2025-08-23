@@ -7,6 +7,7 @@ use App\Service\BadgeService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use OpenApi\Annotations as OA;
 
 #[Route('/api/badge')]
@@ -41,22 +42,12 @@ class BadgeController extends AbstractController
     }
 
     /**
-     * @OA\Put(summary="Modifier un badge", tags={"Badge"})
-     * @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer"))
-     * @OA\RequestBody(
-     *     required=true,
-     *     @OA\JsonContent(
-     *         type="object",
-     *         @OA\Property(property="name", type="string"),
-     *         @OA\Property(property="description", type="string"),
-     *         @OA\Property(property="image", type="string")
-     *     )
-     * )
-     * @OA\Response(response=200, description="Badge modifié")
+     * @OA\Post(summary="Initialiser les badges", tags={"Badge"})
+     * @OA\Response(response=200, description="Badges initialisés")
      * @OA\Security(name="bearerAuth")
      */
-
     #[Route('/initialize', name: 'badge_initialize', methods: ['POST'])]
+    #[IsGranted('MANAGE_USERS')]
     public function initialize(): JsonResponse
     {
         try {
@@ -66,6 +57,4 @@ class BadgeController extends AbstractController
             return $this->json(['error' => 'Erreur lors de l\'initialisation: ' . $e->getMessage()], 500);
         }
     }
-
-
 }

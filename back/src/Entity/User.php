@@ -20,25 +20,25 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['user:read','quiz:read','company:read'])]
+    #[Groups(['user:read','quiz:read','company:read','user:admin_read','user:public'])]
     private ?int $id = null;
-    #[Groups(['user:read', 'company:read','quiz:read'])]
+    #[Groups(['user:read', 'company:read','quiz:read','user:admin_read','user:public'])]
     #[ORM\Column(length: 180)]
     private ?string $email = null;
 
 
-    #[Groups(['user:read','quiz:read'])]
+    #[Groups(['user:read','quiz:read','user:admin_read'])]
     #[ORM\Column]
     private array $roles = [];
 
     #[ORM\Column]
     private ?string $password = null;
 
-    #[Groups(['user:read'])]
+    #[Groups(['user:read','user:admin_read'])]
     #[ORM\Column]
     private ?\DateTimeImmutable $dateRegistration = null;
 
-    #[Groups(['user:read'])]
+    #[Groups(['user:read','user:admin_read'])]
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $lastAccess = null;
 
@@ -46,36 +46,37 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
 
     #[ORM\ManyToOne(inversedBy: 'users')]
+    #[Groups(['user:read', 'user:admin_read'])]
     private ?Company $company = null;
 
-    #[Groups(['user:read'])]
+    #[Groups(['user:read','user:admin_read'])]
     #[ORM\ManyToMany(targetEntity: Badge::class, inversedBy: 'users')]
     private Collection $badges;
 
-    #[Groups(['user:read'])]
+    #[Groups(['user:read','user:admin_read'])]
     #[ORM\OneToMany(targetEntity: Quiz::class, mappedBy: 'user')]
     private Collection $quizs;
 
-    #[Groups(['user:read'])]
+    #[Groups(['user:read','user:admin_read'])]
     #[ORM\OneToMany(targetEntity: UserAnswer::class, mappedBy: 'user')]
     private Collection $userAnswers;
 
-    #[Groups(['user:read'])]
+    #[Groups(['user:read','user:admin_read'])]
     #[ORM\OneToMany(targetEntity: UserPermission::class, mappedBy: 'user')]
     private Collection $userPermissions;
 
-    #[Groups(['user:read'])]
+    #[Groups(['user:read','user:admin_read'])]
     #[ORM\ManyToMany(targetEntity: Group::class, inversedBy: 'users')]
     private Collection $groups;
 
-    #[Groups(['user:read'])]
+    #[Groups(['user:read','user:admin_read','user:public'])]
     #[ORM\Column(length: 70)]
     private ?string $firstName = null;
-    #[Groups(['user:read'])]
+    #[Groups(['user:read','user:admin_read','user:public'])]
     #[ORM\Column(length: 70)]
     private ?string $lastName = null;
 
-    #[Groups(['user:read'])]
+    #[Groups(['user:read','user:admin_read'])]
     #[ORM\Column]
     private ?bool $isActive = true;
 

@@ -17,7 +17,7 @@ export function createPermissionGuard(permission: string): CanActivateFn {
     return auth.hasPermission(permission).pipe(
       map(hasPermission => {
         if (!hasPermission) {
-          router.navigate(['/accueil']);
+          router.navigate(['/quiz']);
           return false;
         }
         return true;

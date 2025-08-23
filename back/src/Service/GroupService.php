@@ -34,17 +34,49 @@ class GroupService
     public function getGroupsByUser(User $user): array
     {
         $companyId = $user->getCompanyId();
-        
+
         if (!$companyId) {
             return [];
         }
-        
+
         $company = $this->em->getRepository(Company::class)->find($companyId);
         if (!$company) {
             return [];
         }
-        
+
         return $this->groupRepository->findBy(['company' => $company]);
+    }
+
+    public function getGroupsByCompany(Company $company): array
+    {
+        $groups = $this->groupRepository->findByCompany($company->getId());
+        
+        $data = [];
+        foreach ($groups as $group) {
+            $groupUsers = [];
+            foreach ($group->getUsers() as $user) {
+                $groupUsers[] = [
+                    'id' => $user->getId(),
+                    'email' => $user->getEmail(),
+                    'firstName' => $user->getFirstName(),
+                    'lastName' => $user->getLastName(),
+                    'pseudo' => $user->getPseudo(),
+                    'avatar' => $user->getAvatar()
+                ];
+            }
+            
+            $data[] = [
+                'id' => $group->getId(),
+                'name' => $group->getName(),
+                'accesCode' => $group->getAccesCode(),
+                'companyId' => $group->getCompany() ? $group->getCompany()->getId() : null,
+                'companyName' => $group->getCompany() ? $group->getCompany()->getName() : null,
+                'userCount' => $group->getUsers()->count(),
+                'users' => $groupUsers
+            ];
+        }
+        
+        return $data;
     }
 
     public function find(int $id): ?Group
@@ -82,6 +114,30 @@ class GroupService
         return $group;
     }
 
+    public function createForCompany(array $data, Company $company): Group
+    {
+        $this->validateGroupData($data);
+        
+        $group = new Group();
+        $group->setName($data['name']);
+        $group->setAccesCode($data['acces_code'] ?? '');
+        $group->setCompany($company);
+
+        $this->em->persist($group);
+        $this->em->flush();
+
+        if (isset($data['member_ids']) && is_array($data['member_ids'])) {
+            foreach ($data['member_ids'] as $userId) {
+                $user = $this->em->getRepository(User::class)->find($userId);
+                if ($user && $user->getCompany() && $user->getCompany()->getId() === $company->getId()) {
+                    $this->addUserToGroup($group, $user);
+                }
+            }
+        }
+
+        return $group;
+    }
+
     public function update(Group $group, array $data): Group
     {
         $this->validateGroupData($data);
@@ -101,27 +157,38 @@ class GroupService
 
         return $group;
     }
-
     public function delete(Group $group): void
     {
         $this->em->remove($group);
         $this->em->flush();
     }
 
-    public function addUserToGroup(Group $group, User $user): void
+    public function addUserToGroup(Group $group, User $user): bool
     {
-        if (!$group->getUsers()->contains($user)) {
-            $group->addUser($user);
-            $this->em->flush();
+        if (!$user->getCompany() || $user->getCompany()->getId() !== $group->getCompany()->getId()) {
+            throw new \InvalidArgumentException('L\'utilisateur doit appartenir à la même entreprise que le groupe');
         }
+
+        if ($this->groupRepository->isUserInGroup($group->getId(), $user->getId())) {
+            return false;
+        }
+
+        $group->addUser($user);
+        $this->em->flush();
+
+        return true;
     }
 
-    public function removeUserFromGroup(Group $group, User $user): void
+    public function removeUserFromGroup(Group $group, User $user): bool
     {
-        if ($group->getUsers()->contains($user)) {
-            $group->removeUser($user);
-            $this->em->flush();
+        if (!$this->groupRepository->isUserInGroup($group->getId(), $user->getId())) {
+            return false;
         }
+        
+        $group->removeUser($user);
+        $this->em->flush();
+        
+        return true;
     }
 
     private function validateGroupData(array $data): void

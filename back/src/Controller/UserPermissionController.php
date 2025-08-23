@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\UserPermission;
 use App\Service\UserPermissionService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Validator\Exception\ValidationFailedException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -27,7 +28,7 @@ class UserPermissionController extends AbstractController
     {
         $permissions = $this->userPermissionService->list();
 
-        return $this->json($permissions, 200, [], ['groups' => ['user_permission:read']]);
+        return $this->json($permissions, 200, [], ['groups' => ['user_permission']]);
     }
 
     /**
@@ -43,6 +44,7 @@ class UserPermissionController extends AbstractController
      * @OA\Security(name="bearerAuth")
      */
     #[Route('/', name: 'user_permission_create', methods: ['POST'])]
+    #[IsGranted('MANAGE_USERS')]
     public function create(Request $request): JsonResponse
     {
         try {
@@ -86,6 +88,7 @@ class UserPermissionController extends AbstractController
      * @OA\Security(name="bearerAuth")
      */
     #[Route('/{id}', name: 'user_permission_update', methods: ['PUT', 'PATCH'])]
+    #[IsGranted('MANAGE_USERS', subject: 'userPermission')]
     public function update(Request $request, UserPermission $userPermission): JsonResponse
     {
         try {
@@ -112,6 +115,7 @@ class UserPermissionController extends AbstractController
      * @OA\Security(name="bearerAuth")
      */
     #[Route('/{id}', name: 'user_permission_delete', methods: ['DELETE'])]
+    #[IsGranted('MANAGE_USERS', subject: 'userPermission')]
     public function delete(UserPermission $userPermission): JsonResponse
     {
         $this->userPermissionService->delete($userPermission);

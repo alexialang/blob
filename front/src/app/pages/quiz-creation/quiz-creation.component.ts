@@ -348,7 +348,7 @@ export class QuizCreationComponent implements OnInit {
   }
 
   loadQuizForEdit(id: number): void {
-    this.quizService.getQuiz(id).subscribe(res => {
+    this.quizService.getQuizForEdit(id).subscribe(res => {
       this.quizForm.patchValue({
         title: res.title,
         description: res.description,

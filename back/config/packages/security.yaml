@@ -40,6 +40,7 @@ security:
             refresh_jwt:
                 check_path: /api/token/refresh
             entry_point: jwt
+            lazy: false
         main:
             lazy: true
             provider: app_user_provider
@@ -62,13 +63,57 @@ security:
         - { path: ^/api/quiz/[0-9]+/average-rating$, methods: [ GET ], roles: PUBLIC_ACCESS }
         - { path: ^/api/quiz/[0-9]+/public-leaderboard$, methods: [ GET ], roles: PUBLIC_ACCESS }
         - { path: ^/api/category-quiz, methods: [ GET ], roles: PUBLIC_ACCESS }
-
-
         - { path: ^/api/donations, roles: PUBLIC_ACCESS }
+        - { path: ^/api/quiz/[0-9]+/edit$, methods: [ GET ], roles: ROLE_USER }
+        - { path: ^/api/quiz/[0-9]+$, methods: [ PUT, PATCH ], roles: ROLE_USER }
+        - { path: ^/api/quiz/[0-9]+$, methods: [ DELETE ], roles: ROLE_USER }
+        
+        - { path: ^/api/user$, methods: [ GET ], roles: ROLE_USER }
+        - { path: ^/api/user/profile, methods: [ GET ], roles: ROLE_USER }
+        - { path: ^/api/user/profile/update, methods: [ PUT, PATCH ], roles: ROLE_USER }
+        - { path: ^/api/user/statistics, methods: [ GET ], roles: ROLE_USER }
+        - { path: ^/api/user/game-history, methods: [ GET ], roles: ROLE_USER }
+        - { path: ^/api/leaderboard, methods: [ GET ], roles: ROLE_USER }
+        
+        - { path: ^/api/question$, methods: [ POST ], roles: ROLE_USER }
+        - { path: ^/api/question/[0-9]+$, methods: [ PUT, PATCH ], roles: ROLE_USER }
+        - { path: ^/api/question/[0-9]+$, methods: [ DELETE ], roles: ROLE_USER }
+        
+        - { path: ^/api/answer$, methods: [ POST ], roles: ROLE_USER }
+        - { path: ^/api/answer/[0-9]+$, methods: [ PUT, PATCH ], roles: ROLE_USER }
+        - { path: ^/api/answer/[0-9]+$, methods: [ DELETE ], roles: ROLE_USER }
+        
+        - { path: ^/api/user-answer$, methods: [ GET ], roles: ROLE_USER }
+        - { path: ^/api/user-answer$, methods: [ POST ], roles: ROLE_USER }
+        - { path: ^/api/user-answer/[0-9]+$, methods: [ PUT, PATCH ], roles: ROLE_USER }
+        - { path: ^/api/user-answer/[0-9]+$, methods: [ DELETE ], roles: ROLE_USER }
+        - { path: ^/api/user-answer/game-result, methods: [ POST ], roles: ROLE_USER }
+        - { path: ^/api/user-answer/rate-quiz, methods: [ POST ], roles: ROLE_USER }
+        - { path: ^/api/user-answer/leaderboard/quiz/[0-9]+$, methods: [ GET ], roles: ROLE_USER }
+        - { path: ^/api/user-answer/quiz/[0-9]+/rating, methods: [ GET ], roles: ROLE_USER }
+        
+        - { path: ^/api/multiplayer/room/create, methods: [ POST ], roles: ROLE_USER }
+        - { path: ^/api/multiplayer/room/[^/]+/join, methods: [ POST ], roles: ROLE_USER }
+        - { path: ^/api/multiplayer/room/[^/]+/leave, methods: [ POST ], roles: ROLE_USER }
+        - { path: ^/api/multiplayer/room/[^/]+/start, methods: [ POST ], roles: ROLE_USER }
+        - { path: ^/api/multiplayer/game/[^/]+/answer, methods: [ POST ], roles: ROLE_USER }
+        - { path: ^/api/multiplayer/game/[^/]+/end, methods: [ POST ], roles: ROLE_USER }
+        - { path: ^/api/multiplayer/invite/[^/]+$, methods: [ POST ], roles: ROLE_USER }
+        - { path: ^/api/multiplayer/users/available, methods: [ GET ], roles: ROLE_USER }
+        - { path: ^/api/multiplayer/groups/company, methods: [ GET ], roles: ROLE_USER }
+        - { path: ^/api/multiplayer/members/company, methods: [ GET ], roles: ROLE_USER }
+        
+        - { path: ^/api/group/my-company, methods: [ GET ], roles: ROLE_USER }
+        - { path: ^/api/group/my-groups, methods: [ GET ], roles: ROLE_USER }
+        - { path: ^/api/group$, methods: [ POST ], roles: ROLE_USER }
+        - { path: ^/api/group/[0-9]+/add-user, methods: [ POST ], roles: ROLE_USER }
+        - { path: ^/api/group/[0-9]+/remove-user/[0-9]+$, methods: [ DELETE ], roles: ROLE_USER }
+        
+        - { path: ^/api/global-statistics/company/[0-9]+$, methods: [ GET ], roles: ROLE_USER }
+        
+        - { path: ^/api/badge/initialize, methods: [ POST ], roles: ROLE_USER }
 
-        - { path: ^/api/companies, roles: ROLE_ADMIN }
 
-        - { path: ^/api, roles: ROLE_USER }
 
 when@test:
     security:

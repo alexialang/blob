@@ -1,6 +1,6 @@
 <div class="company-details-page">
 
-<div class="container" *ngIf="!loadError">
+<div class="container">
   <div *ngIf="company">
     <h1 class="page-title">Détails <br /> de <span class="company-highlight" [ngStyle]="{ 'color': highlightColor }">{{ company.name }}</span></h1>
     <div class="company-info">
@@ -30,10 +30,12 @@
       </button>
     </div>
 
-    <div class="company-statistics-section mb-4">
-      <h3 class="section-title">Statistiques de l'entreprise</h3>
-      <app-global-statistics [companyId]="company?.id ?? null"></app-global-statistics>
-    </div>
+    <ng-container *ngIf="canViewStats">
+      <div class="company-statistics-section mb-4">
+        <h3 class="section-title">Statistiques de l'entreprise</h3>
+        <app-global-statistics [companyId]="company?.id ?? null"></app-global-statistics>
+      </div>
+    </ng-container>
 
     <div class="tabs-container mb-4">
       <div class="tabs-header">
@@ -188,6 +190,18 @@
       <app-pagination [totalItems]="filteredCollaborators.length" [pageSize]="pageSize" [page]="page" (pageChange)="onPageChange($event)"></app-pagination>
     </div>
 
+    <div *ngIf="showAddMemberModal" class="modal-overlay">
+      <div class="modal-container">
+        <ng-container *ngIf="company?.id as companyId">
+          <app-add-member-modal
+            [companyId]="companyId"
+            (memberAdded)="onMemberAdded($event)"
+            (modalClosed)="onModalClosed()"
+          ></app-add-member-modal>
+        </ng-container>
+      </div>
+    </div>
+
     <div *ngIf="showCreateGroupModal" class="modal-overlay">
       <div class="modal-content">
         <h3>Créer un groupe</h3>
@@ -210,17 +224,6 @@
           <button tuiButton size="s" appearance="secondary" (click)="cancelCreateGroup()">Annuler</button>
           <button tuiButton size="s" appearance="primary" (click)="confirmCreateGroup()">Valider</button>
         </div>
-      </div>
-    </div>
-
-    <div *ngIf="showAddMemberModal" class="modal-overlay">
-      <div class="modal-container">
-        <ng-container *ngIf="company?.id as companyId">
-          <app-add-member-modal
-            [companyId]="companyId"
-            (memberAdded)="onMemberAdded($event)"
-          ></app-add-member-modal>
-        </ng-container>
       </div>
     </div>
   </div>

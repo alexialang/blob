@@ -13,15 +13,15 @@ class UserPermission
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['user:read', 'user_permission:read'])]
+    #[Groups(['user:read', 'user_permission:read', 'user:admin_read'])]
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', enumType: Permission::class)]
-    #[Groups(['user:read', 'user_permission:read'])]
+    #[Groups(['user:read', 'user_permission:read', 'user:admin_read'])]
     private ?Permission $permission = null;
 
     #[ORM\ManyToOne(inversedBy: 'userPermissions')]
-    #[Groups(['user:read', 'user_permission:read'])]
+    #[Groups(['user:read', 'user_permission:read', 'user:admin_read'])]
     private ?User $user = null;
 
     public function getId(): ?int

@@ -12,6 +12,7 @@ import { FileDownloadService } from '../../services/file-download.service';
 import { Subject, takeUntil, forkJoin } from 'rxjs';
 import { RouterModule } from '@angular/router';
 import { AddCompanyModalComponent } from '../../components/add-company-modal/add-company-modal.component';
+import { HasPermissionDirective } from '../../directives/has-permission.directive';
 
 interface Group {
   id: number;
@@ -46,6 +47,7 @@ interface CompanyRow {
     PaginationComponent,
     RouterModule,
     AddCompanyModalComponent,
+    HasPermissionDirective,
   ],
   providers: [],
   templateUrl: './company-management.component.html',
@@ -227,13 +229,11 @@ export class CompanyManagementComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response: any) => {
-          // Vérifier le format de réponse
           const companies = response.data || response;
           this.rows = companies.map((c: any) => {
-            const userCount = c.users?.length ?? 0;
+            const userCount = c.userCount ?? c.users?.length ?? 0;
             const groups: Group[] = c.groups ?? [];
-            const groupName = groups.length ? groups[0].name : null;
-
+            
             return {
               id: c.id,
               selected: false,
@@ -241,9 +241,9 @@ export class CompanyManagementComponent implements OnInit, OnDestroy {
               userCount: userCount,
               groups: groups,
               users: c.users ?? [],
-              activeUsers: Math.floor(userCount * (0.6 + Math.random() * 0.35)),
-              createdAt: new Date(Date.now() - (Math.floor(Math.random() * 1000) + 30) * 24 * 60 * 60 * 1000).toLocaleDateString('fr-FR'),
-              lastActivity: new Date(Date.now() - Math.floor(Math.random() * 7) * 24 * 60 * 60 * 1000).toLocaleDateString('fr-FR'),
+              activeUsers: c.activeUsers ?? 0,
+              createdAt: c.createdAt ? new Date(c.createdAt).toLocaleDateString('fr-FR') : '—',
+              lastActivity: c.lastActivity ? new Date(c.lastActivity).toLocaleDateString('fr-FR') : 'Aucune activité',
             };
           });
 

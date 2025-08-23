@@ -30,8 +30,10 @@
         <ul class="nav-list" role="menubar">
           <li class="nav-item" role="none"><a routerLink="/quiz" role="menuitem" aria-label="Voir tous les quiz">Quiz</a></li>
           <li class="nav-item" role="none" *ngIf="!(isGuest$ | async)"><a routerLink="/classement" role="menuitem" aria-label="Voir le classement">Classement</a></li>
-          <li class="nav-item" role="none" *ngIf="!(isGuest$ | async) && (canCreateQuiz$ | async)"><a routerLink="/creation-quiz" role="menuitem" aria-label="Créer un nouveau quiz">Créer un quiz</a></li>
-          <li class="nav-item dropdown" role="none" *ngIf="!(isGuest$ | async) && ((canManageUsers$ | async) || (isAdmin$ | async) || (canViewResults$ | async))"
+          <li class="nav-item" role="none" *ngIf="!(isGuest$ | async)">
+            <a routerLink="/creation-quiz" role="menuitem" aria-label="Créer un nouveau quiz" *hasPermission="'CREATE_QUIZ'">Créer un quiz</a>
+          </li>
+          <li class="nav-item dropdown" role="none" *ngIf="!(isGuest$ | async)"
               (mouseenter)="showGestionDropdown = true"
               (mouseleave)="showGestionDropdown = false"
               (keydown.enter)="showGestionDropdown = !showGestionDropdown"
@@ -41,9 +43,12 @@
               <span class="dropdown-arrow" aria-hidden="true">▼</span>
             </a>
             <ul class="dropdown-menu" [class.show]="showGestionDropdown" role="menu" aria-label="Sous-menu de gestion">
-              <li role="none" *ngIf="canManageUsers$ | async"><a routerLink="/gestion-utilisateur" (click)="showGestionDropdown = false" role="menuitem" aria-label="Gérer les utilisateurs">Utilisateurs</a></li>
+              <li role="none" *hasPermission="'MANAGE_USERS'"><a routerLink="/gestion-utilisateur" (click)="showGestionDropdown = false" role="menuitem" aria-label="Gérer les utilisateurs">Utilisateurs</a></li>
               <li role="none" *ngIf="isAdmin$ | async"><a routerLink="/gestion-entreprise" (click)="showGestionDropdown = false" role="menuitem" aria-label="Gérer les entreprises">Entreprises</a></li>
-              <li role="none" *ngIf="canViewResults$ | async"><a routerLink="/gestion-quiz" (click)="showGestionDropdown = false" role="menuitem" aria-label="Gérer les quiz">Quiz</a></li>
+              <li role="none" *hasPermission="'CREATE_QUIZ'"><a routerLink="/gestion-quiz" (click)="showGestionDropdown = false" role="menuitem" aria-label="Gérer les quiz">Quiz</a></li>
+              <li role="none" *ngIf="(userCompanyId$ | async)">
+                <a [routerLink]="'/company/' + (userCompanyId$ | async)" (click)="showGestionDropdown = false" role="menuitem" aria-label="Voir mon entreprise" *hasPermission="'VIEW_RESULTS'">Mon Entreprise</a>
+              </li>
             </ul>
           </li>
         </ul>
@@ -99,11 +104,14 @@
 
 <div class="mobile-drawer" *ngIf="open()" id="mobile-menu" role="navigation" aria-label="Menu mobile">
   <nav class="mobile-menu">
-    <div class="mobile-gestion" *ngIf="!(isGuest$ | async) && ((canManageUsers$ | async) || (isAdmin$ | async) || (canViewResults$ | async))">
+    <div class="mobile-gestion" *ngIf="!(isGuest$ | async)">
       <p class="mobile-section-title" id="mobile-gestion-title">Gestion</p>
-      <a routerLink="/gestion-utilisateur" (click)="close()" *ngIf="canManageUsers$ | async" aria-labelledby="mobile-gestion-title">Utilisateurs</a>
+      <a routerLink="/gestion-utilisateur" (click)="close()" *hasPermission="'MANAGE_USERS'" aria-labelledby="mobile-gestion-title">Utilisateurs</a>
       <a routerLink="/gestion-entreprise" (click)="close()" *ngIf="isAdmin$ | async" aria-labelledby="mobile-gestion-title">Entreprises</a>
-      <a routerLink="/gestion-quiz" (click)="close()" *ngIf="canViewResults$ | async" aria-labelledby="mobile-gestion-title">Quiz</a>
+      <a routerLink="/gestion-quiz" (click)="close()" *hasPermission="'CREATE_QUIZ'" aria-labelledby="mobile-gestion-title">Quiz</a>
+      <ng-container *ngIf="(userCompanyId$ | async)">
+        <a [routerLink]="'/company/' + (userCompanyId$ | async)" (click)="close()" *hasPermission="'VIEW_RESULTS'" aria-labelledby="mobile-gestion-title">Mon Entreprise</a>
+      </ng-container>
     </div>
   </nav>
 </div>

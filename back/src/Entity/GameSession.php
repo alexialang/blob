@@ -17,7 +17,7 @@ class GameSession
     private ?string $gameCode = null;
 
     #[ORM\OneToOne(targetEntity: Room::class, inversedBy: 'gameSession')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Room $room = null;
 
     #[ORM\Column(length: 50)]

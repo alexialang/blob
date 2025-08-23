@@ -11,6 +11,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import {  Subject, takeUntil, catchError, of } from 'rxjs';
 import { GlobalStatisticsComponent } from '../../components/global-statistics/global-statistics.component';
 import { CompanyService } from '../../services/company.service';
+import { AuthService } from '../../services/auth.service';
 import { PaginationComponent } from '../../components/pagination/pagination.component';
 import { AddMemberModalComponent } from '../../components/add-member-modal/add-member-modal.component';
 import { TuiDialogService, TuiAlertService } from '@taiga-ui/core';
@@ -53,7 +54,7 @@ interface Company {
   styleUrls: ['./company-details.component.scss']
 })
 export class CompanyDetailsComponent implements OnInit, OnDestroy {
-  @ViewChild(GlobalStatisticsComponent) globalStats!: GlobalStatisticsComponent;
+  @ViewChild(GlobalStatisticsComponent) globalStats?: GlobalStatisticsComponent;
 
   company: Company | null = null;
   allCollaborators: Collaborator[] = [];
@@ -70,6 +71,7 @@ export class CompanyDetailsComponent implements OnInit, OnDestroy {
   page = 1;
   pageSize = 10;
   loadError = false;
+  canViewStats = false;
 
   showAddMemberModal = false;
   showCreateGroupModal = false;
@@ -86,6 +88,7 @@ export class CompanyDetailsComponent implements OnInit, OnDestroy {
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly companyService: CompanyService,
+    private readonly authService: AuthService,
     private readonly cdr: ChangeDetectorRef,
     private readonly alertService: TuiAlertService,
     private readonly dialogService: TuiDialogService
@@ -94,7 +97,9 @@ export class CompanyDetailsComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.generateRandomColor();
     const companyId = Number(this.route.snapshot.paramMap.get('id'));
-    if (companyId) this.loadCompany(companyId);
+    if (companyId) {
+      this.loadCompany(companyId);
+    }
   }
 
   ngOnDestroy(): void {
@@ -103,16 +108,28 @@ export class CompanyDetailsComponent implements OnInit, OnDestroy {
   }
 
   private loadCompany(companyId: number): void {
+    this.checkUserPermissions();
+
+    if (this.canViewStats) {
+      this.loadCompanyFull(companyId);
+    } else {
+      this.loadCompanyBasic(companyId);
+    }
+  }
+
+  private loadCompanyFull(companyId: number): void {
     this.companyService.getCompany(companyId)
       .pipe(
         takeUntil(this.destroy$),
-        catchError(() => {
+        catchError((error) => {
           this.loadError = true;
           return of(null);
         })
       )
       .subscribe((data: any) => {
-        if (!data || !data.success) return;
+        if (!data || !data.success) {
+          return;
+        }
         this.company = data.data;
         if (this.company && this.company.groups) {
           this.company.groups.forEach((group: any) => group.expanded = false);
@@ -132,6 +149,42 @@ export class CompanyDetailsComponent implements OnInit, OnDestroy {
 
         this.cdr.markForCheck();
       });
+  }
+
+  private loadCompanyBasic(companyId: number): void {
+    this.companyService.getCompanyBasic(companyId)
+      .pipe(
+        takeUntil(this.destroy$),
+        catchError((error) => {
+          this.loadError = true;
+          return of(null);
+        })
+      )
+      .subscribe((data: any) => {
+        if (!data || !data.success) {
+          return;
+        }
+        this.company = data.data;
+        if (this.company && this.company.groups) {
+          this.company.groups.forEach((group: any) => group.expanded = false);
+        }
+        this.prepareCollaborators();
+
+        this.cdr.markForCheck();
+      });
+  }
+
+  private checkUserPermissions(): void {
+    this.authService.hasPermission('VIEW_RESULTS').subscribe({
+      next: (hasPermission) => {
+        this.canViewStats = hasPermission;
+        this.cdr.markForCheck();
+      },
+      error: (error) => {
+        this.canViewStats = false;
+        this.cdr.markForCheck();
+      }
+    });
   }
 
   private prepareCollaborators(): void {
@@ -250,8 +303,13 @@ export class CompanyDetailsComponent implements OnInit, OnDestroy {
 
   onMemberAdded(member: any): void {
     this.hideAddMemberModal();
-    this.loadCompany(this.company?.id || 0);
-    this.alertService.open('Membre ajouté avec succès !').subscribe();
+    if (this.company?.id) {
+      this.loadCompany(this.company.id);
+    }
+  }
+
+  onModalClosed(): void {
+    this.hideAddMemberModal();
   }
 
   showCreateGroupModalAction(): void {
@@ -410,10 +468,10 @@ export class CompanyDetailsComponent implements OnInit, OnDestroy {
   }
 
   editCompany(): void {
-    this.alertService.open('Fonctionnalité de modification d\'entreprise à implémenter !').subscribe();
+
   }
 
   deleteCompany(): void {
-    this.alertService.open('Fonctionnalité de suppression d\'entreprise à implémenter !').subscribe();
+
   }
 }

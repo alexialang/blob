@@ -1,8 +1,4 @@
 <div class="mcq-question-container" role="region" [attr.aria-labelledby]="'question-instruction-' + question.id">
-  <div class="question-instruction" role="heading" aria-level="3" id="question-instruction-{{ question.id }}">
-    <span>Choisissez la bonne réponse</span>
-  </div>
-
   <div class="answers-container" role="radiogroup" aria-label="Options de réponse">
     <div
       *ngFor="let answer of question.answers; let i = index"

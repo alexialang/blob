@@ -55,7 +55,7 @@
     </section>
 
     <section class="quiz-section my-quizzes-section"
-             *ngIf="myQuizzesWithBlobs.length">
+             *ngIf="myQuizzesWithBlobs.length && isUserLoggedIn">
       <h2>Mes Quiz ({{myQuizzes.length}})</h2>
       <a routerLink="/creation-quiz" class="btn-create">+ Créer</a>
       <div class="cards-grid grid grid-cols-4 gap-4">

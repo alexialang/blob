@@ -19,7 +19,6 @@ export function AuthInterceptor(
       'token/refresh',
       'quiz/list',
       'quiz/organized',
-      'quiz/[0-9]+',
       'quiz/[0-9]+/average-rating',
       'quiz/[0-9]+/public-leaderboard',
       'category-quiz',
@@ -32,7 +31,6 @@ export function AuthInterceptor(
 
     const isPublicUrl = publicUrls.some(url => {
       if (url.includes('[0-9]+')) {
-        // Gestion des patterns avec regex pour les URLs avec paramètres numériques
         const regex = new RegExp(url.replace(/\[0-9\]\+/g, '\\d+'));
         return regex.test(req.url);
       }

@@ -37,12 +37,36 @@
         </button>
         <div class="dropdown-menu" *ngIf="open">
           <button
-            *ngFor="let item of items"
+            *hasPermission="'MANAGE_USERS'"
             class="dropdown-item"
             type="button"
-            (click)="onDropdownAction(item)"
+            (click)="onDropdownAction('Ajouter entreprise')"
           >
-            {{ item }}
+            Ajouter entreprise
+          </button>
+          <button
+            *hasPermission="'MANAGE_USERS'"
+            class="dropdown-item"
+            type="button"
+            (click)="onDropdownAction('Exporter CSV')"
+          >
+            Exporter CSV
+          </button>
+          <button
+            *hasPermission="'MANAGE_USERS'"
+            class="dropdown-item"
+            type="button"
+            (click)="onDropdownAction('Exporter JSON')"
+          >
+            Exporter JSON
+          </button>
+          <button
+            *hasPermission="'MANAGE_USERS'"
+            class="dropdown-item"
+            type="button"
+            (click)="onDropdownAction('Importer CSV')"
+          >
+            Importer CSV
           </button>
         </div>
       </div>
@@ -59,6 +83,7 @@
       <tr>
         <th tuiTh class="th-checkbox">
           <input
+            *hasPermission="'MANAGE_USERS'"
             type="checkbox"
             tuiCheckbox
             [ngModel]="allSelected"
@@ -100,6 +125,7 @@
         <th tuiTh class="th-action">
           Action
           <button
+            *hasPermission="'MANAGE_USERS'"
             tuiButton
             appearance="action"
             size="xs"
@@ -115,7 +141,7 @@
       <tbody tuiTbody>
       <tr *ngFor="let row of pagedRows" class="table-row">
         <td tuiTd>
-          <input type="checkbox" tuiCheckbox [(ngModel)]="row.selected" />
+          <input *hasPermission="'MANAGE_USERS'" type="checkbox" tuiCheckbox [(ngModel)]="row.selected" />
         </td>
         <td tuiTd class="td-company">
           <div [tuiCell]="size" class="d-flex align-center gap-2 company-cell">
@@ -153,6 +179,7 @@
           <div class="d-flex gap-2">
             <a [routerLink]="['/company', row.id]" class="link-profile">Voir détails</a>
             <button
+              *hasPermission="'MANAGE_USERS'"
               tuiButton
               appearance="action"
               size="xs"
@@ -161,6 +188,7 @@
               class="btn-edit"
             ></button>
             <button
+              *hasPermission="'MANAGE_USERS'"
               tuiButton
               appearance="action"
               size="xs"

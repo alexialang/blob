@@ -11,6 +11,8 @@ use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Exception\ValidationFailedException;
+use App\Entity\UserPermission;
+use App\Enum\Permission;
 
 class CompanyService
 {
@@ -42,13 +44,6 @@ class CompanyService
             return [$user->getCompany()];
         }
         return [];
-    }
-
-
-    public function countByUser(User $user): int
-    {
-        $companies = $this->findByUser($user);
-        return count($companies);
     }
 
     public function find(int $id): ?Company
@@ -206,15 +201,29 @@ class CompanyService
 
     public function getCompanyStats(Company $company): array
     {
+        $activeUsersCount = 0;
+        $lastActivity = null;
+        $thirtyDaysAgo = new \DateTime('-30 days');
+        
+        foreach ($company->getUsers() as $user) {
+            if ($user->getLastAccess() && $user->getLastAccess() > $thirtyDaysAgo && $user->isActive()) {
+                $activeUsersCount++;
+            }
+            
+            if ($user->getLastAccess() && (!$lastActivity || $user->getLastAccess() > $lastActivity)) {
+                $lastActivity = $user->getLastAccess();
+            }
+        }
+
         return [
             'id' => $company->getId(),
             'name' => $company->getName(),
             'userCount' => $company->getUsers()->count(),
-            'activeUsers' => $company->getUsers()->filter(fn($user) => $user->isIsActive())->count(),
+            'activeUsers' => $activeUsersCount,
             'groupCount' => $company->getGroups()->count(),
             'quizCount' => $company->getQuizs()->count(),
             'createdAt' => $company->getDateCreation() ? $company->getDateCreation()->format('Y-m-d H:i:s') : null,
-            'lastActivity' => $this->getLastActivity($company)
+            'lastActivity' => $lastActivity ? $lastActivity->format('Y-m-d H:i:s') : null
         ];
     }
 
@@ -224,108 +233,58 @@ class CompanyService
         
         foreach ($company->getUsers() as $user) {
             if ($user->getLastAccess()) {
-                $accessTime = $user->getLastAccess()->format('Y-m-d H:i:s');
-                if (!$lastActivity || $accessTime > $lastActivity) {
-                    $lastActivity = $accessTime;
+                if (!$lastActivity || $user->getLastAccess() > $lastActivity) {
+                    $lastActivity = $user->getLastAccess();
                 }
             }
         }
         
-        return $lastActivity;
+        return $lastActivity ? $lastActivity->format('Y-m-d H:i:s') : null;
     }
 
-    public function assignUserToCompany(int $userId, int $companyId, array $roles = ['ROLE_USER'], array $permissions = []): array
+    public function assignUserToCompany(Company $company, int $userId, array $roles, array $permissions): array
     {
-        $user = $this->em->getRepository(\App\Entity\User::class)->find($userId);
+        $user = $this->em->getRepository(User::class)->find($userId);
         if (!$user) {
             throw new \InvalidArgumentException('Utilisateur non trouvé');
         }
-
-        $company = $this->em->getRepository(Company::class)->find($companyId);
-        if (!$company) {
-            throw new \InvalidArgumentException('Entreprise non trouvée');
-        }
-
-        if ($user->getCompany() && $user->getCompany()->getId() === $companyId) {
+        
+        if ($user->getCompany() && $user->getCompany()->getId() === $company->getId()) {
             throw new \InvalidArgumentException('L\'utilisateur est déjà dans cette entreprise');
         }
-
+        
         $user->setCompany($company);
-
-        if (!in_array('ROLE_USER', $roles)) {
-            $roles[] = 'ROLE_USER';
-        }
+        
         $user->setRoles($roles);
-
-        foreach ($user->getUserPermissions() as $userPermission) {
-            $this->em->remove($userPermission);
+        
+        $existingPermissions = $this->em->getRepository(UserPermission::class)->findBy(['user' => $user]);
+        foreach ($existingPermissions as $permission) {
+            $this->em->remove($permission);
         }
-
-        foreach ($permissions as $permission) {
+        
+        foreach ($permissions as $permissionName) {
             try {
-                $userPermission = new \App\Entity\UserPermission();
+                $permission = Permission::from($permissionName);
+                $userPermission = new UserPermission();
                 $userPermission->setUser($user);
-                
-                $permissionEnum = \App\Enum\Permission::from($permission);
-                $userPermission->setPermission($permissionEnum);
+                $userPermission->setPermission($permission);
                 $this->em->persist($userPermission);
             } catch (\ValueError $e) {
                 continue;
             }
         }
-
+        
         $this->em->flush();
-
+        
         return [
-            'success' => true,
-            'message' => 'Utilisateur assigné avec succès',
-            'user' => [
-                'id' => $user->getId(),
-                'email' => $user->getEmail(),
-                'firstName' => $user->getFirstName(),
-                'lastName' => $user->getLastName(),
-                'roles' => $user->getRoles(),
-                'companyId' => $company->getId(),
-                'companyName' => $company->getName()
-            ]
+            'id' => $user->getId(),
+            'email' => $user->getEmail(),
+            'firstName' => $user->getFirstName(),
+            'lastName' => $user->getLastName(),
+            'roles' => $roles,
+            'companyId' => $company->getId(),
+            'companyName' => $company->getName()
         ];
-    }
-
-    public function getAvailableUsersForCompany(int $companyId): array
-    {
-        $qb = $this->em->createQueryBuilder();
-        $qb->select('u')
-           ->from(\App\Entity\User::class, 'u')
-           ->where('u.company IS NULL OR u.company != :companyId')
-           ->andWhere('u.deletedAt IS NULL')
-           ->andWhere('u.isActive = :isActive')
-           ->andWhere('u.isVerified = :isVerified')
-           ->setParameter('companyId', $companyId)
-           ->setParameter('isActive', true)
-           ->setParameter('isVerified', true)
-           ->orderBy('u.firstName', 'ASC')
-           ->addOrderBy('u.lastName', 'ASC');
-
-        $users = $qb->getQuery()->getResult();
-
-        $availableUsers = [];
-        foreach ($users as $user) {
-            $availableUsers[] = [
-                'id' => $user->getId(),
-                'email' => $user->getEmail(),
-                'firstName' => $user->getFirstName(),
-                'lastName' => $user->getLastName(),
-                'pseudo' => $user->getPseudo(),
-                'currentCompany' => $user->getCompany() ? [
-                    'id' => $user->getCompany()->getId(),
-                    'name' => $user->getCompany()->getName()
-                ] : null,
-                'roles' => $user->getRoles(),
-                'isVerified' => $user->isVerified()
-            ];
-        }
-
-        return $availableUsers;
     }
 
     private function validateCompanyData(array $data): void
@@ -341,5 +300,35 @@ class CompanyService
         if (count($errors) > 0) {
             throw new ValidationFailedException($constraints, $errors);
         }
+    }
+
+    public function getCompanyGroups(Company $company): array
+    {
+        $groups = $this->companyRepository->findGroupsWithUsersByCompany($company->getId());
+        
+        $data = [];
+        foreach ($groups as $group) {
+            $groupUsers = [];
+            foreach ($group->getUsers() as $user) {
+                $groupUsers[] = [
+                    'id' => $user->getId(),
+                    'email' => $user->getEmail(),
+                    'firstName' => $user->getFirstName(),
+                    'lastName' => $user->getLastName(),
+                    'pseudo' => $user->getPseudo(),
+                    'avatar' => $user->getAvatar()
+                ];
+            }
+            
+            $data[] = [
+                'id' => $group->getId(),
+                'name' => $group->getName(),
+                'accesCode' => $group->getAccesCode(),
+                'userCount' => $group->getUsers()->count(),
+                'users' => $groupUsers
+            ];
+        }
+        
+        return $data;
     }
 }

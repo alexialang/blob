@@ -29,48 +29,16 @@
       </button>
     </div>
 
-    <div class="dropdown-wrapper">
-      <div
-        tuiDropdownLimitWidth="fixed"
-        tuiGroup
-        [tuiDropdown]="dropdown"
-        [(tuiDropdownOpen)]="open"
-        class="dropdown-container"
-      >
-        <button class="custom-dropdown-btn">Actions</button>
-        <button
-          #tuiDropdownHost
-          tuiChevron
-          tuiIconButton
-          class="custom-dropdown-chevron"
-          type="button"
-        ></button>
-      </div>
-      <ng-template #dropdown>
-        <tui-data-list>
-          <button
-            tuiOption
-            type="button"
-            (click)="onCreateQuiz()"
-          >
-            Créer un quiz
-          </button>
-          <button
-            tuiOption
-            type="button"
-            (click)="onClick()"
-          >
-            Exporter
-          </button>
-          <button
-            tuiOption
-            type="button"
-            (click)="onClick()"
-          >
-            Importer
-          </button>
-        </tui-data-list>
-      </ng-template>
+    <div class="action-buttons-wrapper">
+      <button class="btn btn-primary" (click)="onCreateQuiz()">
+        Créer un quiz
+      </button>
+      <button class="btn btn-secondary" (click)="onClick()">
+        Exporter
+      </button>
+      <button class="btn btn-secondary" (click)="onClick()">
+        Importer
+      </button>
     </div>
   </div>
 

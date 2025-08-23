@@ -10,9 +10,6 @@ import { Router } from '@angular/router';
 import { TuiTable } from '@taiga-ui/addon-table';
 import {
   TuiButton,
-  TuiDropdown,
-  TuiGroup,
-  TuiDataList,
   TuiDialogService,
   TuiAlertService,
   TuiHintDirective,
@@ -60,9 +57,6 @@ interface QuizRow {
     TuiButton,
     TuiCheckbox,
     TuiChip,
-    TuiDropdown,
-    TuiGroup,
-    TuiDataList,
     TuiAvatar,
     TuiCell,
     TuiHintDirective,
@@ -273,12 +267,6 @@ export class QuizManagementComponent implements OnInit {
       },
       error: (error) => {
         this.isDeleting = false;
-
-        this.alerts.open('Erreur lors de la suppression.', {
-          label: 'Erreur',
-          appearance: 'danger',
-          autoClose: 3000
-        }).subscribe();
       },
     });
   }

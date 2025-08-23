@@ -8,6 +8,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Validator\Exception\ValidationFailedException;
 use OpenApi\Annotations as OA;
 
@@ -48,6 +49,7 @@ class AnswerController extends AbstractController
      * @OA\Security(name="bearerAuth")
      */
     #[Route('/', name: 'answer_create', methods: ['POST'])]
+    #[IsGranted('CREATE_QUIZ')]
     public function create(Request $request): JsonResponse
     {
         try {
@@ -95,11 +97,13 @@ class AnswerController extends AbstractController
      * @OA\Security(name="bearerAuth")
      */
     #[Route('/{id}', name: 'answer_update', methods: ['PUT', 'PATCH'])]
+    #[IsGranted('CREATE_QUIZ', subject: 'answer')]
     public function update(Request $request, Answer $answer): JsonResponse
     {
         try {
             $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
             
+            $user = $this->getUser();
             $answer = $this->answerService->update($answer, $data);
 
             return $this->json($answer, 200, [], ['groups' => ['answer:read']]);
@@ -121,9 +125,12 @@ class AnswerController extends AbstractController
      * @OA\Security(name="bearerAuth")
      */
     #[Route('/{id}', name: 'answer_delete', methods: ['DELETE'])]
+    #[IsGranted('CREATE_QUIZ', subject: 'answer')]
     public function delete(Answer $answer): JsonResponse
     {
+        $user = $this->getUser();
         $this->answerService->delete($answer);
+
         return $this->json(null, 204);
     }
 }

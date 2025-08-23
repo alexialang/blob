@@ -5,11 +5,12 @@ import { AuthService } from '../../services/auth.service';
 import { Observable, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
+import { HasPermissionDirective } from '../../directives/has-permission.directive';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [RouterLink, CommonModule],
+  imports: [RouterLink, CommonModule, HasPermissionDirective],
   templateUrl: './navbar.component.html',
   styleUrls: ['./navbar.component.scss']
 })
@@ -21,10 +22,8 @@ export class NavbarComponent implements OnInit {
   showProfileDropdown: boolean = false;
   isMobileMenuOpen: boolean = false;
 
-  canCreateQuiz$: Observable<boolean> = of(false);
-  canManageUsers$: Observable<boolean> = of(false);
   isAdmin$: Observable<boolean> = of(false);
-  canViewResults$: Observable<boolean> = of(false);
+  userCompanyId$: Observable<number | null> = of(null);
 
   randomColor: string = '#0B0C1E';
 
@@ -70,24 +69,22 @@ export class NavbarComponent implements OnInit {
         catchError(() => of(this.sanitizer.bypassSecurityTrustUrl('./assets/svg/logo.svg')))
       );
 
-      this.canCreateQuiz$ = this.authService.hasPermission('CREATE_QUIZ');
-      this.canManageUsers$ = this.authService.hasPermission('MANAGE_USERS');
       this.isAdmin$ = this.authService.isAdmin();
-      this.canViewResults$ = this.authService.hasPermission('VIEW_RESULTS');
+
+      this.userCompanyId$ = this.authService.getCurrentUser().pipe(
+        map(user => user.companyId || null),
+        catchError(() => of(null))
+      );
     } else if (this.authService.isGuest()) {
       this.userName$ = of('Invité');
       this.userAvatar$ = of(this.sanitizer.bypassSecurityTrustUrl('./assets/avatars/head_guest.svg'));
-      this.canCreateQuiz$ = of(false);
-      this.canManageUsers$ = of(false);
       this.isAdmin$ = of(false);
-      this.canViewResults$ = of(false);
+      this.userCompanyId$ = of(null);
     } else {
       this.userName$ = of('Utilisateur');
       this.userAvatar$ = of(this.sanitizer.bypassSecurityTrustUrl('./assets/svg/logo.svg'));
-      this.canCreateQuiz$ = of(false);
-      this.canManageUsers$ = of(false);
       this.isAdmin$ = of(false);
-      this.canViewResults$ = of(false);
+      this.userCompanyId$ = of(null);
     }
   }
 

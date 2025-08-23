@@ -2,7 +2,9 @@
 
 namespace App\Service;
 
+use App\Entity\Company;
 use App\Entity\User;
+use App\Entity\UserPermission;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -65,34 +67,67 @@ class UserService
         return $this->userRepository->findBy(['deletedAt' => null]);
     }
 
-    public function listWithStats(bool $includeDeleted = false): array
+    public function listWithStats(bool $includeDeleted = false, ?User $currentUser = null): array
     {
-        $users = $this->list($includeDeleted);
-        $usersWithStats = [];
-
-        foreach ($users as $user) {
-            $stats = $this->getUserStatistics($user);
-            $usersWithStats[] = [
-                'id' => $user->getId(),
-                'firstName' => $user->getFirstName(),
-                'lastName' => $user->getLastName(),
-                'email' => $user->getEmail(),
-                'isActive' => $user->isActive(),
-                'dateRegistration' => $user->getDateRegistration(),
-                'lastAccess' => $user->getLastAccess(),
-                'avatar' => $user->getAvatar(),
-                'company' => $user->getCompany(),
-                'groups' => $user->getGroups(),
-                'roles' => $user->getRoles(),
-                'permissions' => $user->getUserPermissions(),
-                'quizs' => $user->getQuizs(),
-                'userAnswers' => $user->getUserAnswers(),
-                'badges' => $user->getBadges(),
-                'stats' => $stats
-            ];
+        if ($currentUser && !$currentUser->isAdmin()) {
+            $company = $currentUser->getCompany();
+            if ($company) {
+                $users = $this->userRepository->findByCompanyWithStats($company->getId(), $includeDeleted);
+            } else {
+                $users = [$this->userRepository->findWithStats($currentUser->getId())];
+            }
+        } else {
+            $users = $this->userRepository->findAllWithStats($includeDeleted);
         }
 
-        return $usersWithStats;
+        $userMap = [];
+        foreach ($users as $user) {
+            $userId = $user->getId();
+            
+            if (!isset($userMap[$userId])) {
+                $userMap[$userId] = [
+                    'id' => $userId,
+                    'email' => $user->getEmail(),
+                    'firstName' => $user->getFirstName(),
+                    'lastName' => $user->getLastName(),
+                    'isActive' => $user->isActive(),
+                    'dateRegistration' => $user->getDateRegistration(),
+                    'lastAccess' => $user->getLastAccess(),
+                    'company' => $user->getCompany() ? [
+                        'id' => $user->getCompany()->getId(),
+                        'name' => $user->getCompany()->getName()
+                    ] : null,
+                    'companyName' => $user->getCompany() ? $user->getCompany()->getName() : null,
+                    'groups' => [],
+                    'userPermissions' => []
+                ];
+            }
+
+            foreach ($user->getGroups() as $group) {
+                $groupExists = false;
+                foreach ($userMap[$userId]['groups'] as $existingGroup) {
+                    if ($existingGroup['id'] === $group->getId()) {
+                        $groupExists = true;
+                        break;
+                    }
+                }
+                
+                if (!$groupExists) {
+                    $userMap[$userId]['groups'][] = [
+                        'id' => $group->getId(),
+                        'name' => $group->getName()
+                    ];
+                }
+            }
+
+            foreach ($user->getUserPermissions() as $permission) {
+                if (!in_array($permission->getPermission()->value, $userMap[$userId]['userPermissions'])) {
+                    $userMap[$userId]['userPermissions'][] = $permission->getPermission()->value;
+                }
+            }
+        }
+
+        return array_values($userMap);
     }
 
 
@@ -192,7 +227,7 @@ class UserService
         $user->setDeletedAt(new \DateTimeImmutable());
         $user->setIsActive(false);
 
-        $user->setEmail('anon_' . hash('sha256', $user->getEmail() . time()) . '@example.com');
+        $user->setEmail('anon_' . $user->getId() . '@example.com');
         $user->setFirstName('Utilisateur');
         $user->setLastName('Anonyme');
         $user->setPseudo('Utilisateur_' . substr(hash('sha256', $user->getId()), 0, 8));
@@ -261,20 +296,23 @@ class UserService
         if (isset($data['lastName']) && \is_string($data['lastName'])) {
             $user->setLastName($data['lastName']);
         }
-        if (isset($data['avatar']) && \is_string($data['avatar'])) {
-            $user->setAvatar($data['avatar']);
-        }
         
-        if (isset($data['avatarShape']) && isset($data['avatarColor'])) {
-            $avatarData = [
-                'shape' => $data['avatarShape'],
-                'color' => $data['avatarColor']
-            ];
-            $user->setAvatar(json_encode($avatarData));
-        }
-
         $this->em->flush();
         return $user;
+    }
+
+    public function getUsersWithoutCompany(): array
+    {
+        return $this->userRepository->findBy([
+            'company' => null,
+            'deletedAt' => null,
+            'isActive' => true
+        ]);
+    }
+
+    public function getUsersFromOtherCompanies(int $excludeCompanyId): array
+    {
+        return $this->userRepository->findUsersFromOtherCompanies($excludeCompanyId);
     }
 
     public function getUserStatistics(User $user): array
@@ -436,7 +474,7 @@ class UserService
             $this->em->flush();
 
             foreach ($validPermissions as $permissionEnum) {
-                $userPermission = new \App\Entity\UserPermission();
+                $userPermission = new UserPermission();
                 $userPermission->setUser($user);
                 $userPermission->setPermission($permissionEnum);
                 $this->em->persist($userPermission);
@@ -466,6 +504,11 @@ class UserService
         }
         
         return $cleanRoles;
+    }
+
+    public function getUsersByCompany(Company $company): array
+    {
+        return $this->userRepository->findByCompanyWithStats($company->getId(), false);
     }
 
     public function verifyCaptcha(string $token): bool

@@ -143,7 +143,9 @@ export class GlobalStatisticsComponent implements OnInit, AfterViewInit, OnDestr
 
     let total = 0;
     Object.values(this.stats.groupScores).forEach(groupQuizzes => {
-      total += groupQuizzes.length;
+      if (Array.isArray(groupQuizzes)) {
+        total += groupQuizzes.length;
+      }
     });
     return total;
   }
@@ -195,7 +197,9 @@ export class GlobalStatisticsComponent implements OnInit, AfterViewInit, OnDestr
     teamScoresFiltered.forEach(quiz => allQuizTitles.add(quiz.quizTitle));
 
     Object.values(this.stats?.groupScores || {}).forEach(groupQuizzes => {
-      groupQuizzes.forEach(quiz => allQuizTitles.add(quiz.quizTitle));
+      if (Array.isArray(groupQuizzes)) {
+        groupQuizzes.forEach(quiz => allQuizTitles.add(quiz.quizTitle));
+      }
     });
 
     const unifiedLabels = Array.from(allQuizTitles).sort();
@@ -374,9 +378,18 @@ export class GlobalStatisticsComponent implements OnInit, AfterViewInit, OnDestr
     } else {
       this.globalStatsService.getCompanyStatistics(this.companyId).subscribe({
         next: (data: any) => {
+          // Normaliser les données groupScores pour les statistiques d'entreprise
+          let normalizedGroupScores = data.groupScores || {};
+
+          // Si groupScores est un tableau (cas des statistiques d'entreprise),
+          // on le convertit en objet avec une clé par défaut
+          if (Array.isArray(data.groupScores)) {
+            normalizedGroupScores = { 'Entreprise': data.groupScores };
+          }
+
           this.stats = {
             teamScores: data.teamScores || [],
-            groupScores: data.groupScores || {}
+            groupScores: normalizedGroupScores
           };
           this.loading = false;
           this.tryCreateChart();

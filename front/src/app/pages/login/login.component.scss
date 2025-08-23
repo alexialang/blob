@@ -128,40 +128,56 @@ a{
     justify-content: center;
     .register-container{
       width: 100%;
+      max-width: 320px;
       margin-top: 1rem;
-      display:  flex;
+      display: flex;
       color: white;
       flex-direction: column;
-      align-items: center ;
+      align-items: center;
       justify-content: center;
       row-gap: 1rem;
+      
+      app-slide-button {
+        width: 100%;
+      }
     }
+    
     form {
       width: 100%;
       max-width: 320px;
       display: flex;
       flex-direction: column;
-      gap: 1rem;
+      gap: 1.5rem;
       text-align: center;
-
-      h2 {
-        font-size: 2.5rem;
-        letter-spacing: 0.2em;
-        margin-bottom: 1rem;
-      }
-
-      input {
+      align-items: center;
+      
+      app-slide-button {
         width: 100%;
-        padding: 0.9rem 2rem;
-        border: 1px solid white;
-        border-radius: 999px;
-        background: transparent;
-        color: white;
-        font-size: 1rem;
-        &::placeholder {
-          color: rgba(255, 255, 255, 0.6);
-        }
       }
+    }
+
+    h2 {
+      font-size: 2.5rem;
+      letter-spacing: 0.2em;
+      margin-bottom: 1rem;
+    }
+
+    input {
+      width: 100%;
+      max-width: 320px;
+      padding: 1rem 2rem;
+      border: 2px solid white;
+      border-radius: 999px;
+      background: transparent;
+      color: white;
+      font-size: 1.1rem;
+      font-weight: 500;
+      box-sizing: border-box;
+      height: 3.5rem;
+      &::placeholder {
+        color: rgba(255, 255, 255, 0.7);
+      }
+    }
 
       .password-container {
         position: relative;
@@ -173,7 +189,7 @@ a{
 
         .password-toggle {
           position: absolute;
-          right: 1rem;
+          right: 16px;
           top: 50%;
           transform: translateY(-50%);
           background: none;
@@ -198,9 +214,15 @@ a{
 
       .forgot {
         align-self: flex-end;
-        font-size: 0.8rem;
+        font-size: 0.95rem;
         color: white;
         text-decoration: none;
+        font-weight: 500;
+        transition: opacity 0.2s ease;
+        
+        &:hover {
+          opacity: 0.8;
+        }
       }
 
       .btn {
@@ -213,8 +235,10 @@ a{
         width: 100%;
       }
       .btn.main {
-        background:  var(--color-dark);
-        color:  var(--color-dark);
+        background: var(--color-dark);
+        color: var(--color-dark);
+        font-weight: 600;
+        font-size: 1.05rem;
       }
       .btn.secondary {
         background: transparent;
@@ -224,23 +248,36 @@ a{
 
       .no-account {
         color: white;
-        font-size: 0.85rem;
+        font-size: 1rem;
         margin-top: 0.5rem;
+        font-weight: 500;
       }
 
       .skip {
         display: block;
         margin-top: 1rem;
-        font-size: 0.9rem;
-        color:white;
+        font-size: 0.95rem;
+        color: white;
         text-decoration: none;
+        font-weight: 500;
+        transition: opacity 0.2s ease;
+        
+        &:hover {
+          opacity: 0.8;
+        }
       }
 
 
 
       .error {
-        color: red;
-        font-size: 0.9rem;
+        color: #d32f2f;
+        font-size: 0.95rem;
+        background: white;
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        font-weight: 500;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        margin: 0.5rem 0;
       }
     }
 
@@ -254,8 +291,8 @@ a{
       padding: 3rem 1rem 2rem;
     }
   }
-}
-.header-nav {
+  
+  .header-nav {
   display: none;
   list-style: none;
   margin: 0 2rem 0 0;
@@ -376,29 +413,5 @@ a{
   margin: 0 auto;
 }
 
-input,
-app-slide-button {
-  width: 100%;
-  max-width: 300px;
-}
 
-input,
-app-slide-button {
-  width: 300px;
-}
-
-.login-right form,
-.register-container {
-  app-slide-button {
-    padding: 12px 16px;
-    margin: 0 16px;
-  }
-}
-
-.login-right form app-slide-button,
-.register-container app-slide-button {
-
-  width: 100%;
-  margin: 0;
-}
 

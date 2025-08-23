@@ -6,6 +6,7 @@ use App\Entity\Quiz;
 use App\Entity\User;
 use App\Enum\Status;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -98,50 +99,67 @@ class QuizRepository extends ServiceEntityRepository
 
 
 
-    public function getPublicLeaderboard(Quiz $quiz): array
+    public function canUserModifyQuiz(int $quizId, User $user): bool
     {
-        $leaderboard = $this->getEntityManager()
-            ->createQueryBuilder()
-            ->select('u.firstName, u.lastName, u.pseudo, c.name as companyName, ua.total_score as score, ua.date_attempt')
-            ->from('App\Entity\UserAnswer', 'ua')
-            ->join('ua.user', 'u')
-            ->leftJoin('u.company', 'c')
-            ->where('ua.quiz = :quiz')
-            ->setParameter('quiz', $quiz)
-            ->orderBy('ua.total_score', 'DESC')
-            ->addOrderBy('ua.date_attempt', 'ASC')
+        $result = $this->createQueryBuilder('q')
+            ->select('COUNT(q.id)')
+            ->where('q.id = :quizId')
+            ->andWhere('(q.user = :userId OR q.company = :companyId)')
+            ->setParameter('quizId', $quizId)
+            ->setParameter('userId', $user->getId())
+            ->setParameter('companyId', $user->getCompany() ? $user->getCompany()->getId() : 0)
             ->getQuery()
-            ->getResult();
+            ->getSingleScalarResult();
 
-        $userBestScores = [];
-        foreach ($leaderboard as $entry) {
-            $userId = $entry['firstName'] . ' ' . $entry['lastName'];
-            if (!isset($userBestScores[$userId]) || $entry['score'] > $userBestScores[$userId]['score']) {
-                $userBestScores[$userId] = $entry;
-            }
+        return $result > 0;
+    }
+
+    public function findWithUserAccess(int $quizId, User $user): ?Quiz
+    {
+        $qb = $this->createQueryBuilder('q')
+            ->leftJoin('q.user', 'u')
+            ->leftJoin('q.company', 'c')
+            ->leftJoin('q.category', 'cat')
+            ->leftJoin('q.questions', 'quest')
+            ->leftJoin('quest.answers', 'ans')
+            ->addSelect('u', 'c', 'cat', 'quest', 'ans')
+            ->where('q.id = :quizId')
+            ->setParameter('quizId', $quizId);
+
+        $accessConditions = [];
+        $accessConditions[] = 'q.user = :userId';
+        $qb->setParameter('userId', $user->getId());
+
+
+        if ($user->getCompany()) {
+            $accessConditions[] = 'q.company = :companyId';
+            $qb->setParameter('companyId', $user->getCompany()->getId());
         }
 
-        uasort($userBestScores, function($a, $b) {
-            return $b['score'] <=> $a['score'];
-        });
+        $accessConditions[] = 'q.isPublic = :isPublic';
+        $qb->setParameter('isPublic', true);
 
-        $formattedLeaderboard = [];
-        $rank = 1;
-        foreach ($userBestScores as $entry) {
-            $displayName = $entry['pseudo'] ?? ($entry['firstName'] . ' ' . substr($entry['lastName'], 0, 1) . '.');
-            $formattedLeaderboard[] = [
-                'rank' => $rank,
-                'name' => $displayName,
-                'company' => $entry['companyName'] ?? 'Indépendant',
-                'score' => (int)$entry['score'],
-                'isCurrentUser' => false
-            ];
-            $rank++;
-        }
+        $qb->andWhere('(' . implode(' OR ', $accessConditions) . ')');
 
-        return [
-            'leaderboard' => $formattedLeaderboard,
-            'totalPlayers' => count($userBestScores)
-        ];
+        return $qb->getQuery()->getOneOrNullResult();
+    }
+
+    public function findWithAllRelations(int $quizId): ?Quiz
+    {
+        return $this->createQueryBuilder('q')
+            ->leftJoin('q.user', 'u')
+            ->leftJoin('q.company', 'c')
+            ->leftJoin('q.category', 'cat')
+            ->leftJoin('q.groups', 'g')
+            ->leftJoin('q.questions', 'quest')
+            ->leftJoin('quest.answers', 'ans')
+            ->leftJoin('quest.type_question', 'qt')
+            ->addSelect('u', 'c', 'cat', 'g', 'quest', 'ans', 'qt')
+            ->where('q.id = :quizId')
+            ->setParameter('quizId', $quizId)
+            ->getQuery()
+            ->setFetchMode('App\Entity\Question', 'answers', ClassMetadata::FETCH_EAGER)
+            ->setFetchMode('App\Entity\Question', 'type_question', ClassMetadata::FETCH_EAGER)
+            ->getOneOrNullResult();
     }
 }

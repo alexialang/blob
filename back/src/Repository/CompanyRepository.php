@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Company;
+use App\Entity\Group;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -17,9 +18,6 @@ class CompanyRepository extends ServiceEntityRepository
         parent::__construct($registry, Company::class);
     }
 
-    /**
-     * Trouve les entreprises où l'utilisateur est admin
-     */
     public function findByUserAdmin(User $user): array
     {
         if ($user->getCompany()) {
@@ -27,5 +25,67 @@ class CompanyRepository extends ServiceEntityRepository
         }
         
         return [];
+    }
+
+    public function findAvailableUsersForCompany(int $companyId): array
+    {
+        $qb = $this->createQueryBuilder('c');
+        $qb->select('u')
+           ->from(User::class, 'u')
+           ->where('u.isVerified = :verified')
+           ->andWhere('u.deletedAt IS NULL')
+           ->andWhere('u.isActive = :active')
+           ->andWhere('(u.company IS NULL OR u.company = :companyId)')
+           ->setParameter('verified', true)
+           ->setParameter('active', true)
+           ->setParameter('companyId', $companyId)
+           ->orderBy('u.firstName', 'ASC')
+           ->addOrderBy('u.lastName', 'ASC');
+
+        return $qb->getQuery()->getResult();
+    }
+
+    public function findGroupInCompany(int $groupId, int $companyId): ?Group
+    {
+        $qb = $this->createQueryBuilder('c');
+        $qb->select('g')
+           ->from(Group::class, 'g')
+           ->where('g.id = :groupId')
+           ->andWhere('g.company = :companyId')
+           ->setParameter('groupId', $groupId)
+           ->setParameter('companyId', $companyId);
+
+        return $qb->getQuery()->getOneOrNullResult();
+    }
+
+
+    public function findGroupsWithUsersByCompany(int $companyId): array
+    {
+        $qb = $this->createQueryBuilder('c');
+        $qb->select('g', 'u')
+           ->from(Group::class, 'g')
+           ->leftJoin('g.users', 'u')
+           ->where('g.company = :companyId')
+           ->setParameter('companyId', $companyId)
+           ->orderBy('g.name', 'ASC')
+           ->addOrderBy('u.firstName', 'ASC');
+
+        return $qb->getQuery()->getResult();
+    }
+
+    public function isUserInGroup(int $groupId, int $userId): bool
+    {
+        $result = $this->createQueryBuilder('c')
+            ->select('COUNT(u.id)')
+            ->from(Group::class, 'g')
+            ->leftJoin('g.users', 'u')
+            ->where('g.id = :groupId')
+            ->andWhere('u.id = :userId')
+            ->setParameter('groupId', $groupId)
+            ->setParameter('userId', $userId)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return $result > 0;
     }
 }

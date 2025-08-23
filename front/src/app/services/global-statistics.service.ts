@@ -2,6 +2,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { AuthService } from './auth.service';
+import { map, switchMap } from 'rxjs/operators';
 
 export interface GlobalStatistics {
   totalUsers: number;
@@ -72,24 +74,36 @@ export interface GroupStats {
 export class GlobalStatisticsService {
   private apiUrl = `${environment.apiUrl}/api/global-statistics`;
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private authService: AuthService
+  ) {}
 
   getGlobalStatistics(): Observable<GlobalStatistics> {
-    return this.http.get<GlobalStatistics>(this.apiUrl);
+    return this.authService.isAdmin().pipe(
+      map(isAdmin => {
+        if (!isAdmin) {
+          throw new Error('Rôle ADMIN requis');
+        }
+        return this.http.get<GlobalStatistics>(this.apiUrl);
+      }),
+      switchMap(apiCall => apiCall)
+    );
   }
 
   getCompanyStatistics(companyId: number, timestamp?: number): Observable<CompanyStatistics> {
-    const url = timestamp
-      ? `${this.apiUrl}/company/${companyId}?t=${timestamp}`
-      : `${this.apiUrl}/company/${companyId}`;
-    return this.http.get<CompanyStatistics>(url);
+    return this.authService.hasPermission('VIEW_RESULTS').pipe(
+      map(hasPermission => {
+        if (!hasPermission) {
+          throw new Error('Permission VIEW_RESULTS requise');
+        }
+        const url = timestamp
+          ? `${this.apiUrl}/company/${companyId}?t=${timestamp}`
+          : `${this.apiUrl}/company/${companyId}`;
+        return this.http.get<CompanyStatistics>(url);
+      }),
+      switchMap(apiCall => apiCall)
+    );
   }
 
-  getEmployeeRankings(limit: number = 10): Observable<EmployeeScore[]> {
-    return this.http.get<EmployeeScore[]>(`${this.apiUrl}/employees?limit=${limit}`);
-  }
-
-  getQuizRankings(limit: number = 10): Observable<QuizPerformance[]> {
-    return this.http.get<QuizPerformance[]>(`${this.apiUrl}/quizzes?limit=${limit}`);
-  }
 }

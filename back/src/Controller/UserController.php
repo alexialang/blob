@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Psr\Log\LoggerInterface;
 
 #[Route('/api')]
 class UserController extends AbstractController
@@ -18,7 +19,7 @@ class UserController extends AbstractController
     public function __construct(
         private UserService $userService,
         private LeaderboardService $leaderboardService,
-
+        private LoggerInterface $logger
     ) {}
 
     #[Route('/user', name: 'user_index', methods: ['GET'])]
@@ -55,14 +56,21 @@ class UserController extends AbstractController
     }
 
     #[Route('/admin/all', name: 'admin_user_list', methods: ['GET'])]
+    #[IsGranted('MANAGE_USERS')]
     public function adminList(): JsonResponse
     {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        $currentUser = $this->getUser();
+        $users = $this->userService->listWithStats(true, $currentUser);
 
-        $users = $this->userService->list(true);
-
-        return $this->json($users, 200, [], ['groups' => ['user:admin_read']]);
+        return $this->json($users, 200, [], [
+            'groups' => ['user:admin_read'],
+            'circular_reference_handler' => function ($object) {
+                return $object->getId();
+            }
+        ]);
     }
+
+
 
     #[Route('/user-create', name: 'user_create', methods: ['POST'])]
     public function create(Request $request): JsonResponse
@@ -91,18 +99,30 @@ class UserController extends AbstractController
     #[Route('/user/profile', name: 'user_profile', methods: ['GET'])]
     public function profile(): JsonResponse
     {
-        $user = $this->getUser();
-        
-        if (!$user) {
-            return $this->json(['error' => 'Utilisateur non authentifié'], 401);
-        }
-
-        return $this->json($user, 200, [], [
-            'groups' => ['user:read', 'company:read'],
-            'circular_reference_handler' => function ($object) {
-                return $object->getId();
+        try {
+            $user = $this->getUser();
+            
+            if (!$user) {
+                return $this->json(['error' => 'Utilisateur non authentifié'], 401);
             }
-        ]);
+
+            return $this->json($user, 200, [], [
+                'groups' => ['user:read', 'company:read'],
+                'circular_reference_handler' => function ($object) {
+                    return $object->getId();
+                }
+            ]);
+        } catch (\Exception $e) {
+            $this->logger->error('Erreur lors de la récupération du profil utilisateur', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return $this->json([
+                'error' => 'Erreur serveur lors de la récupération du profil',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 
     #[Route('/user/profile/update', name: 'user_profile_update', methods: ['PUT', 'PATCH'])]
@@ -150,28 +170,65 @@ class UserController extends AbstractController
     }
 
     #[Route('/user/{id}', name: 'user_show', methods: ['GET'])]
+    #[IsGranted('ROLE_USER')]
+    #[IsGranted('VIEW_RESULTS', subject: 'user')]
     public function show(User $user): JsonResponse
     {
-        return $this->json($user, 200, [], ['groups' => ['user:read']]);
+        if (!$user) {
+            return $this->json(['error' => 'Utilisateur non trouvé'], 404);
+        }
+        $this->logger->info('Affichage utilisateur', [
+            'id' => $user->getId(),
+            'email' => $user->getEmail(),
+            'firstName' => $user->getFirstName(),
+            'lastName' => $user->getLastName(),
+            'company' => $user->getCompany() ? $user->getCompany()->getId() : 'null'
+        ]);
+
+        return $this->json($user, 200, [], [
+            'groups' => ['user:read'],
+            'circular_reference_handler' => function ($object) {
+                return $object->getId();
+            }
+        ]);
     }
 
     #[Route('/user/{id}', name: 'user_update', methods: ['PUT', 'PATCH'])]
+    #[IsGranted('MANAGE_USERS', subject: 'user')]
     public function update(Request $request, User $user): JsonResponse
     {
         try {
             $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
-            $user = $this->userService->update($user, $data);
+            $currentUser = $this->getUser();
+            
+            $user = $this->userService->update($user, $data, $currentUser);
 
-            return $this->json($user, 200, [], ['groups' => ['user:read']]);
+            return $this->json($user, 200, [], [
+                'groups' => ['user:read'],
+                'circular_reference_handler' => function ($object) {
+                    return $object->getId();
+                }
+            ]);
         } catch (\JsonException $e) {
             return $this->json(['error' => 'Invalid JSON'], 400);
         }
     }
 
     #[Route('/user/{id}/anonymize', name: 'user_anonymize', methods: ['PATCH'])]
+    #[IsGranted('MANAGE_USERS', subject: 'user')]
     public function anonymize(User $user): JsonResponse
     {
-        $this->userService->anonymizeUser($user);
+        $currentUser = $this->getUser();
+        
+        $this->logger->warning('SECURITY: Tentative d\'anonymisation d\'utilisateur', [
+            'admin_user_id' => $currentUser->getId(),
+            'admin_user_email' => $currentUser->getEmail(),
+            'target_user_id' => $user->getId(),
+            'target_user_email' => $user->getEmail(),
+            'timestamp' => new \DateTime()
+        ]);
+        
+        $this->userService->anonymizeUser($user, $currentUser);
 
         return $this->json([
             'success' => true,
@@ -221,10 +278,9 @@ class UserController extends AbstractController
     }
 
     #[Route('/user/{id}/roles', name: 'user_update_roles', methods: ['PUT'])]
+    #[IsGranted('MANAGE_USERS', subject: 'user')]
     public function updateRoles(Request $request, User $user): JsonResponse
     {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN');
-
         try {
             $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
             
@@ -244,6 +300,18 @@ class UserController extends AbstractController
             if (!isset($data['permissions']) || !is_array($data['permissions'])) {
                 return $this->json(['error' => 'Permissions array is required'], 400);
             }
+            
+            $currentUser = $this->getUser();
+            
+        $this->logger->warning('SECURITY: Modification des rôles utilisateur', [
+            'admin_user_id' => $currentUser->getId(),
+            'admin_user_email' => $currentUser->getEmail(),
+            'target_user_id' => $user->getId(),
+            'target_user_email' => $user->getEmail(),
+            'new_roles' => $validRoles,
+            'new_permissions' => $data['permissions'],
+            'timestamp' => new \DateTime()
+        ]);
             
             $user = $this->userService->updateUserRoles($user, $data);
 

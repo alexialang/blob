@@ -22,10 +22,24 @@ class CompanyController extends AbstractController
         ) {}
 
     #[Route('/companies', methods: ['GET'])]
+    #[IsGranted('MANAGE_USERS')]
     public function list(): JsonResponse
     {
         try {
-            $companies = $this->companyService->list();
+            $user = $this->getUser();
+
+            if (!$user->isAdmin()) {
+                $userCompany = $user->getCompany();
+                if (!$userCompany) {
+                    return $this->json([
+                        'success' => false,
+                    ], 403);
+                }
+                
+                $companies = [$userCompany];
+            } else {
+                $companies = $this->companyService->list();
+            }
             
             $data = [];
             foreach ($companies as $company) {
@@ -56,15 +70,31 @@ class CompanyController extends AbstractController
                     ];
                 }
                 
+                $activeUsersCount = 0;
+                $lastActivity = null;
+                $thirtyDaysAgo = new \DateTime('-30 days');
+                
+                foreach ($company->getUsers() as $user) {
+                    if ($user->getLastAccess() && $user->getLastAccess() > $thirtyDaysAgo && $user->isActive()) {
+                        $activeUsersCount++;
+                    }
+                    
+                    if ($user->getLastAccess() && (!$lastActivity || $user->getLastAccess() > $lastActivity)) {
+                        $lastActivity = $user->getLastAccess();
+                    }
+                }
+
                 $companyData = [
                     'id' => $company->getId(),
                     'name' => $company->getName(),
                     'users' => $users,
                     'groups' => $groups,
                     'userCount' => $company->getUsers()->count(),
+                    'activeUsers' => $activeUsersCount,
                     'groupCount' => $company->getGroups()->count(),
                     'quizCount' => $company->getQuizs()->count(),
-                    'createdAt' => $company->getDateCreation() ? $company->getDateCreation()->format('Y-m-d H:i:s') : null
+                    'createdAt' => $company->getDateCreation() ? $company->getDateCreation()->format('Y-m-d H:i:s') : null,
+                    'lastActivity' => $lastActivity ? $lastActivity->format('Y-m-d H:i:s') : null
                 ];
                 
                 $data[] = $companyData;
@@ -84,6 +114,7 @@ class CompanyController extends AbstractController
     }
 
     #[Route('/companies/{id}', methods: ['GET'])]
+    #[IsGranted('VIEW_RESULTS', subject: 'company')]
     public function show(Company $company): JsonResponse
     {
         try {
@@ -147,11 +178,38 @@ class CompanyController extends AbstractController
         }
     }
 
-    #[Route('/companies/{id}/groups', methods: ['GET'])]
-    public function getCompanyGroups(Company $company): JsonResponse
+    #[Route('/companies/{id}/basic', methods: ['GET'])]
+    #[IsGranted('MANAGE_USERS', subject: 'company')]
+    public function showBasic(Company $company): JsonResponse
     {
         try {
-            $groups = [];
+            $data = [
+                'id' => $company->getId(),
+                'name' => $company->getName(),
+                'userCount' => $company->getUsers()->count(),
+                'groupCount' => $company->getGroups()->count(),
+                'quizCount' => $company->getQuizs()->count(),
+                'createdAt' => $company->getDateCreation() ? $company->getDateCreation()->format('Y-m-d H:i:s') : null,
+                'users' => [],
+                'groups' => []
+            ];
+
+            foreach ($company->getUsers() as $user) {
+                $data['users'][] = [
+                    'id' => $user->getId(),
+                    'email' => $user->getEmail(),
+                    'firstName' => $user->getFirstName(),
+                    'lastName' => $user->getLastName(),
+                    'pseudo' => $user->getPseudo(),
+                    'avatar' => $user->getAvatar(),
+                    'roles' => $user->getRoles(),
+                    'isActive' => $user->isActive(),
+                    'isVerified' => $user->isVerified(),
+                    'lastAccess' => $user->getLastAccess() ? $user->getLastAccess()->format('Y-m-d H:i:s') : null,
+                    'dateRegistration' => $user->getDateRegistration() ? $user->getDateRegistration()->format('Y-m-d H:i:s') : null
+                ];
+            }
+
             foreach ($company->getGroups() as $group) {
                 $groupUsers = [];
                 foreach ($group->getUsers() as $user) {
@@ -164,7 +222,7 @@ class CompanyController extends AbstractController
                     ];
                 }
                 
-                $groups[] = [
+                $data['groups'][] = [
                     'id' => $group->getId(),
                     'name' => $group->getName(),
                     'accesCode' => $group->getAccesCode(),
@@ -173,7 +231,29 @@ class CompanyController extends AbstractController
                 ];
             }
 
-            return $this->json($groups);
+            return $this->json([
+                'success' => true,
+                'data' => $data
+            ]);
+        } catch (\Exception $e) {
+            return $this->json([
+                'success' => false,
+                'message' => 'Erreur lors de la récupération des informations de base: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    #[Route('/companies/{id}/groups', methods: ['GET'])]
+    #[IsGranted('MANAGE_USERS', subject: 'company')]
+    public function getCompanyGroups(Company $company): JsonResponse
+    {
+        try {
+            $groups = $this->companyService->getCompanyGroups($company);
+            
+            return $this->json([
+                'success' => true,
+                'data' => $groups
+            ]);
         } catch (\Exception $e) {
             return $this->json([
                 'success' => false,
@@ -183,6 +263,7 @@ class CompanyController extends AbstractController
     }
 
     #[Route('/companies', methods: ['POST'])]
+    #[IsGranted('MANAGE_USERS')]
     public function create(Request $request): JsonResponse
     {
         try {
@@ -218,40 +299,6 @@ class CompanyController extends AbstractController
         }
     }
 
-    #[Route('/companies/{id}', methods: ['PUT'])]
-    public function update(Company $company, Request $request): JsonResponse
-    {
-        try {
-            $data = json_decode($request->getContent(), true);
-            
-            $this->companyService->update($company, $data);
-            
-            return $this->json([
-                'success' => true,
-                'message' => 'Entreprise mise à jour avec succès',
-                'data' => [
-                    'id' => $company->getId(),
-                    'name' => $company->getName()
-                ]
-            ]);
-
-        } catch (ValidationFailedException $e) {
-            $errorMessages = [];
-            foreach ($e->getViolations() as $violation) {
-                $errorMessages[] = $violation->getMessage();
-            }
-            return $this->json([
-                'success' => false,
-                'message' => 'Données invalides',
-                'details' => $errorMessages
-            ], 400);
-        } catch (\Exception $e) {
-            return $this->json([
-                'success' => false,
-                'message' => 'Erreur lors de la mise à jour de l\'entreprise: ' . $e->getMessage()
-            ], 500);
-        }
-    }
 
     /**
      * @OA\Delete(summary="Supprimer une entreprise", tags={"Company"})
@@ -260,6 +307,7 @@ class CompanyController extends AbstractController
      * @OA\Security(name="bearerAuth")
      */
     #[Route('/companies/{id}', name: 'company_delete', methods: ['DELETE'])]
+    #[IsGranted('MANAGE_USERS', subject: 'company')]
     public function delete(Company $company): JsonResponse
     {
         try {
@@ -284,6 +332,7 @@ class CompanyController extends AbstractController
     }
 
     #[Route('/companies/export/csv', methods: ['GET'])]
+    #[IsGranted('MANAGE_USERS')]
     public function exportCsv(): Response
     {
         try {
@@ -304,6 +353,7 @@ class CompanyController extends AbstractController
     }
 
     #[Route('/companies/export/json', methods: ['GET'])]
+    #[IsGranted('MANAGE_USERS')]
     public function exportJson(): JsonResponse
     {
         try {
@@ -323,6 +373,7 @@ class CompanyController extends AbstractController
     }
 
     #[Route('/companies/import/csv', methods: ['POST'])]
+    #[IsGranted('MANAGE_USERS')]
     public function importCsv(Request $request): JsonResponse
     {
         try {
@@ -359,6 +410,7 @@ class CompanyController extends AbstractController
     }
 
     #[Route('/companies/{id}/stats', methods: ['GET'])]
+    #[IsGranted('VIEW_RESULTS', subject: 'company')]
     public function stats(Company $company): JsonResponse
     {
         try {
@@ -376,9 +428,9 @@ class CompanyController extends AbstractController
             ], 500);
         }
     }
-
     #[Route('/companies/{id}/assign-user', methods: ['POST'])]
-    public function assignUser(Company $company, Request $request): JsonResponse
+    #[IsGranted('MANAGE_USERS', subject: 'company')]
+    public function assignUserToCompany(Company $company, Request $request): JsonResponse
     {
         try {
             $data = json_decode($request->getContent(), true);
@@ -386,22 +438,22 @@ class CompanyController extends AbstractController
             if (!isset($data['userId'])) {
                 return $this->json([
                     'success' => false,
-                    'message' => 'L\'ID de l\'utilisateur est requis'
+                    'message' => 'ID utilisateur requis'
                 ], 400);
             }
-
+            
+            $userId = $data['userId'];
             $roles = $data['roles'] ?? ['ROLE_USER'];
             $permissions = $data['permissions'] ?? [];
-
-            $result = $this->companyService->assignUserToCompany(
-                $data['userId'],
-                $company->getId(),
-                $roles,
-                $permissions
-            );
             
-            return $this->json($result);
-
+            $result = $this->companyService->assignUserToCompany($company, $userId, $roles, $permissions);
+            
+            return $this->json([
+                'success' => true,
+                'message' => 'Utilisateur assigné avec succès',
+                'data' => $result
+            ]);
+            
         } catch (\Exception $e) {
             return $this->json([
                 'success' => false,
@@ -411,16 +463,41 @@ class CompanyController extends AbstractController
     }
 
     #[Route('/companies/{id}/available-users', methods: ['GET'])]
+    #[IsGranted('MANAGE_USERS', subject: 'company')]
     public function getAvailableUsers(Company $company): JsonResponse
     {
         try {
-            $availableUsers = $this->companyService->getAvailableUsersForCompany($company->getId());
+            $currentUser = $this->getUser();
+            
+            $availableUsers = $this->userService->getUsersWithoutCompany();
+            
+            if ($currentUser->isAdmin()) {
+                $usersFromOtherCompanies = $this->userService->getUsersFromOtherCompanies($company->getId());
+                $availableUsers = array_merge($availableUsers, $usersFromOtherCompanies);
+            }
+            
+            $formattedUsers = [];
+            foreach ($availableUsers as $user) {
+                $formattedUsers[] = [
+                    'id' => $user->getId(),
+                    'email' => $user->getEmail(),
+                    'firstName' => $user->getFirstName(),
+                    'lastName' => $user->getLastName(),
+                    'pseudo' => $user->getPseudo(),
+                    'isVerified' => $user->isVerified(),
+                    'currentCompany' => $user->getCompany() ? [
+                        'id' => $user->getCompany()->getId(),
+                        'name' => $user->getCompany()->getName()
+                    ] : null,
+                    'roles' => $user->getRoles()
+                ];
+            }
             
             return $this->json([
                 'success' => true,
-                'data' => $availableUsers
+                'data' => $formattedUsers
             ]);
-
+            
         } catch (\Exception $e) {
             return $this->json([
                 'success' => false,
@@ -430,6 +507,7 @@ class CompanyController extends AbstractController
     }
 
     #[Route('/companies/{id}/users', methods: ['GET'])]
+    #[IsGranted('MANAGE_USERS', subject: 'company')]
     public function getCompanyUsers(Company $company): JsonResponse
     {
         try {

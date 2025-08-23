@@ -174,7 +174,10 @@ export class UserProfileComponent implements OnInit {
   }
 
   getUserBadges(): Badge[] {
-    return this.user?.badges || [];
+    if (this.user?.badges && this.user.badges.length > 0) {
+      return this.user.badges;
+    }
+    return [];
   }
 
   getAvailableBadges(): Badge[] {

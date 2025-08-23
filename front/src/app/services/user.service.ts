@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
-import { tap, catchError } from 'rxjs/operators';
+import { tap, catchError, map, switchMap } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { User, Badge } from '../models/user.interface';
+import { AuthService } from './auth.service';
 
 @Injectable({ providedIn: 'root' })
 export class UserService {
@@ -11,7 +12,10 @@ export class UserService {
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private authService: AuthService
+  ) {}
 
   getCurrentUser(): User | null {
     return this.currentUserSubject.value;
@@ -28,7 +32,15 @@ export class UserService {
   }
 
   getUserProfileById(userId: number): Observable<User> {
-    return this.http.get<User>(`${this.baseUrl}/${userId}`);
+    return this.authService.hasPermission('VIEW_RESULTS').pipe(
+      map(hasPermission => {
+        if (!hasPermission) {
+          throw new Error('Permission VIEW_RESULTS requise');
+        }
+        return this.http.get<User>(`${this.baseUrl}/${userId}`);
+      }),
+      switchMap(apiCall => apiCall)
+    );
   }
 
   updateUserProfile(userData: Partial<User>): Observable<User> {

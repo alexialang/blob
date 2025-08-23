@@ -22,7 +22,7 @@ class Room
     private ?string $name = null;
 
     #[ORM\ManyToOne(targetEntity: Quiz::class)]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Quiz $quiz = null;
 
     #[ORM\ManyToOne(targetEntity: User::class)]

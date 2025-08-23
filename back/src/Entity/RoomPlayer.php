@@ -14,7 +14,7 @@ class RoomPlayer
     private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: Room::class, inversedBy: 'players')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Room $room = null;
 
     #[ORM\ManyToOne(targetEntity: User::class)]

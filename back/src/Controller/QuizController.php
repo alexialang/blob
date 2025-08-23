@@ -30,16 +30,17 @@ class QuizController extends AbstractController
     }
 
     #[Route('/quiz/management/list', name: 'quiz_management_list', methods: ['GET'])]
-    #[IsGranted('ROLE_USER')]
+    #[IsGranted('CREATE_QUIZ')]
     public function managementList(): JsonResponse
     {
-        $quizList = $this->quizService->list(true);
+        $user = $this->getUser();
+        $quizList = $this->quizService->getQuizzesForCompanyManagement($user);
 
         return $this->json($quizList, 200, [], ['groups' => ['quiz:read']]);
     }
 
     #[Route('/quiz/create', name: 'quiz_create', methods: ['POST'])]
-    #[IsGranted('ROLE_USER')]
+    #[IsGranted('CREATE_QUIZ')]
     public function create(Request $request): JsonResponse
     {
         try {
@@ -151,23 +152,10 @@ class QuizController extends AbstractController
     }
 
 
-    #[Route('/quiz/{id}', name: 'quiz_show', methods: ['GET'], requirements: ['id' => '\d+'])]
-    public function show(Quiz $quiz): JsonResponse
-    {
-        $quiz = $this->quizService->show($quiz);
-
-        return $this->json($quiz, 200, [], ['groups' => ['quiz:read']]);
-    }
-
     #[Route('/quiz/{id}', name: 'quiz_update', methods: ['PUT', 'PATCH'])]
-    #[IsGranted('ROLE_USER')]
+    #[IsGranted('CREATE_QUIZ', subject: 'quiz')]
     public function update(Request $request, Quiz $quiz): JsonResponse
     {
-        $user = $this->getUser();
-        if ($quiz->getUser() !== $user && !$user->isAdmin()) {
-            return $this->json(['error' => 'Accès interdit'], 403);
-        }
-
         try {
             $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
         } catch (\JsonException $e) {
@@ -175,7 +163,8 @@ class QuizController extends AbstractController
         }
 
         try {
-            $quiz = $this->quizService->updateWithQuestions($quiz, $data);
+            $user = $this->getUser();
+            $quiz = $this->quizService->updateWithQuestions($quiz, $data, $user);
 
             return $this->json($quiz, 200, [], ['groups' => ['quiz:read']]);
         } catch (\Exception $e) {
@@ -187,17 +176,71 @@ class QuizController extends AbstractController
     }
 
     #[Route('/quiz/{id}', name: 'quiz_delete', methods: ['DELETE'])]
-    #[IsGranted('ROLE_USER')]
+    #[IsGranted('CREATE_QUIZ', subject: 'quiz')]
     public function delete(Quiz $quiz): JsonResponse
     {
-        $user = $this->getUser();
-        if ($quiz->getUser() !== $user) {
-            return $this->json(['error' => 'Accès interdit'], 403);
+        try {
+            $user = $this->getUser();
+            
+            $this->logger->warning('SECURITY: Suppression de quiz', [
+                'user_id' => $user->getId(),
+                'user_email' => $user->getEmail(),
+                'quiz_id' => $quiz->getId(),
+                'quiz_title' => $quiz->getTitle(),
+                'timestamp' => new \DateTime()
+            ]);
+            
+            $this->quizService->delete($quiz, $user);
+
+            return $this->json(null, 204);
+            
+        } catch (\InvalidArgumentException $e) {
+            return $this->json(['error' => $e->getMessage()], 403);
+        } catch (\Exception $e) {
+            return $this->json([
+                'error' => 'Erreur lors de la suppression du quiz',
+                'message' => $e->getMessage()
+            ], 500);
         }
+    }
 
-        $this->quizService->delete($quiz);
+    #[Route('/quiz/{id}/show', name: 'quiz_show_secure', methods: ['GET'])]
+    #[IsGranted('CREATE_QUIZ', subject: 'quiz')]
+    public function showSecure(Quiz $quiz): JsonResponse
+    {
+        try {
+            $user = $this->getUser();
+            $secureQuiz = $this->quizService->show($quiz, $user);
 
-        return $this->json(null, 204);
+            return $this->json($secureQuiz, 200, [], ['groups' => ['quiz:read']]);
+        } catch (\InvalidArgumentException $e) {
+            return $this->json(['error' => $e->getMessage()], 403);
+        } catch (\Exception $e) {
+            return $this->json([
+                'error' => 'Erreur lors de la récupération du quiz',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    #[Route('/quiz/{id}', name: 'quiz_show', methods: ['GET'])]
+    #[IsGranted('CREATE_QUIZ', subject: 'quiz')]
+    public function show(Quiz $quiz): JsonResponse
+    {
+        try {
+            $user = $this->getUser();
+            
+            $secureQuiz = $this->quizService->show($quiz, $user);
+
+            return $this->json($secureQuiz, 200, [], ['groups' => ['quiz:read']]);
+        } catch (\InvalidArgumentException $e) {
+            return $this->json(['error' => $e->getMessage()], 403);
+        } catch (\Exception $e) {
+            return $this->json([
+                'error' => 'Erreur lors de la récupération du quiz',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 
     #[Route('/quiz/{id}/average-rating', name: 'quiz_average_rating', methods: ['GET'], requirements: ['id' => '\d+'])]
@@ -212,5 +255,27 @@ class QuizController extends AbstractController
     {
         $result = $this->quizService->getPublicLeaderboard($quiz);
         return $this->json($result);
+    }
+
+
+
+    #[Route('/quiz/{id}/edit', name: 'quiz_edit_data', methods: ['GET'])]
+    #[IsGranted('CREATE_QUIZ', subject: 'quiz')]
+    public function getQuizForEdit(Quiz $quiz): JsonResponse
+    {
+        try {
+            $user = $this->getUser();
+            
+            $quizData = $this->quizService->getQuizForEdit($quiz,$user);
+    
+            return $this->json($quizData, 200, [], ['groups' => ['quiz:read']]);
+        } catch (\InvalidArgumentException $e) {
+            return $this->json(['error' => $e->getMessage()], 403);
+        } catch (\Exception $e) {
+            return $this->json([
+                'error' => 'Erreur lors de la récupération du quiz',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 }

@@ -3,6 +3,7 @@ import {
   OnInit,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
+  OnDestroy,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -28,11 +29,13 @@ import {
   TuiDataList,
 } from '@taiga-ui/core';
 
-import { catchError, of } from 'rxjs';
+import { catchError, of, Subject, takeUntil } from 'rxjs';
 
 import { UserManagementService } from '../../services/user-management.service';
+import { AuthService } from '../../services/auth.service';
 import { PaginationComponent } from '../../components/pagination/pagination.component';
 import { UserRolesModalComponent, UserWithRoles, UserRole } from '../../components/user-roles-modal/user-roles-modal.component';
+import { HasPermissionDirective } from '../../directives/has-permission.directive';
 
 type TuiSizeS = 's' | 'm';
 
@@ -47,7 +50,6 @@ interface UserRow {
   active: boolean;
   organization: string;
   group: string;
-
   rights: string[];
   roles: string[];
   permissions: string[];
@@ -63,9 +65,9 @@ interface UserRow {
     TuiTable,
     TuiCell,
     TuiAvatar,
+    TuiBadge,
     TuiCheckbox,
     TuiItemsWithMore,
-    TuiBadge,
     TuiButton,
     TuiDataList,
     TuiGroup,
@@ -73,20 +75,22 @@ interface UserRow {
     TuiChevron,
     PaginationComponent,
     UserRolesModalComponent,
+    HasPermissionDirective,
   ],
-  providers: [
-  ],
+  providers: [],
   templateUrl: './user-management.component.html',
   styleUrls: ['./user-management.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  changeDetection: ChangeDetectionStrategy.OnPush, // ✅ Aligné sur les autres composants
 })
-export class UserManagementComponent implements OnInit {
+export class UserManagementComponent implements OnInit, OnDestroy {
   readonly sizes: TuiSizeS[] = ['m', 's'];
   size: TuiSizeS = 'm';
 
-  private allRows: UserRow[] = [];
+  public allRows: UserRow[] = [];
   public rows: UserRow[] = [];
   public loadError = false;
+  public isLoading = false;
+  public dataReady = false;
 
   public page = 1;
   public pageSize = 20;
@@ -100,12 +104,11 @@ export class UserManagementComponent implements OnInit {
   public sortColumn: keyof UserRow | '' = '';
   public sortDirection: 'asc' | 'desc' = 'asc';
 
-  public open = false;
-  public items = ['Ajouter une entreprise', 'Attribuer une entreprise'];
+
 
   public showRolesModal = false;
   public selectedUserForRoles: UserWithRoles | null = null;
-  public isDeleting = false; // Protection contre les appels multiples
+  public isDeleting = false;
   public availableRoles: UserRole[] = [
     {
       id: 1,
@@ -121,61 +124,108 @@ export class UserManagementComponent implements OnInit {
     }
   ];
   public availablePermissions: string[] = ['CREATE_QUIZ', 'MANAGE_USERS', 'VIEW_RESULTS'];
+  public isAdmin = false;
+
+  private destroy$ = new Subject<void>();
 
   constructor(
     private userService: UserManagementService,
     private dialogService: TuiDialogService,
     private cdr: ChangeDetectorRef,
     private alerts: TuiAlertService,
-    private router: Router
+    private router: Router,
+    public authService: AuthService
   ) {}
 
   ngOnInit(): void {
     this.generateRandomColor();
     this.loadUsers();
+    this.checkAdminStatus();
   }
 
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  checkAdminStatus(): void {
+    // Vérifier si l'utilisateur est admin
+    this.userService.isAdmin().subscribe(isAdmin => {
+      this.isAdmin = isAdmin;
+      this.cdr.markForCheck();
+    });
+  }
+
+
+
   loadUsers(): void {
+    this.isLoading = true;
+    this.loadError = false;
+    this.dataReady = false;
+
     this.userService
       .getUsers()
       .pipe(
+        takeUntil(this.destroy$),
         catchError(err => {
           this.loadError = true;
+          this.isLoading = false;
+          this.cdr.markForCheck();
           return of([]);
         })
       )
-      .subscribe((users: any[]) => {
-        this.allRows = users.map(u => {
-          const joinDaysAgo = Math.floor(Math.random() * 365) + 1;
+      .subscribe({
+        next: (users: any[]) => {
 
-          return {
-            id: u.id,
-            selected: false,
-            avatar: u.name ?? u.email,
-            firstName: u.firstName ?? '—',
-            lastName: u.lastName ?? '—',
-            name: `${u.firstName ?? ''} ${u.lastName ?? ''}`.trim(),
-            email: u.email ?? '—',
-            active: u.isActive,
-            organization: u.companyName ?? '—',
-            group:
-              Array.isArray(u.groups) && u.groups.length
-                ? u.groups.map((g: any) => g.name).join(', ')
-                : '—',
+          this.rows = users.map(u => {
+            const joinDaysAgo = (u.id % 365) + 1;
+            const groupNames = Array.isArray(u.groups) && u.groups.length > 0
+              ? u.groups.map((g: any) => g.name).join(', ')
+              : '—';
 
-            rights: (u.userPermissions ?? []).map((p: any) => p.permission),
-            roles: u.roles ?? ['ROLE_USER'],
-            permissions: (u.userPermissions ?? []).map((p: any) => p.permission),
+            return {
+              id: u.id,
+              selected: false,
+              avatar: u.name ?? u.email,
+              firstName: u.firstName ?? '—',
+              lastName: u.lastName ?? '—',
+              name: `${u.firstName ?? ''} ${u.lastName ?? ''}`.trim(),
+              email: u.email ?? '—',
+              active: u.isActive,
+              organization: u.companyName ?? u.company?.name ?? '—',
+              group: groupNames,
+              rights: Array.isArray(u.userPermissions) ? u.userPermissions : [],
+              roles: u.roles ?? ['ROLE_USER'],
+              permissions: Array.isArray(u.userPermissions) ? u.userPermissions : [],
+              joinedAt: new Date(Date.now() - joinDaysAgo * 24 * 60 * 60 * 1000).toLocaleDateString('fr-FR')
+            };
+          });
 
-            joinedAt: new Date(Date.now() - joinDaysAgo * 24 * 60 * 60 * 1000).toLocaleDateString('fr-FR')
+          this.allRows = [...this.rows];
+          this.populateFilterOptions();
+          this.applyFiltersInternal();
+          this.dataReady = true;
 
-          };
-        });
-        this.orgOptions = Array.from(new Set(this.allRows.map(r => r.organization))).sort();
-        this.rightsOptions = Array.from(new Set(this.allRows.flatMap(r => r.rights))).sort();
-        this.applyFilters();
+          console.log(' Chargement terminé. Rows:', this.rows.length);
+          this.isLoading = false;
+          this.cdr.markForCheck();
+        },
+        error: (error) => {
+          console.error('Erreur dans le subscribe:', error);
+          this.loadError = true;
+          this.isLoading = false;
+          this.cdr.markForCheck();
+        }
       });
   }
+
+
+
+  private populateFilterOptions(): void {
+    this.orgOptions = [...new Set(this.allRows.map(r => r.organization).filter(org => org !== '—'))];
+    this.rightsOptions = [...new Set(this.allRows.flatMap(r => r.rights))];
+  }
+
   highlightColor: string = '';
 
   private generateRandomColor(): void {
@@ -197,6 +247,9 @@ export class UserManagementComponent implements OnInit {
     return this.rows.filter(row => row.selected).length;
   }
 
+  trackByUserId(index: number, user: UserRow): number {
+    return user.id;
+  }
 
   applyFilters(): void {
     let filtered = this.allRows;
@@ -219,19 +272,46 @@ export class UserManagementComponent implements OnInit {
     this.cdr.markForCheck();
   }
 
+  private applyFiltersInternal(): void {
+    let filtered = this.allRows;
+
+    if (this.filterOrg) {
+      filtered = filtered.filter(r => r.organization === this.filterOrg);
+    }
+
+    if (this.filterRight) {
+      filtered = filtered.filter(r => r.rights.includes(this.filterRight));
+    }
+
+    if (this.filterKeyword) {
+      const kw = this.filterKeyword.toLowerCase();
+      filtered = filtered.filter(r =>
+        `${r.firstName} ${r.lastName}`.toLowerCase().includes(kw) ||
+        r.email.toLowerCase().includes(kw)
+      );
+    }
+
+    this.rows = filtered;
+    this.applySort();
+    this.page = 1;
+  }
+
   sortBy(column: keyof UserRow): void {
     this.sortDirection = this.sortColumn === column
       ? (this.sortDirection === 'asc' ? 'desc' : 'asc')
       : 'asc';
     this.sortColumn = column;
     this.applySort();
+    this.cdr.markForCheck();
   }
 
-  private applySort(): void {
+  applySort(): void {
     if (!this.sortColumn) return;
+
     const { sortColumn: col, sortDirection: dir } = this;
     this.rows.sort((a, b) => {
       const aVal = a[col], bVal = b[col];
+
       if (typeof aVal === 'string' && typeof bVal === 'string') {
         return dir === 'asc'
           ? aVal.localeCompare(bVal)
@@ -247,7 +327,6 @@ export class UserManagementComponent implements OnInit {
       }
       return 0;
     });
-    this.cdr.markForCheck();
   }
 
   get pagedRows(): UserRow[] {
@@ -263,9 +342,11 @@ export class UserManagementComponent implements OnInit {
   get hasSelection(): boolean {
     return this.rows.some(r => r.selected);
   }
+
   get allSelected(): boolean {
     return this.rows.length > 0 && this.rows.every(r => r.selected);
   }
+
   toggleAll(checked: boolean): void {
     this.rows.forEach(r => r.selected = checked);
     this.cdr.markForCheck();
@@ -288,7 +369,6 @@ export class UserManagementComponent implements OnInit {
     }
 
     const count = ids.length;
-
     const confirmed = window.confirm(`Anonymiser ${count} utilisateur${count > 1 ? 's' : ''} ? (Les données seront conservées mais l'utilisateur sera désactivé)`);
 
     if (!confirmed) {
@@ -297,36 +377,33 @@ export class UserManagementComponent implements OnInit {
 
     this.isDeleting = true;
 
-    this.userService.anonymizeUser(ids[0]).subscribe({
-              next: () => {
+    this.userService.anonymizeUser(ids[0])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
           this.isDeleting = false;
+          this.loadUsers();
+          this.rows.forEach(r => r.selected = false);
+          this.cdr.markForCheck();
 
-        this.loadUsers();
-
-        this.rows.forEach(r => r.selected = false);
-        this.cdr.markForCheck();
-
-        this.alerts.open('Utilisateur anonymisé avec succès', {
-          label: 'Info',
-          appearance: 'positive',
-          autoClose: 2000,
-        }).subscribe();
-      },
-      error: (err) => {
-        this.isDeleting = false;
-
-        this.alerts.open('Échec de l\'anonymisation', {
-          label: 'Erreur',
-          appearance: 'danger',
-          autoClose: 2000,
-        }).subscribe();
-      },
-    });
+          this.alerts.open('Utilisateur anonymisé avec succès', {
+            label: 'Info',
+            appearance: 'positive',
+            autoClose: 2000,
+          }).subscribe();
+        },
+        error: (err) => {
+          this.isDeleting = false;
+          this.alerts.open('Échec de l\'anonymisation', {
+            label: 'Erreur',
+            appearance: 'danger',
+            autoClose: 2000,
+          }).subscribe();
+        },
+      });
   }
 
-  onClick(): void {
-    this.open = false;
-  }
+
 
   viewUserProfile(userId: number): void {
     this.router.navigate(['/profil', userId]);
@@ -341,36 +418,51 @@ export class UserManagementComponent implements OnInit {
       permissions: row.permissions
     };
     this.showRolesModal = true;
-    this.cdr.markForCheck();
+    this.cdr.markForCheck(); // ✅ Utiliser markForCheck
   }
 
   closeRolesModal(): void {
     this.showRolesModal = false;
     this.selectedUserForRoles = null;
-    this.cdr.markForCheck();
+    this.cdr.markForCheck(); // ✅ Utiliser markForCheck
   }
-
-
 
   saveUserRoles(changes: { userId: number; roles: string[]; permissions: string[] }): void {
     this.userService.updateUserRoles(changes.userId, changes.roles, changes.permissions)
+      .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (updatedUser) => {
+          // Mettre à jour les données locales
           const rowIndex = this.allRows.findIndex(r => r.id === changes.userId);
           if (rowIndex !== -1) {
             this.allRows[rowIndex].roles = changes.roles;
             this.allRows[rowIndex].permissions = changes.permissions;
-            this.allRows[rowIndex].rights = changes.permissions; // Pour la compatibilité avec l'affichage
+            this.allRows[rowIndex].rights = changes.permissions;
           }
 
-          this.applyFilters();
+          // Mettre à jour aussi les rows affichés
+          const displayRowIndex = this.rows.findIndex(r => r.id === changes.userId);
+          if (displayRowIndex !== -1) {
+            this.rows[displayRowIndex].roles = changes.roles;
+            this.rows[displayRowIndex].permissions = changes.permissions;
+            this.rows[displayRowIndex].rights = changes.permissions;
+          }
+
+          // Appliquer les filtres et forcer la mise à jour de l'affichage
+          this.applyFiltersInternal();
+          this.cdr.markForCheck();
+          
           this.closeRolesModal();
 
-          this.alerts.open('Rôles mis à jour avec succès', {
-            label: 'Succès',
-            appearance: 'positive',
-            autoClose: 3000,
-          }).subscribe();
+          // Vérifier si l'utilisateur modifié est l'utilisateur connecté actuellement
+          this.authService.getCurrentUser().subscribe({
+            next: (currentUser) => {
+              if (currentUser && currentUser.id === changes.userId) {
+                // Si c'est l'utilisateur connecté, le déconnecter immédiatement
+                this.authService.logout();
+              }
+            }
+          });
         },
         error: (err) => {
           this.alerts.open('Erreur lors de la mise à jour des rôles', {

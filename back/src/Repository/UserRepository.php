@@ -45,14 +45,68 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     public function findUserGameHistory(User $user, int $limit = 50): array
     {
         return $this->createQueryBuilder('u')
-            ->select('ua', 'q')
-            ->leftJoin('u.userAnswers', 'ua')
-            ->leftJoin('ua.quiz', 'q')
-            ->where('u = :user')
-            ->setParameter('user', $user)
-            ->orderBy('ua.date_attempt', 'DESC')
-            ->setMaxResults($limit)
+            ->select('u.id, u.email, u.firstName, u.lastName, u.pseudo')
+            ->where('u.id = :userId')
+            ->setParameter('userId', $user->getId())
             ->getQuery()
             ->getResult();
+    }
+
+    public function findUsersFromOtherCompanies(int $excludeCompanyId): array
+    {
+        return $this->createQueryBuilder('u')
+            ->where('u.company IS NOT NULL')
+            ->andWhere('u.company != :excludeCompanyId')
+            ->andWhere('u.deletedAt IS NULL')
+            ->andWhere('u.isActive = true')
+            ->setParameter('excludeCompanyId', $excludeCompanyId)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findAllWithStats(bool $includeDeleted = false): array
+    {
+        $qb = $this->createQueryBuilder('u')
+            ->leftJoin('u.company', 'c')
+            ->leftJoin('u.groups', 'g')
+            ->leftJoin('u.userPermissions', 'up')
+            ->addSelect('c', 'g', 'up');
+
+        if (!$includeDeleted) {
+            $qb->andWhere('u.deletedAt IS NULL');
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
+    public function findByCompanyWithStats(int $companyId, bool $includeDeleted = false): array
+    {
+        $qb = $this->createQueryBuilder('u')
+            ->leftJoin('u.company', 'c')
+            ->leftJoin('u.groups', 'g')
+            ->leftJoin('u.userPermissions', 'up')
+            ->addSelect('c', 'g', 'up')
+            ->where('u.company = :companyId')
+            ->setParameter('companyId', $companyId);
+
+        if (!$includeDeleted) {
+            $qb->andWhere('u.deletedAt IS NULL');
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
+
+    public function findWithStats(int $userId): ?User
+    {
+        return $this->createQueryBuilder('u')
+            ->leftJoin('u.company', 'c')
+            ->leftJoin('u.groups', 'g')
+            ->leftJoin('u.userPermissions', 'up')
+            ->addSelect('c', 'g', 'up')
+            ->where('u.id = :userId')
+            ->setParameter('userId', $userId)
+            ->getQuery()
+            ->getOneOrNullResult();
     }
 }

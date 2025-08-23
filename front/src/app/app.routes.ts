@@ -26,7 +26,7 @@ import {MultiplayerRoomComponent} from './pages/multiplayer-room/multiplayer-roo
 import {MultiplayerGameComponent} from './pages/multiplayer-game/multiplayer-game.component';
 import {QuizResultsComponent} from './pages/quiz-results/quiz-results.component';
 import {DonationComponent} from './pages/donation/donation.component';
-import {NotFoundComponent} from './pages/not-found';
+import {NotFoundComponent} from './pages/not-found/not-found.component';
 
 export const routes: Routes = [
   { path: 'connexion', component: LoginComponent, data: { hideNavbar: true } },
@@ -46,7 +46,7 @@ export const routes: Routes = [
   {
     path: 'gestion-quiz',
     component: QuizManagementComponent,
-    canActivate: [authGuard, viewResultsGuard],
+    canActivate: [authGuard, createQuizGuard],
   },
   {
     path: 'creation-quiz',
@@ -76,7 +76,7 @@ export const routes: Routes = [
   {
     path: 'profil/:id',
     component: UserProfileComponent,
-    canActivate: [authGuard],
+    canActivate: [authGuard, manageUsersGuard],
   },
   {
     path: 'classement',
@@ -98,7 +98,7 @@ export const routes: Routes = [
   {
     path: 'multiplayer/create/:id',
     component: MultiplayerRoomCreateComponent,
-    canActivate: [authGuard],
+    canActivate: [authGuard, createQuizGuard],
     data: { hideNavbar: true }
   },
   {
@@ -137,9 +137,9 @@ export const routes: Routes = [
   {
     path: 'company/:id',
     component: CompanyDetailsComponent,
-    canActivate: [authGuard, adminGuard]
+    canActivate: [authGuard, manageUsersGuard]
   },
 
-  { path: '',  component: LoginComponent, pathMatch: 'full' },
+  { path: '',  component: LoginComponent, pathMatch: 'full', data: { hideNavbar: true } },
   { path: '**', component: NotFoundComponent },
 ];

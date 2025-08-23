@@ -11,47 +11,41 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
-use OpenApi\Annotations as OA;
 
+/**
+ * @OA\Tag(name="Group")
+ */
 #[Route('/api/group')]
 class GroupController extends AbstractController
 {
     public function __construct(
         private GroupService $groupService,
         private UserService $userService,
-        ) {}
-
+    ) {}
     /**
-     * @OA\Get(summary="Lister les groupes", tags={"Group"})
+     * @OA\Get(summary="Lister les groupes (gestion complète)", tags={"Group"})
      * @OA\Response(response=200, description="Liste des groupes")
      */
     #[Route('', name: 'group_index', methods: ['GET'])]
+    #[IsGranted('MANAGE_USERS')]
     public function index(): JsonResponse
     {
-        $groups = $this->groupService->list();
-
-        return $this->json($groups, 200, [], ['groups' => ['group:read']]);
-    }
-
-    /**
-     * @OA\Get(summary="Lister les groupes", tags={"Group"})
-     * @OA\Response(response=200, description="Liste des groupes")
-     * @OA\Security(name="bearerAuth")
-     */
-    #[Route('/list', name: 'group_list', methods: ['GET'])]
-    #[IsGranted('ROLE_USER')]
-    public function list(): JsonResponse
-    {
         $user = $this->getUser();
-
-        if (!$user) {
-            return $this->json(['error' => 'Utilisateur non authentifié'], 401);
+        
+        if (!$user->isAdmin()) {
+            $userCompany = $user->getCompany();
+            if (!$userCompany) {
+                return $this->json(['error' => 'Vous n\'appartenez à aucune entreprise'], 403);
+            }
+            
+            $groups = $this->groupService->getGroupsByCompany($userCompany);
+        } else {
+            $groups = $this->groupService->list();
         }
 
-        $groups = $this->groupService->getGroupsByUser($user);
-        
         return $this->json($groups, 200, [], ['groups' => ['group:read']]);
     }
+
 
     /**
      * @OA\Post(summary="Créer un groupe", tags={"Group"})
@@ -68,68 +62,55 @@ class GroupController extends AbstractController
      * @OA\Security(name="bearerAuth")
      */
     #[Route('', name: 'group_create', methods: ['POST'])]
+    #[IsGranted('MANAGE_USERS')]
     public function create(Request $request): JsonResponse
     {
         try {
-            $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
+            $user = $this->getUser();
+            $data = json_decode($request->getContent(), true);
             
-            $group = $this->groupService->create($data);
-
-            return $this->json($group, 201, [], ['groups' => ['group:read']]);
-        } catch (\JsonException $e) {
-            return $this->json(['error' => 'Invalid JSON'], 400);
+            if (!$user->isAdmin()) {
+                $userCompany = $user->getCompany();
+                if (!$userCompany) {
+                    return $this->json(['error' => 'Vous n\'appartenez à aucune entreprise'], 403);
+                }
+                
+                $data['company_id'] = $userCompany->getId();
+                
+                $group = $this->groupService->createForCompany($data, $userCompany);
+            } else {
+                $group = $this->groupService->create($data);
+            }
+            
+            return $this->json([
+                'success' => true,
+                'message' => 'Groupe créé avec succès',
+                'data' => [
+                    'id' => $group->getId(),
+                    'name' => $group->getName(),
+                    'accesCode' => $group->getAccesCode(),
+                    'companyId' => $group->getCompany() ? $group->getCompany()->getId() : null
+                ]
+            ], 201);
+            
         } catch (ValidationFailedException $e) {
             $errorMessages = [];
             foreach ($e->getViolations() as $violation) {
                 $errorMessages[] = $violation->getMessage();
             }
-            return $this->json(['error' => 'Données invalides', 'details' => $errorMessages], 400);
+            return $this->json([
+                'success' => false,
+                'message' => 'Données invalides',
+                'details' => $errorMessages
+            ], 400);
+        } catch (\Exception $e) {
+            return $this->json([
+                'success' => false,
+                'message' => 'Erreur lors de la création du groupe: ' . $e->getMessage()
+            ], 500);
         }
     }
 
-    /**
-     * @OA\Get(summary="Afficher un groupe", tags={"Group"})
-     * @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer"))
-     * @OA\Response(response=200, description="Détails du groupe")
-     */
-    #[Route('/{id}', name: 'group_show', methods: ['GET'])]
-    public function show(Group $group): JsonResponse
-    {
-        return $this->json($group, 200, [], ['groups' => ['group:read']]);
-    }
-
-    /**
-     * @OA\Put(summary="Modifier un groupe", tags={"Group"})
-     * @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer"))
-     * @OA\RequestBody(
-     *     required=true,
-     *     @OA\JsonContent(
-     *         @OA\Property(property="name", type="string"),
-     *         @OA\Property(property="acces_code", type="string")
-     *     )
-     * )
-     * @OA\Response(response=200, description="Groupe modifié")
-     * @OA\Security(name="bearerAuth")
-     */
-    #[Route('/{id}', name: 'group_update', methods: ['PUT', 'PATCH'])]
-    public function update(Request $request, Group $group): JsonResponse
-    {
-        try {
-            $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
-            
-            $group = $this->groupService->update($group, $data);
-
-            return $this->json($group, 200, [], ['groups' => ['group:read']]);
-        } catch (\JsonException $e) {
-            return $this->json(['error' => 'Invalid JSON'], 400);
-        } catch (ValidationFailedException $e) {
-            $errorMessages = [];
-            foreach ($e->getViolations() as $violation) {
-                $errorMessages[] = $violation->getMessage();
-            }
-            return $this->json(['error' => 'Données invalides', 'details' => $errorMessages], 400);
-        }
-    }
 
     /**
      * @OA\Delete(summary="Supprimer un groupe", tags={"Group"})
@@ -138,11 +119,23 @@ class GroupController extends AbstractController
      * @OA\Security(name="bearerAuth")
      */
     #[Route('/{id}', name: 'group_delete', methods: ['DELETE'])]
+    #[IsGranted('MANAGE_USERS', subject: 'group')]
     public function delete(Group $group): JsonResponse
     {
-        $this->groupService->delete($group);
-
-        return $this->json(null, 204);
+        try {
+            $this->groupService->delete($group);
+            
+            return $this->json([
+                'success' => true,
+                'message' => 'Groupe supprimé avec succès'
+            ]);
+            
+        } catch (\Exception $e) {
+            return $this->json([
+                'success' => false,
+                'message' => 'Erreur lors de la suppression du groupe: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -158,6 +151,7 @@ class GroupController extends AbstractController
      * @OA\Security(name="bearerAuth")
      */
     #[Route('/{id}/add-user', name: 'group_add_user', methods: ['POST'])]
+    #[IsGranted('MANAGE_USERS', subject: 'group')]
     public function addUser(Request $request, Group $group): JsonResponse
     {
         try {
@@ -189,6 +183,7 @@ class GroupController extends AbstractController
      * @OA\Security(name="bearerAuth")
      */
     #[Route('/{id}/remove-user/{userId}', name: 'group_remove_user', methods: ['DELETE'])]
+    #[IsGranted('MANAGE_USERS', subject: 'group')]
     public function removeUser(Group $group, int $userId): JsonResponse
     {
         $user = $this->userService->find($userId);

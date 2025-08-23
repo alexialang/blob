@@ -9,6 +9,7 @@ use Symfony\Component\Validator\Exception\ValidationFailedException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use OpenApi\Annotations as OA;
 
 #[Route('/api/user-answer')]
@@ -19,6 +20,7 @@ class UserAnswerController extends AbstractController
         ) {}
 
     #[Route('/', name: 'user_answer_index', methods: ['GET'])]
+    #[IsGranted('VIEW_RESULTS')]
     public function index(): JsonResponse
     {
         $userAnswers = $this->userAnswerService->list();
@@ -118,23 +120,10 @@ class UserAnswerController extends AbstractController
         }
     }
 
-    #[Route('/test-auth', name: 'user_answer_test_auth', methods: ['GET'])]
-    public function testAuth(): JsonResponse
-    {
-        $user = $this->getUser();
-        
-        if (!$user) {
-            return $this->json(['error' => 'Non authentifié'], 401);
-        }
 
-        return $this->json([
-            'message' => 'Authentification OK',
-            'user_id' => $user->getId(),
-            'user_email' => $user->getEmail()
-        ]);
-    }
 
     #[Route('/rate-quiz', name: 'user_answer_rate_quiz', methods: ['POST'])]
+    #[IsGranted('ROLE_USER')]
     public function rateQuiz(Request $request): JsonResponse
     {
         $user = $this->getUser();
