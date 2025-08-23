@@ -15,7 +15,7 @@
     
     <div class="card-content">
       <h3 class="quiz-title" id="quiz-title-{{ quiz.id }}">{{ quiz.title }}</h3>
-      <p class="quiz-subtitle" [attr.aria-label]="'Difficulté: ' + quiz.difficulty">{{ quiz.difficulty }}</p>
+      <p class="quiz-subtitle" [attr.aria-label]="'Difficulté du quiz: ' + quiz.difficulty">{{ quiz.difficulty }}</p>
 
       <div class="quiz-category">
         <small>Catégorie: {{ quiz.category }}</small>
@@ -23,7 +23,7 @@
     </div>
 
     <div class="card-action">
-      <div class="quiz-rating" role="img" [attr.aria-label]="'Note de ' + quiz.rating + ' sur 5 étoiles'">
+      <div class="quiz-rating" role="img" [attr.aria-label]="'Note de ' + quiz.rating + ' sur 5 étoiles pour le quiz ' + quiz.title">
         <div class="stars">
           <span class="star" 
                 *ngFor="let i of [1,2,3,4,5]" 
@@ -39,7 +39,7 @@
               [attr.aria-label]="'Retourner la carte pour voir les détails du quiz ' + quiz.title"
               [attr.aria-expanded]="quiz.isFlipped"
               tabindex="0">
-        <img src="/assets/svg/arrow-down-left.svg" alt="" aria-hidden="true">
+        <img src="/assets/svg/arrow-down-left.svg" alt="Icône de flèche pour retourner la carte" aria-hidden="true">
       </button>
     </div>
   </div>
@@ -57,15 +57,15 @@
       </div>
 
       <div class="play-mode-section">
-        <h4>Mode:</h4>
-        <div class="mode-toggle" role="radiogroup" aria-label="Sélection du mode de jeu">
+        <h4>Mode de jeu:</h4>
+        <div class="mode-toggle" role="radiogroup" [attr.aria-label]="'Sélection du mode de jeu pour le quiz ' + quiz.title">
           <button
             class="mode-btn"
             [class.active]="quiz.playMode === 'solo'"
             (click)="togglePlayMode()"
             role="radio"
             [attr.aria-checked]="quiz.playMode === 'solo'"
-            [attr.aria-label]="'Mode solo'"
+            [attr.aria-label]="'Mode solo pour le quiz ' + quiz.title"
             [tabindex]="quiz.isFlipped ? 0 : -1">
             Solo
           </button>
@@ -76,7 +76,7 @@
             (click)="togglePlayMode()"
             role="radio"
             [attr.aria-checked]="quiz.playMode === 'team'"
-            [attr.aria-label]="'Mode équipe'"
+            [attr.aria-label]="'Mode équipe pour le quiz ' + quiz.title"
             [tabindex]="quiz.isFlipped ? 0 : -1">
             Équipe
           </button>
@@ -92,11 +92,11 @@
               (click)="flipCard()"
               (keydown.enter)="flipCard()"
               (keydown.space)="flipCard()"
-              [attr.aria-label]="'Retourner la carte vers l\'avant'"
+              [attr.aria-label]="'Retourner la carte vers l\'avant pour le quiz ' + quiz.title"
               [tabindex]="quiz.isFlipped ? 0 : -1">←</button>
       <button class="start-btn" 
               (click)="startQuiz()"
-              [attr.aria-label]="'Démarrer le quiz ' + quiz.title"
+              [attr.aria-label]="'Démarrer le quiz ' + quiz.title + ' en mode ' + quiz.playMode"
               [tabindex]="quiz.isFlipped ? 0 : -1">
         Démarrer le Quiz
       </button>

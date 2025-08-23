@@ -25,6 +25,7 @@ services:
     build:
       context: front
       dockerfile: Dockerfile
+      target: ${MODE:-prod}
     container_name: blob_angular
     ports:
       - "4200:4200"

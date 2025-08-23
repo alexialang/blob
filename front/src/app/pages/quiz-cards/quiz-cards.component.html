@@ -1,6 +1,6 @@
 <div class="quiz-page">
   <div class="quiz-header">
-    <div class="page-title"><h1>Quiz</h1></div>
+    <div class="page-title"><h1>Quiz Interactifs - Découvrez et Jouez</h1></div>
     <div class="quiz-filters">
       <input type="text"
              class="filter-select "
@@ -40,7 +40,7 @@
                          (playModeChange)="togglePlayMode($event)">
           </app-quiz-card>
           <div *ngIf="it.type==='blob'" class="blob-card">
-            <img ngSrc="/assets/svg/blob_flower.svg" alt="Décor" height="334" width="242">
+            <img ngSrc="/assets/svg/blob_flower.svg" alt="Élément décoratif floral pour la mise en page des quiz" height="334" width="242">
           </div>
         </ng-container>
       </div>
@@ -51,13 +51,13 @@
                       [activePadding]="2"
                       (pageChange)="onPopularPageChange($event)">
       </app-pagination>
-      <p *ngIf="!popularQuizzesWithBlobs.length">Aucun quiz populaire</p>
+      <p *ngIf="!popularQuizzesWithBlobs.length">Aucun quiz populaire disponible pour le moment</p>
     </section>
 
     <section class="quiz-section my-quizzes-section"
              *ngIf="myQuizzesWithBlobs.length && isUserLoggedIn">
-      <h2>Mes Quiz ({{myQuizzes.length}})</h2>
-      <a routerLink="/creation-quiz" class="btn-create">+ Créer</a>
+      <h2>Mes Quiz Créés ({{myQuizzes.length}})</h2>
+      <a routerLink="/creation-quiz" class="btn-create">+ Créer un nouveau quiz</a>
       <div class="cards-grid grid grid-cols-4 gap-4">
         <ng-container *ngFor="let it of myQuizzesWithBlobs; let i = index">
           <app-quiz-card *ngIf="it.type==='quiz'" [quiz]="it.data"
@@ -68,7 +68,7 @@
                          (playModeChange)="togglePlayMode($event)">
           </app-quiz-card>
           <div *ngIf="it.type==='blob'" class="blob-card">
-            <img src="/assets/svg/blob_flower.svg" alt="Décor">
+            <img src="/assets/svg/blob_flower.svg" alt="Élément décoratif floral pour la mise en page des quiz">
           </div>
         </ng-container>
       </div>
@@ -94,7 +94,7 @@
                          (playModeChange)="togglePlayMode($event)">
           </app-quiz-card>
           <div *ngIf="it.type==='blob'" class="blob-card">
-            <img src="/assets/svg/blob_flower.svg" alt="Décor">
+            <img src="/assets/svg/blob_flower.svg" alt="Élément décoratif floral pour la mise en page des quiz">
           </div>
         </ng-container>
       </div>
@@ -120,7 +120,7 @@
                          (playModeChange)="togglePlayMode($event)">
           </app-quiz-card>
           <div *ngIf="it.type==='blob'" class="blob-card">
-            <img src="/assets/svg/blob_flower.svg" alt="Décor">
+            <img src="/assets/svg/blob_flower.svg" alt="Élément décoratif floral pour la mise en page des quiz">
           </div>
         </ng-container>
       </div>
@@ -131,7 +131,7 @@
                       [activePadding]="2"
                       (pageChange)="onCategoryPageChange(cat, $event)">
       </app-pagination>
-      <p *ngIf="!cat.quizzes.length">Aucun quiz dans cette catégorie</p>
+      <p *ngIf="!cat.quizzes.length">Aucun quiz disponible dans cette catégorie pour le moment</p>
     </section>
   </div>
 </div>

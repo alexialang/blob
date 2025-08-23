@@ -1,5 +1,5 @@
 <div class="mcq-question-container" role="region" [attr.aria-labelledby]="'question-instruction-' + question.id">
-  <div class="answers-container" role="radiogroup" aria-label="Options de réponse">
+  <div class="answers-container" role="radiogroup" aria-label="Options de réponse pour la question">
     <div
       *ngFor="let answer of question.answers; let i = index"
       class="answer-option"
@@ -15,7 +15,7 @@
       <div class="answer-shape">
         <img
           [src]="getFlowerShape(i)"
-          alt=""
+          alt="Forme florale décorative pour l'option de réponse {{ i + 1 }}"
           class="flower-shape flower-{{ i + 1 }}"
           [class.selected]="isSelected(answer.id)"
           aria-hidden="true">
