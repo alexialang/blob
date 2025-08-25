@@ -596,6 +596,24 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
   }
 
   private proceedToNextQuestion(): void {
+    // Demander au backend de passer à la question suivante
+    if (this.currentGame?.id) {
+      this.multiplayerService.triggerNextQuestion(this.currentGame.id).subscribe({
+        next: (result: any) => {
+          console.log('Question suivante déclenchée:', result);
+        },
+        error: (error: any) => {
+          console.error('Erreur lors du déclenchement de la question suivante:', error);
+          // Fallback : utiliser la logique locale
+          this.proceedToNextQuestionLocal();
+        }
+      });
+    } else {
+      this.proceedToNextQuestionLocal();
+    }
+  }
+
+  private proceedToNextQuestionLocal(): void {
     const nextQuestionIndex = this.currentQuestionIndex;
 
     if (nextQuestionIndex < this.totalQuestions && this.questions && this.questions[nextQuestionIndex]) {
@@ -605,28 +623,27 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
     } else {
       this.endGameOnServer();
 
-
       const currentUser = this.getCurrentUsername();
       const currentUserInGame = this.currentUser?.username;
 
-              const finalLeaderboard = this.currentGame?.players.map((player) => {
-          let realScore;
-          if (player.username === currentUser || player.username === currentUserInGame) {
-            realScore = this.currentScore;
-          } else {
-            const livePlayer = this.livePlayers.find(p => p.username === player.username);
-            realScore = livePlayer?.score || 0;
-          }
+      const finalLeaderboard = this.currentGame?.players.map((player) => {
+        let realScore;
+        if (player.username === currentUser || player.username === currentUserInGame) {
+          realScore = this.currentScore;
+        } else {
+          const livePlayer = this.livePlayers.find(p => p.username === player.username);
+          realScore = livePlayer?.score || 0;
+        }
 
-          return {
-            username: player.username,
-            score: realScore,
-            rank: 1,
-            totalQuestions: this.totalQuestions,
-            correctAnswers: Math.floor(realScore / 10),
-            timeBonus: 0
-          };
-        }) || [];
+        return {
+          username: player.username,
+          score: realScore,
+          rank: 1,
+          totalQuestions: this.totalQuestions,
+          correctAnswers: Math.floor(realScore / 10),
+          timeBonus: 0
+        };
+      }) || [];
 
       finalLeaderboard.sort((a, b) => b.score - a.score);
       finalLeaderboard.forEach((player, index) => {
@@ -758,7 +775,21 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
         }, 2000);
       },
       error: (error) => {
-
+        console.error('Erreur lors de la soumission de la réponse:', error);
+        
+        // Réinitialiser l'état en cas d'erreur
+        this.hasAnswered = false;
+        this.waitingForPlayers = false;
+        
+        // Afficher un message d'erreur à l'utilisateur
+        if (error.error && error.error.details) {
+          console.error('Détails de l\'erreur:', error.error.details);
+        }
+        
+        // Relancer le timer si l'erreur n'est pas critique
+        if (error.status !== 400) {
+          this.startTimer();
+        }
       }
     });
   }

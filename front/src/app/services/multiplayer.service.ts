@@ -210,6 +210,10 @@ export class MultiplayerService {
     return this.http.post<{ success: boolean }>(`${this.apiUrl}/multiplayer/game/${gameId}/trigger-feedback`, {});
   }
 
+  triggerNextQuestion(gameId: string): Observable<{ success: boolean }> {
+    return this.http.post<{ success: boolean }>(`${this.apiUrl}/multiplayer/game/${gameId}/next-question`, {});
+  }
+
   endGame(gameId: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/multiplayer/game/${gameId}/end`, {});
   }

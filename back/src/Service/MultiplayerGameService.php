@@ -261,6 +261,8 @@ class MultiplayerGameService
 
     public function submitAnswer(string $gameCode, User $user, int $questionId, $answer, int $timeSpent = 0): array
     {
+        error_log("DEBUG: submitAnswer appelé - gameCode: $gameCode, userId: {$user->getId()}, questionId: $questionId");
+        
         $this->validateAnswerData(['questionId' => $questionId, 'answer' => $answer, 'timeSpent' => $timeSpent]);
         
         $gameSession = $this->gameSessionRepository->findByGameCode($gameCode);
@@ -276,17 +278,23 @@ class MultiplayerGameService
         $quiz = $gameSession->getRoom()->getQuiz();
         $questions = $quiz->getQuestions()->toArray();
         
+        error_log("DEBUG: currentQuestionIndex: $currentQuestionIndex, totalQuestions: " . count($questions));
+        
         if ($currentQuestionIndex >= count($questions)) {
             throw new \Exception('Question invalide');
         }
         
         $currentQuestion = $questions[$currentQuestionIndex];
         
+        error_log("DEBUG: currentQuestion ID: {$currentQuestion->getId()}, submitted questionId: $questionId");
+        
         if ($questionId !== $currentQuestion->getId()) {
             throw new \Exception('Question non autorisée pour cette phase du jeu');
         }
 
         $sessionKey = 'game_' . $gameCode . '_user_' . $user->getId() . '_question_' . $questionId;
+        
+        error_log("DEBUG: sessionKey: $sessionKey, alreadySubmitted: " . (isset(self::$submittedAnswers[$sessionKey]) ? 'true' : 'false'));
         
         if (isset(self::$submittedAnswers[$sessionKey])) {
             throw new \Exception('Réponse déjà soumise pour cette question');
@@ -302,6 +310,7 @@ class MultiplayerGameService
         $isCorrect = $this->checkAnswer($question, $answer);
         $points = $isCorrect ? max(10 - floor($timeSpent / 3), 1) : 0;
 
+        error_log("DEBUG: Réponse validée - isCorrect: " . ($isCorrect ? 'true' : 'false') . ", points: $points");
 
         $answerKey = 'game_' . $gameCode . '_user_' . $user->getId() . '_q_' . $questionId;
         self::$gameAnswers[$answerKey] = [
@@ -356,11 +365,13 @@ class MultiplayerGameService
             ];
         }
 
-        
         $answeredPlayersCount = $answeredCount;
         $totalPlayersCount = count($allPlayersInRoom);
 
+        error_log("DEBUG: answeredPlayersCount: $answeredPlayersCount, totalPlayersCount: $totalPlayersCount");
+
         if ($answeredPlayersCount >= $totalPlayersCount) {
+            error_log("DEBUG: Tous les joueurs ont répondu, lancement de la phase de feedback");
             $this->startFeedbackPhase($gameSession);
         } else {
             $this->publishUpdate($this->getGameTopic($gameSession->getGameCode()), [
@@ -708,15 +719,17 @@ class MultiplayerGameService
             $gameSession->setCurrentQuestionIndex($newIndex);
             $this->entityManager->persist($gameSession);
             $this->entityManager->flush();
-            
-            $this->triggerNextQuestion($gameCode);
+
         }
     }
 
     public function triggerNextQuestion(string $gameCode): void
     {
+        error_log("DEBUG: triggerNextQuestion appelé pour gameCode: $gameCode");
+        
         $gameSession = $this->gameSessionRepository->findByGameCode($gameCode);
         if (!$gameSession) {
+            error_log("DEBUG: GameSession non trouvée");
             return;
         }
 
@@ -724,14 +737,22 @@ class MultiplayerGameService
         $quiz = $gameSession->getRoom()->getQuiz();
         $questions = $quiz->getQuestions()->toArray();
 
+        error_log("DEBUG: triggerNextQuestion - questionIndex actuel: $questionIndex, totalQuestions: " . count($questions));
+
         if ($questionIndex + 1 >= count($questions)) {
+            error_log("DEBUG: Fin du jeu - plus de questions disponibles");
             $this->endGame($gameSession);
             return;
         }
 
         $newIndex = $questionIndex + 1;
+        error_log("DEBUG: triggerNextQuestion - nouvel index: $newIndex");
+        
         $gameSession->setCurrentQuestionIndex($newIndex);
         $this->entityManager->flush();
+        
+        $updatedIndex = $gameSession->getCurrentQuestionIndex();
+        error_log("DEBUG: triggerNextQuestion - index après mise à jour: $updatedIndex");
         
         $question = $questions[$newIndex];
         
@@ -755,6 +776,8 @@ class MultiplayerGameService
         ];
 
         $gameCode = $gameSession->getGameCode();
+        
+        error_log("DEBUG: triggerNextQuestion - envoi de la nouvelle question: " . json_encode($questionData));
         
         $this->publishUpdate($this->getGameTopic($gameCode), [
             'action' => 'new_question',
@@ -892,6 +915,8 @@ class MultiplayerGameService
 
     private function validateAnswerData(array $data): void
     {
+        error_log("DEBUG: validateAnswerData appelé avec: " . json_encode($data));
+        
         $constraints = new Assert\Collection([
             'questionId' => [
                 new Assert\NotBlank(['message' => 'L\'ID de la question est requis']),
@@ -916,8 +941,11 @@ class MultiplayerGameService
 
         $errors = $this->validator->validate($data, $constraints);
         if (count($errors) > 0) {
+            error_log("DEBUG: Erreurs de validation: " . json_encode($errors));
             throw new ValidationFailedException($constraints, $errors);
         }
+        
+        error_log("DEBUG: Validation réussie");
     }
 
     private function validateJoinRoomData(array $data): void
