@@ -30,14 +30,21 @@
     </div>
 
     <div class="action-buttons-wrapper">
-      <button class="btn btn-primary" (click)="onCreateQuiz()">
+      <button tuiButton appearance="primary" (click)="onCreateQuiz()" class="action-btn">
+        <tui-icon icon="@tui.plus" class="btn-icon"></tui-icon>
         Créer un quiz
       </button>
-      <button class="btn btn-secondary" (click)="onClick()">
-        Exporter
+      <button tuiButton appearance="secondary" (click)="exportQuizzes()" 
+              class="action-btn" 
+              [class.export-selected]="hasSelection"
+              [tuiHint]="getExportTooltip()" 
+              tuiHintDirection="bottom">
+        <tui-icon icon="@tui.download" class="btn-icon"></tui-icon>
+        {{ getExportButtonText() }}
       </button>
-      <button class="btn btn-secondary" (click)="onClick()">
-        Importer
+      <button tuiButton appearance="secondary" (click)="showImportDialog()" class="action-btn">
+        <tui-icon icon="@tui.upload" class="btn-icon"></tui-icon>
+        Importer JSON
       </button>
     </div>
   </div>
@@ -55,7 +62,7 @@
             type="checkbox"
             tuiCheckbox
             [ngModel]="allSelected"
-            (ngModelChange)="toggleAll($event)"
+            (ngModelChange)="toggleAll($event); onQuizSelectionChange()"
           />
         </th>
         <th tuiTh (click)="sortBy('title')" class="th-quiz">
@@ -101,7 +108,7 @@
       <tbody tuiTbody>
       <tr *ngFor="let row of pagedRows" class="table-row">
         <td tuiTd>
-          <input type="checkbox" tuiCheckbox [(ngModel)]="row.selected" />
+          <input type="checkbox" tuiCheckbox [(ngModel)]="row.selected" (ngModelChange)="onQuizSelectionChange()" />
         </td>
         <td tuiTd class="td-quiz">
           <div [tuiCell]="size" class="d-flex align-center gap-2 quiz-cell">
@@ -178,6 +185,46 @@
       [activePadding]="2"
       (pageChange)="onPageChange($event)"
     ></app-pagination>
+  </div>
+</div>
+
+<div *ngIf="showImportModal" class="modal-overlay">
+  <div class="modal-container">
+    <div class="modal-content">
+      <div class="modal-header">
+        <tui-icon icon="@tui.upload" class="modal-icon"></tui-icon>
+        <h3>Importer des quiz</h3>
+      </div>
+      <div class="modal-body">
+        <p class="modal-description">
+          <tui-icon icon="@tui.info" class="info-icon"></tui-icon>
+          Format JSON attendu : <strong>Fichier d'export de quiz</strong>
+        </p>
+        <div class="file-input-wrapper">
+          <input 
+            type="file" 
+            accept=".json"
+            (change)="onFileSelected($event)"
+            id="jsonFile"
+            class="file-input" />
+          <label for="jsonFile" class="file-input-label">
+            <tui-icon icon="@tui.upload-cloud" class="upload-icon"></tui-icon>
+            <span *ngIf="!selectedFile" class="file-text">Choisir un fichier JSON</span>
+            <span *ngIf="selectedFile" class="file-text selected">{{ selectedFile.name }}</span>
+          </label>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button tuiButton appearance="secondary" (click)="onImportCancelled()" class="action-btn">
+          <tui-icon icon="@tui.x" class="btn-icon"></tui-icon>
+          Annuler
+        </button>
+        <button tuiButton appearance="primary" [disabled]="!selectedFile" (click)="importQuizFile()" class="action-btn">
+          <tui-icon icon="@tui.upload" class="btn-icon"></tui-icon>
+          Importer
+        </button>
+      </div>
+    </div>
   </div>
 </div>
 

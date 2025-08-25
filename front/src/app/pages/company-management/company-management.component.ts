@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TuiTable } from '@taiga-ui/addon-table';
-import { TuiButton, TuiGroup, TuiDataList, TuiDialogService, TuiAlertService, TuiHintDirective, TuiSizeS } from '@taiga-ui/core';
+import { TuiButton, TuiGroup, TuiDataList, TuiDialogService, TuiAlertService, TuiHintDirective, TuiSizeS, TuiIcon } from '@taiga-ui/core';
 import { TuiAvatar, TuiCheckbox, TuiChip } from '@taiga-ui/kit';
 import { TuiCell } from '@taiga-ui/layout';
 import { CompanyService } from '../../services/company.service';
@@ -44,6 +44,7 @@ interface CompanyRow {
     TuiAvatar,
     TuiCell,
     TuiHintDirective,
+    TuiIcon,
     PaginationComponent,
     RouterModule,
     AddCompanyModalComponent,
@@ -120,6 +121,7 @@ export class CompanyManagementComponent implements OnInit, OnDestroy {
 
   onDropdownAction(action: string): void {
     switch (action) {
+      case 'Ajouter entreprise':
       case 'Ajouter une entreprise':
         this.showAddCompanyModal = true;
         break;

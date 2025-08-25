@@ -32,10 +32,14 @@ class GameSession
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $finishedAt = null;
 
+    #[ORM\Column(type: 'json', nullable: true)]
+    private ?array $sharedScores = null;
+
     public function __construct()
     {
         $this->startedAt = new \DateTimeImmutable();
         $this->gameCode = uniqid('game_');
+        $this->sharedScores = [];
     }
 
     public function getId(): ?int
@@ -106,6 +110,17 @@ class GameSession
     public function setFinishedAt(?\DateTimeImmutable $finishedAt): static
     {
         $this->finishedAt = $finishedAt;
+        return $this;
+    }
+
+    public function getSharedScores(): ?array
+    {
+        return $this->sharedScores;
+    }
+
+    public function setSharedScores(?array $sharedScores): static
+    {
+        $this->sharedScores = $sharedScores;
         return $this;
     }
 }

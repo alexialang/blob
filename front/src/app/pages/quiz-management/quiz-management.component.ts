@@ -1,6 +1,7 @@
 import {
   Component,
   OnInit,
+  OnDestroy,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
 } from '@angular/core';
@@ -13,6 +14,7 @@ import {
   TuiDialogService,
   TuiAlertService,
   TuiHintDirective,
+  TuiIcon,
 } from '@taiga-ui/core';
 import {
   TuiAvatar,
@@ -21,7 +23,8 @@ import {
 } from '@taiga-ui/kit';
 import { TuiCell } from '@taiga-ui/layout';
 import { QuizManagementService } from '../../services/quiz-management.service';
-import { forkJoin } from 'rxjs';
+import { FileDownloadService } from '../../services/file-download.service';
+import { forkJoin, Subject, takeUntil } from 'rxjs';
 import { PaginationComponent } from '../../components/pagination/pagination.component';
 
 type TuiSizeS = 's' | 'm';
@@ -60,6 +63,7 @@ interface QuizRow {
     TuiAvatar,
     TuiCell,
     TuiHintDirective,
+    TuiIcon,
     PaginationComponent,
   ],
   providers: [],
@@ -67,7 +71,7 @@ interface QuizRow {
   styleUrls: ['./quiz-management.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class QuizManagementComponent implements OnInit {
+export class QuizManagementComponent implements OnInit, OnDestroy {
   public rows: QuizRow[] = [];
   public filterStatus = '';
   public filterKeyword = '';
@@ -85,15 +89,19 @@ export class QuizManagementComponent implements OnInit {
 
   public loadError = false;
   public isDeleting = false;
+  public showImportModal = false;
+  public selectedFile: File | null = null;
 
   private readonly MAX_VISIBLE_GROUPS = 2;
+  private destroy$ = new Subject<void>();
 
   constructor(
     private quizService: QuizManagementService,
     private dialogService: TuiDialogService,
     private cdr: ChangeDetectorRef,
     private alerts: TuiAlertService,
-    private router: Router
+    private router: Router,
+    private fileDownloadService: FileDownloadService
   ) {}
 
   ngOnInit(): void {
@@ -225,6 +233,10 @@ export class QuizManagementComponent implements OnInit {
     this.cdr.markForCheck();
   }
 
+  onQuizSelectionChange(): void {
+    this.cdr.markForCheck();
+  }
+
   deleteSelected(): void {
     const ids = this.rows.filter(r => r.selected).map(r => r.id);
     if (!ids.length) return;
@@ -271,8 +283,116 @@ export class QuizManagementComponent implements OnInit {
     });
   }
 
-  onClick(): void {
-    this.open = false;
+  exportQuizzes(): void {
+    const selectedQuizzes = this.rows.filter(quiz => quiz.selected);
+    const hasSelection = selectedQuizzes.length > 0;
+
+    if (hasSelection) {
+      this.exportSelectedQuizzes(selectedQuizzes);
+    } else {
+      this.exportAllQuizzes();
+    }
+  }
+
+  private exportSelectedQuizzes(selectedQuizzes: QuizRow[]): void {
+    const exportData = {
+      exportDate: new Date().toISOString(),
+      exportType: 'selective',
+      totalQuizzes: selectedQuizzes.length,
+      quizzes: selectedQuizzes
+    };
+
+    const filename = `quiz_selection_${selectedQuizzes.length}_${new Date().toISOString().split('T')[0]}.json`;
+    this.fileDownloadService.downloadJson(exportData, filename);
+
+    const message = selectedQuizzes.length === 1
+      ? `Export réussi ! 1 quiz sélectionné exporté`
+      : `Export réussi ! ${selectedQuizzes.length} quiz sélectionnés exportés`;
+
+    this.alerts.open(message, { appearance: 'success' }).subscribe();
+
+    selectedQuizzes.forEach(quiz => quiz.selected = false);
+    this.cdr.markForCheck();
+  }
+
+  private exportAllQuizzes(): void {
+    this.quizService.getQuizzes()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (quizzes: any[]) => {
+          const exportData = {
+            exportDate: new Date().toISOString(),
+            exportType: 'complete',
+            totalQuizzes: quizzes.length,
+            quizzes: quizzes
+          };
+          const filename = `quiz_export_complet_${new Date().toISOString().split('T')[0]}.json`;
+          this.fileDownloadService.downloadJson(exportData, filename);
+          this.alerts.open('Export JSON complet réussi !', { appearance: 'success' }).subscribe();
+        },
+        error: (error: any) => {
+          console.error('Erreur export JSON:', error);
+          this.alerts.open('Erreur lors de l\'export JSON', { appearance: 'error' }).subscribe();
+        }
+      });
+  }
+
+  showImportDialog(): void {
+    this.showImportModal = true;
+  }
+
+  onImportCancelled(): void {
+    this.showImportModal = false;
+    this.selectedFile = null;
+  }
+
+  onFileSelected(event: any): void {
+    const file = event.target.files[0];
+    if (file && file.type === 'application/json') {
+      this.selectedFile = file;
+    } else {
+      this.alerts.open('Veuillez sélectionner un fichier JSON valide', { appearance: 'warning' }).subscribe();
+      this.selectedFile = null;
+    }
+  }
+
+  importQuizFile(): void {
+    if (!this.selectedFile) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const importData = JSON.parse(e.target?.result as string);
+
+        if (!importData.quizzes || !Array.isArray(importData.quizzes)) {
+          throw new Error('Format de fichier invalide');
+        }
+
+        this.alerts.open(
+          `Import simulé réussi ! ${importData.quizzes.length} quiz détectés dans le fichier`,
+          { appearance: 'info' }
+        ).subscribe();
+
+        this.showImportModal = false;
+        this.selectedFile = null;
+
+
+      } catch (error: any) {
+        console.error('Erreur parsing JSON:', error);
+        this.alerts.open('Erreur : Format de fichier JSON invalide', { appearance: 'error' }).subscribe();
+      }
+    };
+
+    reader.onerror = () => {
+      this.alerts.open('Erreur lors de la lecture du fichier', { appearance: 'error' }).subscribe();
+    };
+
+    reader.readAsText(this.selectedFile);
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   onCreateQuiz(): void {
@@ -298,5 +418,27 @@ export class QuizManagementComponent implements OnInit {
 
   getGroupsTooltip(groups: Group[]): string {
     return groups.slice(this.MAX_VISIBLE_GROUPS).map(g => g.name).join(', ');
+  }
+
+  getExportButtonText(): string {
+    const selectedCount = this.rows.filter(quiz => quiz.selected).length;
+    if (selectedCount === 0) {
+      return 'Exporter tout';
+    } else if (selectedCount === 1) {
+      return 'Exporter (1)';
+    } else {
+      return `Exporter (${selectedCount})`;
+    }
+  }
+
+  getExportTooltip(): string {
+    const selectedCount = this.rows.filter(quiz => quiz.selected).length;
+    if (selectedCount === 0) {
+      return 'Exporter tous les quiz au format JSON';
+    } else if (selectedCount === 1) {
+      return 'Exporter le quiz sélectionné au format JSON';
+    } else {
+      return `Exporter les ${selectedCount} quiz sélectionnés au format JSON`;
+    }
   }
 }

@@ -23,8 +23,7 @@ import {
 import {
   TuiDialogService,
   TuiAlertService,
-  TuiDropdown,
-  TuiGroup,
+
   TuiButton,
   TuiDataList,
 } from '@taiga-ui/core';
@@ -69,10 +68,6 @@ interface UserRow {
     TuiCheckbox,
     TuiItemsWithMore,
     TuiButton,
-    TuiDataList,
-    TuiGroup,
-    TuiDropdown,
-    TuiChevron,
     PaginationComponent,
     UserRolesModalComponent,
     HasPermissionDirective,
@@ -80,7 +75,7 @@ interface UserRow {
   providers: [],
   templateUrl: './user-management.component.html',
   styleUrls: ['./user-management.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush, // ✅ Aligné sur les autres composants
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UserManagementComponent implements OnInit, OnDestroy {
   readonly sizes: TuiSizeS[] = ['m', 's'];
@@ -149,7 +144,6 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   }
 
   checkAdminStatus(): void {
-    // Vérifier si l'utilisateur est admin
     this.userService.isAdmin().subscribe(isAdmin => {
       this.isAdmin = isAdmin;
       this.cdr.markForCheck();
@@ -206,7 +200,6 @@ export class UserManagementComponent implements OnInit, OnDestroy {
           this.applyFiltersInternal();
           this.dataReady = true;
 
-          console.log(' Chargement terminé. Rows:', this.rows.length);
           this.isLoading = false;
           this.cdr.markForCheck();
         },
@@ -418,13 +411,13 @@ export class UserManagementComponent implements OnInit, OnDestroy {
       permissions: row.permissions
     };
     this.showRolesModal = true;
-    this.cdr.markForCheck(); // ✅ Utiliser markForCheck
+    this.cdr.markForCheck();
   }
 
   closeRolesModal(): void {
     this.showRolesModal = false;
     this.selectedUserForRoles = null;
-    this.cdr.markForCheck(); // ✅ Utiliser markForCheck
+    this.cdr.markForCheck();
   }
 
   saveUserRoles(changes: { userId: number; roles: string[]; permissions: string[] }): void {
@@ -432,7 +425,6 @@ export class UserManagementComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (updatedUser) => {
-          // Mettre à jour les données locales
           const rowIndex = this.allRows.findIndex(r => r.id === changes.userId);
           if (rowIndex !== -1) {
             this.allRows[rowIndex].roles = changes.roles;
@@ -440,7 +432,6 @@ export class UserManagementComponent implements OnInit, OnDestroy {
             this.allRows[rowIndex].rights = changes.permissions;
           }
 
-          // Mettre à jour aussi les rows affichés
           const displayRowIndex = this.rows.findIndex(r => r.id === changes.userId);
           if (displayRowIndex !== -1) {
             this.rows[displayRowIndex].roles = changes.roles;
@@ -448,17 +439,14 @@ export class UserManagementComponent implements OnInit, OnDestroy {
             this.rows[displayRowIndex].rights = changes.permissions;
           }
 
-          // Appliquer les filtres et forcer la mise à jour de l'affichage
           this.applyFiltersInternal();
           this.cdr.markForCheck();
-          
+
           this.closeRolesModal();
 
-          // Vérifier si l'utilisateur modifié est l'utilisateur connecté actuellement
           this.authService.getCurrentUser().subscribe({
             next: (currentUser) => {
               if (currentUser && currentUser.id === changes.userId) {
-                // Si c'est l'utilisateur connecté, le déconnecter immédiatement
                 this.authService.logout();
               }
             }

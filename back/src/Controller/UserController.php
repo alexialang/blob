@@ -125,7 +125,7 @@ class UserController extends AbstractController
         }
     }
 
-    #[Route('/user/profile/update', name: 'user_profile_update', methods: ['PUT', 'PATCH'])]
+        #[Route('/user/profile/update', name: 'user_profile_update', methods: ['PUT', 'PATCH'])]
     public function updateProfile(Request $request): JsonResponse
     {
         $user = $this->getUser();
@@ -137,7 +137,7 @@ class UserController extends AbstractController
         try {
             $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
             
-                         $user = $this->userService->updateProfile($user, $data);
+            $user = $this->userService->updateProfile($user, $data);
 
             return $this->json($user, 200, [], [
                 'groups' => ['user:read', 'company:read'],
@@ -147,6 +147,19 @@ class UserController extends AbstractController
             ]);
         } catch (\JsonException $e) {
             return $this->json(['error' => 'Invalid JSON'], 400);
+        } catch (\InvalidArgumentException $e) {
+            return $this->json(['error' => $e->getMessage()], 400);
+        } catch (\Exception $e) {
+            $this->logger->error('Erreur lors de la mise à jour du profil utilisateur', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'user_id' => $user->getId()
+            ]);
+            
+            return $this->json([
+                'error' => 'Erreur serveur lors de la mise à jour du profil',
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
 

@@ -39,6 +39,7 @@ export interface MultiplayerGame {
   startedAt: number;
   playerScores: { [playerId: number]: number };
   leaderboard: LeaderboardEntry[];
+  sharedScores?: { [username: string]: number };
 }
 
 export interface LeaderboardEntry {
@@ -185,6 +186,10 @@ export class MultiplayerService {
     return this.http.post(`${this.apiUrl}/multiplayer/game/${gameId}/answer`, { questionId, answer, timeSpent });
   }
 
+  submitPlayerScores(gameId: string, playerScores: { [username: string]: number }): Observable<any> {
+    return this.http.post(`${this.apiUrl}/multiplayer/game/${gameId}/scores`, { playerScores });
+  }
+
   getRoomStatus(roomId: string): Observable<GameRoom> {
     return this.http.get<GameRoom>(`${this.apiUrl}/multiplayer/room/${roomId}`);
   }
@@ -203,10 +208,6 @@ export class MultiplayerService {
 
   triggerFeedbackPhase(gameId: string): Observable<{ success: boolean }> {
     return this.http.post<{ success: boolean }>(`${this.apiUrl}/multiplayer/game/${gameId}/trigger-feedback`, {});
-  }
-
-  triggerNextQuestion(gameId: string): Observable<{ success: boolean }> {
-    return this.http.post<{ success: boolean }>(`${this.apiUrl}/multiplayer/game/${gameId}/trigger-next-question`, {});
   }
 
   endGame(gameId: string): Observable<any> {

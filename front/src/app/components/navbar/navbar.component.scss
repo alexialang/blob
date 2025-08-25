@@ -4,12 +4,15 @@
   justify-content: space-between;
   padding: 2rem;
   width: 100%;
+  overflow: visible;
+  min-height: 80px;
 
 
   &__links {
     width: 100%;
     display: flex;
     column-gap: 10%;
+    overflow: visible;
 
     .logo-container {
     display: flex;
@@ -137,11 +140,14 @@
   display: none;
   }
   .profil-container {
-    width: 20%;
+    width: 30%;
     display: flex;
     flex-direction: row;
     column-gap: 10%;
     align-items: center;
+    overflow: visible;
+    min-height: 80px;
+    padding: 10px 0;
 
     .progress-container{
       display: flex;
@@ -236,17 +242,31 @@
     transition: width 0.3s ease;
   }
 
-  .avatar {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    overflow: hidden;
+  .blob-head-direct {
+    width: 58px !important;
+    height: 55px !important;
+    max-width: 58px;
+    max-height: 55px;
+    min-width: 58px;
+    min-height: 55px;
+    transition: transform 0.2s ease;
+    cursor: pointer;
+    flex-shrink: 0;
+    z-index: 10;
+    position: relative;
+    display: block;
 
-    img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
+    &:hover {
+      transform: scale(1.1);
     }
+  }
+
+  .fallback-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
   }
 
 

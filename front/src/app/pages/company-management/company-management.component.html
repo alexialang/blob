@@ -42,6 +42,7 @@
             type="button"
             (click)="onDropdownAction('Ajouter entreprise')"
           >
+            <tui-icon icon="@tui.plus" class="dropdown-icon"></tui-icon>
             Ajouter entreprise
           </button>
           <button
@@ -50,6 +51,7 @@
             type="button"
             (click)="onDropdownAction('Exporter CSV')"
           >
+            <tui-icon icon="@tui.download" class="dropdown-icon"></tui-icon>
             Exporter CSV
           </button>
           <button
@@ -58,6 +60,7 @@
             type="button"
             (click)="onDropdownAction('Exporter JSON')"
           >
+            <tui-icon icon="@tui.download" class="dropdown-icon"></tui-icon>
             Exporter JSON
           </button>
           <button
@@ -66,6 +69,7 @@
             type="button"
             (click)="onDropdownAction('Importer CSV')"
           >
+            <tui-icon icon="@tui.upload" class="dropdown-icon"></tui-icon>
             Importer CSV
           </button>
         </div>
@@ -230,14 +234,36 @@
 <div *ngIf="showImportModal" class="modal-overlay">
   <div class="modal-container">
     <div class="modal-content">
-      <h3>Importer des entreprises</h3>
-      <p>Format CSV attendu : Nom de l'entreprise</p>
-      <input type="file" accept=".csv" (change)="onFileSelected($event)" />
-      <div class="actions">
-        <button tuiButton appearance="secondary" (click)="onImportCancelled()">
+      <div class="modal-header">
+        <tui-icon icon="@tui.upload" class="modal-icon"></tui-icon>
+        <h3>Importer des entreprises</h3>
+      </div>
+      <div class="modal-body">
+        <p class="modal-description">
+          <tui-icon icon="@tui.info" class="info-icon"></tui-icon>
+          Format CSV attendu : <strong>Nom de l'entreprise</strong>
+        </p>
+        <div class="file-input-wrapper">
+          <input 
+            type="file" 
+            accept=".csv" 
+            (change)="onFileSelected($event)"
+            id="csvFile"
+            class="file-input" />
+          <label for="csvFile" class="file-input-label">
+            <tui-icon icon="@tui.upload-cloud" class="upload-icon"></tui-icon>
+            <span *ngIf="!selectedFile" class="file-text">Choisir un fichier CSV</span>
+            <span *ngIf="selectedFile" class="file-text selected">{{ selectedFile.name }}</span>
+          </label>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button tuiButton appearance="secondary" (click)="onImportCancelled()" class="action-btn">
+          <tui-icon icon="@tui.x" class="btn-icon"></tui-icon>
           Annuler
         </button>
-        <button tuiButton appearance="primary" [disabled]="!selectedFile" (click)="importCsvFile()">
+        <button tuiButton appearance="primary" [disabled]="!selectedFile" (click)="importCsvFile()" class="action-btn">
+          <tui-icon icon="@tui.upload" class="btn-icon"></tui-icon>
           Importer
         </button>
       </div>

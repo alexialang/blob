@@ -1,20 +1,23 @@
 <div class="quiz-game" [attr.data-hide-nav]="true">
 
-  <div *ngIf="waitingForPlayers && !quizCompleted && !showFeedback" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 9998; background: rgba(0,0,0,0.8); color: white; padding: 20px; border-radius: 10px; text-align: center;">
-    <h3>⏳ En attente des autres joueurs...</h3>
-    <p>{{ playersAnswered.length }}/{{ totalPlayers }} joueurs ont répondu</p>
-    <div style="margin-top: 10px;">
-      <div *ngFor="let player of playersAnswered" style="color: #4CAF50;">✅ {{ player }}</div>
+  <div *ngIf="waitingForPlayers && !quizCompleted && !showFeedback" class="waiting-screen">
+    <div class="waiting-content">
+      <div class="waiting-icon">⏳</div>
+      <h3 class="waiting-title">En attente des autres joueurs</h3>
+      <div class="waiting-progress">
+        <span class="progress-text">{{ playersAnswered.length }}/{{ totalPlayers }} joueurs ont répondu</span>
+        <div class="progress-bar">
+          <div class="progress-fill" [style.width.%]="(playersAnswered.length / totalPlayers) * 100"></div>
+        </div>
+      </div>
+      <div class="waiting-players">
+        <div *ngFor="let player of playersAnswered" class="player-ready">
+          <span class="player-check">✅</span>
+          <span class="player-name">{{ player }}</span>
+        </div>
+      </div>
     </div>
   </div>
-
-  <div *ngIf="hasAnswered && !waitingForPlayers && !quizCompleted && !showFeedback"
-       style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 9998; background: rgba(76, 175, 80, 0.9); color: white; padding: 20px; border-radius: 10px; text-align: center; animation: fadeIn 0.5s ease-in;">
-    <h3>Réponse validée !</h3>
-    <p>Votre réponse a été enregistrée.</p>
-    <p>Attendez que tous les joueurs répondent...</p>
-  </div>
-
 
   <div *ngIf="!quizCompleted && !showFeedback" class="quiz-header">
     <div class="logo">
@@ -41,6 +44,17 @@
         </div>
       </div>
     </div>
+
+  </div>
+
+
+  <div *ngIf="false" class="live-scoreboard-container">
+    <app-live-scoreboard
+      [players]="livePlayers"
+      [currentQuestionIndex]="currentQuestionIndex"
+      [totalQuestions]="totalQuestions"
+      [showRanking]="true">
+    </app-live-scoreboard>
   </div>
 
   <div *ngIf="!quizCompleted && !showFeedback" class="progress-container">
@@ -185,7 +199,7 @@
         <div class="final-score">
           <div class="score-circle">
             <span class="score-text">Votre score est de :</span>
-            <span class="score-number">{{ totalScore }}</span>
+            <span class="score-number">{{ currentScore }}</span>
             <span class="score-max">/ 100</span>
           </div>
         </div>
@@ -203,7 +217,7 @@
             label="Voir le classement complet"
             [negative]="true"
             backgroundColor="var(--color-dark)"
-            (buttonClick)="showFullLeaderboard()">
+            (buttonClick)="replayQuiz()">
           </app-slide-button>
         </div>
         <div class="end-actions">
@@ -236,64 +250,12 @@
     </div>
   </div>
 
-  <div *ngIf="showFullLeaderboardScreen" class="full-leaderboard-screen">
-    <div class="leaderboard-header">
-      <h1>Classement complet</h1>
-      <p>Résultats finaux de la partie</p>
-      <button class="close-leaderboard" (click)="closeFullLeaderboard()">×</button>
-    </div>
-
-    <div class="leaderboard-content">
-      <div class="user-highlight" *ngIf="currentUser">
-        <div class="highlight-card">
-          <div class="user-rank">#{{ playerRank }}</div>
-          <div class="user-info">
-            <div class="user-name">{{ currentUser.username }}</div>
-            <div class="user-company">Votre résultat</div>
-          </div>
-          <div class="user-score">{{ totalScore }} pts</div>
-        </div>
-      </div>
-
-      <div class="leaderboard-list">
-        <div *ngFor="let player of finalLeaderboard; let i = index"
-             class="leaderboard-item"
-             [class.current-user]="player.username === currentUser?.username">
-          <div class="rank">
-            <span class="rank-number">{{ player.rank }}</span>
-            <span class="rank-medal" *ngIf="player.rank === 1">🥇</span>
-            <span class="rank-medal" *ngIf="player.rank === 2">🥈</span>
-            <span class="rank-medal" *ngIf="player.rank === 3">🥉</span>
-          </div>
-          <div class="player-info">
-            <div class="player-name">{{ player.username }}</div>
-            <div class="player-company">{{ player.correctAnswers }}/{{ player.totalQuestions }} bonnes réponses</div>
-          </div>
-          <div class="player-score">{{ player.score }} pts</div>
-        </div>
-      </div>
-
-      <div class="leaderboard-stats">
-        <div class="stat">
-          <span class="stat-label">Questions totales</span>
-          <span class="stat-value">{{ totalQuestions }}</span>
-        </div>
-        <div class="stat">
-          <span class="stat-label">Joueurs participants</span>
-          <span class="stat-value">{{ totalPlayers }}</span>
-        </div>
-        <div class="stat">
-          <span class="stat-label">Votre rang</span>
-          <span class="stat-value">#{{ playerRank }}</span>
-        </div>
-      </div>
-
-      <div class="leaderboard-actions">
-        <button class="action-btn primary" (click)="replayQuiz()">Rejouer</button>
-        <button class="action-btn secondary" (click)="shareQuiz()">Partager</button>
-        <button class="action-btn tertiary" (click)="closeFullLeaderboard()">Fermer</button>
-      </div>
-    </div>
-  </div>
+  <app-multiplayer-transition
+    [players]="transitionPlayers"
+    [questionNumber]="currentQuestionIndex"
+    [totalQuestions]="totalQuestions"
+    [show]="showTransition"
+    [duration]="transitionDuration">
+  </app-multiplayer-transition>
 
 </div>

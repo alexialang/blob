@@ -7,6 +7,7 @@ use App\Entity\RoomPlayer;
 use App\Entity\GameSession;
 use App\Entity\Quiz;
 use App\Entity\User;
+use App\Entity\UserAnswer;
 use App\Repository\RoomRepository;
 use App\Repository\GameSessionRepository;
 use App\Repository\UserAnswerRepository;
@@ -21,6 +22,12 @@ class MultiplayerGameService
 {
     private static array $submittedAnswers = [];
     private static array $gameAnswers = [];
+
+
+    private function normalizeScoreToPercentage(int $score, int $totalQuestions): int
+    {
+        return $totalQuestions > 0 ? round(($score / ($totalQuestions * 10)) * 100) : 0;
+    }
 
     public function __construct(
         private EntityManagerInterface $entityManager,
@@ -251,6 +258,7 @@ class MultiplayerGameService
         return $gameData;
     }
 
+
     public function submitAnswer(string $gameCode, User $user, int $questionId, $answer, int $timeSpent = 0): array
     {
         $this->validateAnswerData(['questionId' => $questionId, 'answer' => $answer, 'timeSpent' => $timeSpent]);
@@ -274,21 +282,7 @@ class MultiplayerGameService
         
         $currentQuestion = $questions[$currentQuestionIndex];
         
-        $allowedQuestionIds = [$currentQuestion->getId()];
-        
-        for ($i = 1; $i <= 2; $i++) {
-            if ($currentQuestionIndex - $i >= 0) {
-                $previousQuestion = $questions[$currentQuestionIndex - $i];
-                $allowedQuestionIds[] = $previousQuestion->getId();
-            }
-        }
-        
-        if ($currentQuestionIndex + 1 < count($questions)) {
-            $nextQuestion = $questions[$currentQuestionIndex + 1];
-            $allowedQuestionIds[] = $nextQuestion->getId();
-        }
-        
-        if (!in_array($questionId, $allowedQuestionIds)) {
+        if ($questionId !== $currentQuestion->getId()) {
             throw new \Exception('Question non autorisée pour cette phase du jeu');
         }
 
@@ -326,7 +320,7 @@ class MultiplayerGameService
         }
         
         $totalQuestions = count($questions);
-        $normalizedTotalScore = $totalQuestions > 0 ? round($totalScore / $totalQuestions) : 0;
+        $normalizedTotalScore = $this->normalizeScoreToPercentage($totalScore, $totalQuestions);
 
         $leaderboard = $this->updateLeaderboard($gameSession);
 
@@ -340,23 +334,19 @@ class MultiplayerGameService
         ]);
 
         $room = $gameSession->getRoom();
-        $totalPlayers = $room->getCurrentPlayerCount();
-        $answeredCount = 0;
-        
-        foreach ($room->getPlayers() as $player) {
-            $userId = $player->getUser()->getId();
-            $checkKey = 'game_' . $gameCode . '_user_' . $userId . '_question_' . $questionId;
-            if (isset(self::$submittedAnswers[$checkKey])) {
-                $answeredCount++;
-            }
-        }
         
         $allPlayersInRoom = [];
+        $answeredCount = 0;
+        
         foreach ($room->getPlayers() as $player) {
             $userId = $player->getUser()->getId();
             $userName = $this->getUserDisplayName($player->getUser());
             $sessionKey = 'game_' . $gameCode . '_user_' . $userId . '_question_' . $questionId;
             $hasAnswered = isset(self::$submittedAnswers[$sessionKey]);
+            
+            if ($hasAnswered) {
+                $answeredCount++;
+            }
             
             $allPlayersInRoom[] = [
                 'userId' => $userId,
@@ -365,14 +355,14 @@ class MultiplayerGameService
                 'sessionKey' => $sessionKey
             ];
         }
+
         
-        $answeredPlayersCount = count(array_filter($allPlayersInRoom, fn($p) => $p['hasAnswered']));
+        $answeredPlayersCount = $answeredCount;
         $totalPlayersCount = count($allPlayersInRoom);
 
         if ($answeredPlayersCount >= $totalPlayersCount) {
             $this->startFeedbackPhase($gameSession);
         } else {
-            
             $this->publishUpdate($this->getGameTopic($gameSession->getGameCode()), [
                 'action' => 'player_answered',
                 'answered_count' => $answeredPlayersCount,
@@ -423,21 +413,27 @@ class MultiplayerGameService
     {
         $gameCode = $gameSession->getGameCode();
         $leaderboard = [];
+        $sharedScores = $gameSession->getSharedScores() ?? [];
 
         foreach ($gameSession->getRoom()->getPlayers() as $roomPlayer) {
             $user = $roomPlayer->getUser();
             $userId = $user->getId();
+            $username = $this->getUserDisplayName($user);
 
             $totalScore = 0;
-            foreach (self::$gameAnswers as $key => $answer) {
-                if (strpos($key, 'game_' . $gameCode . '_user_' . $userId) === 0) {
-                    $totalScore += $answer['points'];
+            if (isset($sharedScores[$username])) {
+                $totalScore = $sharedScores[$username];
+            } else {
+                foreach (self::$gameAnswers as $key => $answer) {
+                    if (strpos($key, 'game_' . $gameCode . '_user_' . $userId) === 0) {
+                        $totalScore += $answer['points'];
+                    }
                 }
             }
 
             $leaderboard[] = [
                 'userId' => $userId,
-                'username' => $this->getUserDisplayName($user),
+                'username' => $username,
                 'score' => $totalScore,
                 'team' => $roomPlayer->getTeam()
             ];
@@ -556,6 +552,27 @@ class MultiplayerGameService
     private function formatGameData(GameSession $gameSession): array
     {
         $room = $gameSession->getRoom();
+        $gameCode = $gameSession->getGameCode();
+        $sharedScores = $gameSession->getSharedScores() ?? [];
+
+        $playerScores = [];
+        foreach ($room->getPlayers() as $roomPlayer) {
+            $user = $roomPlayer->getUser();
+            $userId = $user->getId();
+            $username = $this->getUserDisplayName($user);
+
+            if (isset($sharedScores[$username])) {
+                $playerScores[$userId] = $sharedScores[$username];
+            } else {
+                $totalScore = 0;
+                foreach (self::$gameAnswers as $key => $answer) {
+                    if (strpos($key, 'game_' . $gameCode . '_user_' . $userId) === 0) {
+                        $totalScore += $answer['points'];
+                    }
+                }
+                $playerScores[$userId] = $totalScore;
+            }
+        }
 
         return [
             'id' => $gameSession->getGameCode(),
@@ -576,7 +593,9 @@ class MultiplayerGameService
             'status' => $gameSession->getStatus(),
             'currentQuestionIndex' => $gameSession->getCurrentQuestionIndex(),
             'startedAt' => $gameSession->getStartedAt()->getTimestamp(),
-            'leaderboard' => $this->updateLeaderboard($gameSession)
+            'leaderboard' => $this->updateLeaderboard($gameSession),
+            'playerScores' => $playerScores,
+            'sharedScores' => $sharedScores
         ];
     }
 
@@ -756,6 +775,8 @@ class MultiplayerGameService
         $room = $gameSession->getRoom();
         $room->setStatus('finished');
         
+        $this->saveMultiplayerGameResults($gameSession);
+        
         $this->entityManager->persist($gameSession);
         $this->entityManager->persist($room);
         $this->entityManager->flush();
@@ -769,14 +790,73 @@ class MultiplayerGameService
     }
 
 
-    public function getGameSession(string $gameCode): ?GameSession
+
+    public function submitPlayerScores(string $gameId, array $playerScores): array
     {
-        return $this->gameSessionRepository->findByGameCode($gameCode);
+        try {
+            $gameSession = $this->gameSessionRepository->findByGameCode($gameId);
+            if (!$gameSession) {
+                throw new \Exception('Session de jeu non trouvée');
+            }
+
+            $existingScores = $gameSession->getSharedScores() ?? [];
+            $mergedScores = $existingScores;
+
+            foreach ($playerScores as $username => $newScore) {
+                $oldScore = $existingScores[$username] ?? 0;
+                
+                if ($newScore >= $oldScore) {
+                    $mergedScores[$username] = $newScore;
+                } else {
+                    error_log("Score conservé pour $username: $oldScore (nouveau: $newScore ignoré)");
+                }
+            }
+
+            $gameSession->setSharedScores($mergedScores);
+            $this->entityManager->flush();
+
+
+            return [
+                'success' => true,
+                'message' => 'Scores partagés avec succès',
+                'sharedScores' => $mergedScores
+            ];
+        } catch (\Exception $e) {
+            error_log("Erreur lors du stockage des scores partagés: " . $e->getMessage());
+            throw $e;
+        }
     }
 
-    public function endGameFromClient(GameSession $gameSession): void
+
+    private function saveMultiplayerGameResults(GameSession $gameSession): void
     {
-        $this->endGame($gameSession);
+        $gameCode = $gameSession->getGameCode();
+        $quiz = $gameSession->getRoom()->getQuiz();
+        $totalQuestions = $quiz->getQuestions()->count();
+        
+        foreach ($gameSession->getRoom()->getPlayers() as $roomPlayer) {
+            $user = $roomPlayer->getUser();
+            $userId = $user->getId();
+
+            $rawTotalScore = 0;
+            foreach (self::$gameAnswers as $key => $answer) {
+                if (strpos($key, 'game_' . $gameCode . '_user_' . $userId) === 0) {
+                    $rawTotalScore += $answer['points'];
+                }
+            }
+
+            $normalizedScore = $this->normalizeScoreToPercentage($rawTotalScore, $totalQuestions);
+            
+            $userAnswer = new UserAnswer();
+            $userAnswer->setUser($user);
+            $userAnswer->setQuiz($quiz);
+            $userAnswer->setTotalScore($normalizedScore);
+            $userAnswer->setDateAttempt(new \DateTime());
+
+            $this->entityManager->persist($userAnswer);
+            
+        }
+        
     }
 
     private function validateRoomData(array $data): void

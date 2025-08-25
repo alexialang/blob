@@ -297,6 +297,19 @@ class UserService
             $user->setLastName($data['lastName']);
         }
         
+        if (isset($data['avatarShape']) || isset($data['avatarColor'])) {
+            $currentAvatar = $user->getAvatar() ? json_decode($user->getAvatar(), true) : [];
+            
+            if (isset($data['avatarShape']) && \is_string($data['avatarShape'])) {
+                $currentAvatar['shape'] = $data['avatarShape'];
+            }
+            if (isset($data['avatarColor']) && \is_string($data['avatarColor'])) {
+                $currentAvatar['color'] = $data['avatarColor'];
+            }
+            
+            $user->setAvatar(json_encode($currentAvatar));
+        }
+        
         $this->em->flush();
         return $user;
     }
@@ -558,6 +571,23 @@ class UserService
                 'avatar' => [
                     new Assert\Optional([
                         new Assert\Length(['max' => 255, 'maxMessage' => 'L\'avatar ne peut pas dépasser 255 caractères'])
+                    ])
+                ],
+                'avatarShape' => [
+                    new Assert\Optional([
+                        new Assert\Type(['type' => 'string', 'message' => 'La forme de l\'avatar doit être une chaîne']),
+                        new Assert\Length(['max' => 50, 'maxMessage' => 'La forme de l\'avatar ne peut pas dépasser 50 caractères'])
+                    ])
+                ],
+                'avatarColor' => [
+                    new Assert\Optional([
+                        new Assert\Type(['type' => 'string', 'message' => 'La couleur de l\'avatar doit être une chaîne']),
+                        new Assert\Length(['max' => 7, 'maxMessage' => 'La couleur de l\'avatar ne peut pas dépasser 7 caractères'])
+                    ])
+                ],
+                'pseudo' => [
+                    new Assert\Optional([
+                        new Assert\Length(['max' => 50, 'maxMessage' => 'Le pseudo ne peut pas dépasser 50 caractères'])
                     ])
                 ],
                 'is_admin' => [

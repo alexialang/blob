@@ -125,8 +125,7 @@ class MultiplayerGameController extends AbstractController
         try {
             $data = json_decode($request->getContent(), true);
             
-            error_log("Multiplayer submitAnswer - gameId: $gameId, data: " . json_encode($data));
-            
+
             $user = $this->getUser();
             if (!$user) {
                 return $this->json(['error' => 'Utilisateur non connecté'], 401);
@@ -161,6 +160,36 @@ class MultiplayerGameController extends AbstractController
             return $this->json($status);
         } catch (\Exception $e) {
             return $this->json(['error' => $e->getMessage()], 404);
+        }
+    }
+
+    #[Route('/game/{gameId}/scores', name: 'submit_player_scores', methods: ['POST'])]
+    public function submitPlayerScores(string $gameId, Request $request): JsonResponse
+    {
+        try {
+            $data = json_decode($request->getContent(), true);
+            
+
+            $user = $this->getUser();
+            if (!$user) {
+                return $this->json(['error' => 'Utilisateur non connecté'], 401);
+            }
+        
+            $result = $this->multiplayerService->submitPlayerScores(
+                $gameId,
+                $data['playerScores'] ?? []
+            );
+            return $this->json($result);
+        } catch (ValidationFailedException $e) {
+            $errorMessages = [];
+            foreach ($e->getViolations() as $violation) {
+                $errorMessages[] = $violation->getMessage();
+            }
+            error_log("Multiplayer submitPlayerScores validation error: " . json_encode($errorMessages));
+            return $this->json(['error' => 'Données invalides', 'details' => $errorMessages], 400);
+        } catch (\Exception $e) {
+            error_log("Multiplayer submitPlayerScores error: " . $e->getMessage());
+            return $this->json(['error' => $e->getMessage()], 400);
         }
     }
 
