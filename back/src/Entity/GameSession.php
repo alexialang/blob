@@ -35,6 +35,12 @@ class GameSession
     #[ORM\Column(type: 'json', nullable: true)]
     private ?array $sharedScores = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $currentQuestionStartedAt = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $currentQuestionDuration = 30;
+
     public function __construct()
     {
         $this->startedAt = new \DateTimeImmutable();
@@ -121,6 +127,28 @@ class GameSession
     public function setSharedScores(?array $sharedScores): static
     {
         $this->sharedScores = $sharedScores;
+        return $this;
+    }
+
+    public function getCurrentQuestionStartedAt(): ?\DateTimeImmutable
+    {
+        return $this->currentQuestionStartedAt;
+    }
+
+    public function setCurrentQuestionStartedAt(\DateTimeImmutable $currentQuestionStartedAt): static
+    {
+        $this->currentQuestionStartedAt = $currentQuestionStartedAt;
+        return $this;
+    }
+
+    public function getCurrentQuestionDuration(): ?int
+    {
+        return $this->currentQuestionDuration;
+    }
+
+    public function setCurrentQuestionDuration(int $currentQuestionDuration): static
+    {
+        $this->currentQuestionDuration = $currentQuestionDuration;
         return $this;
     }
 }

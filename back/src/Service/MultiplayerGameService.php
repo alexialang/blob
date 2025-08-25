@@ -221,6 +221,8 @@ class MultiplayerGameService
         $gameSession->setRoom($room)
                     ->setStatus('playing')
                     ->setCurrentQuestionIndex(0)
+                    ->setCurrentQuestionStartedAt(new \DateTimeImmutable())
+                    ->setCurrentQuestionDuration(30)
                     ->setStartedAt(new \DateTimeImmutable());
 
         $room->setStatus('playing')
@@ -476,6 +478,13 @@ class MultiplayerGameService
             throw new \Exception('Jeu non trouvé');
         }
 
+        if (!$gameSession->getCurrentQuestionStartedAt() || !$gameSession->getCurrentQuestionDuration()) {
+            $gameSession->setCurrentQuestionStartedAt(new \DateTimeImmutable());
+            $gameSession->setCurrentQuestionDuration(30);
+            $this->entityManager->flush();
+            error_log("DEBUG: Timing mis à jour automatiquement pour la partie $gameCode");
+        }
+
         return $this->formatGameData($gameSession);
     }
 
@@ -585,6 +594,17 @@ class MultiplayerGameService
             }
         }
 
+        $timeLeft = null;
+        $questionStartTime = null;
+        $questionDuration = null;
+        
+        if ($gameSession->getCurrentQuestionStartedAt() && $gameSession->getCurrentQuestionDuration()) {
+            $elapsedTime = time() - $gameSession->getCurrentQuestionStartedAt()->getTimestamp();
+            $timeLeft = max(0, $gameSession->getCurrentQuestionDuration() - $elapsedTime);
+            $questionStartTime = $gameSession->getCurrentQuestionStartedAt()->getTimestamp();
+            $questionDuration = $gameSession->getCurrentQuestionDuration();
+        }
+        
         return [
             'id' => $gameSession->getGameCode(),
             'roomId' => $room->getRoomCode(),
@@ -606,7 +626,10 @@ class MultiplayerGameService
             'startedAt' => $gameSession->getStartedAt()->getTimestamp(),
             'leaderboard' => $this->updateLeaderboard($gameSession),
             'playerScores' => $playerScores,
-            'sharedScores' => $sharedScores
+            'sharedScores' => $sharedScores,
+            'timeLeft' => $timeLeft,
+            'questionStartTime' => $questionStartTime,
+            'questionDuration' => $questionDuration
         ];
     }
 
@@ -640,6 +663,10 @@ class MultiplayerGameService
 
         $question = $questions[$questionIndex];
 
+        $gameSession->setCurrentQuestionStartedAt(new \DateTimeImmutable());
+        $gameSession->setCurrentQuestionDuration(30);
+        $this->entityManager->flush();
+
         $questionData = [
             'questionIndex' => $questionIndex,
             'question' => [
@@ -655,7 +682,9 @@ class MultiplayerGameService
                     ];
                 }, $question->getAnswers()->toArray())
             ],
-            'timeLeft' => 30
+            'timeLeft' => 30,
+            'questionStartTime' => $gameSession->getCurrentQuestionStartedAt()->getTimestamp(),
+            'questionDuration' => $gameSession->getCurrentQuestionDuration()
         ];
 
         $gameCode = $gameSession->getGameCode();
@@ -738,6 +767,7 @@ class MultiplayerGameService
         $questions = $quiz->getQuestions()->toArray();
 
         error_log("DEBUG: triggerNextQuestion - questionIndex actuel: $questionIndex, totalQuestions: " . count($questions));
+        error_log("DEBUG: Quiz ID: " . $quiz->getId() . ", Questions: " . json_encode(array_map(fn($q) => $q->getId(), $questions)));
 
         if ($questionIndex + 1 >= count($questions)) {
             error_log("DEBUG: Fin du jeu - plus de questions disponibles");
@@ -749,6 +779,8 @@ class MultiplayerGameService
         error_log("DEBUG: triggerNextQuestion - nouvel index: $newIndex");
         
         $gameSession->setCurrentQuestionIndex($newIndex);
+        $gameSession->setCurrentQuestionStartedAt(new \DateTimeImmutable());
+        $gameSession->setCurrentQuestionDuration(30);
         $this->entityManager->flush();
         
         $updatedIndex = $gameSession->getCurrentQuestionIndex();
@@ -784,6 +816,8 @@ class MultiplayerGameService
             'questionIndex' => $newIndex,
             'question' => $questionData['question'],
             'timeLeft' => 30,
+            'questionStartTime' => $gameSession->getCurrentQuestionStartedAt()->getTimestamp(),
+            'questionDuration' => $gameSession->getCurrentQuestionDuration(),
             'timestamp' => time()
         ]);
     }
@@ -977,5 +1011,66 @@ class MultiplayerGameService
         if (count($errors) > 0) {
             throw new ValidationFailedException($constraints, $errors);
         }
+    }
+
+    public function handleTimeExpired(string $gameCode): void
+    {
+        $gameSession = $this->gameSessionRepository->findByGameCode($gameCode);
+        if (!$gameSession) {
+            throw new \Exception('Jeu non trouvé');
+        }
+
+        $room = $gameSession->getRoom();
+        $currentQuestionIndex = $gameSession->getCurrentQuestionIndex();
+        $quiz = $gameSession->getRoom()->getQuiz();
+        $questions = $quiz->getQuestions()->toArray();
+        
+        if ($currentQuestionIndex >= count($questions)) {
+            return;
+        }
+
+        $currentQuestion = $questions[$currentQuestionIndex];
+        
+        $answeredUserIds = [];
+        foreach (self::$submittedAnswers as $key => $value) {
+            if (strpos($key, 'game_' . $gameCode . '_user_') === 0 && strpos($key, '_question_' . $currentQuestion->getId()) !== false) {
+                $parts = explode('_', $key);
+                $userId = $parts[3] ?? null;
+                if ($userId) {
+                    $answeredUserIds[] = (int)$userId;
+                }
+            }
+        }
+
+        foreach ($room->getPlayers() as $roomPlayer) {
+            $userId = $roomPlayer->getUser()->getId();
+            
+            if (!in_array($userId, $answeredUserIds)) {
+                $sessionKey = 'game_' . $gameCode . '_user_' . $userId . '_question_' . $currentQuestion->getId();
+                self::$submittedAnswers[$sessionKey] = true;
+                
+                $answerKey = 'game_' . $gameCode . '_user_' . $userId . '_q_' . $currentQuestion->getId();
+                self::$gameAnswers[$answerKey] = [
+                    'userId' => $userId,
+                    'questionId' => $currentQuestion->getId(),
+                    'isCorrect' => false,
+                    'points' => 0,
+                    'timestamp' => time()
+                ];
+                
+                error_log("DEBUG: Temps écoulé - Joueur {$roomPlayer->getUser()->getPseudo()} traité comme mauvaise réponse (0 points)");
+            }
+        }
+
+        $this->startFeedbackPhase($gameSession);
+        
+        $leaderboard = $this->updateLeaderboard($gameSession);
+        $this->publishUpdate($this->getGameTopic($gameCode), [
+            'action' => 'time_expired',
+            'leaderboard' => $leaderboard,
+            'timestamp' => time()
+        ]);
+        
+        error_log("DEBUG: Temps écoulé - Phase de feedback déclenchée pour la partie $gameCode");
     }
 }

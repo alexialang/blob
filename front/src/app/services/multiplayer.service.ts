@@ -40,6 +40,9 @@ export interface MultiplayerGame {
   playerScores: { [playerId: number]: number };
   leaderboard: LeaderboardEntry[];
   sharedScores?: { [username: string]: number };
+  timeLeft?: number;
+  questionStartTime?: number;
+  questionDuration?: number;
 }
 
 export interface LeaderboardEntry {
