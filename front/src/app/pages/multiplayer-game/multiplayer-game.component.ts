@@ -4,6 +4,7 @@ import {ActivatedRoute, Router} from '@angular/router';
 import {MultiplayerGame, MultiplayerService} from '../../services/multiplayer.service';
 import {MercureService} from '../../services/mercure.service';
 import {QuizGameService} from '../../services/quiz-game.service';
+import { AnalyticsService } from '../../services/analytics.service';
 import {Subscription} from 'rxjs';
 import {animate, state, style, transition, trigger} from '@angular/animations';
 import {McqQuestionComponent} from '../../components/question-types/mcq-question/mcq-question.component';
@@ -86,7 +87,6 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
   timeLeft = 30;
   private timer: any;
 
-
   private serverTimeOffset = 0;
   private questionStartTimestamp = 0;
   private questionDuration = 30;
@@ -99,7 +99,7 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
 
   showTransition = false;
   transitionPlayers: TransitionPlayer[] = [];
-  transitionDuration = 6000;
+  transitionDuration = 4000;
 
   tempPlayerScore: { username: string; points: number; isCorrect: boolean } | null = null;
 
@@ -136,7 +136,8 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
     private router: Router,
     private multiplayerService: MultiplayerService,
     private mercureService: MercureService,
-    private quizGameService: QuizGameService
+    private quizGameService: QuizGameService,
+    private analytics: AnalyticsService
   ) {}
 
   ngOnInit(): void {
@@ -144,12 +145,11 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
 
     this.preventNavigation();
 
-    // ✅ CRITIQUE: Reset complet des protections au début de chaque partie
     this.lastProcessedQuestionIndex = -1;
     this.questionProcessingCooldown = 0;
     this.isTransitioning = false;
     this.feedbackActive = false;
-    console.log(`🔄 RESET: Protections réinitialisées pour nouvelle partie`);
+    console.log(` RESET: Protections réinitialisées pour nouvelle partie`);
 
     this.mercureService.connectWithGame(this.gameId);
     this.setupGameSubscriptions();
@@ -381,7 +381,6 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
   }
 
   private calculateServerTimeOffset(): void {
-
     const serverTime = this.currentGame?.startedAt || Date.now();
     this.serverTimeOffset = serverTime - Date.now();
   }
@@ -947,6 +946,8 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
     this.waitingForPlayers = false;
     this.finalLeaderboard = leaderboard;
 
+    this.analytics.trackMultiplayerGameComplete(this.getCurrentNormalizedScore());
+
     const currentUser = this.getCurrentUsername();
 
     let currentPlayerStats = leaderboard.find(p => p.username === currentUser);
@@ -1403,6 +1404,7 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
     setTimeout(() => {
       this.showTransition = false;
       this.questionPointsGained = {};
-    }, 9000);
+      console.log(`Classement fini - Prêt pour nouvelle question`);
+    }, 6000);
   }
 }

@@ -11,12 +11,12 @@ use App\Entity\UserAnswer;
 use App\Repository\RoomRepository;
 use App\Repository\GameSessionRepository;
 use App\Repository\UserAnswerRepository;
+use App\Service\MultiplayerTimingService;
+use App\Service\MultiplayerScoreService;
+use App\Service\MultiplayerValidationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Mercure\HubInterface;
 use Symfony\Component\Mercure\Update;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
-use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\Validator\Exception\ValidationFailedException;
 
 class MultiplayerGameService
 {
@@ -24,10 +24,7 @@ class MultiplayerGameService
     private static array $gameAnswers = [];
 
 
-    private function normalizeScoreToPercentage(int $score, int $totalQuestions): int
-    {
-        return $totalQuestions > 0 ? round(($score / ($totalQuestions * 10)) * 100) : 0;
-    }
+
 
     public function __construct(
         private EntityManagerInterface $entityManager,
@@ -35,7 +32,9 @@ class MultiplayerGameService
         private RoomRepository $roomRepository,
         private GameSessionRepository $gameSessionRepository,
         private UserAnswerRepository $userAnswerRepository,
-        private ValidatorInterface $validator
+        private MultiplayerTimingService $timingService,
+        private MultiplayerScoreService $scoreService,
+        private MultiplayerValidationService $validationService
     ) {}
 
     private function getUserDisplayName(User $user): string
@@ -66,7 +65,7 @@ class MultiplayerGameService
 
     public function createRoom(User $creator, int $quizId, int $maxPlayers = 4, bool $isTeamMode = false, ?string $roomName = null): array
     {
-        $this->validateRoomData(['quizId' => $quizId, 'maxPlayers' => $maxPlayers, 'isTeamMode' => $isTeamMode, 'roomName' => $roomName]);
+        $this->validationService->validateRoomData(['quizId' => $quizId, 'maxPlayers' => $maxPlayers, 'isTeamMode' => $isTeamMode, 'roomName' => $roomName]);
         
         if ($quizId <= 0) {
             throw new \Exception('Quiz ID invalide');
@@ -108,7 +107,7 @@ class MultiplayerGameService
 
     public function joinRoom(string $roomCode, User $user, ?string $teamName = null): array
     {
-        $this->validateJoinRoomData(['teamName' => $teamName]);
+        $this->validationService->validateJoinRoomData(['teamName' => $teamName]);
         
         $room = $this->roomRepository->findByRoomCode($roomCode);
         if (!$room) {
@@ -280,7 +279,7 @@ class MultiplayerGameService
     {
         error_log("DEBUG: submitAnswer appelé - gameCode: $gameCode, userId: {$user->getId()}, questionId: $questionId");
         
-        $this->validateAnswerData(['questionId' => $questionId, 'answer' => $answer, 'timeSpent' => $timeSpent]);
+        $this->validationService->validateAnswerData(['questionId' => $questionId, 'answer' => $answer, 'timeSpent' => $timeSpent]);
         
         $gameSession = $this->gameSessionRepository->findByGameCode($gameCode);
         if (!$gameSession) {
@@ -325,30 +324,17 @@ class MultiplayerGameService
         }
 
         $isCorrect = $this->checkAnswer($question, $answer);
-        $points = $isCorrect ? max(10 - floor($timeSpent / 3), 1) : 0;
+        $points = $this->scoreService->calculatePoints($isCorrect, $timeSpent);
 
         error_log("DEBUG: Réponse validée - isCorrect: " . ($isCorrect ? 'true' : 'false') . ", points: $points");
 
-        $answerKey = 'game_' . $gameCode . '_user_' . $user->getId() . '_q_' . $questionId;
-        self::$gameAnswers[$answerKey] = [
-            'userId' => $user->getId(),
-            'questionId' => $questionId,
-            'isCorrect' => $isCorrect,
-            'points' => $points,
-            'timestamp' => time()
-        ];
-
-        $totalScore = 0;
-        foreach (self::$gameAnswers as $key => $answerData) {
-            if (strpos($key, 'game_' . $gameCode . '_user_' . $user->getId()) === 0) {
-                $totalScore += $answerData['points'];
-            }
-        }
+        $this->scoreService->recordAnswer($gameCode, $user, $questionId, $isCorrect, $points);
+        $totalScore = $this->scoreService->calculateTotalScore($gameCode, $user);
         
         $totalQuestions = count($questions);
-        $normalizedTotalScore = $this->normalizeScoreToPercentage($totalScore, $totalQuestions);
+        $normalizedTotalScore = $this->scoreService->normalizeScoreToPercentage($totalScore, $totalQuestions);
 
-        $leaderboard = $this->updateLeaderboard($gameSession);
+        $leaderboard = $this->scoreService->updateLeaderboard($gameSession);
 
         $this->publishUpdate($this->getGameTopic($gameCode), [
             'action' => 'answer_submitted',
@@ -437,35 +423,7 @@ class MultiplayerGameService
         }
     }
 
-    private function updateLeaderboard(GameSession $gameSession): array
-    {
-        $gameCode = $gameSession->getGameCode();
-        $leaderboard = [];
-        $sharedScores = $gameSession->getSharedScores() ?? [];
 
-        foreach ($gameSession->getRoom()->getPlayers() as $roomPlayer) {
-            $user = $roomPlayer->getUser();
-            $userId = $user->getId();
-            $username = $this->getUserDisplayName($user);
-
-            $totalScore = $sharedScores[$username] ?? 0;
-
-            $leaderboard[] = [
-                'userId' => $userId,
-                'username' => $username,
-                'score' => $totalScore,
-                'team' => $roomPlayer->getTeam()
-            ];
-        }
-
-        usort($leaderboard, fn($a, $b) => $b['score'] - $a['score']);
-
-        foreach ($leaderboard as $index => &$entry) {
-            $entry['position'] = $index + 1;
-        }
-
-        return $leaderboard;
-    }
 
     public function getRoomStatus(string $roomCode): array
     {
@@ -495,12 +453,7 @@ class MultiplayerGameService
         error_log("DEBUG: getGameStatus - currentQuestionIndex: " . $gameSession->getCurrentQuestionIndex());
         error_log("DEBUG: getGameStatus - status: " . $gameSession->getStatus());
 
-        if (!$gameSession->getCurrentQuestionStartedAt() || !$gameSession->getCurrentQuestionDuration()) {
-            $gameSession->setCurrentQuestionStartedAt(new \DateTimeImmutable());
-            $gameSession->setCurrentQuestionDuration(30);
-            $this->entityManager->flush();
-            error_log("DEBUG: Timing mis à jour automatiquement pour la partie $gameCode");
-        }
+        $this->timingService->ensureTimingExists($gameSession);
 
         $gameData = $this->formatGameData($gameSession);
         
@@ -517,7 +470,7 @@ class MultiplayerGameService
 
     public function sendInvitation(string $roomCode, User $sender, array $invitedUserIds): void
     {
-        $this->validateInvitationData(['invitedUserIds' => $invitedUserIds]);
+        $this->validationService->validateInvitationData(['invitedUserIds' => $invitedUserIds]);
         
         $room = $this->roomRepository->findByRoomCode($roomCode);
         if (!$room) {
@@ -615,16 +568,9 @@ class MultiplayerGameService
             }
         }
 
-        $timeLeft = null;
-        $questionStartTime = null;
-        $questionDuration = null;
-        
-        if ($gameSession->getCurrentQuestionStartedAt() && $gameSession->getCurrentQuestionDuration()) {
-            $elapsedTime = time() - $gameSession->getCurrentQuestionStartedAt()->getTimestamp();
-            $timeLeft = max(0, $gameSession->getCurrentQuestionDuration() - $elapsedTime);
-            $questionStartTime = $gameSession->getCurrentQuestionStartedAt()->getTimestamp();
-            $questionDuration = $gameSession->getCurrentQuestionDuration();
-        }
+        $timeLeft = $this->timingService->calculateTimeLeft($gameSession);
+        $questionStartTime = $gameSession->getCurrentQuestionStartedAt()?->getTimestamp();
+        $questionDuration = $gameSession->getCurrentQuestionDuration();
         
         return [
             'id' => $gameSession->getGameCode(),
@@ -645,7 +591,7 @@ class MultiplayerGameService
             'status' => $gameSession->getStatus(),
             'currentQuestionIndex' => $gameSession->getCurrentQuestionIndex(),
             'startedAt' => $gameSession->getStartedAt()->getTimestamp(),
-            'leaderboard' => $this->updateLeaderboard($gameSession),
+            'leaderboard' => $this->scoreService->updateLeaderboard($gameSession),
             'playerScores' => $playerScores,
             'sharedScores' => $sharedScores,
             'timeLeft' => $timeLeft,
@@ -664,7 +610,6 @@ class MultiplayerGameService
 
             $this->mercureHub->publish($update);
         } catch (\Exception $e) {
-            // Log l'erreur
             error_log("Erreur Mercure pour le topic {$topic}: " . $e->getMessage());
         }
     }
@@ -684,9 +629,7 @@ class MultiplayerGameService
 
         $question = $questions[$questionIndex];
 
-        $gameSession->setCurrentQuestionStartedAt(new \DateTimeImmutable());
-        $gameSession->setCurrentQuestionDuration(30);
-        $this->entityManager->flush();
+        $this->timingService->setupQuestionTiming($gameSession, 30);
 
         $questionData = [
             'questionIndex' => $questionIndex,
@@ -752,7 +695,7 @@ class MultiplayerGameService
             }
         }
 
-        $leaderboard = $this->updateLeaderboard($gameSession);
+        $leaderboard = $this->scoreService->updateLeaderboard($gameSession);
         
         $this->publishUpdate($this->getGameTopic($gameCode), [
             'action' => 'show_feedback',
@@ -778,11 +721,9 @@ class MultiplayerGameService
             return;
         }
 
- /*       $lastQuestionStartTime = $gameSession->getCurrentQuestionStartedAt();
-        if ($lastQuestionStartTime && (time() - $lastQuestionStartTime->getTimestamp()) < 2) {
-            error_log("DEBUG: triggerNextQuestion - BLOQUÉ: Transition trop récente (cooldown 2s)");
+        if (!$this->timingService->checkTransitionCooldown($gameSession, 3)) {
             return;
-        }*/
+        }
 
         $questionIndex = $gameSession->getCurrentQuestionIndex();
         $quiz = $gameSession->getRoom()->getQuiz();
@@ -801,9 +742,7 @@ class MultiplayerGameService
         error_log("DEBUG: triggerNextQuestion - nouvel index: $newIndex");
         
         $gameSession->setCurrentQuestionIndex($newIndex);
-        $gameSession->setCurrentQuestionStartedAt(new \DateTimeImmutable());
-        $gameSession->setCurrentQuestionDuration(30);
-        $this->entityManager->flush();
+        $this->timingService->setupQuestionTiming($gameSession, 30);
         
         $updatedIndex = $gameSession->getCurrentQuestionIndex();
         error_log("DEBUG: triggerNextQuestion - index après mise à jour: $updatedIndex");
@@ -890,7 +829,7 @@ class MultiplayerGameService
         $this->entityManager->persist($room);
         $this->entityManager->flush();
 
-        $finalLeaderboard = $this->updateLeaderboard($gameSession);
+        $finalLeaderboard = $this->scoreService->updateLeaderboard($gameSession);
 
         $this->publishUpdate($this->getGameTopic($gameCode), [
             'action' => 'game_finished',
@@ -954,8 +893,7 @@ class MultiplayerGameService
                 
                 $rawTotalScore = $sharedScores[$username] ?? 0;
                 
-                // Normaliser le score (convertir en pourcentage)
-                $normalizedScore = $this->normalizeScoreToPercentage($rawTotalScore, $totalQuestions);
+                $normalizedScore = $this->scoreService->normalizeScoreToPercentage($rawTotalScore, $totalQuestions);
                 
                 $userAnswer = new UserAnswer();
                 $userAnswer->setUser($user);
@@ -978,102 +916,13 @@ class MultiplayerGameService
         }
     }
 
-    private function validateRoomData(array $data): void
-    {
-        $constraints = new Assert\Collection([
-            'quizId' => [
-                new Assert\NotBlank(['message' => 'L\'ID du quiz est requis']),
-                new Assert\Type(['type' => 'integer', 'message' => 'L\'ID du quiz doit être un entier'])
-            ],
-            'maxPlayers' => [
-                new Assert\Optional([
-                    new Assert\Type(['type' => 'integer', 'message' => 'Le nombre maximum de joueurs doit être un entier']),
-                    new Assert\Range(['min' => 2, 'max' => 10, 'notInRangeMessage' => 'Le nombre de joueurs doit être entre 2 et 10'])
-                ])
-            ],
-            'isTeamMode' => [
-                new Assert\Optional([
-                    new Assert\Type(['type' => 'bool', 'message' => 'Le mode équipe doit être un booléen'])
-                ])
-            ],
-            'roomName' => [
-                new Assert\Optional([
-                    new Assert\Length(['max' => 255, 'maxMessage' => 'Le nom de la salle ne peut pas dépasser 255 caractères'])
-                ])
-            ]
-        ]);
 
-        $errors = $this->validator->validate($data, $constraints);
-        if (count($errors) > 0) {
-            throw new ValidationFailedException($constraints, $errors);
-        }
-    }
 
-    private function validateAnswerData(array $data): void
-    {
-        error_log("DEBUG: validateAnswerData appelé avec: " . json_encode($data));
-        
-        $constraints = new Assert\Collection([
-            'questionId' => [
-                new Assert\NotBlank(['message' => 'L\'ID de la question est requis']),
-                new Assert\Type(['type' => 'integer', 'message' => 'L\'ID de la question doit être un entier'])
-            ],
-            'answer' => [
-                new Assert\NotBlank(['message' => 'La réponse est requise']),
-                new Assert\AtLeastOneOf([
-                    'constraints' => [
-                        new Assert\Type(['type' => 'integer', 'message' => 'La réponse doit être un entier']),
-                        new Assert\Type(['type' => 'array', 'message' => 'La réponse doit être un tableau'])
-                    ],
-                    'message' => 'La réponse doit être soit un entier soit un tableau'
-                ])
-            ],
-            'timeSpent' => [
-                new Assert\Optional([
-                    new Assert\Type(['type' => 'integer', 'message' => 'Le temps passé doit être un entier'])
-                ])
-            ]
-        ]);
 
-        $errors = $this->validator->validate($data, $constraints);
-        if (count($errors) > 0) {
-            error_log("DEBUG: Erreurs de validation: " . json_encode($errors));
-            throw new ValidationFailedException($constraints, $errors);
-        }
-        
-        error_log("DEBUG: Validation réussie");
-    }
 
-    private function validateJoinRoomData(array $data): void
-    {
-        $constraints = new Assert\Collection([
-            'teamName' => [
-                new Assert\Optional([
-                    new Assert\Length(['max' => 100, 'maxMessage' => 'Le nom de l\'équipe ne peut pas dépasser 100 caractères'])
-                ])
-            ]
-        ]);
 
-        $errors = $this->validator->validate($data, $constraints);
-        if (count($errors) > 0) {
-            throw new ValidationFailedException($constraints, $errors);
-        }
-    }
 
-    private function validateInvitationData(array $data): void
-    {
-        $constraints = new Assert\Collection([
-            'invitedUserIds' => [
-                new Assert\NotBlank(['message' => 'Les utilisateurs à inviter sont requis']),
-                new Assert\Type(['type' => 'array', 'message' => 'Les utilisateurs à inviter doivent être un tableau'])
-            ]
-        ]);
 
-        $errors = $this->validator->validate($data, $constraints);
-        if (count($errors) > 0) {
-            throw new ValidationFailedException($constraints, $errors);
-        }
-    }
 
     public function handleTimeExpired(string $gameCode): void
     {
@@ -1126,7 +975,7 @@ class MultiplayerGameService
 
         $this->startFeedbackPhase($gameSession);
         
-        $leaderboard = $this->updateLeaderboard($gameSession);
+        $leaderboard = $this->scoreService->updateLeaderboard($gameSession);
         $this->publishUpdate($this->getGameTopic($gameCode), [
             'action' => 'time_expired',
             'leaderboard' => $leaderboard,
