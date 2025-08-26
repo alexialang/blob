@@ -762,14 +762,9 @@ class MultiplayerGameService
         ]);
 
         if ($questionIndex + 1 >= count($questions)) {
-            $this->endGame($gameSession);
+            $this->endGameInternal($gameSession);
         } else {
-            $newIndex = $questionIndex + 1;
-            
-            $gameSession->setCurrentQuestionIndex($newIndex);
-            $this->entityManager->persist($gameSession);
-            $this->entityManager->flush();
-
+            error_log("DEBUG: startFeedbackPhase - Index reste à $questionIndex, attente triggerNextQuestion()");
         }
     }
 
@@ -782,6 +777,12 @@ class MultiplayerGameService
             error_log("DEBUG: GameSession non trouvée");
             return;
         }
+
+ /*       $lastQuestionStartTime = $gameSession->getCurrentQuestionStartedAt();
+        if ($lastQuestionStartTime && (time() - $lastQuestionStartTime->getTimestamp()) < 2) {
+            error_log("DEBUG: triggerNextQuestion - BLOQUÉ: Transition trop récente (cooldown 2s)");
+            return;
+        }*/
 
         $questionIndex = $gameSession->getCurrentQuestionIndex();
         $quiz = $gameSession->getRoom()->getQuiz();

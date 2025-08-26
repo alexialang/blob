@@ -51,7 +51,7 @@
   <div *ngIf="false" class="live-scoreboard-container">
     <app-live-scoreboard
       [players]="livePlayers"
-      [currentQuestionIndex]="currentQuestionIndex"
+      [currentQuestionIndex]="getCurrentQuestionDisplayIndex()"
       [totalQuestions]="totalQuestions"
       [showRanking]="true">
     </app-live-scoreboard>
@@ -63,12 +63,12 @@
     </div>
   </div>
 
-  <div *ngIf="currentQuestion && !showFeedback && !quizCompleted" class="question-container">
-    <div class="question-number">Question {{ currentQuestionIndex }} / {{ totalQuestions }}</div>
+  <div *ngIf="currentQuestion && !showFeedback && !quizCompleted && !showTransition" class="question-container">
+    <div class="question-number">Question {{ getCurrentQuestionDisplayIndex() }} / {{ totalQuestions }}</div>
     <h1 class="question-text">{{ currentQuestion.question }}</h1>
   </div>
 
-  <div *ngIf="currentQuestion && !showFeedback && !quizCompleted" class="question-type-container">
+  <div *ngIf="currentQuestion && !showFeedback && !quizCompleted && !showTransition" class="question-type-container">
 
     <p class="question-instruction"
        *ngIf="currentQuestion.type_question?.name === 'MCQ' || currentQuestion.type_question?.name === 'QCM'">
@@ -111,7 +111,7 @@
     <app-multiple-choice-question
       *ngIf="currentQuestion.type_question?.name === 'multiple_choice'"
       [question]="currentQuestion"
-      [progress]="{ current: currentQuestionIndex, total: totalQuestions, percentage: getProgressPercentage() }"
+      [progress]="{ current: getCurrentQuestionDisplayIndex(), total: totalQuestions, percentage: getProgressPercentage() }"
       (answerSelected)="onAnswersSelected($event)"
       (answerValidated)="validateAnswer()">
     </app-multiple-choice-question>
@@ -120,7 +120,7 @@
     <app-right-order-question
       *ngIf="currentQuestion.type_question?.name === 'right_order'"
       [question]="currentQuestion"
-      [progress]="{ current: currentQuestionIndex, total: totalQuestions, percentage: getProgressPercentage() }"
+      [progress]="{ current: getCurrentQuestionDisplayIndex(), total: totalQuestions, percentage: getProgressPercentage() }"
       (answerSelected)="onOrderChanged($event)"
       (answerValidated)="validateAnswer()">
     </app-right-order-question>
@@ -129,7 +129,7 @@
     <app-true-false-question
       *ngIf="currentQuestion.type_question?.name === 'Vrai/Faux'"
       [question]="currentQuestion"
-      [progress]="{ current: currentQuestionIndex, total: totalQuestions, percentage: getProgressPercentage() }"
+      [progress]="{ current: getCurrentQuestionDisplayIndex(), total: totalQuestions, percentage: getProgressPercentage() }"
       (answerSelected)="onAnswerSelected($event)"
       (answerValidated)="validateAnswer()">
     </app-true-false-question>
@@ -138,7 +138,7 @@
     <app-matching-question
       *ngIf="currentQuestion.type_question?.name === 'matching'"
       [question]="currentQuestion"
-      [progress]="{ current: currentQuestionIndex, total: totalQuestions, percentage: getProgressPercentage() }"
+      [progress]="{ current: getCurrentQuestionDisplayIndex(), total: totalQuestions, percentage: getProgressPercentage() }"
       (answerSelected)="onMatchingAnswersSelected($event)"
       (answerValidated)="validateAnswer()">
     </app-matching-question>
@@ -147,7 +147,7 @@
     <app-intruder-question
       *ngIf="currentQuestion.type_question?.name === 'find_the_intruder'"
       [question]="currentQuestion"
-      [progress]="{ current: currentQuestionIndex, total: totalQuestions, percentage: getProgressPercentage() }"
+      [progress]="{ current: getCurrentQuestionDisplayIndex(), total: totalQuestions, percentage: getProgressPercentage() }"
       (answerSelected)="onAnswerSelected($event)"
       (answerValidated)="validateAnswer()">
     </app-intruder-question>
@@ -156,7 +156,7 @@
     <app-blind-test-question
       *ngIf="currentQuestion.type_question?.name === 'blind_test'"
       [question]="currentQuestion"
-      [progress]="{ current: currentQuestionIndex, total: totalQuestions, percentage: getProgressPercentage() }"
+      [progress]="{ current: getCurrentQuestionDisplayIndex(), total: totalQuestions, percentage: getProgressPercentage() }"
       (answerSelected)="onAnswerSelected($event)"
       (answerValidated)="validateAnswer()">
     </app-blind-test-question>

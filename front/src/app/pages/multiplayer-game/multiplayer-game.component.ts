@@ -99,9 +99,18 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
 
   showTransition = false;
   transitionPlayers: TransitionPlayer[] = [];
-  transitionDuration = 3000;
+  transitionDuration = 6000;
 
   tempPlayerScore: { username: string; points: number; isCorrect: boolean } | null = null;
+
+  private securityTimeout: any = null;
+
+  private isTransitioning = false;
+
+  private feedbackActive = false;
+
+  private lastProcessedQuestionIndex = -1;
+  private questionProcessingCooldown = 0;
 
   selectedAnswer: number | null = null;
   selectedAnswers: number[] = [];
@@ -135,6 +144,13 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
 
     this.preventNavigation();
 
+    // ✅ CRITIQUE: Reset complet des protections au début de chaque partie
+    this.lastProcessedQuestionIndex = -1;
+    this.questionProcessingCooldown = 0;
+    this.isTransitioning = false;
+    this.feedbackActive = false;
+    console.log(`🔄 RESET: Protections réinitialisées pour nouvelle partie`);
+
     this.mercureService.connectWithGame(this.gameId);
     this.setupGameSubscriptions();
     this.setupLocalStorageSync();
@@ -150,6 +166,16 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
       clearInterval(this.syncInterval);
       this.syncInterval = null;
     }
+
+    if (this.securityTimeout) {
+      clearTimeout(this.securityTimeout);
+      this.securityTimeout = null;
+    }
+
+    this.isTransitioning = false;
+    this.feedbackActive = false;
+    this.lastProcessedQuestionIndex = -1;
+    this.questionProcessingCooldown = 0;
   }
 
   private setupGameSubscriptions(): void {
@@ -167,13 +193,58 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
   private handleGameEvent(event: any): void {
     switch (event.action) {
       case 'new_question':
+        console.log(` ÉVÉNEMENT new_question REÇU:`, {
+          eventQuestionIndex: event.questionIndex,
+          currentQuestionIndex: this.currentQuestionIndex,
+          questionTitle: event.question?.question || 'N/A',
+          timeLeft: event.timeLeft,
+          isTransitioning: this.isTransitioning,
+          feedbackActive: this.feedbackActive,
+          timestamp: new Date().toLocaleTimeString()
+        });
+
+        if (this.securityTimeout) {
+          clearTimeout(this.securityTimeout);
+          this.securityTimeout = null;
+          console.log(`✅ Timeout sécurité annulé - Serveur a répondu`);
+        }
+
+        const eventKey = `${event.questionIndex}_${event.questionStartTime}`;
+        const now = Date.now();
+
+        if (event.questionIndex === this.lastProcessedQuestionIndex && now - this.questionProcessingCooldown < 2000) {
+          console.log(`🛡️ ÉVÉNEMENT BLOQUÉ: Question ${event.questionIndex} reçue trop rapidement (${now - this.questionProcessingCooldown}ms)`);
+          return;
+        }
+
+        if (this.feedbackActive) {
+          console.log(`🛡️ ÉVÉNEMENT BLOQUÉ: Feedback en cours`);
+          return;
+        }
+
+        if (event.questionIndex === this.currentQuestionIndex) {
+          console.log(`⚠️ Question ${event.questionIndex} déjà active, ignorée`);
+          return;
+        }
+
+        if (event.questionIndex > this.currentQuestionIndex + 1) {
+          console.log(`⚠️ Saut de question détecté: ${this.currentQuestionIndex} -> ${event.questionIndex}, ignoré pour éviter de sauter des questions`);
+          return;
+        }
+
+        this.lastProcessedQuestionIndex = event.questionIndex;
+        this.questionProcessingCooldown = now;
+
         if (event.questionStartTime && event.questionDuration) {
-          this.questionStartTimestamp = event.questionStartTime;
+          this.questionStartTimestamp = event.questionStartTime * 1000;
           this.questionDuration = event.questionDuration;
           this.timeLeft = event.timeLeft || 30;
-          console.log(`Nouvelle question - Début: ${new Date(event.questionStartTime)}, Durée: ${event.questionDuration}s`);
+          console.log(`✅ Nouvelle question - Début: ${new Date(this.questionStartTimestamp)}, Durée: ${event.questionDuration}s`);
         }
         this.startNewQuestion(event.questionIndex, event.question, event.timeLeft);
+
+        this.isTransitioning = false;
+        this.feedbackActive = false;
         break;
       case 'answer_submitted':
         this.onPlayerAnswered(event.username);
@@ -222,14 +293,14 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
         }
 
         if (game.questionStartTime && game.questionDuration) {
-          this.questionStartTimestamp = game.questionStartTime;
+          this.questionStartTimestamp = game.questionStartTime * 1000;
           this.questionDuration = game.questionDuration;
 
-          const currentTime = Math.floor(Date.now() / 1000);
-          const elapsedTime = currentTime - game.questionStartTime;
+          const currentTime = Date.now();
+          const elapsedTime = Math.floor((currentTime - this.questionStartTimestamp) / 1000);
           this.timeLeft = Math.max(0, game.questionDuration - elapsedTime);
 
-          console.log(`Question démarrée à: ${new Date(game.questionStartTime)}`);
+          console.log(`Question démarrée à: ${new Date(this.questionStartTimestamp)}`);
           console.log(`Durée: ${game.questionDuration}s`);
           console.log(`Temps écoulé: ${elapsedTime}s`);
           console.log(`Temps restant calculé: ${this.timeLeft}s`);
@@ -353,7 +424,8 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
     if (!this.questions || !this.questions[index]) return;
 
     this.currentQuestion = this.questions[index];
-    this.currentQuestionIndex = index + 1;
+    const oldIndex = this.currentQuestionIndex;
+    this.currentQuestionIndex = index;
     this.showFeedback = false;
     this.questionStartTime = Date.now();
     this.resetAnswers();
@@ -365,6 +437,27 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
   }
 
   private startNewQuestion(questionIndex: number, question: any, timeLeft: number): void {
+    console.log(` startNewQuestion APPELÉ:`, {
+      questionIndex: questionIndex,
+      currentQuestionIndex: this.currentQuestionIndex,
+      timeLeft: timeLeft,
+      questionTitle: question?.question || 'N/A',
+      totalQuestions: this.totalQuestions,
+      timestamp: new Date().toLocaleTimeString()
+    });
+
+    if (this.currentQuestionIndex === questionIndex && this.currentQuestion) {
+      console.log(` Question ${questionIndex} déjà active dans startNewQuestion, ignorée`);
+      return;
+    }
+
+    if (questionIndex > this.currentQuestionIndex + 1) {
+      console.log(` startNewQuestion - Saut de question ${this.currentQuestionIndex} -> ${questionIndex}, ignoré`);
+      return;
+    }
+
+    console.log(`startNewQuestion - AVANT: current=${this.currentQuestionIndex}, nouveau=${questionIndex}`);
+
     this.showFeedback = false;
     this.playersAnswered = [];
     this.questionStartTime = Date.now();
@@ -376,16 +469,28 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
     });
 
     if (this.questions && this.questions[questionIndex]) {
+      console.log(` Question trouvée dans this.questions[${questionIndex}] - Appel loadQuestionAtIndex`);
       this.loadQuestionAtIndex(questionIndex);
     } else {
-      this.currentQuestionIndex = questionIndex + 1;
+      console.log(` Question NON trouvée dans this.questions - Utilisation des données serveur`);
+      const oldIndex = this.currentQuestionIndex;
+      this.currentQuestionIndex = questionIndex;
+      console.log(` INDEX CHANGÉ: ${oldIndex} -> ${this.currentQuestionIndex}`);
+
       this.currentQuestion = question;
 
       this.questionDuration = timeLeft;
       this.timeLeft = timeLeft;
-      this.questionStartTimestamp = Date.now() + this.serverTimeOffset;
+      this.questionStartTimestamp = this.questionStartTimestamp || Date.now();
       this.startTimer();
     }
+
+    console.log(` Question ${questionIndex} ACTIVÉE:`, {
+      newCurrentIndex: this.currentQuestionIndex,
+      titre: question?.question || 'N/A',
+      timeLeft: this.timeLeft,
+      timestamp: new Date().toLocaleTimeString()
+    });
   }
 
   private startTimer(): void {
@@ -413,8 +518,10 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
 
 
   private handleTimeExpired(): void {
+    console.log(' Timer local - Temps écoulé');
+
     if (!this.hasAnswered) {
-      console.log(' Temps écoulé - Traitement comme mauvaise réponse');
+      console.log(' Joueur n\'a pas répondu - Traitement comme mauvaise réponse');
 
       this.hasAnswered = true;
       this.waitingForPlayers = false;
@@ -440,15 +547,17 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
         this.onPlayerAnswered(this.currentUser.username);
       }
 
-      const tempLeaderboard = this.livePlayers.map(player => ({
+      const localLeaderboard = this.livePlayers.map(player => ({
         username: player.username,
         score: player.score,
-        rank: 1
+        isCorrect: false
       }));
 
-      this.showFeedbackPhase(tempLeaderboard);
+      console.log(' Timeout - Déclenchement feedback local');
+      this.showFeedbackPhase(localLeaderboard);
 
     } else if (this.hasAnswered) {
+      console.log(' Joueur a déjà répondu - Force timeout');
       this.forceFeedbackDueToTimeout();
     }
   }
@@ -517,23 +626,39 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
       }, 1000);
 
       if (this.playersAnswered.length >= this.totalPlayers) {
-        const realLeaderboard = this.livePlayers.map(player => {
+        console.log(` Tous les joueurs ont répondu localement`);
 
-          return {
-            username: player.username,
-            score: player.score,
-            isCorrect: player.username === this.currentUser?.username && this.tempPlayerScore
-              ? this.tempPlayerScore.isCorrect
-              : (player.lastAnswerCorrect || false)
-          };
-        });
+        const localLeaderboard = this.livePlayers.map(player => ({
+          username: player.username,
+          score: player.score,
+          isCorrect: player.username === this.currentUser?.username && this.tempPlayerScore
+            ? this.tempPlayerScore.isCorrect
+            : (player.lastAnswerCorrect || false)
+        }));
 
-        this.showFeedbackPhase(realLeaderboard);
+        this.showFeedbackPhase(localLeaderboard);
+
+        this.waitingForPlayers = false;
       }
     }
   }
 
   private showFeedbackPhase(leaderboard: any[]): void {
+    console.log(`📊 showFeedbackPhase APPELÉ:`, {
+      currentQuestionIndex: this.currentQuestionIndex,
+      feedbackActive: this.feedbackActive,
+      isTransitioning: this.isTransitioning,
+      leaderboardLength: leaderboard.length,
+      timestamp: new Date().toLocaleTimeString()
+    });
+
+    if (this.feedbackActive) {
+      console.log(` Feedback déjà actif, ignoré`);
+      return;
+    }
+
+    this.feedbackActive = true;
+    console.log(`📊 Phase de feedback DÉMARRÉE`);
     this.stopTimer();
     this.showFeedback = true;
     this.waitingForPlayers = false;
@@ -545,12 +670,21 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
 
     setTimeout(() => {
       this.showFeedback = false;
+      this.feedbackActive = false;
+      console.log(` Fin feedback - Début classement`);
+
       this.showTransitionScreen(leaderboard);
       this.updateLiveScoreboardAfterFeedback();
 
-      setTimeout(() => {
-        this.proceedToNextQuestion();
-      }, this.transitionDuration);
+      this.securityTimeout = setTimeout(() => {
+        if (!this.gameCompleted && this.currentQuestionIndex < this.totalQuestions - 1) {
+          console.log(` Fin du classement - Question suivante`);
+          this.proceedToNextQuestion();
+        } else if (this.currentQuestionIndex >= this.totalQuestions - 1) {
+          console.log(` Fin de jeu détectée`);
+          this.proceedToNextQuestionLocal();
+        }
+      }, 6000);
     }, 3000);
   }
 
@@ -710,36 +844,67 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
   }
 
   private proceedToNextQuestion(): void {
-    // Demander au backend de passer à la question suivante
+    console.log(`proceedToNextQuestion APPELÉ:`, {
+      currentQuestionIndex: this.currentQuestionIndex,
+      isTransitioning: this.isTransitioning,
+      feedbackActive: this.feedbackActive,
+      gameCompleted: this.gameCompleted,
+      totalQuestions: this.totalQuestions,
+      timestamp: new Date().toLocaleTimeString()
+    });
+
+    if (this.isTransitioning) {
+      console.log(` Transition déjà en cours, ignorée`);
+      return;
+    }
+
+    const now = Date.now();
+    if (this.questionProcessingCooldown && (now - this.questionProcessingCooldown) < 3000) {
+      console.log(` proceedToNextQuestion ignoré - Cooldown actif (${now - this.questionProcessingCooldown}ms)`);
+      return;
+    }
+    this.questionProcessingCooldown = now;
+
+    this.isTransitioning = true;
+    console.log(` Demande transition question ${this.currentQuestionIndex} -> ${this.currentQuestionIndex + 1}`);
+
     if (this.currentGame?.id) {
       this.multiplayerService.triggerNextQuestion(this.currentGame.id).subscribe({
         next: (result: any) => {
-          if (result.success) {
-            this.proceedToNextQuestionLocal();
-          }
+          console.log(` Serveur confirmé transition question: `, result);
         },
         error: (error: any) => {
-          console.error('Erreur lors du déclenchement de la question suivante:', error);
-          // Fallback : utiliser la logique locale
+          console.error(' Erreur serveur transition question:', error);
           this.proceedToNextQuestionLocal();
+          this.isTransitioning = false;
         }
       });
     } else {
       this.proceedToNextQuestionLocal();
+      this.isTransitioning = false;
     }
   }
 
   private proceedToNextQuestionLocal(): void {
+    const nextQuestionIndex = this.currentQuestionIndex + 1;
 
-    const nextQuestionIndex = this.currentQuestionIndex - 1;
+    console.log(`proceedToNextQuestionLocal - current: ${this.currentQuestionIndex}, next: ${nextQuestionIndex}, total: ${this.totalQuestions}`);
 
-    if (nextQuestionIndex >= 0 && nextQuestionIndex < this.totalQuestions && this.questions && this.questions[nextQuestionIndex]) {
+    if (nextQuestionIndex < this.totalQuestions && this.questions && this.questions[nextQuestionIndex]) {
+      console.log(` Passage à la question ${nextQuestionIndex}`);
       setTimeout(() => {
         this.startNewQuestion(nextQuestionIndex, this.questions[nextQuestionIndex], 30);
       }, 500);
     } else {
+      console.log(` FIN DE JEU - Plus de questions disponibles`);
       this.stopTimer();
       this.gameCompleted = true;
+
+      if (this.securityTimeout) {
+        clearTimeout(this.securityTimeout);
+        this.securityTimeout = null;
+      }
+
       this.endGameOnServer();
 
       const currentUser = this.getCurrentUsername();
@@ -774,10 +939,11 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
   }
 
   private showFinalResults(leaderboard: any[]): void {
+
     this.stopTimer();
     this.quizCompleted = true;
     this.gameCompleted = true;
-    this.showFeedback = false;
+    this.showFeedback = true;
     this.waitingForPlayers = false;
     this.finalLeaderboard = leaderboard;
 
@@ -796,7 +962,19 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
       this.playerRank = this.totalPlayers;
     }
 
-    this.timeLeft = 0;
+    console.log(` Position finale: ${this.playerRank}, Score: ${this.currentScore}`);
+
+    this.timeLeft = 10;
+
+    const finalCountdown = setInterval(() => {
+      this.timeLeft--;
+      console.log(` Classement final visible encore ${this.timeLeft}s`);
+
+      if (this.timeLeft <= 0) {
+        clearInterval(finalCountdown);
+        console.log(` Fin d'affichage du classement final`);
+      }
+    }, 1000);
   }
 
   selectAnswer(answerId: number): void {
@@ -968,6 +1146,10 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
     return ((this.currentQuestionIndex + 1) / this.totalQuestions) * 100;
   }
 
+  getCurrentQuestionDisplayIndex(): number {
+    return this.currentQuestionIndex + 1;
+  }
+
   private normalizeScoreToPercentage(score: number, totalQuestions: number): number {
     if (totalQuestions === 0) return 0;
     return Math.min(Math.round((score / (totalQuestions * 10)) * 100), 100);
@@ -1024,7 +1206,7 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
 
   getProgressObject() {
     return {
-      current: this.currentQuestionIndex,
+      current: this.currentQuestionIndex + 1,
       total: this.totalQuestions,
       percentage: this.getProgressPercentage()
     };
@@ -1216,10 +1398,11 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
       });
 
     this.showTransition = true;
+    this.isTransitioning = false;
 
     setTimeout(() => {
       this.showTransition = false;
       this.questionPointsGained = {};
-    }, this.transitionDuration);
+    }, 9000);
   }
 }
