@@ -6,6 +6,7 @@ import { DonationService } from '../../services/donation.service';
 import { catchError, finalize } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { SeoService } from '../../services/seo.service';
+import { AnalyticsService } from '../../services/analytics.service';
 
 @Component({
   selector: 'app-donation',
@@ -26,10 +27,13 @@ export class DonationComponent implements OnInit {
   constructor(
     private donationService: DonationService,
     private router: Router,
-    private readonly seoService: SeoService
+    private readonly seoService: SeoService,
+    private analytics: AnalyticsService
   ) {}
 
   ngOnInit() {
+    this.analytics.trackDonationPageView();
+
     this.seoService.updateSEO({
       title: 'Blob - Faites un don pour soutenir notre plateforme',
       description: 'Soutenez Blob et contribuez au développement des quiz interactifs éducatifs. Chaque don nous aide à innover et offrir plus de contenus.',

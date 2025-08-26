@@ -2,6 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
+import { AnalyticsService } from '../../services/analytics.service';
 
 interface LeaderboardUser {
   id: number;
@@ -44,12 +45,15 @@ interface LeaderboardResponse {
 })
 export class LeaderboardComponent implements OnInit {
   private http = inject(HttpClient);
+  private analytics = inject(AnalyticsService);
 
   leaderboardData: LeaderboardResponse | null = null;
   isLoading = true;
   error: string | null = null;
 
   ngOnInit() {
+    this.analytics.trackLeaderboardView();
+
     this.loadLeaderboard();
   }
 

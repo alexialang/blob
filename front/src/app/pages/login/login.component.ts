@@ -8,6 +8,7 @@ import { SlideButtonComponent } from '../../components/slide-button/slide-button
 import { PasswordInputComponent } from '../../components/password-input/password-input.component';
 import { HttpErrorResponse } from '@angular/common/http';
 import { SeoService } from '../../services/seo.service';
+import { AnalyticsService } from '../../services/analytics.service';
 
 @Component({
   standalone: true,
@@ -26,7 +27,8 @@ export class LoginComponent {
     private readonly auth: AuthService,
     private readonly alertService: AlertService,
     private readonly router: Router,
-    private readonly seoService: SeoService
+    private readonly seoService: SeoService,
+    private readonly analytics: AnalyticsService
   ) {}
   ngOnInit(): void {
 
@@ -49,9 +51,12 @@ export class LoginComponent {
 
     this.auth.login(this.email, this.password).subscribe({
       next: (result) => {
+        this.analytics.trackLogin();
         window.location.href = '/quiz';
       },
       error: (err: HttpErrorResponse) => {
+        this.analytics.trackError(`Login failed: ${err.status}`);
+
         if (err.status === 429) {
           const message = err.error?.message || 'Trop de tentatives de connexion. Réessayez dans 15 minutes.';
           this.error = message;

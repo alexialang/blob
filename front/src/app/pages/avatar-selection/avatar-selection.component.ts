@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { UserService } from '../../services/user.service';
 import { User } from '../../models/user.interface';
 import {BackButtonComponent} from '../../components/back-button/back-button.component';
+import { AnalyticsService } from '../../services/analytics.service';
 
 @Component({
   selector: 'app-avatar-selection',
@@ -16,6 +17,7 @@ import {BackButtonComponent} from '../../components/back-button/back-button.comp
 export class AvatarSelectionComponent implements OnInit {
   private userService = inject(UserService);
   private router = inject(Router);
+  private analytics = inject(AnalyticsService);
 
   user: User | null = null;
   isLoading = false;
@@ -27,6 +29,8 @@ export class AvatarSelectionComponent implements OnInit {
   selectedColor = this.colors[0];
 
   ngOnInit() {
+    this.analytics.trackAvatarSelection();
+
     this.loadUserProfile();
   }
 
@@ -37,7 +41,7 @@ export class AvatarSelectionComponent implements OnInit {
         const shapeId = user.avatarShape ?? this.availableShapes[0];
         const shapeIndex = this.availableShapes.indexOf(shapeId);
         this.selectedShapeIndex = shapeIndex >= 0 ? shapeIndex : 0;
-        
+
         this.selectedColor = user.avatarColor ?? this.colors[0];
       },
       error: error => {

@@ -11,6 +11,7 @@ import {
 } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { QuizManagementService } from '../../services/quiz-management.service';
+import { AnalyticsService } from '../../services/analytics.service';
 
 interface TypeQuestion {
   id: number;
@@ -70,7 +71,8 @@ export class QuizCreationComponent implements OnInit {
     private readonly fb: FormBuilder,
     private readonly router: Router,
     private readonly route: ActivatedRoute,
-    private readonly quizService: QuizManagementService
+    private readonly quizService: QuizManagementService,
+    private analytics: AnalyticsService
   ) {}
 
   @HostListener('document:click', ['$event'])
@@ -435,6 +437,10 @@ export class QuizCreationComponent implements OnInit {
 
     action.subscribe({
       next: () => {
+        if (!this.isEditMode) {
+          this.analytics.trackQuizCreation();
+        }
+
         this.isSubmitting = false;
         this.router.navigate(['/quiz']);
       },
