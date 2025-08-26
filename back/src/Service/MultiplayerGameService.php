@@ -40,7 +40,22 @@ class MultiplayerGameService
 
     private function getUserDisplayName(User $user): string
     {
-        return $user->getPseudo() ?? ($user->getFirstName() . ' ' . $user->getLastName());
+        if ($user->getPseudo()) {
+            return $user->getPseudo();
+        }
+        
+        $firstName = $user->getFirstName() ?? '';
+        $lastName = $user->getLastName() ?? '';
+        
+        if ($firstName && $lastName) {
+            return $firstName . ' ' . $lastName;
+        } elseif ($firstName) {
+            return $firstName;
+        } elseif ($lastName) {
+            return $lastName;
+        }
+        
+        return 'Joueur ' . $user->getId();
     }
 
     private function getGameTopic(string $gameCode): string
@@ -433,16 +448,7 @@ class MultiplayerGameService
             $userId = $user->getId();
             $username = $this->getUserDisplayName($user);
 
-            $totalScore = 0;
-            if (isset($sharedScores[$username])) {
-                $totalScore = $sharedScores[$username];
-            } else {
-                foreach (self::$gameAnswers as $key => $answer) {
-                    if (strpos($key, 'game_' . $gameCode . '_user_' . $userId) === 0) {
-                        $totalScore += $answer['points'];
-                    }
-                }
-            }
+            $totalScore = $sharedScores[$username] ?? 0;
 
             $leaderboard[] = [
                 'userId' => $userId,
@@ -473,10 +479,21 @@ class MultiplayerGameService
 
     public function getGameStatus(string $gameCode): array
     {
-        $gameSession = $this->gameSessionRepository->findByGameCode($gameCode);
+        $qb = $this->entityManager->createQueryBuilder();
+        $qb->select('gs')
+           ->from('App\Entity\GameSession', 'gs')
+           ->where('gs.gameCode = :gameCode')
+           ->setParameter('gameCode', $gameCode);
+        
+        $gameSession = $qb->getQuery()->getSingleResult();
+        
         if (!$gameSession) {
             throw new \Exception('Jeu non trouvé');
         }
+
+        error_log("DEBUG: getGameStatus - gameCode: $gameCode");
+        error_log("DEBUG: getGameStatus - currentQuestionIndex: " . $gameSession->getCurrentQuestionIndex());
+        error_log("DEBUG: getGameStatus - status: " . $gameSession->getStatus());
 
         if (!$gameSession->getCurrentQuestionStartedAt() || !$gameSession->getCurrentQuestionDuration()) {
             $gameSession->setCurrentQuestionStartedAt(new \DateTimeImmutable());
@@ -485,7 +502,11 @@ class MultiplayerGameService
             error_log("DEBUG: Timing mis à jour automatiquement pour la partie $gameCode");
         }
 
-        return $this->formatGameData($gameSession);
+        $gameData = $this->formatGameData($gameSession);
+        
+        error_log("DEBUG: getGameStatus - Réponse finale currentQuestionIndex: " . $gameData['currentQuestionIndex']);
+        
+        return $gameData;
     }
 
     public function getAvailableRooms(): array
@@ -771,7 +792,7 @@ class MultiplayerGameService
 
         if ($questionIndex + 1 >= count($questions)) {
             error_log("DEBUG: Fin du jeu - plus de questions disponibles");
-            $this->endGame($gameSession);
+            $this->endGameInternal($gameSession);
             return;
         }
 
@@ -822,7 +843,37 @@ class MultiplayerGameService
         ]);
     }
 
-    private function endGame(GameSession $gameSession): void
+    public function endGame(string $gameId, $user): array
+    {
+        try {
+            $gameSession = $this->gameSessionRepository->findByGameCode($gameId);
+            if (!$gameSession) {
+                throw new \Exception('Session de jeu non trouvée');
+            }
+
+            $room = $gameSession->getRoom();
+            $isPlayer = $room->getPlayers()->exists(function($key, $player) use ($user) {
+                return $player->getUser()->getId() === $user->getId();
+            });
+
+            if (!$isPlayer) {
+                throw new \Exception('Vous ne faites pas partie de cette partie');
+            }
+
+            $this->endGameInternal($gameSession);
+
+            return [
+                'success' => true,
+                'message' => 'Partie terminée avec succès',
+                'gameId' => $gameId
+            ];
+        } catch (\Exception $e) {
+            error_log("Erreur lors de la finalisation de la partie: " . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    public function endGameInternal(GameSession $gameSession): void
     {
         $gameCode = $gameSession->getGameCode();
         
@@ -887,33 +938,43 @@ class MultiplayerGameService
 
     private function saveMultiplayerGameResults(GameSession $gameSession): void
     {
-        $gameCode = $gameSession->getGameCode();
-        $quiz = $gameSession->getRoom()->getQuiz();
-        $totalQuestions = $quiz->getQuestions()->count();
-        
-        foreach ($gameSession->getRoom()->getPlayers() as $roomPlayer) {
-            $user = $roomPlayer->getUser();
-            $userId = $user->getId();
+        try {
+            $gameCode = $gameSession->getGameCode();
+            $quiz = $gameSession->getRoom()->getQuiz();
+            $totalQuestions = $quiz->getQuestions()->count();
+            
+            $sharedScores = $gameSession->getSharedScores() ?? [];
+            
+            error_log("DEBUG: saveMultiplayerGameResults - sharedScores: " . json_encode($sharedScores));
+            
+            foreach ($gameSession->getRoom()->getPlayers() as $roomPlayer) {
+                $user = $roomPlayer->getUser();
+                $username = $this->getUserDisplayName($user);
+                
+                $rawTotalScore = $sharedScores[$username] ?? 0;
+                
+                // Normaliser le score (convertir en pourcentage)
+                $normalizedScore = $this->normalizeScoreToPercentage($rawTotalScore, $totalQuestions);
+                
+                $userAnswer = new UserAnswer();
+                $userAnswer->setUser($user);
+                $userAnswer->setQuiz($quiz);
+                $userAnswer->setTotalScore($normalizedScore);
+                $userAnswer->setDateAttempt(new \DateTime());
 
-            $rawTotalScore = 0;
-            foreach (self::$gameAnswers as $key => $answer) {
-                if (strpos($key, 'game_' . $gameCode . '_user_' . $userId) === 0) {
-                    $rawTotalScore += $answer['points'];
-                }
+                $this->entityManager->persist($userAnswer);
+                
+                error_log("DEBUG: Score enregistré pour $username: $rawTotalScore -> $normalizedScore%");
             }
-
-            $normalizedScore = $this->normalizeScoreToPercentage($rawTotalScore, $totalQuestions);
             
-            $userAnswer = new UserAnswer();
-            $userAnswer->setUser($user);
-            $userAnswer->setQuiz($quiz);
-            $userAnswer->setTotalScore($normalizedScore);
-            $userAnswer->setDateAttempt(new \DateTime());
-
-            $this->entityManager->persist($userAnswer);
+            $this->entityManager->flush();
+            error_log("DEBUG: saveMultiplayerGameResults - flush réussi");
             
+        } catch (\Exception $e) {
+            error_log("ERREUR dans saveMultiplayerGameResults: " . $e->getMessage());
+            error_log("ERREUR stack trace: " . $e->getTraceAsString());
+            throw $e;
         }
-        
     }
 
     private function validateRoomData(array $data): void

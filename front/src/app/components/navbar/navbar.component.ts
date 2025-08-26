@@ -60,6 +60,17 @@ export class NavbarComponent implements OnInit {
         catchError(() => of('Utilisateur'))
       );
 
+      this.userAvatar$ = this.authService.getCurrentUser().pipe(
+        map(user => {
+          if (user.avatar) {
+            return this.sanitizer.bypassSecurityTrustUrl(user.avatar);
+          }
+          const avatarPath = `./assets/avatars/blob_${user.avatarShape || 'circle'}.svg`;
+          return this.sanitizer.bypassSecurityTrustUrl(avatarPath);
+        }),
+        catchError(() => of(this.sanitizer.bypassSecurityTrustUrl('./assets/svg/logo.svg')))
+      );
+
       this.userAvatarShape$ = this.authService.getCurrentUser().pipe(
         map(user => user.avatarShape || 'circle'),
         catchError(() => of('circle'))
@@ -70,14 +81,6 @@ export class NavbarComponent implements OnInit {
         catchError(() => of('#257D54'))
       );
 
-      this.userAvatar$ = this.authService.getCurrentUser().pipe(
-        map(user => {
-          const headPath = this.getBlobHeadPath(user.avatarShape || 'circle');
-          return this.sanitizer.bypassSecurityTrustUrl(headPath);
-        }),
-        catchError(() => of(this.sanitizer.bypassSecurityTrustUrl('./assets/avatars/head_guest.svg')))
-      );
-
       this.isAdmin$ = this.authService.isAdmin();
 
       this.userCompanyId$ = this.authService.getCurrentUser().pipe(
@@ -86,35 +89,19 @@ export class NavbarComponent implements OnInit {
       );
     } else if (this.authService.isGuest()) {
       this.userName$ = of('Invité');
-      this.userAvatarShape$ = of('guest');
-      this.userAvatarColor$ = of('#6B7280');
       this.userAvatar$ = of(this.sanitizer.bypassSecurityTrustUrl('./assets/avatars/head_guest.svg'));
+      this.userAvatarShape$ = of('circle');
+      this.userAvatarColor$ = of('#257D54');
       this.isAdmin$ = of(false);
       this.userCompanyId$ = of(null);
     } else {
       this.userName$ = of('Utilisateur');
+      this.userAvatar$ = of(this.sanitizer.bypassSecurityTrustUrl('./assets/svg/logo.svg'));
       this.userAvatarShape$ = of('circle');
       this.userAvatarColor$ = of('#257D54');
-      this.userAvatar$ = of(this.sanitizer.bypassSecurityTrustUrl('./assets/avatars/head_guest.svg'));
       this.isAdmin$ = of(false);
       this.userCompanyId$ = of(null);
     }
-  }
-
-  private getBlobHeadPath(avatarShape: string): string {
-    const headMapping: { [key: string]: string } = {
-      'circle': 'circle_head.svg',
-      'blob_circle': 'circle_head.svg',
-      'flower': 'flower_head.svg',
-      'blob_flower': 'flower_head.svg',
-      'pic': 'pic_head.svg',
-      'blob_pic': 'pic_head.svg',
-      'wave': 'wave_head.svg',
-      'blob_wave': 'wave_head.svg'
-    };
-
-    const headFile = headMapping[avatarShape] || 'circle_head.svg';
-    return `./assets/avatars/${headFile}`;
   }
 
   logout() {

@@ -209,16 +209,38 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
         this.currentGame = game;
         this.totalPlayers = game.players.length;
 
-        if (game.timeLeft !== undefined) {
-          this.timeLeft = game.timeLeft;
-          console.log(`Temps restant récupéré depuis le serveur: ${this.timeLeft}s`);
+        console.log('DEBUG loadGameState - game reçu:', game);
+        console.log('DEBUG loadGameState - questionStartTime:', game.questionStartTime);
+        console.log('DEBUG loadGameState - questionDuration:', game.questionDuration);
+        console.log('DEBUG loadGameState - status:', game.status);
+        console.log('DEBUG loadGameState - currentQuestionIndex:', game.currentQuestionIndex);
+
+        if (game.status === 'finished') {
+          console.log('DEBUG loadGameState - Partie terminée, affichage des résultats finaux');
+          this.showFinalResults(game.leaderboard || []);
+          return;
         }
 
         if (game.questionStartTime && game.questionDuration) {
           this.questionStartTimestamp = game.questionStartTime;
           this.questionDuration = game.questionDuration;
+
+          const currentTime = Math.floor(Date.now() / 1000);
+          const elapsedTime = currentTime - game.questionStartTime;
+          this.timeLeft = Math.max(0, game.questionDuration - elapsedTime);
+
           console.log(`Question démarrée à: ${new Date(game.questionStartTime)}`);
           console.log(`Durée: ${game.questionDuration}s`);
+          console.log(`Temps écoulé: ${elapsedTime}s`);
+          console.log(`Temps restant calculé: ${this.timeLeft}s`);
+
+          if (!game.status || game.status === 'playing') {
+            this.startTimer();
+          }
+        } else {
+          console.log('DEBUG loadGameState - Timing manquant, utilisation des valeurs par défaut');
+          this.timeLeft = 30;
+          this.questionDuration = 30;
         }
 
         const currentUsername = this.getCurrentUsername();
@@ -369,8 +391,11 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
   private startTimer(): void {
     this.stopTimer();
 
-
     this.timer = setInterval(() => {
+      if (this.gameCompleted) {
+        this.stopTimer();
+        return;
+      }
 
       if (this.timeLeft > 0) {
         this.timeLeft--;
@@ -523,6 +548,9 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
       this.showTransitionScreen(leaderboard);
       this.updateLiveScoreboardAfterFeedback();
 
+      setTimeout(() => {
+        this.proceedToNextQuestion();
+      }, this.transitionDuration);
     }, 3000);
   }
 
@@ -710,6 +738,8 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
         this.startNewQuestion(nextQuestionIndex, this.questions[nextQuestionIndex], 30);
       }, 500);
     } else {
+      this.stopTimer();
+      this.gameCompleted = true;
       this.endGameOnServer();
 
       const currentUser = this.getCurrentUsername();
@@ -866,16 +896,13 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
       error: (error) => {
         console.error('Erreur lors de la soumission de la réponse:', error);
 
-        // Réinitialiser l'état en cas d'erreur
         this.hasAnswered = false;
         this.waitingForPlayers = false;
 
-        // Afficher un message d'erreur à l'utilisateur
         if (error.error && error.error.details) {
           console.error('Détails de l\'erreur:', error.error.details);
         }
 
-        // Relancer le timer si l'erreur n'est pas critique
         if (error.status !== 400) {
           this.startTimer();
         }
@@ -1015,17 +1042,38 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
   endGameOnServer(): void {
     if (!this.gameId) return;
 
+    this.saveAllScoresToLocalStorage();
+
+    if (this.livePlayers.length > 0) {
+      const finalScores: { [username: string]: number } = {};
+      this.livePlayers.forEach(player => {
+        finalScores[player.username] = player.score;
+      });
+
+      this.multiplayerService.submitPlayerScores(this.gameId, finalScores).subscribe({
+        next: (result) => {
+          console.log('Scores finaux enregistrés sur le serveur');
+        },
+        error: (error) => {
+          console.error('Erreur lors de l\'enregistrement des scores finaux:', error);
+        }
+      });
+    }
+
     this.multiplayerService.endGame(this.gameId).subscribe({
       next: (result) => {
+        console.log('Partie marquée comme terminée sur le serveur');
+        this.gameCompleted = true;
       },
       error: (error) => {
+        console.error('Erreur lors de la finalisation de la partie:', error);
       }
     });
   }
 
   private preventNavigation(): void {
     window.addEventListener('beforeunload', (event) => {
-      if (this.currentGame && !this.gameCompleted) {
+      if (this.currentGame && !this.gameCompleted && this.timeLeft > 0) {
         event.preventDefault();
         event.returnValue = 'Êtes-vous sûr de vouloir quitter la partie ? Votre progression sera perdue.';
         return event.returnValue;
