@@ -9,6 +9,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use OpenApi\Annotations as OA;
 
 #[Route('/api')]
 class LeaderboardController extends AbstractController
@@ -18,6 +19,11 @@ class LeaderboardController extends AbstractController
         private EntityManagerInterface $entityManager
     ) {}
 
+    /**
+     * @OA\Get(summary="Classement d'un quiz spécifique", tags={"Leaderboard"})
+     * @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer"))
+     * @OA\Response(response=200, description="Classement du quiz")
+     */
     #[Route('/leaderboard/quiz/{id}', name: 'quiz_leaderboard', methods: ['GET'])]
     public function getQuizLeaderboard(int $id): JsonResponse
     {
@@ -32,6 +38,11 @@ class LeaderboardController extends AbstractController
         return new JsonResponse($data);
     }
 
+    /**
+     * @OA\Get(summary="Classement général", tags={"Leaderboard"})
+     * @OA\Parameter(name="limit", in="query", required=false, @OA\Schema(type="integer"))
+     * @OA\Response(response=200, description="Classement général")
+     */
     #[Route('/leaderboard', name: 'general_leaderboard', methods: ['GET'])]
     public function getGeneralLeaderboard(Request $request): JsonResponse
     {

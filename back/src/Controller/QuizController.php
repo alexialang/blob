@@ -22,6 +22,10 @@ class QuizController extends AbstractController
         private LoggerInterface $logger,
         ) {}
 
+    /**
+     * @OA\Get(summary="Lister tous les quiz", tags={"Quiz"})
+     * @OA\Response(response=200, description="Liste des quiz")
+     */
     #[Route('/quiz/list', name: 'quiz_index', methods: ['GET'])]
     public function index(): JsonResponse
     {
@@ -29,6 +33,11 @@ class QuizController extends AbstractController
         return $this->json($quizList, 200, [], ['groups' => ['quiz:read']]);
     }
 
+    /**
+     * @OA\Get(summary="Lister les quiz pour la gestion", tags={"Quiz"})
+     * @OA\Response(response=200, description="Liste des quiz pour la gestion")
+     * @OA\Security(name="bearerAuth")
+     */
     #[Route('/quiz/management/list', name: 'quiz_management_list', methods: ['GET'])]
     #[IsGranted('CREATE_QUIZ')]
     public function managementList(): JsonResponse
@@ -39,6 +48,20 @@ class QuizController extends AbstractController
         return $this->json($quizList, 200, [], ['groups' => ['quiz:read']]);
     }
 
+    /**
+     * @OA\Post(summary="Créer un nouveau quiz", tags={"Quiz"})
+     * @OA\RequestBody(
+     *     required=true,
+     *     @OA\JsonContent(
+     *         @OA\Property(property="title", type="string"),
+     *         @OA\Property(property="description", type="string"),
+     *         @OA\Property(property="category_id", type="integer"),
+     *         @OA\Property(property="questions", type="array", @OA\Items(type="object"))
+     *     )
+     * )
+     * @OA\Response(response=201, description="Quiz créé")
+     * @OA\Security(name="bearerAuth")
+     */
     #[Route('/quiz/create', name: 'quiz_create', methods: ['POST'])]
     #[IsGranted('CREATE_QUIZ')]
     public function create(Request $request): JsonResponse

@@ -9,6 +9,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Contracts\Cache\CacheInterface;
+use OpenApi\Annotations as OA;
 
 #[Route('/api/global-statistics')]
 class GlobalStatisticsController extends AbstractController

@@ -17,6 +17,9 @@ security:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
+        api_doc:
+            pattern: ^/api/doc
+            security: false
 
         login:
             pattern:  ^/api/login_check$
@@ -50,6 +53,7 @@ security:
         ROLE_ADMIN: [ROLE_USER]
 
     access_control:
+        - { path: ^/api/doc, roles: PUBLIC_ACCESS }
         - { path: ^/api/user-create, methods: [ POST ], roles: PUBLIC_ACCESS }
         - { path: ^/api/confirmation-compte/, methods: [ GET ], roles: PUBLIC_ACCESS }
         - { path: ^/api/token/refresh$, roles: PUBLIC_ACCESS }

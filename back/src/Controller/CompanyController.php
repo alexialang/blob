@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use OpenApi\Annotations as OA;
 
 #[Route('/api')]
 class CompanyController extends AbstractController
@@ -21,6 +22,11 @@ class CompanyController extends AbstractController
         private UserService $userService,
         ) {}
 
+    /**
+     * @OA\Get(summary="Lister les entreprises", tags={"Company"})
+     * @OA\Response(response=200, description="Liste des entreprises")
+     * @OA\Security(name="bearerAuth")
+     */
     #[Route('/companies', methods: ['GET'])]
     #[IsGranted('MANAGE_USERS')]
     public function list(): JsonResponse
@@ -113,6 +119,12 @@ class CompanyController extends AbstractController
         }
     }
 
+    /**
+     * @OA\Get(summary="Afficher une entreprise", tags={"Company"})
+     * @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer"))
+     * @OA\Response(response=200, description="Détails de l'entreprise")
+     * @OA\Security(name="bearerAuth")
+     */
     #[Route('/companies/{id}', methods: ['GET'])]
     #[IsGranted('VIEW_RESULTS', subject: 'company')]
     public function show(Company $company): JsonResponse
@@ -262,6 +274,17 @@ class CompanyController extends AbstractController
         }
     }
 
+    /**
+     * @OA\Post(summary="Créer une entreprise", tags={"Company"})
+     * @OA\RequestBody(
+     *     required=true,
+     *     @OA\JsonContent(
+     *         @OA\Property(property="name", type="string")
+     *     )
+     * )
+     * @OA\Response(response=201, description="Entreprise créée")
+     * @OA\Security(name="bearerAuth")
+     */
     #[Route('/companies', methods: ['POST'])]
     #[IsGranted('MANAGE_USERS')]
     public function create(Request $request): JsonResponse

@@ -19,6 +19,11 @@ class UserAnswerController extends AbstractController
         private UserAnswerService $userAnswerService,
         ) {}
 
+    /**
+     * @OA\Get(summary="Lister les réponses utilisateur", tags={"UserAnswer"})
+     * @OA\Response(response=200, description="Liste des réponses utilisateur")
+     * @OA\Security(name="bearerAuth")
+     */
     #[Route('/', name: 'user_answer_index', methods: ['GET'])]
     #[IsGranted('VIEW_RESULTS')]
     public function index(): JsonResponse
@@ -28,6 +33,18 @@ class UserAnswerController extends AbstractController
         return $this->json($userAnswers, 200, [], ['groups' => ['user_answer:read']]);
     }
 
+    /**
+     * @OA\Post(summary="Créer une réponse utilisateur", tags={"UserAnswer"})
+     * @OA\RequestBody(
+     *     required=true,
+     *     @OA\JsonContent(
+     *         @OA\Property(property="question_id", type="integer"),
+     *         @OA\Property(property="answer_id", type="integer"),
+     *         @OA\Property(property="score", type="integer")
+     *     )
+     * )
+     * @OA\Response(response=201, description="Réponse utilisateur créée")
+     */
     #[Route('/', name: 'user_answer_create', methods: ['POST'])]
     public function create(Request $request): JsonResponse
     {
@@ -48,6 +65,11 @@ class UserAnswerController extends AbstractController
         }
     }
 
+    /**
+     * @OA\Get(summary="Afficher une réponse utilisateur", tags={"UserAnswer"})
+     * @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer"))
+     * @OA\Response(response=200, description="Réponse utilisateur affichée")
+     */
     #[Route('/{id}', name: 'user_answer_show', methods: ['GET'])]
     public function show(UserAnswer $userAnswer): JsonResponse
     {
@@ -56,6 +78,19 @@ class UserAnswerController extends AbstractController
         return $this->json($userAnswer, 200, [], ['groups' => ['user_answer:read']]);
     }
 
+    /**
+     * @OA\Put(summary="Modifier une réponse utilisateur", tags={"UserAnswer"})
+     * @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer"))
+     * @OA\RequestBody(
+     *     required=true,
+     *     @OA\JsonContent(
+     *         @OA\Property(property="question_id", type="integer"),
+     *         @OA\Property(property="answer_id", type="integer"),
+     *         @OA\Property(property="score", type="integer")
+     *     )
+     * )
+     * @OA\Response(response=200, description="Réponse utilisateur modifiée")
+     */
     #[Route('/{id}', name: 'user_answer_update', methods: ['PUT', 'PATCH'])]
     public function update(Request $request, UserAnswer $userAnswer): JsonResponse
     {
@@ -76,6 +111,11 @@ class UserAnswerController extends AbstractController
         }
     }
 
+    /**
+     * @OA\Delete(summary="Supprimer une réponse utilisateur", tags={"UserAnswer"})
+     * @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer"))
+     * @OA\Response(response=204, description="Réponse utilisateur supprimée")
+     */
     #[Route('/{id}', name: 'user_answer_delete', methods: ['DELETE'])]
     public function delete(UserAnswer $userAnswer): JsonResponse
     {
@@ -84,6 +124,19 @@ class UserAnswerController extends AbstractController
         return $this->json(null, 204);
     }
 
+    /**
+     * @OA\Post(summary="Sauvegarder un résultat de jeu", tags={"UserAnswer"})
+     * @OA\RequestBody(
+     *     required=true,
+     *     @OA\JsonContent(
+     *         @OA\Property(property="quiz_id", type="integer"),
+     *         @OA\Property(property="total_score", type="integer"),
+     *         @OA\Property(property="answers", type="array", @OA\Items(type="object"))
+     *     )
+     * )
+     * @OA\Response(response=201, description="Résultat de jeu sauvegardé")
+     * @OA\Security(name="bearerAuth")
+     */
     #[Route('/game-result', name: 'user_answer_save_game_result', methods: ['POST'])]
     public function saveGameResult(Request $request): JsonResponse
     {
@@ -122,6 +175,18 @@ class UserAnswerController extends AbstractController
 
 
 
+    /**
+     * @OA\Post(summary="Noter un quiz", tags={"UserAnswer"})
+     * @OA\RequestBody(
+     *     required=true,
+     *     @OA\JsonContent(
+     *         @OA\Property(property="quizId", type="integer"),
+     *         @OA\Property(property="rating", type="integer")
+     *     )
+     * )
+     * @OA\Response(response=200, description="Quiz noté")
+     * @OA\Security(name="bearerAuth")
+     */
     #[Route('/rate-quiz', name: 'user_answer_rate_quiz', methods: ['POST'])]
     #[IsGranted('ROLE_USER')]
     public function rateQuiz(Request $request): JsonResponse
@@ -149,6 +214,11 @@ class UserAnswerController extends AbstractController
         }
     }
 
+    /**
+     * @OA\Get(summary="Classement d'un quiz", tags={"UserAnswer"})
+     * @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer"))
+     * @OA\Response(response=200, description="Classement du quiz")
+     */
     #[Route('/leaderboard/quiz/{id}', name: 'user_answer_quiz_leaderboard', methods: ['GET'])]
     public function getQuizLeaderboard(int $id): JsonResponse
     {
@@ -160,6 +230,11 @@ class UserAnswerController extends AbstractController
         }
     }
 
+    /**
+     * @OA\Get(summary="Note d'un quiz", tags={"UserAnswer"})
+     * @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer"))
+     * @OA\Response(response=200, description="Note du quiz")
+     */
     #[Route('/quiz/{id}/rating', name: 'user_answer_quiz_rating', methods: ['GET'])]
     public function getQuizRating(int $id): JsonResponse
     {

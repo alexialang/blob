@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Validator\Exception\ValidationFailedException;
+use OpenApi\Annotations as OA;
 
 #[Route('/api/donations', name: 'api_donations_')]
 class DonationController extends AbstractController
@@ -16,6 +17,18 @@ class DonationController extends AbstractController
         private PaymentService $paymentService
     ) {}
 
+    /**
+     * @OA\Post(summary="Créer un lien de paiement pour donation", tags={"Donation"})
+     * @OA\RequestBody(
+     *     required=true,
+     *     @OA\JsonContent(
+     *         @OA\Property(property="amount", type="number"),
+     *         @OA\Property(property="donor_email", type="string"),
+     *         @OA\Property(property="donor_name", type="string")
+     *     )
+     * )
+     * @OA\Response(response=200, description="Lien de paiement créé")
+     */
     #[Route('/create-payment-link', name: 'create_payment_link', methods: ['POST'])]
     public function createPaymentLink(Request $request): JsonResponse
     {

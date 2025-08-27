@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Psr\Log\LoggerInterface;
+use OpenApi\Annotations as OA;
 
 #[Route('/api')]
 class UserController extends AbstractController
@@ -22,6 +23,10 @@ class UserController extends AbstractController
         private LoggerInterface $logger
     ) {}
 
+    /**
+     * @OA\Get(summary="Lister tous les utilisateurs", tags={"User"})
+     * @OA\Response(response=200, description="Liste des utilisateurs")
+     */
     #[Route('/user', name: 'user_index', methods: ['GET'])]
     public function index(): JsonResponse
     {
@@ -55,6 +60,11 @@ class UserController extends AbstractController
         ]);
     }
 
+    /**
+     * @OA\Get(summary="Lister tous les utilisateurs (admin)", tags={"User"})
+     * @OA\Response(response=200, description="Liste complète des utilisateurs")
+     * @OA\Security(name="bearerAuth")
+     */
     #[Route('/admin/all', name: 'admin_user_list', methods: ['GET'])]
     #[IsGranted('MANAGE_USERS')]
     public function adminList(): JsonResponse
@@ -72,6 +82,20 @@ class UserController extends AbstractController
 
 
 
+    /**
+     * @OA\Post(summary="Créer un nouvel utilisateur", tags={"User"})
+     * @OA\RequestBody(
+     *     required=true,
+     *     @OA\JsonContent(
+     *         @OA\Property(property="firstName", type="string"),
+     *         @OA\Property(property="lastName", type="string"),
+     *         @OA\Property(property="email", type="string"),
+     *         @OA\Property(property="password", type="string"),
+     *         @OA\Property(property="recaptchaToken", type="string")
+     *     )
+     * )
+     * @OA\Response(response=201, description="Utilisateur créé")
+     */
     #[Route('/user-create', name: 'user_create', methods: ['POST'])]
     public function create(Request $request): JsonResponse
     {
@@ -96,6 +120,11 @@ class UserController extends AbstractController
         }
     }
 
+    /**
+     * @OA\Get(summary="Récupérer le profil utilisateur connecté", tags={"User"})
+     * @OA\Response(response=200, description="Profil utilisateur")
+     * @OA\Security(name="bearerAuth")
+     */
     #[Route('/user/profile', name: 'user_profile', methods: ['GET'])]
     public function profile(): JsonResponse
     {
@@ -125,6 +154,19 @@ class UserController extends AbstractController
         }
     }
 
+    /**
+     * @OA\Put(summary="Mettre à jour le profil utilisateur", tags={"User"})
+     * @OA\RequestBody(
+     *     required=true,
+     *     @OA\JsonContent(
+     *         @OA\Property(property="firstName", type="string"),
+     *         @OA\Property(property="lastName", type="string"),
+     *         @OA\Property(property="email", type="string")
+     *     )
+     * )
+     * @OA\Response(response=200, description="Profil mis à jour")
+     * @OA\Security(name="bearerAuth")
+     */
         #[Route('/user/profile/update', name: 'user_profile_update', methods: ['PUT', 'PATCH'])]
     public function updateProfile(Request $request): JsonResponse
     {
@@ -163,6 +205,11 @@ class UserController extends AbstractController
         }
     }
 
+    /**
+     * @OA\Get(summary="Statistiques de l'utilisateur connecté", tags={"User"})
+     * @OA\Response(response=200, description="Statistiques utilisateur")
+     * @OA\Security(name="bearerAuth")
+     */
     #[Route('/user/statistics', name: 'user_statistics', methods: ['GET'])]
     public function statistics(): JsonResponse
     {
@@ -280,6 +327,12 @@ class UserController extends AbstractController
         return $this->json(['message' => 'Votre compte a bien été vérifié']);
     }
 
+    /**
+     * @OA\Get(summary="Classement général des utilisateurs", tags={"User"})
+     * @OA\Parameter(name="limit", in="query", required=false, @OA\Schema(type="integer"))
+     * @OA\Response(response=200, description="Classement général")
+     * @OA\Security(name="bearerAuth")
+     */
     #[Route('/leaderboard', name: 'user_leaderboard', methods: ['GET'])]
     public function leaderboard(Request $request): JsonResponse
     {

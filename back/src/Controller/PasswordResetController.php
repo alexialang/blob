@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Validator\Exception\ValidationFailedException;
+use OpenApi\Annotations as OA;
 
 #[Route('/api')]
 class PasswordResetController extends AbstractController
@@ -16,6 +17,16 @@ class PasswordResetController extends AbstractController
         private UserPasswordResetService $resetService,
         ) {}
 
+    /**
+     * @OA\Post(summary="Demander une réinitialisation de mot de passe", tags={"Authentication"})
+     * @OA\RequestBody(
+     *     required=true,
+     *     @OA\JsonContent(
+     *         @OA\Property(property="email", type="string")
+     *     )
+     * )
+     * @OA\Response(response=200, description="Email de réinitialisation envoyé")
+     */
     #[Route('/forgot-password', name: 'forgot_password', methods: ['POST'])]
     public function forgotPassword(Request $request): JsonResponse
     {
@@ -36,6 +47,18 @@ class PasswordResetController extends AbstractController
         }
     }
 
+    /**
+     * @OA\Post(summary="Réinitialiser le mot de passe", tags={"Authentication"})
+     * @OA\Parameter(name="token", in="path", required=true, @OA\Schema(type="string"))
+     * @OA\RequestBody(
+     *     required=true,
+     *     @OA\JsonContent(
+     *         @OA\Property(property="password", type="string"),
+     *         @OA\Property(property="confirmPassword", type="string")
+     *     )
+     * )
+     * @OA\Response(response=200, description="Mot de passe réinitialisé")
+     */
     #[Route('/reset-password/{token}', name: 'reset_password', methods: ['POST'])]
     public function resetPassword(string $token, Request $request): JsonResponse
     {
