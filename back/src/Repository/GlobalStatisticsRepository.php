@@ -57,21 +57,26 @@ class GlobalStatisticsRepository extends ServiceEntityRepository
     public function getTeamScoresByQuizForCompany(int $companyId): array
     {
         try {
-            
             $qb = $this->createQueryBuilder('q');
             $results = $qb->select('
                     q.title as quizTitle,
                     q.id as quizId,
                     AVG(ua.total_score) as averageScore,
-                    COUNT(ua.user) as participants
+                    COUNT(DISTINCT ua.user) as participants
                 ')
                 ->leftJoin('App\Entity\UserAnswer', 'ua', 'WITH', 'q.id = ua.quiz')
-                ->where('q.isPublic = true')
+                ->leftJoin('ua.user', 'u')
+                ->where('u.isActive = true')
+                ->andWhere('u.deletedAt IS NULL')
+                ->andWhere('u.company = :companyId')
+                ->andWhere('q.isPublic = true')
+                ->setParameter('companyId', $companyId)
                 ->groupBy('q.id, q.title')
+                ->having('COUNT(ua.id) > 0')
                 ->orderBy('q.date_creation', 'ASC')
+                ->setMaxResults(50)
                 ->getQuery()
                 ->getResult();
-            
 
             $teamScores = [];
             foreach ($results as $result) {
@@ -86,7 +91,7 @@ class GlobalStatisticsRepository extends ServiceEntityRepository
             
             return $teamScores;
         } catch (\Exception $e) {
-
+            error_log("Erreur dans getTeamScoresByQuizForCompany: " . $e->getMessage());
             return [];
         }
     }
@@ -139,35 +144,43 @@ class GlobalStatisticsRepository extends ServiceEntityRepository
     public function getGroupScoresByQuizForCompany(int $companyId): array
     {
         try {
-            
-            $qb = $this->createQueryBuilder('q');
+            $qb = $this->getEntityManager()->createQueryBuilder();
             $results = $qb->select('
+                    g.name as groupName,
+                    g.id as groupId,
                     q.title as quizTitle,
                     q.id as quizId,
                     AVG(ua.total_score) as averageScore,
-                    COUNT(ua.user) as participants
+                    COUNT(DISTINCT ua.user) as participants
                 ')
-                ->leftJoin('App\Entity\UserAnswer', 'ua', 'WITH', 'q.id = ua.quiz')
-                ->where('q.isPublic = false')
-                ->groupBy('q.id, q.title')
-                ->orderBy('q.date_creation', 'ASC')
+                ->from('App\Entity\Group', 'g')
+                ->innerJoin('g.users', 'u')
+                ->innerJoin('App\Entity\UserAnswer', 'ua', 'WITH', 'ua.user = u.id')
+                ->innerJoin('ua.quiz', 'q')
+                ->where('u.isActive = true')
+                ->andWhere('u.deletedAt IS NULL')
+                ->andWhere('g.company = :companyId')
+                ->andWhere('q.isPublic = false')
+                ->setParameter('companyId', $companyId)
+                ->groupBy('g.id, g.name, q.id, q.title')
+                ->orderBy('g.name', 'ASC')
+                ->addOrderBy('q.date_creation', 'ASC')
+                ->setMaxResults(50)
                 ->getQuery()
                 ->getResult();
             
-            ("Résultats bruts de la requête groupes: " . json_encode($results));
-            
             $groupScores = [];
-            if (!empty($results)) {
-                $groupScores['Groupe Entreprise Test'] = [];
-                foreach ($results as $result) {
-                    $averageScore = $result['averageScore'] !== null ? (float)$result['averageScore'] : 0.0;
-                    $groupScores['Groupe Entreprise Test'][] = [
-                        'quizTitle' => $result['quizTitle'],
-                        'quizId' => (int)$result['quizId'],
-                        'averageScore' => $averageScore,
-                        'participants' => (int)$result['participants']
-                    ];
+            foreach ($results as $result) {
+                $groupName = $result['groupName'];
+                if (!isset($groupScores[$groupName])) {
+                    $groupScores[$groupName] = [];
                 }
+                $groupScores[$groupName][] = [
+                    'quizTitle' => $result['quizTitle'],
+                    'quizId' => (int)$result['quizId'],
+                    'averageScore' => (float)$result['averageScore'],
+                    'participants' => (int)$result['participants']
+                ];
             }
             
             return $groupScores;

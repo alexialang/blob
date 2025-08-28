@@ -4,7 +4,6 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Service\UserService;
-use App\Service\LeaderboardService;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -19,7 +18,6 @@ class UserController extends AbstractController
 {
     public function __construct(
         private UserService $userService,
-        private LeaderboardService $leaderboardService,
         private LoggerInterface $logger
     ) {}
 
@@ -335,26 +333,7 @@ class UserController extends AbstractController
         return $this->json(['message' => 'Votre compte a bien été vérifié']);
     }
 
-    /**
-     * @OA\Get(summary="Classement général des utilisateurs", tags={"User"})
-     * @OA\Parameter(name="limit", in="query", required=false, @OA\Schema(type="integer"))
-     * @OA\Response(response=200, description="Classement général")
-     * @OA\Security(name="bearerAuth")
-     */
-    #[Route('/leaderboard', name: 'user_leaderboard', methods: ['GET'])]
-    public function leaderboard(Request $request): JsonResponse
-    {
-        $limit = (int) $request->query->get('limit', 50);
-        $currentUser = $this->getUser();
-        
-        if (!$currentUser) {
-            return $this->json(['error' => 'Utilisateur non authentifié'], 401);
-        }
 
-        $leaderboard = $this->leaderboardService->getGeneralLeaderboard($limit, $currentUser);
-
-        return $this->json($leaderboard);
-    }
 
     /**
      * @OA\Get(summary="Historique des parties de l'utilisateur connecté", tags={"User"})

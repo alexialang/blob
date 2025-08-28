@@ -276,7 +276,6 @@ export class QuizGameComponent implements OnInit, OnDestroy {
 
         this.quizCompleted = true;
         this.loadPlayerRanking();
-        this.quizGameService.saveGameResult(this.quizData.id, this.totalScore).subscribe();
     }
 
 
