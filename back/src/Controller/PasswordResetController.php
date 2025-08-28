@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Service\UserPasswordResetService;
+use App\Service\UserService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
@@ -15,6 +16,7 @@ class PasswordResetController extends AbstractController
 {
     public function __construct(
         private UserPasswordResetService $resetService,
+        private UserService $userService,
         ) {}
 
     /**
@@ -22,7 +24,8 @@ class PasswordResetController extends AbstractController
      * @OA\RequestBody(
      *     required=true,
      *     @OA\JsonContent(
-     *         @OA\Property(property="email", type="string")
+     *         @OA\Property(property="email", type="string"),
+     *         @OA\Property(property="recaptchaToken", type="string", description="Token CAPTCHA obligatoire")
      *     )
      * )
      * @OA\Response(response=200, description="Email de réinitialisation envoyé")
@@ -32,6 +35,14 @@ class PasswordResetController extends AbstractController
     {
         try {
             $data = json_decode($request->getContent(), true);
+            
+            if (!isset($data['recaptchaToken']) || empty($data['recaptchaToken'])) {
+                return $this->json(['error' => 'Token CAPTCHA requis'], 400);
+            }
+            
+            if (!$this->userService->verifyCaptcha($data['recaptchaToken'])) {
+                return $this->json(['error' => 'Échec de la vérification CAPTCHA'], 400);
+            }
 
             $this->resetService->requestPasswordReset($data['email']);
 

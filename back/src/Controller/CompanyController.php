@@ -47,69 +47,10 @@ class CompanyController extends AbstractController
                 $companies = $this->companyService->list();
             }
             
-            $data = [];
-            foreach ($companies as $company) {
-                $users = [];
-                foreach ($company->getUsers() as $user) {
-                    $users[] = [
-                        'id' => $user->getId(),
-                        'email' => $user->getEmail(),
-                        'firstName' => $user->getFirstName(),
-                        'lastName' => $user->getLastName(),
-                        'pseudo' => $user->getPseudo(),
-                        'avatar' => $user->getAvatar(),
-                        'roles' => $user->getRoles(),
-                        'isActive' => $user->isActive(),
-                        'isVerified' => $user->isVerified(),
-                        'lastAccess' => $user->getLastAccess() ? $user->getLastAccess()->format('Y-m-d H:i:s') : null,
-                        'dateRegistration' => $user->getDateRegistration() ? $user->getDateRegistration()->format('Y-m-d H:i:s') : null
-                    ];
-                }
-                
-                $groups = [];
-                foreach ($company->getGroups() as $group) {
-                    $groups[] = [
-                        'id' => $group->getId(),
-                        'name' => $group->getName(),
-                        'accesCode' => $group->getAccesCode(),
-                        'userCount' => $group->getUsers()->count()
-                    ];
-                }
-                
-                $activeUsersCount = 0;
-                $lastActivity = null;
-                $thirtyDaysAgo = new \DateTime('-30 days');
-                
-                foreach ($company->getUsers() as $user) {
-                    if ($user->getLastAccess() && $user->getLastAccess() > $thirtyDaysAgo && $user->isActive()) {
-                        $activeUsersCount++;
-                    }
-                    
-                    if ($user->getLastAccess() && (!$lastActivity || $user->getLastAccess() > $lastActivity)) {
-                        $lastActivity = $user->getLastAccess();
-                    }
-                }
-
-                $companyData = [
-                    'id' => $company->getId(),
-                    'name' => $company->getName(),
-                    'users' => $users,
-                    'groups' => $groups,
-                    'userCount' => $company->getUsers()->count(),
-                    'activeUsers' => $activeUsersCount,
-                    'groupCount' => $company->getGroups()->count(),
-                    'quizCount' => $company->getQuizs()->count(),
-                    'createdAt' => $company->getDateCreation() ? $company->getDateCreation()->format('Y-m-d H:i:s') : null,
-                    'lastActivity' => $lastActivity ? $lastActivity->format('Y-m-d H:i:s') : null
-                ];
-                
-                $data[] = $companyData;
-            }
-            
             return $this->json([
                 'success' => true,
-                'data' => $data
-            ]);
+                'data' => $companies
+            ], 200, [], ['groups' => ['company:detail']]);
             
         } catch (\Exception $e) {
             return $this->json([
@@ -130,58 +71,10 @@ class CompanyController extends AbstractController
     public function show(Company $company): JsonResponse
     {
         try {
-            $data = [
-                'id' => $company->getId(),
-                'name' => $company->getName(),
-                'userCount' => $company->getUsers()->count(),
-                'groupCount' => $company->getGroups()->count(),
-                'quizCount' => $company->getQuizs()->count(),
-                'createdAt' => $company->getDateCreation() ? $company->getDateCreation()->format('Y-m-d H:i:s') : null,
-                'users' => [],
-                'groups' => []
-            ];
-
-            foreach ($company->getUsers() as $user) {
-                $data['users'][] = [
-                    'id' => $user->getId(),
-                    'email' => $user->getEmail(),
-                    'firstName' => $user->getFirstName(),
-                    'lastName' => $user->getLastName(),
-                    'pseudo' => $user->getPseudo(),
-                    'avatar' => $user->getAvatar(),
-                    'roles' => $user->getRoles(),
-                    'isActive' => $user->isActive(),
-                    'isVerified' => $user->isVerified(),
-                    'lastAccess' => $user->getLastAccess() ? $user->getLastAccess()->format('Y-m-d H:i:s') : null,
-                    'dateRegistration' => $user->getDateRegistration() ? $user->getDateRegistration()->format('Y-m-d H:i:s') : null
-                ];
-            }
-
-            foreach ($company->getGroups() as $group) {
-                $groupUsers = [];
-                foreach ($group->getUsers() as $user) {
-                    $groupUsers[] = [
-                        'id' => $user->getId(),
-                        'email' => $user->getEmail(),
-                        'firstName' => $user->getFirstName(),
-                        'lastName' => $user->getLastName(),
-                        'pseudo' => $user->getPseudo()
-                    ];
-                }
-                
-                $data['groups'][] = [
-                    'id' => $group->getId(),
-                    'name' => $group->getName(),
-                    'accesCode' => $group->getAccesCode(),
-                    'userCount' => $group->getUsers()->count(),
-                    'users' => $groupUsers
-                ];
-            }
-
             return $this->json([
                 'success' => true,
-                'data' => $data
-            ]);
+                'data' => $company
+            ], 200, [], ['groups' => ['company:list']]);
         } catch (\Exception $e) {
             return $this->json([
                 'success' => false,
@@ -195,58 +88,10 @@ class CompanyController extends AbstractController
     public function showBasic(Company $company): JsonResponse
     {
         try {
-            $data = [
-                'id' => $company->getId(),
-                'name' => $company->getName(),
-                'userCount' => $company->getUsers()->count(),
-                'groupCount' => $company->getGroups()->count(),
-                'quizCount' => $company->getQuizs()->count(),
-                'createdAt' => $company->getDateCreation() ? $company->getDateCreation()->format('Y-m-d H:i:s') : null,
-                'users' => [],
-                'groups' => []
-            ];
-
-            foreach ($company->getUsers() as $user) {
-                $data['users'][] = [
-                    'id' => $user->getId(),
-                    'email' => $user->getEmail(),
-                    'firstName' => $user->getFirstName(),
-                    'lastName' => $user->getLastName(),
-                    'pseudo' => $user->getPseudo(),
-                    'avatar' => $user->getAvatar(),
-                    'roles' => $user->getRoles(),
-                    'isActive' => $user->isActive(),
-                    'isVerified' => $user->isVerified(),
-                    'lastAccess' => $user->getLastAccess() ? $user->getLastAccess()->format('Y-m-d H:i:s') : null,
-                    'dateRegistration' => $user->getDateRegistration() ? $user->getDateRegistration()->format('Y-m-d H:i:s') : null
-                ];
-            }
-
-            foreach ($company->getGroups() as $group) {
-                $groupUsers = [];
-                foreach ($group->getUsers() as $user) {
-                    $groupUsers[] = [
-                        'id' => $user->getId(),
-                        'email' => $user->getEmail(),
-                        'firstName' => $user->getFirstName(),
-                        'lastName' => $user->getLastName(),
-                        'pseudo' => $user->getPseudo()
-                    ];
-                }
-                
-                $data['groups'][] = [
-                    'id' => $group->getId(),
-                    'name' => $group->getName(),
-                    'accesCode' => $group->getAccesCode(),
-                    'userCount' => $group->getUsers()->count(),
-                    'users' => $groupUsers
-                ];
-            }
-
             return $this->json([
                 'success' => true,
-                'data' => $data
-            ]);
+                'data' => $company
+            ], 200, [], ['groups' => ['company:detail']]);
         } catch (\Exception $e) {
             return $this->json([
                 'success' => false,
@@ -297,12 +142,8 @@ class CompanyController extends AbstractController
             return $this->json([
                 'success' => true,
                 'message' => 'Entreprise créée avec succès',
-                'data' => [
-                    'id' => $company->getId(),
-                    'name' => $company->getName(),
-                    'createdAt' => $company->getDateCreation() ? $company->getDateCreation()->format('Y-m-d H:i:s') : null
-                ]
-            ], 201);
+                'data' => $company
+            ], 201, [], ['groups' => ['company:create']]);
 
         } catch (ValidationFailedException $e) {
             $errorMessages = [];
@@ -496,27 +337,10 @@ class CompanyController extends AbstractController
                 $availableUsers = array_merge($availableUsers, $usersFromOtherCompanies);
             }
             
-            $formattedUsers = [];
-            foreach ($availableUsers as $user) {
-                $formattedUsers[] = [
-                    'id' => $user->getId(),
-                    'email' => $user->getEmail(),
-                    'firstName' => $user->getFirstName(),
-                    'lastName' => $user->getLastName(),
-                    'pseudo' => $user->getPseudo(),
-                    'isVerified' => $user->isVerified(),
-                    'currentCompany' => $user->getCompany() ? [
-                        'id' => $user->getCompany()->getId(),
-                        'name' => $user->getCompany()->getName()
-                    ] : null,
-                    'roles' => $user->getRoles()
-                ];
-            }
-            
             return $this->json([
                 'success' => true,
-                'data' => $formattedUsers
-            ]);
+                'data' => $availableUsers
+            ], 200, [], ['groups' => ['company:available_users']]);
             
         } catch (\Exception $e) {
             return $this->json([
@@ -533,27 +357,10 @@ class CompanyController extends AbstractController
         try {
             $users = $company->getUsers()->toArray();
             
-            $data = [];
-            foreach ($users as $user) {
-                $data[] = [
-                    'id' => $user->getId(),
-                    'email' => $user->getEmail(),
-                    'firstName' => $user->getFirstName(),
-                    'lastName' => $user->getLastName(),
-                    'pseudo' => $user->getPseudo(),
-                    'avatar' => $user->getAvatar(),
-                    'roles' => $user->getRoles(),
-                    'isActive' => $user->isActive(),
-                    'isVerified' => $user->isVerified(),
-                    'lastAccess' => $user->getLastAccess() ? $user->getLastAccess()->format('Y-m-d H:i:s') : null,
-                    'dateRegistration' => $user->getDateRegistration() ? $user->getDateRegistration()->format('Y-m-d H:i:s') : null
-                ];
-            }
-            
             return $this->json([
                 'success' => true,
-                'data' => $data
-            ]);
+                'data' => $users
+            ], 200, [], ['groups' => ['company:detail']]);
 
         } catch (\Exception $e) {
             return $this->json([

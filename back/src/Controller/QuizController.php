@@ -3,7 +3,11 @@
 namespace App\Controller;
 
 use App\Entity\Quiz;
-use App\Service\QuizService;
+
+use App\Service\QuizRatingService;
+use App\Service\QuizSearchService;
+use App\Service\QuizCrudService;
+use App\Service\LeaderboardService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Validator\Exception\ValidationFailedException;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -18,7 +22,10 @@ use Psr\Log\LoggerInterface;
 class QuizController extends AbstractController
 {
     public function __construct(
-        private QuizService $quizService,
+        private QuizRatingService $quizRatingService,
+        private QuizSearchService $quizSearchService,
+        private QuizCrudService $quizCrudService,
+        private LeaderboardService $leaderboardService,
         private LoggerInterface $logger,
         ) {}
 
@@ -29,7 +36,7 @@ class QuizController extends AbstractController
     #[Route('/quiz/list', name: 'quiz_index', methods: ['GET'])]
     public function index(): JsonResponse
     {
-        $quizList = $this->quizService->list();
+        $quizList = $this->quizSearchService->list();
         return $this->json($quizList, 200, [], ['groups' => ['quiz:read']]);
     }
 
@@ -43,7 +50,7 @@ class QuizController extends AbstractController
     public function managementList(): JsonResponse
     {
         $user = $this->getUser();
-        $quizList = $this->quizService->getQuizzesForCompanyManagement($user);
+        $quizList = $this->quizSearchService->getQuizzesForCompanyManagement($user);
 
         return $this->json($quizList, 200, [], ['groups' => ['quiz:read']]);
     }
@@ -75,7 +82,7 @@ class QuizController extends AbstractController
                 return $this->json(['error' => 'User not authenticated'], 401);
             }
 
-            $quiz = $this->quizService->createWithQuestions($data, $user);
+            $quiz = $this->quizCrudService->createWithQuestions($data, $user);
 
             return $this->json($quiz, 201, [], ['groups' => ['quiz:read']]);
         } catch (\JsonException $e) {
@@ -103,14 +110,14 @@ class QuizController extends AbstractController
                 ]);
             }
 
-            $popularQuizzes = $this->quizService->getMostPopularQuizzes(8);
+            $popularQuizzes = $this->quizSearchService->getMostPopularQuizzes();
 
-            $recentQuizzes = $this->quizService->getMostRecentQuizzes(6);
+            $recentQuizzes = $this->quizSearchService->getMostRecentQuizzes();
 
-            $allQuizzes = $this->quizService->list(false);
+            $allQuizzes = $this->quizSearchService->list();
             $privateQuizzes = [];
             if ($user) {
-                $privateQuizzes = $this->quizService->getPrivateQuizzesForUser($user);
+                $privateQuizzes = $this->quizSearchService->getPrivateQuizzesForUser($user);
             }
 
             $categoriesData = [];
@@ -146,8 +153,8 @@ class QuizController extends AbstractController
 
             $myQuizzes = [];
             if ($user) {
-                $myQuizzes = $this->quizService->getMyQuizzes($user);
-                $privateQuizzesForUser = $this->quizService->getPrivateQuizzesForUser($user);
+                $myQuizzes = $this->quizSearchService->getMyQuizzes($user);
+                $privateQuizzesForUser = $this->quizSearchService->getPrivateQuizzesForUser($user);
                 
                 $myQuizzesIds = array_map(fn($q) => $q->getId(), $myQuizzes);
                 foreach ($privateQuizzesForUser as $privateQuiz) {
@@ -191,7 +198,7 @@ class QuizController extends AbstractController
 
         try {
             $user = $this->getUser();
-            $quiz = $this->quizService->updateWithQuestions($quiz, $data, $user);
+            $quiz = $this->quizCrudService->updateWithQuestions($quiz, $data, $user);
 
             return $this->json($quiz, 200, [], ['groups' => ['quiz:read']]);
         } catch (\Exception $e) {
@@ -217,7 +224,7 @@ class QuizController extends AbstractController
                 'timestamp' => new \DateTime()
             ]);
             
-            $this->quizService->delete($quiz, $user);
+            $this->quizCrudService->delete($quiz);
 
             return $this->json(null, 204);
             
@@ -231,24 +238,7 @@ class QuizController extends AbstractController
         }
     }
 
-    #[Route('/quiz/{id}/show', name: 'quiz_show_secure', methods: ['GET'])]
-    #[IsGranted('CREATE_QUIZ', subject: 'quiz')]
-    public function showSecure(Quiz $quiz): JsonResponse
-    {
-        try {
-            $user = $this->getUser();
-            $secureQuiz = $this->quizService->show($quiz, $user);
 
-            return $this->json($secureQuiz, 200, [], ['groups' => ['quiz:read']]);
-        } catch (\InvalidArgumentException $e) {
-            return $this->json(['error' => $e->getMessage()], 403);
-        } catch (\Exception $e) {
-            return $this->json([
-                'error' => 'Erreur lors de la récupération du quiz',
-                'message' => $e->getMessage()
-            ], 500);
-        }
-    }
 
     #[Route('/quiz/{id}', name: 'quiz_show', methods: ['GET'])]
     #[IsGranted('CREATE_QUIZ', subject: 'quiz')]
@@ -257,7 +247,7 @@ class QuizController extends AbstractController
         try {
             $user = $this->getUser();
             
-            $secureQuiz = $this->quizService->show($quiz, $user);
+            $secureQuiz = $this->quizCrudService->show($quiz, $user);
 
             return $this->json($secureQuiz, 200, [], ['groups' => ['quiz:read']]);
         } catch (\InvalidArgumentException $e) {
@@ -273,14 +263,15 @@ class QuizController extends AbstractController
     #[Route('/quiz/{id}/average-rating', name: 'quiz_average_rating', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function getAverageRating(Quiz $quiz): JsonResponse
     {
-        $result = $this->quizService->getAverageRating($quiz);
+        $result = $this->quizRatingService->getAverageRating($quiz);
         return $this->json($result);
     }
 
     #[Route('/quiz/{id}/public-leaderboard', name: 'quiz_public_leaderboard', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function getPublicLeaderboard(Quiz $quiz): JsonResponse
     {
-        $result = $this->quizService->getPublicLeaderboard($quiz);
+        $user = $this->getUser();
+        $result = $this->leaderboardService->getQuizLeaderboard($quiz, $user);
         return $this->json($result);
     }
 
@@ -293,7 +284,7 @@ class QuizController extends AbstractController
         try {
             $user = $this->getUser();
             
-            $quizData = $this->quizService->getQuizForEdit($quiz,$user);
+            $quizData = $this->quizCrudService->getQuizForEdit($quiz, $user);
     
             return $this->json($quizData, 200, [], ['groups' => ['quiz:read']]);
         } catch (\InvalidArgumentException $e) {

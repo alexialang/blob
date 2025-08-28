@@ -7,9 +7,6 @@ use App\Entity\Quiz;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
-/**
- * @extends ServiceEntityRepository<UserAnswer>
- */
 class UserAnswerRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -192,5 +189,20 @@ class UserAnswerRepository extends ServiceEntityRepository
             'quizzesCompleted' => $quizzesCompleted,
             'averageScore' => $averageScore
         ];
+    }
+
+    public function getUserAnswersWithQuizData(int $userId): array
+    {
+        return $this->createQueryBuilder('ua')
+            ->select('ua.total_score, ua.date_attempt, 
+                     q.id as quiz_id, q.title as quiz_title, 
+                     c.name as category_name')
+            ->leftJoin('ua.quiz', 'q')
+            ->leftJoin('q.category', 'c')
+            ->where('ua.user = :userId')
+            ->setParameter('userId', $userId)
+            ->orderBy('ua.date_attempt', 'DESC')
+            ->getQuery()
+            ->getArrayResult();
     }
 }

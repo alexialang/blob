@@ -148,7 +148,6 @@ class UserPermissionController extends AbstractController
     public function updateUserRoles(Request $request, int $userId): JsonResponse
     {
         try {
-            // Récupérer l'utilisateur depuis l'ID
             $user = $this->userRepository->find($userId);
             if (!$user) {
                 return $this->json(['error' => 'Utilisateur non trouvé'], 404);

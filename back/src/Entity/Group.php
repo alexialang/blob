@@ -15,15 +15,15 @@ class Group
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['company:read', 'group:read', 'quiz:read', 'user:admin_read'])]
+    #[Groups(['company:read', 'group:read', 'quiz:read', 'user:admin_read', 'company:detail'])]
     private ?int $id = null;
 
-    #[Groups(['user:read', 'company:read', 'group:read', 'quiz:read', 'user:admin_read'])]
+    #[Groups(['user:read', 'company:read', 'group:read', 'quiz:read', 'user:admin_read', 'company:detail'])]
     #[ORM\Column(length: 100)]
     private ?string $name = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['user:admin_read'])]
+    #[Groups(['user:admin_read', 'company:detail'])]
     private ?string $acces_code = null;
 
     #[ORM\ManyToOne(inversedBy: 'groups')]
@@ -110,4 +110,9 @@ class Group
         return $this;
     }
 
+    #[Groups(['company:detail'])]
+    public function getUserCount(): int
+    {
+        return $this->users->count();
+    }
 }

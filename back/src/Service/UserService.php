@@ -6,6 +6,7 @@ use App\Entity\Company;
 use App\Entity\User;
 use App\Entity\UserPermission;
 use App\Repository\UserRepository;
+use App\Repository\UserAnswerRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Mailer\MailerInterface;
@@ -23,6 +24,7 @@ class UserService
 {
     private EntityManagerInterface      $em;
     private UserRepository              $userRepository;
+    private UserAnswerRepository        $userAnswerRepository;
     private UserPasswordHasherInterface $passwordHasher;
     private MessageBusInterface         $bus;
     private MailerInterface             $mailer;
@@ -37,6 +39,7 @@ class UserService
         #[Autowire('%recaptcha_secret_key%')] string $recaptchaSecretKey,
         EntityManagerInterface        $em,
         UserRepository                $userRepository,
+        UserAnswerRepository          $userAnswerRepository,
         UserPasswordHasherInterface   $passwordHasher,
         MessageBusInterface           $bus,
         MailerInterface               $mailer,
@@ -47,6 +50,7 @@ class UserService
     ) {
         $this->em             = $em;
         $this->userRepository = $userRepository;
+        $this->userAnswerRepository = $userAnswerRepository;
         $this->passwordHasher = $passwordHasher;
         $this->bus            = $bus;
         $this->mailer         = $mailer;
@@ -331,11 +335,14 @@ class UserService
     public function getUserStatistics(User $user): array
     {
         static $statsCache = [];
+        static $queriesCount = 0;
         $userId = $user->getId();
         
         if (isset($statsCache[$userId])) {
             return $statsCache[$userId];
         }
+        
+        $queriesCount++; // Track query usage for optimization
         
         $totalQuizzesCreated = $user->getQuizs()->count();
         
@@ -345,34 +352,34 @@ class UserService
         $categoryPerformance = [];
         $totalAttempts = 0;
         
-        foreach ($user->getUserAnswers() as $userAnswer) {
-            $quizId = $userAnswer->getQuiz()?->getId();
-            if ($quizId) {
-                $currentScore = $userAnswer->getTotalScore() ?? 0;
-                $totalAttempts++;
-                
-                if (!isset($quizScores[$quizId]) || $currentScore > $quizScores[$quizId]) {
-                    $quizScores[$quizId] = $currentScore;
-                }
-                
-                $scoreHistory[] = [
-                    'date' => $userAnswer->getDateAttempt()->format('Y-m-d H:i:s'),
-                    'score' => $currentScore,
-                    'quizTitle' => $userAnswer->getQuiz()?->getTitle() ?? 'Quiz inconnu',
-                    'quizId' => $quizId,
-                    'attemptNumber' => $this->getAttemptNumber($user, $quizId, $userAnswer->getDateAttempt())
-                ];
+        $userAnswersData = $this->userAnswerRepository->getUserAnswersWithQuizData($userId);
+        $totalAttempts = count($userAnswersData);
+        
+        foreach ($userAnswersData as $data) {
+            $quizId = $data['quiz_id'];
+            $currentScore = $data['total_score'] ?? 0;
+            
+            if (!isset($quizScores[$quizId]) || $currentScore > $quizScores[$quizId]) {
+                $quizScores[$quizId] = $currentScore;
             }
             
-            if ($userAnswer->getQuiz() && $userAnswer->getQuiz()->getCategory()) {
-                $categoryName = $userAnswer->getQuiz()->getCategory()->getName();
+            $scoreHistory[] = [
+                'date' => $data['date_attempt']->format('Y-m-d H:i:s'),
+                'score' => $currentScore,
+                'quizTitle' => $data['quiz_title'] ?? 'Quiz inconnu',
+                'quizId' => $quizId,
+                'attemptNumber' => $this->calculateAttemptNumberOptimized($userAnswersData, $quizId, $data['date_attempt'])
+            ];
+            
+            if ($data['category_name']) {
+                $categoryName = $data['category_name'];
                 if (!isset($categoryPerformance[$categoryName])) {
                     $categoryPerformance[$categoryName] = ['total' => 0, 'count' => 0];
                 }
                 $categoryKey = $quizId . '_cat_' . $categoryName;
                 if (!isset($uniqueQuizIds[$categoryKey])) {
                     $uniqueQuizIds[$categoryKey] = true;
-                    $categoryPerformance[$categoryName]['total'] += ($userAnswer->getTotalScore() ?? 0);
+                    $categoryPerformance[$categoryName]['total'] += $currentScore;
                     $categoryPerformance[$categoryName]['count']++;
                 }
             }
@@ -414,16 +421,13 @@ class UserService
         
         return $stats;
     }
-    
-    /**
-     * Détermine le numéro de tentative pour un quiz donné
-     */
-    private function getAttemptNumber(User $user, int $quizId, \DateTime $attemptDate): int
+
+    private function calculateAttemptNumberOptimized(array $userAnswersData, int $quizId, \DateTime $attemptDate): int
     {
         $attempts = [];
-        foreach ($user->getUserAnswers() as $userAnswer) {
-            if ($userAnswer->getQuiz()?->getId() === $quizId) {
-                $attempts[] = $userAnswer->getDateAttempt();
+        foreach ($userAnswersData as $data) {
+            if ($data['quiz_id'] === $quizId) {
+                $attempts[] = $data['date_attempt'];
             }
         }
         

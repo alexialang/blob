@@ -27,23 +27,7 @@ class CompanyRepository extends ServiceEntityRepository
         return [];
     }
 
-    public function findAvailableUsersForCompany(int $companyId): array
-    {
-        $qb = $this->createQueryBuilder('c');
-        $qb->select('u')
-           ->from(User::class, 'u')
-           ->where('u.isVerified = :verified')
-           ->andWhere('u.deletedAt IS NULL')
-           ->andWhere('u.isActive = :active')
-           ->andWhere('(u.company IS NULL OR u.company = :companyId)')
-           ->setParameter('verified', true)
-           ->setParameter('active', true)
-           ->setParameter('companyId', $companyId)
-           ->orderBy('u.firstName', 'ASC')
-           ->addOrderBy('u.lastName', 'ASC');
 
-        return $qb->getQuery()->getResult();
-    }
 
     public function findGroupInCompany(int $groupId, int $companyId): ?Group
     {
@@ -58,6 +42,16 @@ class CompanyRepository extends ServiceEntityRepository
         return $qb->getQuery()->getOneOrNullResult();
     }
 
+    public function findAllWithRelations(): array
+    {
+        return $this->createQueryBuilder('c')
+            ->leftJoin('c.users', 'u')
+            ->leftJoin('c.groups', 'g')
+            ->leftJoin('g.users', 'gu')
+            ->addSelect('u', 'g', 'gu')
+            ->getQuery()
+            ->getResult();
+    }
 
     public function findGroupsWithUsersByCompany(int $companyId): array
     {

@@ -20,9 +20,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['user:read','quiz:read','company:read','user:admin_read','user:public'])]
+    #[Groups(['user:read','quiz:read','company:read','user:admin_read','user:public','company:detail'])]
     private ?int $id = null;
-    #[Groups(['user:read', 'company:read','quiz:read','user:admin_read','user:public'])]
+    #[Groups(['user:read', 'company:read','quiz:read','user:admin_read','user:public','company:detail'])]
     #[ORM\Column(length: 180)]
     private ?string $email = null;
 
@@ -38,7 +38,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?\DateTimeImmutable $dateRegistration = null;
 
-    #[Groups(['user:read','user:admin_read'])]
+    #[Groups(['user:read','user:admin_read','company:available_users'])]
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $lastAccess = null;
 
@@ -69,14 +69,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\ManyToMany(targetEntity: Group::class, inversedBy: 'users')]
     private Collection $groups;
 
-    #[Groups(['user:read','user:admin_read','user:public'])]
+    #[Groups(['user:read','user:admin_read','user:public','company:detail'])]
     #[ORM\Column(length: 70)]
     private ?string $firstName = null;
-    #[Groups(['user:read','user:admin_read','user:public'])]
+    #[Groups(['user:read','user:admin_read','user:public','company:detail'])]
     #[ORM\Column(length: 70)]
     private ?string $lastName = null;
 
-    #[Groups(['user:read','user:admin_read'])]
+    #[Groups(['user:read','user:admin_read','company:detail','company:available_users'])]
     #[ORM\Column]
     private ?bool $isActive = true;
 
@@ -86,6 +86,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'string', length: 100, nullable: true)]
     private ?string $confirmationToken = null;
 
+    #[Groups(['company:available_users'])]
     #[ORM\Column(type: 'boolean')]
     private bool $isVerified = false;
 
@@ -428,18 +429,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    #[Groups(['user:read'])]
+    #[Groups(['user:read', 'company:available_users'])]
     public function getCompanyName(): ?string
     {
         return $this->company?->getName();
     }
 
-    #[Groups(['user:read'])]
+    #[Groups(['user:read', 'company:available_users'])]
     public function getCompanyId(): ?int
     {
         return $this->company?->getId();
     }
 
+    #[Groups(['user:read', 'company:available_users'])]
     public function getPseudo(): ?string
     {
         return $this->pseudo;
@@ -451,6 +453,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    #[Groups(['user:read', 'company:available_users'])]
     public function getAvatar(): ?string
     {
         return $this->avatar;

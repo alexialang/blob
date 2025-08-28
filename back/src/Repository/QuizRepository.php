@@ -19,6 +19,10 @@ class QuizRepository extends ServiceEntityRepository
         parent::__construct($registry, Quiz::class);
     }
 
+    /**
+     * @param bool $forManagement Si true, retourne tous les quiz, sinon seulement les publics
+     * @return array Liste des quiz filtrés
+     */
     public function findPublishedOrAll(bool $forManagement = false): array
     {
         $queryBuilder = $this->createQueryBuilder('q');
@@ -32,6 +36,11 @@ class QuizRepository extends ServiceEntityRepository
         return $queryBuilder->getQuery()->getResult();
     }
 
+    /**
+
+     * @param array $userGroupIds IDs des groupes de l'utilisateur
+     * @return array Quiz privés accessibles
+     */
     public function findPrivateQuizzesForUserGroups(array $userGroupIds): array
     {
         if (empty($userGroupIds)) {

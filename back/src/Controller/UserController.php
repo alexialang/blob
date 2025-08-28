@@ -191,14 +191,32 @@ class UserController extends AbstractController
             return $this->json(['error' => 'Utilisateur non authentifié'], 401);
         }
 
-        $statistics = $this->userService->getUserStatistics($user);
+        try {
+            $statistics = $this->userService->getUserStatistics($user);
+            
+            $this->logger->info('USER STATISTICS DEBUG', [
+                'user_id' => $user->getId(),
+                'statistics' => $statistics
+            ]);
 
-        return $this->json($statistics, 200, [], [
-            'groups' => ['user:read'],
-            'circular_reference_handler' => function ($object) {
-                return $object->getId();
-            }
-        ]);
+            return $this->json($statistics, 200, [], [
+                'groups' => ['user:read'],
+                'circular_reference_handler' => function ($object) {
+                    return $object->getId();
+                }
+            ]);
+        } catch (\Exception $e) {
+            $this->logger->error('Erreur dans getUserStatistics', [
+                'user_id' => $user->getId(),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return $this->json([
+                'error' => 'Erreur lors du calcul des statistiques',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**

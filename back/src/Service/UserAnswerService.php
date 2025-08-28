@@ -3,10 +3,8 @@
 namespace App\Service;
 
 use App\Entity\UserAnswer;
-use App\Entity\QuizRating;
 use App\Event\QuizCompletedEvent;
 use App\Repository\UserAnswerRepository;
-use App\Repository\QuizRatingRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -17,19 +15,19 @@ class UserAnswerService
 {
     private EntityManagerInterface $em;
     private UserAnswerRepository $userAnswerRepository;
-    private QuizRatingRepository $quizRatingRepository;
+    private QuizRatingService $quizRatingService;
     private UserService $userService;
-    private QuizService $quizService;
+    private QuizCrudService $quizCrudService;
     private EventDispatcherInterface $eventDispatcher;
     private ValidatorInterface $validator;
 
-    public function __construct(EntityManagerInterface $em, UserAnswerRepository $userAnswerRepository, QuizRatingRepository $quizRatingRepository, UserService $userService, QuizService $quizService, EventDispatcherInterface $eventDispatcher, ValidatorInterface $validator)
+    public function __construct(EntityManagerInterface $em, UserAnswerRepository $userAnswerRepository, QuizRatingService $quizRatingService, UserService $userService, QuizCrudService $quizCrudService, EventDispatcherInterface $eventDispatcher, ValidatorInterface $validator)
     {
         $this->em = $em;
         $this->userAnswerRepository = $userAnswerRepository;
-        $this->quizRatingRepository = $quizRatingRepository;
+        $this->quizRatingService = $quizRatingService;
         $this->userService = $userService;
-        $this->quizService = $quizService;
+        $this->quizCrudService = $quizCrudService;
         $this->eventDispatcher = $eventDispatcher;
         $this->validator = $validator;
     }
@@ -48,7 +46,7 @@ class UserAnswerService
         $userAnswer->setTotalScore($data['total_score']);
 
         $user = $this->userService->find($data['user_id']);
-        $quiz = $this->quizService->find($data['quiz_id']);
+        $quiz = $this->quizCrudService->find($data['quiz_id']);
 
         $userAnswer->setUser($user);
         $userAnswer->setQuiz($quiz);
@@ -72,7 +70,7 @@ class UserAnswerService
             $userAnswer->setTotalScore($data['total_score']);
         }
         if (isset($data['quiz_id'])) {
-            $quiz = $this->quizService->find($data['quiz_id']);
+            $quiz = $this->quizCrudService->find($data['quiz_id']);
             $userAnswer->setQuiz($quiz);
         }
         if (isset($data['user_id'])) {
@@ -100,7 +98,7 @@ class UserAnswerService
         }
 
         $user = $data['user'];
-        $quiz = $this->quizService->find($data['quiz_id']);
+        $quiz = $this->quizCrudService->find($data['quiz_id']);
         
         if (!$quiz) {
             throw new \InvalidArgumentException('Quiz not found');
@@ -128,63 +126,31 @@ class UserAnswerService
         }
 
         $user = $data['user'];
-        $quiz = $this->quizService->find($data['quizId']);
+        $quiz = $this->quizCrudService->find($data['quizId']);
         
         if (!$quiz) {
             throw new \InvalidArgumentException('Quiz not found');
         }
 
-        $existingRating = $this->quizRatingRepository->findUserRatingForQuiz($user->getId(), $data['quizId']);
-        
-        if ($existingRating) {
-            $existingRating->setRating($data['rating']);
-            $existingRating->setRatedAt(new \DateTime());
-        } else {
-            $quizRating = new QuizRating();
-            $quizRating->setUser($user);
-            $quizRating->setQuiz($quiz);
-            $quizRating->setRating($data['rating']);
-            $quizRating->setRatedAt(new \DateTime());
-            $this->em->persist($quizRating);
-        }
-        
-        $this->em->flush();
-
-        $avgRating = $this->quizRatingRepository->findAverageRatingForQuiz($data['quizId']);
-        $totalRatings = $this->quizRatingRepository->countRatingsForQuiz($data['quizId']);
+        $result = $this->quizRatingService->rateQuiz($user, $quiz, $data['rating']);
 
         return [
             'success' => true,
-            'averageRating' => $avgRating,
-            'totalRatings' => $totalRatings
+            'averageRating' => $result['averageRating'],
+            'totalRatings' => $result['totalRatings']
         ];
     }
 
 
 
-
-
     public function getQuizRating(int $quizId, $currentUser = null): array
     {
-        $quiz = $this->quizService->find($quizId);
+        $quiz = $this->quizCrudService->find($quizId);
         if (!$quiz) {
             throw new \InvalidArgumentException('Quiz not found');
         }
 
-        $avgRating = $this->quizRatingRepository->findAverageRatingForQuiz($quizId);
-        $totalRatings = $this->quizRatingRepository->countRatingsForQuiz($quizId);
-        
-        $userRating = null;
-        if ($currentUser) {
-            $userRatingEntity = $this->quizRatingRepository->findUserRatingForQuiz($currentUser->getId(), $quizId);
-            $userRating = $userRatingEntity ? $userRatingEntity->getRating() : null;
-        }
-
-        return [
-            'averageRating' => $avgRating,
-            'totalRatings' => $totalRatings,
-            'userRating' => $userRating
-        ];
+        return $this->quizRatingService->getRatingStatistics($quiz, $currentUser);
     }
 
     private function validateUserAnswerData(array $data): void

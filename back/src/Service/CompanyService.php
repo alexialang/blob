@@ -35,7 +35,7 @@ class CompanyService
 
     public function list(): array
     {
-        return $this->companyRepository->findAll();
+        return $this->companyRepository->findAllWithRelations();
     }
 
     public function findByUser(User $user): array
@@ -127,7 +127,7 @@ class CompanyService
 
     public function exportCompaniesToJson(): string
     {
-        $companies = $this->companyRepository->findAll();
+        $companies = $this->companyRepository->findAllWithRelations();
         
         $data = [];
         foreach ($companies as $company) {

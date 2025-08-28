@@ -19,6 +19,8 @@ class GroupRepository extends ServiceEntityRepository
     public function findByCompany(int $companyId): array
     {
         return $this->createQueryBuilder('g')
+            ->leftJoin('g.users', 'u')
+            ->addSelect('u')
             ->where('g.company = :companyId')
             ->setParameter('companyId', $companyId)
             ->orderBy('g.name', 'ASC')
