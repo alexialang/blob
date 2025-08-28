@@ -36,10 +36,7 @@ class UserController extends AbstractController
         $users = $this->userService->listWithStats(true, $currentUser);
 
         return $this->json($users, 200, [], [
-            'groups' => ['user:admin_read'],
-            'circular_reference_handler' => function ($object) {
-                return $object->getId();
-            }
+            'groups' => ['user:admin_list']
         ]);
     }
 
@@ -84,10 +81,6 @@ class UserController extends AbstractController
         } catch (\InvalidArgumentException $e) {
             return $this->json(['error' => $e->getMessage()], 400);
         } catch (\Exception $e) {
-            $this->logger->error('Erreur lors de la création d\'utilisateur', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
             return $this->json(['error' => 'Erreur lors de la création de l\'utilisateur'], 500);
         }
     }
@@ -108,20 +101,11 @@ class UserController extends AbstractController
             }
 
             return $this->json($user, 200, [], [
-                'groups' => ['user:read', 'company:read'],
-                'circular_reference_handler' => function ($object) {
-                    return $object->getId();
-                }
+                'groups' => ['user:profile']
             ]);
         } catch (\Exception $e) {
-            $this->logger->error('Erreur lors de la récupération du profil utilisateur', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            
             return $this->json([
-                'error' => 'Erreur serveur lors de la récupération du profil',
-                'message' => $e->getMessage()
+                'error' => 'Erreur lors de la récupération du profil'
             ], 500);
         }
     }
@@ -154,25 +138,15 @@ class UserController extends AbstractController
             $user = $this->userService->updateProfile($user, $data);
 
             return $this->json($user, 200, [], [
-                'groups' => ['user:read', 'company:read'],
-                'circular_reference_handler' => function ($object) {
-                    return $object->getId();
-                }
+                'groups' => ['user:profile']
             ]);
         } catch (\JsonException $e) {
             return $this->json(['error' => 'Invalid JSON'], 400);
         } catch (\InvalidArgumentException $e) {
             return $this->json(['error' => $e->getMessage()], 400);
         } catch (\Exception $e) {
-            $this->logger->error('Erreur lors de la mise à jour du profil utilisateur', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'user_id' => $user->getId()
-            ]);
-            
             return $this->json([
-                'error' => 'Erreur serveur lors de la mise à jour du profil',
-                'message' => $e->getMessage()
+                'error' => 'Erreur lors de la mise à jour du profil'
             ], 500);
         }
     }
@@ -194,27 +168,12 @@ class UserController extends AbstractController
         try {
             $statistics = $this->userService->getUserStatistics($user);
             
-            $this->logger->info('USER STATISTICS DEBUG', [
-                'user_id' => $user->getId(),
-                'statistics' => $statistics
-            ]);
-
             return $this->json($statistics, 200, [], [
-                'groups' => ['user:read'],
-                'circular_reference_handler' => function ($object) {
-                    return $object->getId();
-                }
+                'groups' => ['user:statistics']
             ]);
         } catch (\Exception $e) {
-            $this->logger->error('Erreur dans getUserStatistics', [
-                'user_id' => $user->getId(),
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            
             return $this->json([
-                'error' => 'Erreur lors du calcul des statistiques',
-                'message' => $e->getMessage()
+                'error' => 'Erreur lors du calcul des statistiques'
             ], 500);
         }
     }
@@ -237,10 +196,7 @@ class UserController extends AbstractController
         $statistics = $this->userService->getUserStatistics($user);
 
         return $this->json($statistics, 200, [], [
-            'groups' => ['user:read'],
-            'circular_reference_handler' => function ($object) {
-                return $object->getId();
-            }
+            'groups' => ['user:statistics']
         ]);
     }
 
@@ -258,19 +214,8 @@ class UserController extends AbstractController
         if (!$user) {
             return $this->json(['error' => 'Utilisateur non trouvé'], 404);
         }
-        $this->logger->info('Affichage utilisateur', [
-            'id' => $user->getId(),
-            'email' => $user->getEmail(),
-            'firstName' => $user->getFirstName(),
-            'lastName' => $user->getLastName(),
-            'company' => $user->getCompany() ? $user->getCompany()->getId() : 'null'
-        ]);
-
         return $this->json($user, 200, [], [
-            'groups' => ['user:read'],
-            'circular_reference_handler' => function ($object) {
-                return $object->getId();
-            }
+            'groups' => ['user:profile']
         ]);
     }
 
@@ -296,10 +241,7 @@ class UserController extends AbstractController
             $user = $this->userService->update($user, $data, $currentUser);
 
             return $this->json($user, 200, [], [
-                'groups' => ['user:read'],
-                'circular_reference_handler' => function ($object) {
-                    return $object->getId();
-                }
+                'groups' => ['user:profile']
             ]);
         } catch (\JsonException $e) {
             return $this->json(['error' => 'Invalid JSON'], 400);
@@ -317,14 +259,6 @@ class UserController extends AbstractController
     public function anonymize(User $user): JsonResponse
     {
         $currentUser = $this->getUser();
-        
-        $this->logger->warning('SECURITY: Tentative d\'anonymisation d\'utilisateur', [
-            'admin_user_id' => $currentUser->getId(),
-            'admin_user_email' => $currentUser->getEmail(),
-            'target_user_id' => $user->getId(),
-            'target_user_email' => $user->getEmail(),
-            'timestamp' => new \DateTime()
-        ]);
         
         $this->userService->anonymizeUser($user, $currentUser);
 
