@@ -37,7 +37,7 @@ class DonationController extends AbstractController
             $data = json_decode($request->getContent(), true);
             
             if (!$data) {
-                return new JsonResponse(['error' => 'Données JSON invalides'], 400);
+                return $this->json(['error' => 'Données JSON invalides'], 400);
             }
 
             $result = $this->paymentService->createPaymentLink(
@@ -46,25 +46,20 @@ class DonationController extends AbstractController
                 $data['donor_name'] ?? null
             );
 
-
-
-            return new JsonResponse($result);
+            return $this->json($result);
         } catch (ValidationFailedException $e) {
             $errorMessages = [];
             foreach ($e->getViolations() as $violation) {
                 $errorMessages[] = $violation->getMessage();
             }
-            return new JsonResponse(['error' => 'Données invalides', 'details' => $errorMessages], 400);
+            return $this->json(['error' => 'Données invalides', 'details' => $errorMessages], 400);
             
         } catch (\InvalidArgumentException $e) {
-
-            return new JsonResponse(['error' => $e->getMessage()], 400);
+            return $this->json(['error' => $e->getMessage()], 400);
         } catch (ApiErrorException $e) {
-
-            return new JsonResponse(['error' => 'Erreur de paiement: ' . $e->getMessage()], 500);
+            return $this->json(['error' => 'Erreur de paiement: ' . $e->getMessage()], 500);
         } catch (\Exception $e) {
-
-            return new JsonResponse(['error' => 'Erreur lors de la création du paiement'], 500);
+            return $this->json(['error' => 'Erreur lors de la création du paiement'], 500);
         }
     }
 

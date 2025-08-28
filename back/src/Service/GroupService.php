@@ -49,34 +49,7 @@ class GroupService
 
     public function getGroupsByCompany(Company $company): array
     {
-        $groups = $this->groupRepository->findByCompany($company->getId());
-        
-        $data = [];
-        foreach ($groups as $group) {
-            $groupUsers = [];
-            foreach ($group->getUsers() as $user) {
-                $groupUsers[] = [
-                    'id' => $user->getId(),
-                    'email' => $user->getEmail(),
-                    'firstName' => $user->getFirstName(),
-                    'lastName' => $user->getLastName(),
-                    'pseudo' => $user->getPseudo(),
-                    'avatar' => $user->getAvatar()
-                ];
-            }
-            
-            $data[] = [
-                'id' => $group->getId(),
-                'name' => $group->getName(),
-                'accesCode' => $group->getAccesCode(),
-                'companyId' => $group->getCompany() ? $group->getCompany()->getId() : null,
-                'companyName' => $group->getCompany() ? $group->getCompany()->getName() : null,
-                'userCount' => $group->getUsers()->count(),
-                'users' => $groupUsers
-            ];
-        }
-        
-        return $data;
+        return $this->groupRepository->findByCompany($company->getId());
     }
 
     public function find(int $id): ?Group

@@ -153,13 +153,7 @@ class UserAnswerController extends AbstractController
             
             $userAnswer = $this->userAnswerService->saveGameResult($data);
 
-            return $this->json([
-                'message' => 'Résultat de jeu sauvegardé',
-                'id' => $userAnswer->getId(),
-                'score' => $userAnswer->getTotalScore(),
-                'quiz_id' => $userAnswer->getQuiz()->getId(),
-                'user_id' => $user->getId()
-            ], 201);
+            return $this->json($userAnswer, 201, [], ['groups' => ['user_answer:read']]);
         } catch (\JsonException $e) {
             return $this->json(['error' => 'Invalid JSON'], 400);
         } catch (ValidationFailedException $e) {
@@ -206,7 +200,7 @@ class UserAnswerController extends AbstractController
             $data['user'] = $user;
             $result = $this->userAnswerService->rateQuiz($data);
 
-            return $this->json($result, 200);
+            return $this->json($result, 200, [], ['groups' => ['user_answer:rating']]);
         } catch (\JsonException $e) {
             return $this->json(['error' => 'Invalid JSON'], 400);
         } catch (\Exception $e) {
@@ -226,7 +220,7 @@ class UserAnswerController extends AbstractController
     {
         try {
             $result = $this->userAnswerService->getQuizRating($id, $this->getUser());
-            return $this->json($result, 200);
+            return $this->json($result, 200, [], ['groups' => ['user_answer:rating']]);
         } catch (\Exception $e) {
             return $this->json(['error' => $e->getMessage()], 500);
         }

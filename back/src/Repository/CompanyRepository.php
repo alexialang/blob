@@ -53,6 +53,19 @@ class CompanyRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    public function findByIdWithRelations(int $id): ?Company
+    {
+        return $this->createQueryBuilder('c')
+            ->leftJoin('c.users', 'u')
+            ->leftJoin('c.groups', 'g')
+            ->leftJoin('g.users', 'gu')
+            ->addSelect('u', 'g', 'gu')
+            ->where('c.id = :id')
+            ->setParameter('id', $id)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
     public function findGroupsWithUsersByCompany(int $companyId): array
     {
         $qb = $this->createQueryBuilder('c');

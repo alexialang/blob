@@ -14,11 +14,11 @@ class CategoryQuiz
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['quiz:read'])]
+    #[Groups(['quiz:read', 'quiz:organized'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 100)]
-    #[Groups(['quiz:read'])]
+    #[Groups(['quiz:read', 'quiz:organized'])]
     private ?string $name = null;
 
     /**

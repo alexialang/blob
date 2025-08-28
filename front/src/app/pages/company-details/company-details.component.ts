@@ -17,6 +17,7 @@ import { AddMemberModalComponent } from '../../components/add-member-modal/add-m
 import { TuiDialogService, TuiAlertService } from '@taiga-ui/core';
 import { TuiTable } from '@taiga-ui/addon-table';
 import { TuiButton } from '@taiga-ui/core';
+import { HasPermissionDirective } from '../../directives/has-permission.directive';
 
 interface Collaborator {
   id: number;
@@ -48,7 +49,7 @@ interface Company {
     GlobalStatisticsComponent,
     TuiTable,
     TuiButton,
-
+    HasPermissionDirective,
   ],
   templateUrl: './company-details.component.html',
   styleUrls: ['./company-details.component.scss']
@@ -109,12 +110,7 @@ export class CompanyDetailsComponent implements OnInit, OnDestroy {
 
   private loadCompany(companyId: number): void {
     this.checkUserPermissions();
-
-    if (this.canViewStats) {
-      this.loadCompanyFull(companyId);
-    } else {
-      this.loadCompanyBasic(companyId);
-    }
+    this.loadCompanyFull(companyId);
   }
 
   private loadCompanyFull(companyId: number): void {

@@ -17,15 +17,15 @@ class Quiz
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['quiz:read', 'question:read'])]
+    #[Groups(['quiz:read', 'question:read', 'quiz:organized'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 100)]
-    #[Groups(['quiz:read', 'quiz:create'])]
+    #[Groups(['quiz:read', 'quiz:create', 'quiz:organized'])]
     private ?string $title = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['quiz:read', 'quiz:create'])]
+    #[Groups(['quiz:read', 'quiz:create', 'quiz:organized'])]
     private ?string $description = null;
 
     #[ORM\Column]
@@ -53,11 +53,11 @@ class Quiz
      */
     #[ORM\ManyToMany(targetEntity: Group::class)]
     #[ORM\JoinTable(name: 'quiz_group')]
-    #[Groups(['quiz:read'])]
+    #[Groups(['quiz:read', 'company:detail'])]
     private Collection $groups;
 
     #[ORM\ManyToOne(inversedBy: 'quizs')]
-    #[Groups(['quiz:read', 'quiz:create'])]
+    #[Groups(['quiz:read', 'quiz:create', 'quiz:organized'])]
     private ?CategoryQuiz $category = null;
 
     /**
@@ -252,7 +252,7 @@ class Quiz
         return $this;
     }
 
-    #[Groups(['quiz:read'])]
+    #[Groups(['quiz:read', 'quiz:organized'])]
     public function getDifficultyLabel(): string
     {
         if ($this->questions->isEmpty()) {

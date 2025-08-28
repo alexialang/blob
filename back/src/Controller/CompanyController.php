@@ -71,10 +71,11 @@ class CompanyController extends AbstractController
     public function show(Company $company): JsonResponse
     {
         try {
+            
             return $this->json([
                 'success' => true,
-                'data' => $company
-            ], 200, [], ['groups' => ['company:list']]);
+                'data' => $company,
+            ], 200, [], ['groups' => ['company:detail']]);
         } catch (\Exception $e) {
             return $this->json([
                 'success' => false,

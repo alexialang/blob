@@ -111,44 +111,12 @@ class QuizController extends AbstractController
             }
 
             $popularQuizzes = $this->quizSearchService->getMostPopularQuizzes();
-
             $recentQuizzes = $this->quizSearchService->getMostRecentQuizzes();
-
             $allQuizzes = $this->quizSearchService->list();
+            
             $privateQuizzes = [];
             if ($user) {
                 $privateQuizzes = $this->quizSearchService->getPrivateQuizzesForUser($user);
-            }
-
-            $categoriesData = [];
-
-            $publicQuizzes = $allQuizzes;
-
-            if (!empty($privateQuizzes) && $user) {
-                $userCompany = $user->getCompany();
-                $companyName = $userCompany ? $userCompany->getName() : 'Mon Entreprise';
-                $categoryName =  $companyName . ' (Quiz Privés)';
-
-                $categoriesData[$categoryName] = [
-                    'id' => 'private_company',
-                    'name' => $categoryName,
-                    'quizzes' => $privateQuizzes
-                ];
-            }
-
-            foreach ($publicQuizzes as $quiz) {
-                $category = $quiz->getCategory();
-                if ($category) {
-                    $categoryName = $category->getName();
-                    if (!isset($categoriesData[$categoryName])) {
-                        $categoriesData[$categoryName] = [
-                            'id' => $category->getId(),
-                            'name' => $categoryName,
-                            'quizzes' => []
-                        ];
-                    }
-                    $categoriesData[$categoryName]['quizzes'][] = $quiz;
-                }
             }
 
             $myQuizzes = [];
@@ -168,10 +136,10 @@ class QuizController extends AbstractController
                 'popular' => $popularQuizzes,
                 'myQuizzes' => $myQuizzes,
                 'recent' => $recentQuizzes,
-                'categories' => array_values($categoriesData)
+                'categories' => $this->organizeQuizzesByCategory($allQuizzes, $privateQuizzes, $user)
             ];
 
-            return $this->json($result, 200, [], ['groups' => ['quiz:read']]);
+            return $this->json($result, 200, [], ['groups' => ['quiz:organized']]);
         } catch (\Exception $e) {
             $this->logger->error('Erreur dans le contrôleur: ' . $e->getMessage());
             return $this->json([
@@ -183,6 +151,41 @@ class QuizController extends AbstractController
                 'categories' => []
             ], 500);
         }
+    }
+
+
+    private function organizeQuizzesByCategory(array $publicQuizzes, array $privateQuizzes, ?User $user): array
+    {
+        $categoriesData = [];
+
+        if (!empty($privateQuizzes) && $user) {
+            $userCompany = $user->getCompany();
+            $companyName = $userCompany ? $userCompany->getName() : 'Mon Entreprise';
+            $categoryName = $companyName . ' (Quiz Privés)';
+
+            $categoriesData[$categoryName] = [
+                'id' => 'private_company',
+                'name' => $categoryName,
+                'quizzes' => $privateQuizzes
+            ];
+        }
+
+        foreach ($publicQuizzes as $quiz) {
+            $category = $quiz->getCategory();
+            if ($category) {
+                $categoryName = $category->getName();
+                if (!isset($categoriesData[$categoryName])) {
+                    $categoriesData[$categoryName] = [
+                        'id' => $category->getId(),
+                        'name' => $categoryName,
+                        'quizzes' => []
+                    ];
+                }
+                $categoriesData[$categoryName]['quizzes'][] = $quiz;
+            }
+        }
+
+        return array_values($categoriesData);
     }
 
 
@@ -264,7 +267,7 @@ class QuizController extends AbstractController
     public function getAverageRating(Quiz $quiz): JsonResponse
     {
         $result = $this->quizRatingService->getAverageRating($quiz);
-        return $this->json($result);
+        return $this->json($result, 200, [], ['groups' => ['quiz:rating']]);
     }
 
     #[Route('/quiz/{id}/public-leaderboard', name: 'quiz_public_leaderboard', methods: ['GET'], requirements: ['id' => '\d+'])]
@@ -272,7 +275,7 @@ class QuizController extends AbstractController
     {
         $user = $this->getUser();
         $result = $this->leaderboardService->getQuizLeaderboard($quiz, $user);
-        return $this->json($result);
+        return $this->json($result, 200, [], ['groups' => ['quiz:leaderboard']]);
     }
 
 

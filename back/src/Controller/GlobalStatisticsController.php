@@ -32,6 +32,6 @@ class GlobalStatisticsController extends AbstractController
         $this->cache->delete($cacheKey);
         
         $data = $this->globalStatisticsService->getCompanyStatistics($company->getId());
-        return $this->json($data);
+        return $this->json($data, 200, [], ['groups' => ['statistics:read']]);
     }
 }

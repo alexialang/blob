@@ -37,7 +37,7 @@ class Company
     /**
      * @var Collection<int, Group>
      */
-    #[Groups(['company:detail'])]
+    #[Groups(['company:detail', 'company:list'])]
     #[ORM\OneToMany(targetEntity: Group::class, mappedBy: 'company')]
     private Collection $groups;
 
@@ -144,6 +144,7 @@ class Company
     /**
      * @return Collection<int, Quiz>
      */
+    #[Groups(['company:detail'])]
     public function getQuizs(): Collection
     {
         return $this->quizs;
@@ -170,7 +171,7 @@ class Company
         return $this;
     }
 
-    // Méthodes virtuelles pour la sérialisation
+
 
     #[Groups(['company:list', 'company:detail'])]
     public function getUserCount(): int

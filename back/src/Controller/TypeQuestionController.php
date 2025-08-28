@@ -7,7 +7,6 @@ use App\Enum\TypeQuestionName;
 use App\Service\TypeQuestionService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use OpenApi\Annotations as OA;
 
@@ -28,13 +27,15 @@ class TypeQuestionController extends AbstractController
     #[Route('/list', name: 'type_question_list', methods: ['GET'])]
     public function list(): JsonResponse
     {
-        $typeQuestions = array_map(fn($enum) => [
-            'id' => array_search($enum, TypeQuestionName::cases()) + 1,
-            'name' => $enum->getName(),
-            'key' => $enum->value,
-        ], TypeQuestionName::cases());
-
-        return $this->json($typeQuestions, 200);
+        $typeQuestions = array_map(function($enum) {
+            return [
+                'id' => $enum->value,
+                'name' => $enum->getName(),
+                'key' => $enum->value
+            ];
+        }, TypeQuestionName::cases());
+        
+        return $this->json($typeQuestions);
     }
 
     /**

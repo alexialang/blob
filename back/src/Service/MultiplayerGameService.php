@@ -286,11 +286,9 @@ class MultiplayerGameService
             'timestamp' => time()
         ]);
 
-        // 🚀 ÉTAPE 5.11 : LANCEMENT PREMIÈRE QUESTION
-        $this->startQuestion($gameSession);  // 🎯 POINT CRITIQUE - Démarre le jeu
+        $this->startQuestion($gameSession);
 
-        // 📤 ÉTAPE 5.12 : RETOUR DONNÉES AU FRONTEND
-        return $gameData;  // 📤 Données formatées pour navigation
+        return $gameData;
     }
 
 

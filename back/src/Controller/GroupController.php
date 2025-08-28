@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Group;
 use App\Service\GroupService;
 use App\Service\UserService;
+use OpenApi\Annotations as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Validator\Exception\ValidationFailedException;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -85,13 +86,8 @@ class GroupController extends AbstractController
             return $this->json([
                 'success' => true,
                 'message' => 'Groupe créé avec succès',
-                'data' => [
-                    'id' => $group->getId(),
-                    'name' => $group->getName(),
-                    'accesCode' => $group->getAccesCode(),
-                    'companyId' => $group->getCompany() ? $group->getCompany()->getId() : null
-                ]
-            ], 201);
+                'data' => $group
+            ], 201, [], ['groups' => ['group:create']]);
             
         } catch (ValidationFailedException $e) {
             $errorMessages = [];

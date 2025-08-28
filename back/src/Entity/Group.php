@@ -15,15 +15,15 @@ class Group
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['company:read', 'group:read', 'quiz:read', 'user:admin_read', 'company:detail'])]
+    #[Groups(['company:read', 'group:read', 'quiz:read', 'user:admin_read', 'company:detail', 'group:create'])]
     private ?int $id = null;
 
-    #[Groups(['user:read', 'company:read', 'group:read', 'quiz:read', 'user:admin_read', 'company:detail'])]
+    #[Groups(['user:read', 'company:read', 'group:read', 'quiz:read', 'user:admin_read', 'company:detail', 'group:create'])]
     #[ORM\Column(length: 100)]
     private ?string $name = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['user:admin_read', 'company:detail'])]
+    #[Groups(['user:admin_read', 'company:detail', 'group:create'])]
     private ?string $acces_code = null;
 
     #[ORM\ManyToOne(inversedBy: 'groups')]
@@ -32,7 +32,7 @@ class Group
     /**
      * @var Collection<int, User>
      */
-    #[Groups(['company:read'])]
+    #[Groups(['company:read', 'group:read', 'company:detail'])]
     #[ORM\ManyToMany(targetEntity: User::class, mappedBy: 'groups')]
     private Collection $users;
 

@@ -41,13 +41,9 @@ class QuizSearchService
     public function getQuizzesForCompanyManagement(User $user): array
     {
         try {
-            $this->logger->info('getQuizzesForCompanyManagement appelé pour utilisateur: ' . $user->getId());
-            
             if ($user->isAdmin()) {
-                $this->logger->info('Utilisateur admin - récupération de tous les quiz');
                 $quizzes = $this->quizRepository->findAll();
             } else {
-                $this->logger->info('Utilisateur non-admin - récupération et filtrage');
                 $allQuizzes = $this->quizRepository->findAll();
                 $quizzes = [];
                 
@@ -57,8 +53,6 @@ class QuizSearchService
                     }
                 }
             }
-
-            $this->logger->info('Nombre de quiz trouvés: ' . count($quizzes));
 
             $result = [];
             foreach ($quizzes as $quiz) {
@@ -79,6 +73,12 @@ class QuizSearchService
                         'id' => $quiz->getCategory()->getId(),
                         'name' => $quiz->getCategory()->getName()
                     ] : null,
+                    'groups' => $quiz->getGroups()->map(function($group) {
+                        return [
+                            'id' => $group->getId(),
+                            'name' => $group->getName()
+                        ];
+                    })->toArray(),
                     'questionCount' => $quiz->getQuestions()->count()
                 ];
             }
