@@ -202,59 +202,72 @@
         </div>
 
 
-        <div class="profile-card right-card" *ngIf="userStatistics">
+        <div class="profile-card right-card">
           <div class="card-header">
-            <h5>Mes Statistiques</h5>
+            <h5>{{ isOwnProfile ? 'Mes Statistiques' : 'Statistiques' }}</h5>
           </div>
           <div class="card-body">
-            <div class="stats-grid">
+            <div *ngIf="isLoadingStatistics" class="text-center">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Chargement...</span>
+              </div>
+              <p class="mt-2 text-muted">Chargement des statistiques...</p>
+            </div>
+
+            <div *ngIf="!isLoadingStatistics && userStatistics" class="stats-grid">
               <div class="stat-card primary">
-                <div class="stat-number">{{ userStatistics.totalQuizzesCreated }}</div>
+                <div class="stat-number">{{ userStatistics.totalQuizzesCreated || 0 }}</div>
                 <div class="stat-label">Quiz créés</div>
               </div>
               <div class="stat-card success">
-                <div class="stat-number">{{ userStatistics.totalQuizzesCompleted }}</div>
+                <div class="stat-number">{{ userStatistics.totalQuizzesCompleted || 0 }}</div>
                 <div class="stat-label">Quiz complétés</div>
               </div>
               <div class="stat-card warning">
-                <div class="stat-number">{{ userStatistics.averageScore }}/100</div>
+                <div class="stat-number">{{ userStatistics.averageScore || 0 }}/100</div>
                 <div class="stat-label">Score moyen</div>
               </div>
               <div class="stat-card secondary">
-                <div class="stat-number">{{ userStatistics.badgesEarned }}</div>
+                <div class="stat-number">{{ userStatistics.badgesEarned || 0 }}</div>
                 <div class="stat-label">Badges obtenus</div>
               </div>
             </div>
 
-
-            <div class="section-header badges-header mt-4">
-              <div class="section-icon"><i class="fas fa-trophy"></i></div>
-              <h6 class="section-title">Mes Badges</h6>
-              <span class="section-count">{{ getUserBadges().length }}</span>
-            </div>
-            <div class="badge-grid">
-              <div class="badge-card earned" *ngFor="let badge of getUserBadges()">
-                <img [src]="'assets/badges/' + (badge.image || 'badge-first-quiz.svg')" alt="{{badge.name}}" class="badge-image">
-                <div class="badge-name">{{ badge.name }}</div>
-              </div>
-              <div *ngIf="getUserBadges().length === 0" class="no-badges text-center text-muted">
-                Aucun badge obtenu.
-              </div>
+            <div *ngIf="!isLoadingStatistics && !userStatistics" class="text-center text-muted">
+              <i class="fas fa-chart-bar fa-3x mb-3" style="opacity: 0.5;"></i>
+              <p>Aucune statistique disponible pour le moment.</p>
             </div>
 
 
-            <div class="section-header badges-header mt-4">
-              <div class="section-icon"><i class="fas fa-bullseye"></i></div>
-              <h6 class="section-title">Badges à obtenir</h6>
-              <span class="section-count">{{ getAvailableBadges().length }}</span>
-            </div>
-            <div class="badge-grid">
-              <div class="badge-card available" *ngFor="let badge of getAvailableBadges()">
-                <img [src]="'assets/badges/' + (badge.image || 'badge-first-quiz.svg')" alt="{{badge.name}}" class="badge-image">
-                <div class="badge-name">{{ badge.name }}</div>
+            <div *ngIf="!isLoadingStatistics" class="badges-section">
+              <div class="section-header badges-header mt-4">
+                <div class="section-icon"><i class="fas fa-trophy"></i></div>
+                <h6 class="section-title">{{ isOwnProfile ? 'Mes Badges' : 'Badges' }}</h6>
+                <span class="section-count">{{ getUserBadges().length }}</span>
               </div>
-              <div *ngIf="getAvailableBadges().length === 0" class="no-badges text-center text-muted">
-                Vous avez obtenu tous les badges !
+              <div class="badge-grid">
+                <div class="badge-card earned" *ngFor="let badge of getUserBadges()">
+                  <img [src]="'assets/badges/' + (badge.image || 'badge-first-quiz.svg')" alt="{{badge.name}}" class="badge-image">
+                  <div class="badge-name">{{ badge.name }}</div>
+                </div>
+                <div *ngIf="getUserBadges().length === 0" class="no-badges text-center text-muted">
+                  {{ isOwnProfile ? 'Aucun badge obtenu.' : 'Aucun badge obtenu par cet utilisateur.' }}
+                </div>
+              </div>
+
+              <div class="section-header badges-header mt-4">
+                <div class="section-icon"><i class="fas fa-bullseye"></i></div>
+                <h6 class="section-title">Badges à obtenir</h6>
+                <span class="section-count">{{ getAvailableBadges().length }}</span>
+              </div>
+              <div class="badge-grid">
+                <div class="badge-card available" *ngFor="let badge of getAvailableBadges()">
+                  <img [src]="'assets/badges/' + (badge.image || 'badge-first-quiz.svg')" alt="{{badge.name}}" class="badge-image">
+                  <div class="badge-name">{{ badge.name }}</div>
+                </div>
+                <div *ngIf="getAvailableBadges().length === 0" class="no-badges text-center text-muted">
+                  {{ isOwnProfile ? 'Vous avez obtenu tous les badges !' : 'Cet utilisateur a obtenu tous les badges !' }}
+                </div>
               </div>
             </div>
           </div>
@@ -262,8 +275,14 @@
       </div>
 
 
-      <div class="charts-section">
-        <app-statistics-charts [userStatistics]="userStatistics"></app-statistics-charts>
+      <div class="charts-section" *ngIf="!isLoadingStatistics">
+        <app-statistics-charts
+          [userStatistics]="userStatistics"
+          *ngIf="userStatistics">
+        </app-statistics-charts>
+        <div *ngIf="!userStatistics" class="text-center text-muted">
+          <p>Graphiques non disponibles sans données statistiques.</p>
+        </div>
       </div>
     </ng-container>
 

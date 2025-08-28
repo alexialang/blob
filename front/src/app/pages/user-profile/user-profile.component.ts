@@ -41,6 +41,7 @@ export class UserProfileComponent implements OnInit {
   profileForm: FormGroup;
   userStatistics: UserStatistics | null = null;
   allBadges: Badge[] = [];
+  isLoadingStatistics = false;
 
   constructor() {
     this.profileForm = this.fb.group({
@@ -69,9 +70,10 @@ export class UserProfileComponent implements OnInit {
         this.isOwnProfile = true;
         this.loadUserProfile();
       }
+      // Charger les statistiques après avoir défini isOwnProfile et targetUserId
+      this.loadUserStatistics();
     });
 
-    this.loadUserStatistics();
     this.loadAllBadges();
     this.checkAdminStatus();
   }
@@ -122,29 +124,45 @@ export class UserProfileComponent implements OnInit {
   }
 
   loadUserStatistics() {
+    this.isLoadingStatistics = true;
+    this.userStatistics = null; // Reset des statistiques pendant le chargement
+    
+    console.log('Chargement des statistiques - isOwnProfile:', this.isOwnProfile, 'targetUserId:', this.targetUserId);
+    
     if (this.isOwnProfile) {
       this.userService.getUserStatistics().subscribe({
         next: (stats) => {
+          console.log('Statistiques reçues pour profil personnel:', stats);
           this.userStatistics = stats;
+          this.isLoadingStatistics = false;
         },
         error: (error) => {
+          console.error('Erreur lors du chargement des statistiques personnelles:', error);
+          this.isLoadingStatistics = false;
           if (error.status === 401) {
             this.authService.logout();
             this.router.navigate(['/connexion']);
           } else {
-            console.error('Erreur lors du chargement des statistiques:', error);
+            this.alertService.error('Erreur lors du chargement des statistiques');
           }
         }
       });
     } else if (this.targetUserId) {
       this.userService.getUserStatisticsById(this.targetUserId).subscribe({
         next: (stats: UserStatistics) => {
+          console.log('Statistiques reçues pour utilisateur:', this.targetUserId, stats);
           this.userStatistics = stats;
+          this.isLoadingStatistics = false;
         },
         error: (error: any) => {
           console.error('Erreur lors du chargement des statistiques de l\'utilisateur:', error);
+          this.isLoadingStatistics = false;
+          this.alertService.error('Erreur lors du chargement des statistiques de l\'utilisateur');
         }
       });
+    } else {
+      console.warn('Impossible de charger les statistiques - conditions non remplies');
+      this.isLoadingStatistics = false;
     }
   }
 
