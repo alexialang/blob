@@ -44,7 +44,7 @@ export class UserManagementService {
         if (!hasPermission) {
           throw new Error('Permission MANAGE_USERS requise');
         }
-        return this.http.put<any>(`${this.baseUrl}/user/${userId}/roles`, {
+        return this.http.put<any>(`${this.baseUrl}/user-permission/user/${userId}`, {
           roles,
           permissions
         });

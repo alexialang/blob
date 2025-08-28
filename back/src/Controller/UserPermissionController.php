@@ -2,8 +2,11 @@
 
 namespace App\Controller;
 
+use App\Entity\User;
 use App\Entity\UserPermission;
+use App\Repository\UserRepository;
 use App\Service\UserPermissionService;
+use App\Service\UserService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Validator\Exception\ValidationFailedException;
@@ -11,12 +14,16 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use OpenApi\Annotations as OA;
+use Psr\Log\LoggerInterface;
 
 #[Route('/api/user-permission')]
 class UserPermissionController extends AbstractController
 {
     public function __construct(
         private UserPermissionService $userPermissionService,
+        private UserService $userService,
+        private UserRepository $userRepository,
+        private LoggerInterface $logger,
         ) {}
 
     /**
@@ -121,5 +128,75 @@ class UserPermissionController extends AbstractController
         $this->userPermissionService->delete($userPermission);
 
         return $this->json(null, 204);
+    }
+
+    /**
+     * @OA\Put(summary="Mettre à jour les rôles et permissions d'un utilisateur", tags={"UserPermission"})
+     * @OA\Parameter(name="userId", in="path", required=true, @OA\Schema(type="integer"))
+     * @OA\RequestBody(
+     *     required=true,
+     *     @OA\JsonContent(
+     *         @OA\Property(property="roles", type="array", @OA\Items(type="string")),
+     *         @OA\Property(property="permissions", type="array", @OA\Items(type="string"))
+     *     )
+     * )
+     * @OA\Response(response=200, description="Rôles et permissions mis à jour")
+     * @OA\Security(name="bearerAuth")
+     */
+    #[Route('/user/{userId}', name: 'user_permission_update_user_roles', methods: ['PUT'])]
+    #[IsGranted('MANAGE_USERS')]
+    public function updateUserRoles(Request $request, int $userId): JsonResponse
+    {
+        try {
+            // Récupérer l'utilisateur depuis l'ID
+            $user = $this->userRepository->find($userId);
+            if (!$user) {
+                return $this->json(['error' => 'Utilisateur non trouvé'], 404);
+            }
+            
+            $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
+            
+            if (!isset($data['roles']) || !is_array($data['roles'])) {
+                return $this->json(['error' => 'Roles array is required'], 400);
+            }
+            
+            $allowedRoles = ['ROLE_USER', 'ROLE_ADMIN'];
+            $validRoles = array_intersect($data['roles'], $allowedRoles);
+            
+            if (count($validRoles) !== count($data['roles'])) {
+                return $this->json(['error' => 'Certains rôles ne sont pas autorisés'], 400);
+            }
+            
+            $user->setRoles($validRoles);
+            
+            if (!isset($data['permissions']) || !is_array($data['permissions'])) {
+                return $this->json(['error' => 'Permissions array is required'], 400);
+            }
+            
+            $currentUser = $this->getUser();
+            
+            $this->logger->warning('SECURITY: Modification des rôles utilisateur', [
+                'admin_user_id' => $currentUser->getId(),
+                'admin_user_email' => $currentUser->getEmail(),
+                'target_user_id' => $user->getId(),
+                'target_user_email' => $user->getEmail(),
+                'new_roles' => $validRoles,
+                'new_permissions' => $data['permissions'],
+                'timestamp' => new \DateTime()
+            ]);
+            
+            $user = $this->userService->updateUserRoles($user, $data);
+
+            return $this->json($user, 200, [], [
+                'groups' => ['user:read', 'user_permission:read'],
+                'circular_reference_handler' => function ($object) {
+                    return $object->getId();
+                }
+            ]);
+        } catch (\JsonException $e) {
+            return $this->json(['error' => 'Invalid JSON'], 400);
+        } catch (\Exception $e) {
+            return $this->json(['error' => 'An error occurred: ' . $e->getMessage()], 500);
+        }
     }
 }

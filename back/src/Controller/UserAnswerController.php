@@ -214,21 +214,7 @@ class UserAnswerController extends AbstractController
         }
     }
 
-    /**
-     * @OA\Get(summary="Classement d'un quiz", tags={"UserAnswer"})
-     * @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer"))
-     * @OA\Response(response=200, description="Classement du quiz")
-     */
-    #[Route('/leaderboard/quiz/{id}', name: 'user_answer_quiz_leaderboard', methods: ['GET'])]
-    public function getQuizLeaderboard(int $id): JsonResponse
-    {
-        try {
-            $result = $this->userAnswerService->getQuizLeaderboard($id, $this->getUser());
-            return $this->json($result, 200);
-        } catch (\Exception $e) {
-            return $this->json(['error' => $e->getMessage()], 500);
-        }
-    }
+
 
     /**
      * @OA\Get(summary="Note d'un quiz", tags={"UserAnswer"})

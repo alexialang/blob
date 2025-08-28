@@ -54,15 +54,7 @@
       <table tuiTable [size]="size" class="custom-table table-striped">
         <thead>
         <tr>
-          <th tuiTh class="th-checkbox" *ngIf="isAdmin">
-            <input
-              type="checkbox"
-              tuiCheckbox
-              [ngModel]="allSelected"
-              (ngModelChange)="toggleAll($event)"
-            />
-          </th>
-          <th tuiTh class="th-checkbox" *hasPermission="'MANAGE_USERS'">
+          <th tuiTh class="th-checkbox" *ngIf="isAdmin || hasManageUsersPermission">
             <input
               type="checkbox"
               tuiCheckbox
@@ -113,18 +105,7 @@
           <th tuiTh class="th-action">
             Action
             <button
-              *ngIf="isAdmin"
-              tuiButton
-              appearance="action"
-              size="xs"
-              iconStart="@tui.trash"
-              tuiIconButton
-              (click)="deleteSelected()"
-              [disabled]="!hasSelection"
-              class="btn-delete-all"
-            >Supprimer ({{ getSelectedCount() }})</button>
-            <button
-              *hasPermission="'MANAGE_USERS'"
+              *ngIf="isAdmin || hasManageUsersPermission"
               tuiButton
               appearance="action"
               size="xs"
@@ -139,10 +120,7 @@
         </thead>
         <tbody tuiTbody>
         <tr *ngFor="let row of pagedRows; trackBy: trackByUserId" class="table-row">
-          <td tuiTd class="td-checkbox" *ngIf="isAdmin">
-            <input type="checkbox" tuiCheckbox [(ngModel)]="row.selected" />
-          </td>
-          <td tuiTd class="td-checkbox" *hasPermission="'MANAGE_USERS'">
+          <td tuiTd class="td-checkbox" *ngIf="isAdmin || hasManageUsersPermission">
             <input type="checkbox" tuiCheckbox [(ngModel)]="row.selected" />
           </td>
           <td tuiTd class="td-user">
@@ -176,28 +154,13 @@
           <td tuiTd class="td-action">
             <div class="d-flex gap-2">
               <a
-                *ngIf="isAdmin"
-                class="link-profile"
-                (click)="viewUserProfile(row.id)"
-                style="cursor: pointer;"
-              >Voir le profil</a>
-              <a
-                *hasPermission="'VIEW_RESULTS'"
+                *ngIf="isAdmin || hasViewResultsPermission"
                 class="link-profile"
                 (click)="viewUserProfile(row.id)"
                 style="cursor: pointer;"
               >Voir le profil</a>
               <button
-                *ngIf="isAdmin"
-                tuiButton
-                appearance="flat"
-                size="xs"
-                class="btn-roles"
-                (click)="openRolesModal(row)"
-                title="Gérer les rôles"
-              ><i class="fas fa-user-cog me-1"></i>Gérer les droits</button>
-              <button
-                *hasPermission="'MANAGE_USERS'"
+                *ngIf="isAdmin || hasManageUsersPermission"
                 tuiButton
                 appearance="flat"
                 size="xs"
@@ -209,7 +172,7 @@
           </td>
         </tr>
         <tr *ngIf="rows.length === 0">
-          <td tuiTd colspan="7" class="no-data">Aucun utilisateur trouvé.</td>
+          <td tuiTd colspan="6" class="no-data">Aucun utilisateur trouvé.</td>
         </tr>
         </tbody>
       </table>

@@ -162,52 +162,7 @@ class UserAnswerService
 
 
 
-    public function getQuizLeaderboard(int $quizId, $currentUser = null): array
-    {
-        $quiz = $this->quizService->find($quizId);
-        if (!$quiz) {
-            throw new \InvalidArgumentException('Quiz not found');
-        }
 
-        $results = $this->userAnswerRepository->findQuizLeaderboard($quizId);
-
-        $leaderboard = [];
-        $currentUserRank = null;
-        
-        foreach ($results as $index => $result) {
-            $rank = $index + 1;
-            $isCurrentUser = $currentUser && $result['userId'] == $currentUser?->getId();
-            
-            if ($isCurrentUser) {
-                $currentUserRank = $rank;
-            }
-
-            $displayName = $result['name'] ?: ($result['firstName'] . ' ' . $result['lastName']);
-            if (!$displayName || trim($displayName) === '') {
-                $displayName = 'Joueur anonyme';
-            }
-
-            $leaderboard[] = [
-                'rank' => $rank,
-                'name' => trim($displayName),
-                'company' => $result['company'] ?: 'Aucune entreprise',
-                'score' => $result['score'],
-                'isCurrentUser' => $isCurrentUser
-            ];
-        }
-
-        return [
-            'leaderboard' => array_slice($leaderboard, 0, 10),
-            'currentUserRank' => $currentUserRank ?: count($results) + 1,
-            'totalPlayers' => count($results),
-            'currentUserScore' => $currentUser ? $this->getCurrentUserScore($quizId, $currentUser?->getId() ?: 0) : 0
-        ];
-    }
-
-    private function getCurrentUserScore(int $quizId, int $userId): int
-    {
-        return $this->userAnswerRepository->findMaxScoreForUserAndQuiz($quizId, $userId);
-    }
 
     public function getQuizRating(int $quizId, $currentUser = null): array
     {

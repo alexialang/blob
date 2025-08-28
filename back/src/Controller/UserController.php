@@ -354,68 +354,6 @@ class UserController extends AbstractController
         return $this->json($history);
     }
 
-    /**
-     * @OA\Put(summary="Mettre à jour les rôles et permissions d'un utilisateur", tags={"User"})
-     * @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer"))
-     * @OA\RequestBody(
-     *     required=true,
-     *     @OA\JsonContent(
-     *         @OA\Property(property="roles", type="array", @OA\Items(type="string")),
-     *         @OA\Property(property="permissions", type="array", @OA\Items(type="string"))
-     *     )
-     * )
-     * @OA\Response(response=200, description="Rôles mis à jour")
-     * @OA\Security(name="bearerAuth")
-     */
-    #[Route('/user/{id}/roles', name: 'user_update_roles', methods: ['PUT'])]
-    #[IsGranted('MANAGE_USERS', subject: 'user')]
-    public function updateRoles(Request $request, User $user): JsonResponse
-    {
-        try {
-            $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
-            
-            if (!isset($data['roles']) || !is_array($data['roles'])) {
-                return $this->json(['error' => 'Roles array is required'], 400);
-            }
-            
-            $allowedRoles = ['ROLE_USER', 'ROLE_ADMIN'];
-            $validRoles = array_intersect($data['roles'], $allowedRoles);
-            
-            if (count($validRoles) !== count($data['roles'])) {
-                return $this->json(['error' => 'Certains rôles ne sont pas autorisés'], 400);
-            }
-            
-            $user->setRoles($validRoles);
-            
-            if (!isset($data['permissions']) || !is_array($data['permissions'])) {
-                return $this->json(['error' => 'Permissions array is required'], 400);
-            }
-            
-            $currentUser = $this->getUser();
-            
-        $this->logger->warning('SECURITY: Modification des rôles utilisateur', [
-            'admin_user_id' => $currentUser->getId(),
-            'admin_user_email' => $currentUser->getEmail(),
-            'target_user_id' => $user->getId(),
-            'target_user_email' => $user->getEmail(),
-            'new_roles' => $validRoles,
-            'new_permissions' => $data['permissions'],
-            'timestamp' => new \DateTime()
-        ]);
-            
-            $user = $this->userService->updateUserRoles($user, $data);
 
-            return $this->json($user, 200, [], [
-                'groups' => ['user:read', 'user_permission:read'],
-                'circular_reference_handler' => function ($object) {
-                    return $object->getId();
-                }
-            ]);
-        } catch (\JsonException $e) {
-            return $this->json(['error' => 'Invalid JSON'], 400);
-        } catch (\Exception $e) {
-            return $this->json(['error' => 'An error occurred: ' . $e->getMessage()], 500);
-        }
-    }
 
 }

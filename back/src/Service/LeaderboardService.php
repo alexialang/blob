@@ -6,7 +6,6 @@ use App\Entity\User;
 use App\Entity\Quiz;
 use App\Repository\UserAnswerRepository;
 use App\Repository\UserRepository;
-use App\Service\UserService;
 use Doctrine\ORM\EntityManagerInterface;
 
 class LeaderboardService
@@ -20,7 +19,7 @@ class LeaderboardService
 
     public function getQuizLeaderboard(Quiz $quiz, ?User $currentUser): array
     {
-        $results = $this->userAnswerRepository->getQuizLeaderboardData($quiz);
+        $results = $this->userAnswerRepository->findQuizLeaderboard($quiz->getId());
         
         $leaderboard = [];
         $currentUserRank = null;
@@ -34,9 +33,14 @@ class LeaderboardService
                 $currentUserRank = $rank;
             }
 
+            $displayName = $result['name'] ?: ($result['firstName'] . ' ' . $result['lastName']);
+            if (!$displayName || trim($displayName) === '') {
+                $displayName = 'Joueur anonyme';
+            }
+
             $leaderboard[] = [
                 'rank' => $rank,
-                'name' => $result['name'] ?: 'Joueur anonyme',
+                'name' => trim($displayName),
                 'company' => $result['company'] ?: 'Aucune entreprise',
                 'score' => $result['score'],
                 'isCurrentUser' => $isCurrentUser
@@ -182,3 +186,4 @@ class LeaderboardService
         ];
     }
 }
+

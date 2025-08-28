@@ -120,6 +120,8 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   ];
   public availablePermissions: string[] = ['CREATE_QUIZ', 'MANAGE_USERS', 'VIEW_RESULTS'];
   public isAdmin = false;
+  public hasManageUsersPermission = false;
+  public hasViewResultsPermission = false;
 
   private destroy$ = new Subject<void>();
 
@@ -146,6 +148,16 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   checkAdminStatus(): void {
     this.userService.isAdmin().subscribe(isAdmin => {
       this.isAdmin = isAdmin;
+      this.cdr.markForCheck();
+    });
+    
+    this.authService.hasPermission('MANAGE_USERS').subscribe(hasPermission => {
+      this.hasManageUsersPermission = hasPermission;
+      this.cdr.markForCheck();
+    });
+    
+    this.authService.hasPermission('VIEW_RESULTS').subscribe(hasPermission => {
+      this.hasViewResultsPermission = hasPermission;
       this.cdr.markForCheck();
     });
   }
