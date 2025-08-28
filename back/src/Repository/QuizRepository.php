@@ -51,8 +51,7 @@ class QuizRepository extends ServiceEntityRepository
 
         $result = $query->getResult();
         
-        error_log('findPrivateQuizzesForUserGroups - Groupes: ' . implode(',', $userGroupIds) . ' - Résultats: ' . count($result));
-        
+
         return $result;
     }
 

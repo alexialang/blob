@@ -334,19 +334,16 @@ class CompanyController extends AbstractController
     public function delete(Company $company): JsonResponse
     {
         try {
-            error_log("Tentative de suppression de l'entreprise ID: " . $company->getId() . ", Nom: " . $company->getName());
-            
+
             $this->companyService->delete($company);
             
-            error_log("Entreprise supprimée avec succès: " . $company->getName());
-            
+
             return $this->json([
                 'success' => true,
                 'message' => 'Entreprise supprimée avec succès'
             ]);
 
         } catch (\Exception $e) {
-            error_log("Erreur lors de la suppression de l'entreprise: " . $e->getMessage());
             return $this->json([
                 'success' => false,
                 'message' => 'Erreur lors de la suppression de l\'entreprise: ' . $e->getMessage()

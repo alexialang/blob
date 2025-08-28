@@ -97,6 +97,10 @@ class QuizController extends AbstractController
             try {
                 $user = $this->getUser();
             } catch (\Exception $e) {
+                $this->logger->info('getOrganizedQuizzes: utilisateur non connecté', [
+                    'error' => $e->getMessage(),
+                    'route' => 'quiz_organized'
+                ]);
             }
 
             $popularQuizzes = $this->quizService->getMostPopularQuizzes(8);

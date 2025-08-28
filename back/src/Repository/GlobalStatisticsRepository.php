@@ -49,7 +49,7 @@ class GlobalStatisticsRepository extends ServiceEntityRepository
             }
             return $teamScores;
         } catch (\Exception $e) {
-            error_log("Erreur dans getTeamScoresByQuiz: " . $e->getMessage());
+            ("Erreur dans getTeamScoresByQuiz: " . $e->getMessage());
             return [];
         }
     }
@@ -57,7 +57,6 @@ class GlobalStatisticsRepository extends ServiceEntityRepository
     public function getTeamScoresByQuizForCompany(int $companyId): array
     {
         try {
-            error_log("=== DÉBUT getTeamScoresByQuizForCompany ===");
             
             $qb = $this->createQueryBuilder('q');
             $results = $qb->select('
@@ -73,8 +72,7 @@ class GlobalStatisticsRepository extends ServiceEntityRepository
                 ->getQuery()
                 ->getResult();
             
-            error_log("Résultats bruts de la requête: " . json_encode($results));
-            
+
             $teamScores = [];
             foreach ($results as $result) {
                 $averageScore = $result['averageScore'] !== null ? (float)$result['averageScore'] : 0.0;
@@ -86,12 +84,9 @@ class GlobalStatisticsRepository extends ServiceEntityRepository
                 ];
             }
             
-            error_log("Quiz d'équipe trouvés: " . count($teamScores));
-            error_log("=== FIN getTeamScoresByQuizForCompany ===");
             return $teamScores;
         } catch (\Exception $e) {
-            error_log("Erreur dans getTeamScoresByQuizForCompany: " . $e->getMessage());
-            error_log("Stack trace: " . $e->getTraceAsString());
+
             return [];
         }
     }
@@ -137,7 +132,6 @@ class GlobalStatisticsRepository extends ServiceEntityRepository
             }
             return $groupScores;
         } catch (\Exception $e) {
-            error_log("Erreur dans getGroupScoresByQuiz: " . $e->getMessage());
             return [];
         }
     }
@@ -145,7 +139,6 @@ class GlobalStatisticsRepository extends ServiceEntityRepository
     public function getGroupScoresByQuizForCompany(int $companyId): array
     {
         try {
-            error_log("=== DÉBUT getGroupScoresByQuizForCompany ===");
             
             $qb = $this->createQueryBuilder('q');
             $results = $qb->select('
@@ -161,7 +154,7 @@ class GlobalStatisticsRepository extends ServiceEntityRepository
                 ->getQuery()
                 ->getResult();
             
-            error_log("Résultats bruts de la requête groupes: " . json_encode($results));
+            ("Résultats bruts de la requête groupes: " . json_encode($results));
             
             $groupScores = [];
             if (!empty($results)) {
@@ -177,12 +170,8 @@ class GlobalStatisticsRepository extends ServiceEntityRepository
                 }
             }
             
-            error_log("Quiz de groupes trouvés: " . count($groupScores));
-            error_log("=== FIN getGroupScoresByQuizForCompany ===");
             return $groupScores;
         } catch (\Exception $e) {
-            error_log("Erreur dans getGroupScoresByQuizForCompany: " . $e->getMessage());
-            error_log("Stack trace: " . $e->getTraceAsString());
             return [];
         }
     }

@@ -23,42 +23,7 @@ class UserController extends AbstractController
         private LoggerInterface $logger
     ) {}
 
-    /**
-     * @OA\Get(summary="Lister tous les utilisateurs", tags={"User"})
-     * @OA\Response(response=200, description="Liste des utilisateurs")
-     */
-    #[Route('/user', name: 'user_index', methods: ['GET'])]
-    public function index(): JsonResponse
-    {
-        $users = $this->userService->list(false);
-        
-        $usersWithStats = [];
-        foreach ($users as $user) {
-            $stats = $this->userService->getUserStatistics($user);
-            $usersWithStats[] = [
-                'id' => $user->getId(),
-                'firstName' => $user->getFirstName(),
-                'lastName' => $user->getLastName(),
-                'email' => $user->getEmail(),
-                'isActive' => $user->isActive(),
-                'dateRegistration' => $user->getDateRegistration(),
-                'lastAccess' => $user->getLastAccess(),
-                'avatar' => $user->getAvatar(),
-                'companyName' => $user->getCompany() ? $user->getCompany()->getName() : null,
-                'groups' => $user->getGroups(),
-                'roles' => $user->getRoles(),
-                'userPermissions' => $user->getUserPermissions(),
-                'stats' => $stats
-            ];
-        }
 
-        return $this->json($usersWithStats, 200, [], [
-            'groups' => ['user:read', 'company:read', 'user_permission:read'],
-            'circular_reference_handler' => function ($object) {
-                return $object->getId();
-            }
-        ]);
-    }
 
     /**
      * @OA\Get(summary="Lister tous les utilisateurs (admin)", tags={"User"})
@@ -87,11 +52,12 @@ class UserController extends AbstractController
      * @OA\RequestBody(
      *     required=true,
      *     @OA\JsonContent(
+     *         required={"firstName", "lastName", "email", "password", "recaptchaToken"},
      *         @OA\Property(property="firstName", type="string"),
      *         @OA\Property(property="lastName", type="string"),
      *         @OA\Property(property="email", type="string"),
      *         @OA\Property(property="password", type="string"),
-     *         @OA\Property(property="recaptchaToken", type="string")
+     *         @OA\Property(property="recaptchaToken", type="string", description="Token CAPTCHA obligatoire")
      *     )
      * )
      * @OA\Response(response=201, description="Utilisateur créé")
@@ -102,13 +68,17 @@ class UserController extends AbstractController
         try {
             $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
             
-                         if (isset($data['recaptchaToken'])) {
-                 if (!$this->userService->verifyCaptcha($data['recaptchaToken'])) {
-                     return $this->json(['error' => 'Échec de la vérification CAPTCHA'], 400);
-                 }
-             }
+            if (!isset($data['recaptchaToken']) || empty($data['recaptchaToken'])) {
+                return $this->json(['error' => 'Token CAPTCHA requis'], 400);
+            }
             
-                         $user = $this->userService->create($data);
+                        if (!$this->userService->verifyCaptcha($data['recaptchaToken'])) {
+                return $this->json(['error' => 'Échec de la vérification CAPTCHA'], 400);
+            }
+            
+            unset($data['recaptchaToken']);
+            
+            $user = $this->userService->create($data);
 
             return $this->json($user, 201, [], ['groups' => ['user:read']]);
         } catch (\JsonException $e) {
@@ -116,6 +86,10 @@ class UserController extends AbstractController
         } catch (\InvalidArgumentException $e) {
             return $this->json(['error' => $e->getMessage()], 400);
         } catch (\Exception $e) {
+            $this->logger->error('Erreur lors de la création d\'utilisateur', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return $this->json(['error' => 'Erreur lors de la création de l\'utilisateur'], 500);
         }
     }
@@ -167,7 +141,7 @@ class UserController extends AbstractController
      * @OA\Response(response=200, description="Profil mis à jour")
      * @OA\Security(name="bearerAuth")
      */
-        #[Route('/user/profile/update', name: 'user_profile_update', methods: ['PUT', 'PATCH'])]
+    #[Route('/user/profile/update', name: 'user_profile_update', methods: ['PUT', 'PATCH'])]
     public function updateProfile(Request $request): JsonResponse
     {
         $user = $this->getUser();
@@ -229,6 +203,12 @@ class UserController extends AbstractController
         ]);
     }
 
+    /**
+     * @OA\Get(summary="Statistiques d'un utilisateur par ID", tags={"User"})
+     * @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer"))
+     * @OA\Response(response=200, description="Statistiques de l'utilisateur")
+     * @OA\Security(name="bearerAuth")
+     */
     #[Route('/user/{id}/statistics', name: 'user_statistics_by_id', methods: ['GET'])]
     #[IsGranted('ROLE_USER')]
     #[IsGranted('VIEW_RESULTS', subject: 'user')]
@@ -248,6 +228,12 @@ class UserController extends AbstractController
         ]);
     }
 
+    /**
+     * @OA\Get(summary="Afficher un utilisateur", tags={"User"})
+     * @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer"))
+     * @OA\Response(response=200, description="Utilisateur affiché")
+     * @OA\Security(name="bearerAuth")
+     */
     #[Route('/user/{id}', name: 'user_show', methods: ['GET'])]
     #[IsGranted('ROLE_USER')]
     #[IsGranted('VIEW_RESULTS', subject: 'user')]
@@ -272,6 +258,17 @@ class UserController extends AbstractController
         ]);
     }
 
+    /**
+     * @OA\Put(summary="Mettre à jour un utilisateur", tags={"User"})
+     * @OA\Patch(summary="Mettre à jour un utilisateur (partiel)", tags={"User"})
+     * @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer"))
+     * @OA\RequestBody(
+     *     required=true,
+     *     @OA\JsonContent(type="object")
+     * )
+     * @OA\Response(response=200, description="Utilisateur mis à jour")
+     * @OA\Security(name="bearerAuth")
+     */
     #[Route('/user/{id}', name: 'user_update', methods: ['PUT', 'PATCH'])]
     #[IsGranted('MANAGE_USERS', subject: 'user')]
     public function update(Request $request, User $user): JsonResponse
@@ -293,6 +290,12 @@ class UserController extends AbstractController
         }
     }
 
+    /**
+     * @OA\Patch(summary="Anonymiser un utilisateur", tags={"User"})
+     * @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer"))
+     * @OA\Response(response=200, description="Utilisateur anonymisé")
+     * @OA\Security(name="bearerAuth")
+     */
     #[Route('/user/{id}/anonymize', name: 'user_anonymize', methods: ['PATCH'])]
     #[IsGranted('MANAGE_USERS', subject: 'user')]
     public function anonymize(User $user): JsonResponse
@@ -315,6 +318,11 @@ class UserController extends AbstractController
         ]);
     }
     
+    /**
+     * @OA\Get(summary="Confirmer un compte par token", tags={"User"})
+     * @OA\Parameter(name="token", in="path", required=true, @OA\Schema(type="string"))
+     * @OA\Response(response=200, description="Compte confirmé")
+     */
     #[Route('/confirmation-compte/{token}', name: 'user_confirm_account', methods: ['GET'])]
     public function confirmAccount(string $token): JsonResponse
     {
@@ -348,6 +356,11 @@ class UserController extends AbstractController
         return $this->json($leaderboard);
     }
 
+    /**
+     * @OA\Get(summary="Historique des parties de l'utilisateur connecté", tags={"User"})
+     * @OA\Response(response=200, description="Historique des parties")
+     * @OA\Security(name="bearerAuth")
+     */
     #[Route('/user/game-history', name: 'user_game_history', methods: ['GET'])]
     public function gameHistory(): JsonResponse
     {
@@ -362,6 +375,19 @@ class UserController extends AbstractController
         return $this->json($history);
     }
 
+    /**
+     * @OA\Put(summary="Mettre à jour les rôles et permissions d'un utilisateur", tags={"User"})
+     * @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer"))
+     * @OA\RequestBody(
+     *     required=true,
+     *     @OA\JsonContent(
+     *         @OA\Property(property="roles", type="array", @OA\Items(type="string")),
+     *         @OA\Property(property="permissions", type="array", @OA\Items(type="string"))
+     *     )
+     * )
+     * @OA\Response(response=200, description="Rôles mis à jour")
+     * @OA\Security(name="bearerAuth")
+     */
     #[Route('/user/{id}/roles', name: 'user_update_roles', methods: ['PUT'])]
     #[IsGranted('MANAGE_USERS', subject: 'user')]
     public function updateRoles(Request $request, User $user): JsonResponse

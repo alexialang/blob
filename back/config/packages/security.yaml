@@ -72,7 +72,8 @@ security:
         - { path: ^/api/quiz/[0-9]+$, methods: [ PUT, PATCH ], roles: ROLE_USER }
         - { path: ^/api/quiz/[0-9]+$, methods: [ DELETE ], roles: ROLE_USER }
         
-        - { path: ^/api/user$, methods: [ GET ], roles: ROLE_USER }
+        - { path: ^/api/status, methods: [ GET ], roles: ROLE_USER }
+        - { path: ^/api/type-question, methods: [ GET ], roles: ROLE_USER }
         - { path: ^/api/user/profile, methods: [ GET ], roles: ROLE_USER }
         - { path: ^/api/user/profile/update, methods: [ PUT, PATCH ], roles: ROLE_USER }
         - { path: ^/api/user/statistics, methods: [ GET ], roles: ROLE_USER }

@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Exception\PaymentException;
 use Stripe\Exception\ApiErrorException;
 use Stripe\PaymentLink;
 use Stripe\Price;
@@ -71,11 +72,10 @@ class PaymentService
             ];
             
         } catch (ApiErrorException $e) {
-            error_log('Erreur Stripe API: ' . $e->getMessage());
+
             throw $e;
         } catch (\Exception $e) {
-            error_log('Erreur lors de la création du lien de paiement: ' . $e->getMessage());
-            throw new \Exception('Erreur lors de la création du lien de paiement: ' . $e->getMessage());
+            throw new PaymentException($e->getMessage(), $e);
         }
     }
 
