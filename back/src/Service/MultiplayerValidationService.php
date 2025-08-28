@@ -48,7 +48,7 @@ class MultiplayerValidationService
      */
     public function validateAnswerData(array $data): void
     {
-        error_log("DEBUG: validateAnswerData appelé avec: " . json_encode($data));
+
         
         $constraints = new Assert\Collection([
             'questionId' => [
@@ -73,7 +73,7 @@ class MultiplayerValidationService
         ]);
 
         $this->validate($data, $constraints);
-        error_log("DEBUG: Validation réussie");
+
     }
 
     /**
@@ -114,7 +114,7 @@ class MultiplayerValidationService
     {
         $errors = $this->validator->validate($data, $constraints);
         if (count($errors) > 0) {
-            error_log("DEBUG: Erreurs de validation: " . json_encode($errors));
+
             throw new ValidationFailedException($constraints, $errors);
         }
     }

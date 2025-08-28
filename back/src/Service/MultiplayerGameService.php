@@ -11,15 +11,25 @@ use App\Entity\UserAnswer;
 use App\Repository\RoomRepository;
 use App\Repository\GameSessionRepository;
 use App\Repository\UserAnswerRepository;
-use App\Service\MultiplayerTimingService;
-use App\Service\MultiplayerScoreService;
-use App\Service\MultiplayerValidationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Mercure\HubInterface;
 use Symfony\Component\Mercure\Update;
+use App\Exception\QuizNotFoundException;
+use App\Exception\GameSessionNotFoundException;
+use App\Exception\GameNotStartedException;
+use App\Exception\RoomNotFoundException;
+use App\Exception\RoomFullException;
+use App\Exception\InvalidQuestionException;
+use App\Exception\AnswerAlreadySubmittedException;
+use App\Exception\PlayerAlreadyInRoomException;
+use App\Exception\PlayerNotInRoomException;
+use App\Exception\UnauthorizedGameActionException;
+use App\Exception\InsufficientPlayersException;
+use Psr\Log\LoggerInterface;
 
 class MultiplayerGameService
 {
+    // Variables statiques pour la gestion des réponses multijoueur
     private static array $submittedAnswers = [];
     private static array $gameAnswers = [];
 
@@ -36,6 +46,7 @@ class MultiplayerGameService
         private MultiplayerScoreService $scoreService,
         private MultiplayerValidationService $validationService
     ) {}
+
 
     private function getUserDisplayName(User $user): string
     {
@@ -57,23 +68,28 @@ class MultiplayerGameService
         return 'Joueur ' . $user->getId();
     }
 
+    // Génère le topic WebSocket pour une partie spécifique
     private function getGameTopic(string $gameCode): string
     {
         $cleanId = str_starts_with($gameCode, 'game_') ? substr($gameCode, 5) : $gameCode;
         return "game-{$cleanId}";
     }
 
+    /**
+     * @throws InvalidQuestionException
+     * @throws QuizNotFoundException
+     */
     public function createRoom(User $creator, int $quizId, int $maxPlayers = 4, bool $isTeamMode = false, ?string $roomName = null): array
     {
         $this->validationService->validateRoomData(['quizId' => $quizId, 'maxPlayers' => $maxPlayers, 'isTeamMode' => $isTeamMode, 'roomName' => $roomName]);
         
         if ($quizId <= 0) {
-            throw new \Exception('Quiz ID invalide');
+            throw new InvalidQuestionException($quizId, 'Quiz ID invalide');
         }
 
         $quiz = $this->entityManager->getRepository(Quiz::class)->find($quizId);
         if (!$quiz) {
-            throw new \Exception("Quiz avec ID $quizId non trouvé");
+            throw new QuizNotFoundException($quizId);
         }
 
         $username = $this->getUserDisplayName($creator);
@@ -111,20 +127,20 @@ class MultiplayerGameService
         
         $room = $this->roomRepository->findByRoomCode($roomCode);
         if (!$room) {
-            throw new \Exception('Salon non trouvé');
+            throw new RoomNotFoundException($roomCode);
         }
 
         if ($room->getStatus() !== 'waiting') {
-            throw new \Exception('Le jeu a déjà commencé');
+            throw new GameNotStartedException();
         }
 
         if ($room->getCurrentPlayerCount() >= $room->getMaxPlayers()) {
-            throw new \Exception('Salon complet');
+            throw new RoomFullException();
         }
 
         foreach ($room->getPlayers() as $player) {
             if ($player->getUser()->getId() === $user->getId()) {
-                throw new \Exception('Vous êtes déjà dans ce salon');
+                throw new PlayerAlreadyInRoomException($roomCode);
             }
         }
 
@@ -162,11 +178,12 @@ class MultiplayerGameService
         return $roomData;
     }
 
+    // Permet à un joueur de quitter un salon (gestion transfert créateur)
     public function leaveRoom(string $roomCode, User $user): array
     {
         $room = $this->roomRepository->findByRoomCode($roomCode);
         if (!$room) {
-            throw new \Exception('Salon non trouvé');
+            throw new RoomNotFoundException($roomCode);
         }
 
         $userPlayer = null;
@@ -178,7 +195,7 @@ class MultiplayerGameService
         }
 
         if (!$userPlayer) {
-            throw new \Exception('Vous n\'êtes pas dans ce salon');
+            throw new PlayerNotInRoomException($roomCode);
         }
 
         $wasCreator = $userPlayer->isCreator();
@@ -212,7 +229,7 @@ class MultiplayerGameService
     {
         $room = $this->roomRepository->findByRoomCode($roomCode);
         if (!$room) {
-            throw new \Exception('Salon non trouvé');
+            throw new RoomNotFoundException($roomCode);
         }
 
         $isCreator = false;
@@ -224,11 +241,11 @@ class MultiplayerGameService
         }
 
         if (!$isCreator) {
-            throw new \Exception('Seul le créateur peut lancer le jeu');
+            throw new UnauthorizedGameActionException('lancer le jeu');
         }
 
         if ($room->getCurrentPlayerCount() < 2) {
-            throw new \Exception('Il faut au moins 2 joueurs pour commencer');
+            throw new InsufficientPlayersException(2);
         }
 
         $gameSession = new GameSession();
@@ -269,64 +286,61 @@ class MultiplayerGameService
             'timestamp' => time()
         ]);
 
-        $this->startQuestion($gameSession);
+        // 🚀 ÉTAPE 5.11 : LANCEMENT PREMIÈRE QUESTION
+        $this->startQuestion($gameSession);  // 🎯 POINT CRITIQUE - Démarre le jeu
 
-        return $gameData;
+        // 📤 ÉTAPE 5.12 : RETOUR DONNÉES AU FRONTEND
+        return $gameData;  // 📤 Données formatées pour navigation
     }
 
 
     public function submitAnswer(string $gameCode, User $user, int $questionId, $answer, int $timeSpent = 0): array
     {
-        error_log("DEBUG: submitAnswer appelé - gameCode: $gameCode, userId: {$user->getId()}, questionId: $questionId");
+
         
         $this->validationService->validateAnswerData(['questionId' => $questionId, 'answer' => $answer, 'timeSpent' => $timeSpent]);
         
         $gameSession = $this->gameSessionRepository->findByGameCode($gameCode);
         if (!$gameSession) {
-            throw new \Exception('Jeu non trouvé');
+            throw new GameSessionNotFoundException($gameCode);
         }
 
         if ($gameSession->getStatus() !== 'playing') {
-            throw new \Exception('Le jeu n\'est pas en cours');
+            throw new GameNotStartedException();
         }
 
         $currentQuestionIndex = $gameSession->getCurrentQuestionIndex();
         $quiz = $gameSession->getRoom()->getQuiz();
         $questions = $quiz->getQuestions()->toArray();
         
-        error_log("DEBUG: currentQuestionIndex: $currentQuestionIndex, totalQuestions: " . count($questions));
-        
+
         if ($currentQuestionIndex >= count($questions)) {
-            throw new \Exception('Question invalide');
+            throw new InvalidQuestionException($questionId, 'Index de question invalide');
         }
         
         $currentQuestion = $questions[$currentQuestionIndex];
         
-        error_log("DEBUG: currentQuestion ID: {$currentQuestion->getId()}, submitted questionId: $questionId");
-        
+
         if ($questionId !== $currentQuestion->getId()) {
-            throw new \Exception('Question non autorisée pour cette phase du jeu');
+            throw new InvalidQuestionException($questionId, 'Question non autorisée pour cette phase du jeu');
         }
 
         $sessionKey = 'game_' . $gameCode . '_user_' . $user->getId() . '_question_' . $questionId;
         
-        error_log("DEBUG: sessionKey: $sessionKey, alreadySubmitted: " . (isset(self::$submittedAnswers[$sessionKey]) ? 'true' : 'false'));
-        
+
         if (isset(self::$submittedAnswers[$sessionKey])) {
-            throw new \Exception('Réponse déjà soumise pour cette question');
+            throw new AnswerAlreadySubmittedException($questionId);
         }
 
         self::$submittedAnswers[$sessionKey] = true;
 
         $question = $this->entityManager->getRepository(\App\Entity\Question::class)->find($questionId);
         if (!$question) {
-            throw new \Exception('Question non trouvée');
+            throw new InvalidQuestionException($questionId, 'Question non trouvée');
         }
 
         $isCorrect = $this->checkAnswer($question, $answer);
         $points = $this->scoreService->calculatePoints($isCorrect, $timeSpent);
-
-        error_log("DEBUG: Réponse validée - isCorrect: " . ($isCorrect ? 'true' : 'false') . ", points: $points");
 
         $this->scoreService->recordAnswer($gameCode, $user, $questionId, $isCorrect, $points);
         $totalScore = $this->scoreService->calculateTotalScore($gameCode, $user);
@@ -371,10 +385,10 @@ class MultiplayerGameService
         $answeredPlayersCount = $answeredCount;
         $totalPlayersCount = count($allPlayersInRoom);
 
-        error_log("DEBUG: answeredPlayersCount: $answeredPlayersCount, totalPlayersCount: $totalPlayersCount");
+
 
         if ($answeredPlayersCount >= $totalPlayersCount) {
-            error_log("DEBUG: Tous les joueurs ont répondu, lancement de la phase de feedback");
+
             $this->startFeedbackPhase($gameSession);
         } else {
             $this->publishUpdate($this->getGameTopic($gameSession->getGameCode()), [
@@ -429,7 +443,7 @@ class MultiplayerGameService
     {
         $room = $this->roomRepository->findByRoomCode($roomCode);
         if (!$room) {
-            throw new \Exception("Salon '$roomCode' non trouvé");
+            throw new RoomNotFoundException($roomCode);
         }
 
         return $this->formatRoomData($room);
@@ -446,18 +460,16 @@ class MultiplayerGameService
         $gameSession = $qb->getQuery()->getSingleResult();
         
         if (!$gameSession) {
-            throw new \Exception('Jeu non trouvé');
+            throw new GameSessionNotFoundException($gameCode);
         }
 
-        error_log("DEBUG: getGameStatus - gameCode: $gameCode");
-        error_log("DEBUG: getGameStatus - currentQuestionIndex: " . $gameSession->getCurrentQuestionIndex());
-        error_log("DEBUG: getGameStatus - status: " . $gameSession->getStatus());
+
 
         $this->timingService->ensureTimingExists($gameSession);
 
         $gameData = $this->formatGameData($gameSession);
         
-        error_log("DEBUG: getGameStatus - Réponse finale currentQuestionIndex: " . $gameData['currentQuestionIndex']);
+
         
         return $gameData;
     }
@@ -474,7 +486,7 @@ class MultiplayerGameService
         
         $room = $this->roomRepository->findByRoomCode($roomCode);
         if (!$room) {
-            throw new \Exception('Salon non trouvé');
+            throw new RoomNotFoundException($roomCode);
         }
 
         foreach ($invitedUserIds as $userId) {
@@ -610,7 +622,7 @@ class MultiplayerGameService
 
             $this->mercureHub->publish($update);
         } catch (\Exception $e) {
-            error_log("Erreur Mercure pour le topic {$topic}: " . $e->getMessage());
+
         }
     }
 
@@ -661,7 +673,6 @@ class MultiplayerGameService
             'timestamp' => time()
         ]);
     }
-
     public function triggerFeedbackPhase(string $gameCode): void
     {
         $gameSession = $this->gameSessionRepository->findByGameCode($gameCode);
@@ -707,17 +718,16 @@ class MultiplayerGameService
         if ($questionIndex + 1 >= count($questions)) {
             $this->endGameInternal($gameSession);
         } else {
-            error_log("DEBUG: startFeedbackPhase - Index reste à $questionIndex, attente triggerNextQuestion()");
+
         }
     }
 
     public function triggerNextQuestion(string $gameCode): void
     {
-        error_log("DEBUG: triggerNextQuestion appelé pour gameCode: $gameCode");
+
         
         $gameSession = $this->gameSessionRepository->findByGameCode($gameCode);
         if (!$gameSession) {
-            error_log("DEBUG: GameSession non trouvée");
             return;
         }
 
@@ -729,23 +739,20 @@ class MultiplayerGameService
         $quiz = $gameSession->getRoom()->getQuiz();
         $questions = $quiz->getQuestions()->toArray();
 
-        error_log("DEBUG: triggerNextQuestion - questionIndex actuel: $questionIndex, totalQuestions: " . count($questions));
-        error_log("DEBUG: Quiz ID: " . $quiz->getId() . ", Questions: " . json_encode(array_map(fn($q) => $q->getId(), $questions)));
+
+
 
         if ($questionIndex + 1 >= count($questions)) {
-            error_log("DEBUG: Fin du jeu - plus de questions disponibles");
             $this->endGameInternal($gameSession);
             return;
         }
 
         $newIndex = $questionIndex + 1;
-        error_log("DEBUG: triggerNextQuestion - nouvel index: $newIndex");
         
         $gameSession->setCurrentQuestionIndex($newIndex);
         $this->timingService->setupQuestionTiming($gameSession, 30);
         
         $updatedIndex = $gameSession->getCurrentQuestionIndex();
-        error_log("DEBUG: triggerNextQuestion - index après mise à jour: $updatedIndex");
         
         $question = $questions[$newIndex];
         
@@ -770,7 +777,7 @@ class MultiplayerGameService
 
         $gameCode = $gameSession->getGameCode();
         
-        error_log("DEBUG: triggerNextQuestion - envoi de la nouvelle question: " . json_encode($questionData));
+
         
         $this->publishUpdate($this->getGameTopic($gameCode), [
             'action' => 'new_question',
@@ -788,7 +795,7 @@ class MultiplayerGameService
         try {
             $gameSession = $this->gameSessionRepository->findByGameCode($gameId);
             if (!$gameSession) {
-                throw new \Exception('Session de jeu non trouvée');
+                throw new GameSessionNotFoundException('unknown');
             }
 
             $room = $gameSession->getRoom();
@@ -797,7 +804,7 @@ class MultiplayerGameService
             });
 
             if (!$isPlayer) {
-                throw new \Exception('Vous ne faites pas partie de cette partie');
+                throw new PlayerNotInRoomException('unknown');
             }
 
             $this->endGameInternal($gameSession);
@@ -808,10 +815,11 @@ class MultiplayerGameService
                 'gameId' => $gameId
             ];
         } catch (\Exception $e) {
-            error_log("Erreur lors de la finalisation de la partie: " . $e->getMessage());
+
             throw $e;
         }
     }
+
 
     public function endGameInternal(GameSession $gameSession): void
     {
@@ -838,13 +846,12 @@ class MultiplayerGameService
     }
 
 
-
     public function submitPlayerScores(string $gameId, array $playerScores): array
     {
         try {
             $gameSession = $this->gameSessionRepository->findByGameCode($gameId);
             if (!$gameSession) {
-                throw new \Exception('Session de jeu non trouvée');
+                throw new GameSessionNotFoundException('unknown');
             }
 
             $existingScores = $gameSession->getSharedScores() ?? [];
@@ -856,7 +863,6 @@ class MultiplayerGameService
                 if ($newScore >= $oldScore) {
                     $mergedScores[$username] = $newScore;
                 } else {
-                    error_log("Score conservé pour $username: $oldScore (nouveau: $newScore ignoré)");
                 }
             }
 
@@ -870,7 +876,7 @@ class MultiplayerGameService
                 'sharedScores' => $mergedScores
             ];
         } catch (\Exception $e) {
-            error_log("Erreur lors du stockage des scores partagés: " . $e->getMessage());
+
             throw $e;
         }
     }
@@ -885,7 +891,7 @@ class MultiplayerGameService
             
             $sharedScores = $gameSession->getSharedScores() ?? [];
             
-            error_log("DEBUG: saveMultiplayerGameResults - sharedScores: " . json_encode($sharedScores));
+
             
             foreach ($gameSession->getRoom()->getPlayers() as $roomPlayer) {
                 $user = $roomPlayer->getUser();
@@ -903,32 +909,22 @@ class MultiplayerGameService
 
                 $this->entityManager->persist($userAnswer);
                 
-                error_log("DEBUG: Score enregistré pour $username: $rawTotalScore -> $normalizedScore%");
             }
             
             $this->entityManager->flush();
-            error_log("DEBUG: saveMultiplayerGameResults - flush réussi");
             
         } catch (\Exception $e) {
-            error_log("ERREUR dans saveMultiplayerGameResults: " . $e->getMessage());
-            error_log("ERREUR stack trace: " . $e->getTraceAsString());
+
+
             throw $e;
         }
     }
-
-
-
-
-
-
-
-
 
     public function handleTimeExpired(string $gameCode): void
     {
         $gameSession = $this->gameSessionRepository->findByGameCode($gameCode);
         if (!$gameSession) {
-            throw new \Exception('Jeu non trouvé');
+            throw new GameSessionNotFoundException($gameCode);
         }
 
         $room = $gameSession->getRoom();
@@ -969,7 +965,6 @@ class MultiplayerGameService
                     'timestamp' => time()
                 ];
                 
-                error_log("DEBUG: Temps écoulé - Joueur {$roomPlayer->getUser()->getPseudo()} traité comme mauvaise réponse (0 points)");
             }
         }
 
@@ -982,6 +977,5 @@ class MultiplayerGameService
             'timestamp' => time()
         ]);
         
-        error_log("DEBUG: Temps écoulé - Phase de feedback déclenchée pour la partie $gameCode");
     }
 }

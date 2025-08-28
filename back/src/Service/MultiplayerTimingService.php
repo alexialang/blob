@@ -49,7 +49,7 @@ class MultiplayerTimingService
     {
         if (!$gameSession->getCurrentQuestionStartedAt() || !$gameSession->getCurrentQuestionDuration()) {
             $this->setupQuestionTiming($gameSession);
-            error_log("DEBUG: Timing mis à jour automatiquement pour la partie " . $gameSession->getGameCode());
+
         }
     }
 
@@ -60,7 +60,7 @@ class MultiplayerTimingService
     {
         $lastQuestionStartTime = $gameSession->getCurrentQuestionStartedAt();
         if ($lastQuestionStartTime && (time() - $lastQuestionStartTime->getTimestamp()) < $cooldownSeconds) {
-            error_log("DEBUG: Transition bloquée - cooldown {$cooldownSeconds}s");
+
             return false;
         }
         return true;

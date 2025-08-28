@@ -15,8 +15,8 @@
   --color-danger-light: #EF4444;
   --color-danger-dark: #B91C1C;
 
-  --color-accent-dark: #E67E22;
-  --color-secondary-dark: #5BC0BE;
+  --color-accent-dark: #D35400;
+  --color-secondary-dark: #48A09D;
   --color-pink-dark: #B91C5C;
 
   --color-success: var(--color-primary);
@@ -76,7 +76,23 @@
 
   --transition-fast: 0.2s ease;
   --transition-normal: 0.3s ease;
+}
 
+/* Support pour le mode high contrast - préserve mieux les couleurs */
+@media (prefers-contrast: high) {
+  :root {
+    --border-light: #000000;
+    --border-medium: #000000;
+  }
+  
+  /* Force le texte noir sur les couleurs claires pour le high contrast */
+  .podium-player.second-place,
+  .podium-player.third-place {
+    color: #000 !important;
+  }
+}
+
+body {
   background-color: var(--color-light) !important;
   margin: 0;
   padding: 0;

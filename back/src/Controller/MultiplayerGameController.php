@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use OpenApi\Annotations as OA;
 
 #[Route('/api/multiplayer')]
 #[IsGranted('ROLE_USER')]
@@ -23,6 +24,21 @@ class MultiplayerGameController extends AbstractController
         private UserService $userService
         ) {
     }
+
+    /**
+     * @OA\Post(summary="Créer un nouveau salon multijoueur", tags={"Multiplayer"})
+     * @OA\RequestBody(
+     *     required=true,
+     *     @OA\JsonContent(
+     *         @OA\Property(property="quizId", type="integer"),
+     *         @OA\Property(property="maxPlayers", type="integer"),
+     *         @OA\Property(property="isTeamMode", type="boolean"),
+     *         @OA\Property(property="roomName", type="string")
+     *     )
+     * )
+     * @OA\Response(response=200, description="Salon créé avec succès")
+     * @OA\Security(name="bearerAuth")
+     */
 
     #[Route('/room/create', name: 'create_game_room', methods: ['POST'])]
     public function createRoom(Request $request): JsonResponse
@@ -61,6 +77,18 @@ class MultiplayerGameController extends AbstractController
         }
     }
 
+    /**
+     * @OA\Post(summary="Rejoindre un salon multijoueur", tags={"Multiplayer"})
+     * @OA\Parameter(name="roomId", in="path", required=true, @OA\Schema(type="string"))
+     * @OA\RequestBody(
+     *     required=false,
+     *     @OA\JsonContent(
+     *         @OA\Property(property="teamName", type="string")
+     *     )
+     * )
+     * @OA\Response(response=200, description="Salon rejoint avec succès")
+     * @OA\Security(name="bearerAuth")
+     */
     #[Route('/room/{roomId}/join', name: 'join_game_room', methods: ['POST'])]
     public function joinRoom(string $roomId, Request $request): JsonResponse
     {
@@ -82,6 +110,12 @@ class MultiplayerGameController extends AbstractController
         }
     }
 
+    /**
+     * @OA\Post(summary="Quitter un salon multijoueur", tags={"Multiplayer"})
+     * @OA\Parameter(name="roomId", in="path", required=true, @OA\Schema(type="string"))
+     * @OA\Response(response=200, description="Salon quitté avec succès")
+     * @OA\Security(name="bearerAuth")
+     */
     #[Route('/room/{roomId}/leave', name: 'leave_game_room', methods: ['POST'])]
     public function leaveRoom(string $roomId): JsonResponse
     {
@@ -94,6 +128,13 @@ class MultiplayerGameController extends AbstractController
             return $this->json(['error' => $e->getMessage()], 400);
         }
     }
+
+    /**
+     * @OA\Post(summary="Démarrer une partie multijoueur", tags={"Multiplayer"})
+     * @OA\Parameter(name="roomId", in="path", required=true, @OA\Schema(type="string"))
+     * @OA\Response(response=200, description="Partie démarrée avec succès")
+     * @OA\Security(name="bearerAuth")
+     */
 
     #[Route('/room/{roomId}/start', name: 'start_game', methods: ['POST'])]
     public function startGame(string $roomId): JsonResponse
@@ -108,6 +149,12 @@ class MultiplayerGameController extends AbstractController
         }
     }
 
+    /**
+     * @OA\Get(summary="Consulter l'état d'un salon multijoueur", tags={"Multiplayer"})
+     * @OA\Parameter(name="roomId", in="path", required=true, @OA\Schema(type="string"))
+     * @OA\Response(response=200, description="État du salon")
+     * @OA\Security(name="bearerAuth")
+     */
     #[Route('/room/{roomId}', name: 'get_room_status', methods: ['GET'])]
     public function getRoomStatus(string $roomId): JsonResponse
     {
@@ -119,6 +166,21 @@ class MultiplayerGameController extends AbstractController
         }
     }
 
+
+    /**
+     * @OA\Post(summary="Soumettre une réponse en multijoueur", tags={"Multiplayer"})
+     * @OA\Parameter(name="gameId", in="path", required=true, @OA\Schema(type="string"))
+     * @OA\RequestBody(
+     *     required=true,
+     *     @OA\JsonContent(
+     *         @OA\Property(property="questionId", type="integer"),
+     *         @OA\Property(property="answer", type="mixed"),
+     *         @OA\Property(property="timeSpent", type="integer")
+     *     )
+     * )
+     * @OA\Response(response=200, description="Réponse soumise avec succès")
+     * @OA\Security(name="bearerAuth")
+     */
     #[Route('/game/{gameId}/answer', name: 'submit_multiplayer_answer', methods: ['POST'])]
     public function submitAnswer(string $gameId, Request $request): JsonResponse
     {
@@ -144,10 +206,10 @@ class MultiplayerGameController extends AbstractController
             foreach ($e->getViolations() as $violation) {
                 $errorMessages[] = $violation->getMessage();
             }
-            error_log("Multiplayer submitAnswer validation error: " . json_encode($errorMessages));
+
             return $this->json(['error' => 'Données invalides', 'details' => $errorMessages], 400);
         } catch (\Exception $e) {
-            error_log("Multiplayer submitAnswer error: " . $e->getMessage());
+
             return $this->json(['error' => $e->getMessage()], 400);
         }
     }
@@ -162,6 +224,7 @@ class MultiplayerGameController extends AbstractController
             return $this->json(['error' => $e->getMessage()], 404);
         }
     }
+
 
     #[Route('/game/{gameId}/scores', name: 'submit_player_scores', methods: ['POST'])]
     public function submitPlayerScores(string $gameId, Request $request): JsonResponse
@@ -185,13 +248,19 @@ class MultiplayerGameController extends AbstractController
             foreach ($e->getViolations() as $violation) {
                 $errorMessages[] = $violation->getMessage();
             }
-            error_log("Multiplayer submitPlayerScores validation error: " . json_encode($errorMessages));
+
             return $this->json(['error' => 'Données invalides', 'details' => $errorMessages], 400);
         } catch (\Exception $e) {
-            error_log("Multiplayer submitPlayerScores error: " . $e->getMessage());
+
             return $this->json(['error' => $e->getMessage()], 400);
         }
     }
+
+    /**
+     * @OA\Get(summary="Lister les salons multijoueur disponibles", tags={"Multiplayer"})
+     * @OA\Response(response=200, description="Liste des salons disponibles")
+     * @OA\Security(name="bearerAuth")
+     */
 
     #[Route('/rooms/available', name: 'get_available_rooms', methods: ['GET'])]
     public function getAvailableRooms(): JsonResponse
