@@ -15,29 +15,29 @@ class Company
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['quiz:read','company:read','user:admin_read'])]
+    #[Groups(['quiz:read','company:read','user:admin_read','company:list','company:detail'])]
     private ?int $id = null;
 
 
-    #[Groups(['quiz:read','company:read','user:admin_read'])]
+    #[Groups(['quiz:read','company:read','user:admin_read','company:list','company:detail'])]
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 
-    #[Groups(['company:read','user:admin_read'])]
+    #[Groups(['company:read','user:admin_read','company:detail','company:create'])]
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $dateCreation = null;
 
     /**
      * @var Collection<int, User>
      */
-    #[Groups(['company:read'])]
+    #[Groups(['company:detail'])]
     #[ORM\OneToMany(targetEntity: User::class, mappedBy: 'company')]
     private Collection $users;
 
     /**
      * @var Collection<int, Group>
      */
-    #[Groups(['company:read'])]
+    #[Groups(['company:detail'])]
     #[ORM\OneToMany(targetEntity: Group::class, mappedBy: 'company')]
     private Collection $groups;
 
@@ -168,5 +168,31 @@ class Company
         }
 
         return $this;
+    }
+
+    // Méthodes virtuelles pour la sérialisation
+
+    #[Groups(['company:list', 'company:detail'])]
+    public function getUserCount(): int
+    {
+        return $this->users->count();
+    }
+
+    #[Groups(['company:list', 'company:detail'])]
+    public function getGroupCount(): int
+    {
+        return $this->groups->count();
+    }
+
+    #[Groups(['company:list', 'company:detail'])]
+    public function getQuizCount(): int
+    {
+        return $this->quizs->count();
+    }
+
+    #[Groups(['company:detail'])]
+    public function getCreatedAt(): ?string
+    {
+        return $this->dateCreation ? $this->dateCreation->format('Y-m-d H:i:s') : null;
     }
 }
