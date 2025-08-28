@@ -20,14 +20,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['user:read','quiz:read','company:read','user:admin_read','user:public','company:detail','user:statistics'])]
+    #[Groups(['user:read','quiz:read','company:read','user:admin_read','user:public','company:detail','user:statistics','user:roles_update'])]
     private ?int $id = null;
-    #[Groups(['user:read', 'company:read','quiz:read','user:admin_read','user:public','company:detail','user:statistics'])]
+    #[Groups(['user:read', 'company:read','quiz:read','user:admin_read','user:public','company:detail','user:statistics','user:roles_update'])]
     #[ORM\Column(length: 180)]
     private ?string $email = null;
 
 
-    #[Groups(['user:read','quiz:read','user:admin_read','user:admin_list','user:profile'])]
+    #[Groups(['user:read','quiz:read','user:admin_read','user:admin_list','user:profile','user:roles_update'])]
     #[ORM\Column]
     private array $roles = [];
 

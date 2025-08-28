@@ -174,23 +174,10 @@ class UserPermissionController extends AbstractController
             
             $currentUser = $this->getUser();
             
-            $this->logger->warning('SECURITY: Modification des rôles utilisateur', [
-                'admin_user_id' => $currentUser->getId(),
-                'admin_user_email' => $currentUser->getEmail(),
-                'target_user_id' => $user->getId(),
-                'target_user_email' => $user->getEmail(),
-                'new_roles' => $validRoles,
-                'new_permissions' => $data['permissions'],
-                'timestamp' => new \DateTime()
-            ]);
-            
             $user = $this->userService->updateUserRoles($user, $data);
 
             return $this->json($user, 200, [], [
-                'groups' => ['user:read', 'user_permission:read'],
-                'circular_reference_handler' => function ($object) {
-                    return $object->getId();
-                }
+                'groups' => ['user:roles_update']
             ]);
         } catch (\JsonException $e) {
             return $this->json(['error' => 'Invalid JSON'], 400);
