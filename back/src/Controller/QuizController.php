@@ -10,6 +10,7 @@ use App\Service\QuizCrudService;
 use App\Service\LeaderboardService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Validator\Exception\ValidationFailedException;
+use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -75,6 +76,22 @@ class QuizController extends AbstractController
     {
         try {
             $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
+
+            if (!isset($data['title']) || empty(trim($data['title']))) {
+                return $this->json(['error' => 'Le titre est obligatoire'], 400);
+            }
+            
+            if (!isset($data['description']) || empty(trim($data['description']))) {
+                return $this->json(['error' => 'La description est obligatoire'], 400);
+            }
+            
+            if (!isset($data['category_id']) || !is_numeric($data['category_id']) || $data['category_id'] <= 0) {
+                return $this->json(['error' => 'L\'ID de catégorie doit être un nombre positif'], 400);
+            }
+            
+            if (!isset($data['questions']) || !is_array($data['questions']) || empty($data['questions'])) {
+                return $this->json(['error' => 'Au moins une question est requise'], 400);
+            }
 
             $user = $this->getUser();
 
@@ -195,6 +212,23 @@ class QuizController extends AbstractController
     {
         try {
             $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
+            
+            if (isset($data['title']) && empty(trim($data['title']))) {
+                return $this->json(['error' => 'Le titre ne peut pas être vide'], 400);
+            }
+            
+            if (isset($data['description']) && empty(trim($data['description']))) {
+                return $this->json(['error' => 'La description ne peut pas être vide'], 400);
+            }
+            
+            if (isset($data['category_id']) && (!is_numeric($data['category_id']) || $data['category_id'] <= 0)) {
+                return $this->json(['error' => 'L\'ID de catégorie doit être un nombre positif'], 400);
+            }
+            
+            if (isset($data['questions']) && (!is_array($data['questions']) || empty($data['questions']))) {
+                return $this->json(['error' => 'Les questions doivent être un tableau non vide'], 400);
+            }
+            
         } catch (\JsonException $e) {
             return $this->json(['error' => 'Invalid JSON'], 400);
         }

@@ -136,7 +136,21 @@ class CompanyController extends AbstractController
     public function create(Request $request): JsonResponse
     {
         try {
-            $data = json_decode($request->getContent(), true);
+            $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
+            
+            if (!isset($data['name']) || empty(trim($data['name']))) {
+                return $this->json([
+                    'success' => false,
+                    'message' => 'Le nom de l\'entreprise est obligatoire'
+                ], 400);
+            }
+            
+            if (strlen(trim($data['name'])) < 2) {
+                return $this->json([
+                    'success' => false,
+                    'message' => 'Le nom de l\'entreprise doit contenir au moins 2 caractères'
+                ], 400);
+            }
             
             $company = $this->companyService->create($data);
             
@@ -146,6 +160,11 @@ class CompanyController extends AbstractController
                 'data' => $company
             ], 201, [], ['groups' => ['company:create']]);
 
+        } catch (\JsonException $e) {
+            return $this->json([
+                'success' => false,
+                'message' => 'Format JSON invalide'
+            ], 400);
         } catch (ValidationFailedException $e) {
             $errorMessages = [];
             foreach ($e->getViolations() as $violation) {
@@ -163,7 +182,6 @@ class CompanyController extends AbstractController
             ], 500);
         }
     }
-
 
     /**
      * @OA\Delete(summary="Supprimer une entreprise", tags={"Company"})
@@ -290,23 +308,38 @@ class CompanyController extends AbstractController
             ], 500);
         }
     }
+    
     #[Route('/companies/{id}/assign-user', methods: ['POST'])]
     #[IsGranted('MANAGE_USERS', subject: 'company')]
     public function assignUserToCompany(Company $company, Request $request): JsonResponse
     {
         try {
-            $data = json_decode($request->getContent(), true);
+            $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
             
-            if (!isset($data['userId'])) {
+            if (!isset($data['userId']) || !is_numeric($data['userId']) || $data['userId'] <= 0) {
                 return $this->json([
                     'success' => false,
-                    'message' => 'ID utilisateur requis'
+                    'message' => 'ID utilisateur invalide'
                 ], 400);
             }
             
-            $userId = $data['userId'];
+            $userId = (int) $data['userId'];
             $roles = $data['roles'] ?? ['ROLE_USER'];
             $permissions = $data['permissions'] ?? [];
+            
+            if (!is_array($roles)) {
+                return $this->json([
+                    'success' => false,
+                    'message' => 'Les rôles doivent être un tableau'
+                ], 400);
+            }
+            
+            if (!is_array($permissions)) {
+                return $this->json([
+                    'success' => false,
+                    'message' => 'Les permissions doivent être un tableau'
+                ], 400);
+            }
             
             $result = $this->companyService->assignUserToCompany($company, $userId, $roles, $permissions);
             
@@ -316,6 +349,11 @@ class CompanyController extends AbstractController
                 'data' => $result
             ]);
             
+        } catch (\JsonException $e) {
+            return $this->json([
+                'success' => false,
+                'message' => 'Format JSON invalide'
+            ], 400);
         } catch (\Exception $e) {
             return $this->json([
                 'success' => false,

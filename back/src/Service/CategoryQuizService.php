@@ -24,9 +24,19 @@ class CategoryQuizService
         return $this->categoryQuizRepository->findAll();
     }
 
+    /**
+     * Trouve une catégorie par son ID
+     * 
+     * @param int $id L'ID de la catégorie
+     * @return CategoryQuiz|null La catégorie trouvée ou null
+     * @throws \InvalidArgumentException Si l'ID est invalide
+     */
     public function find(int $id): ?CategoryQuiz
     {
+        if ($id <= 0) {
+            throw new \InvalidArgumentException('L\'ID de la catégorie doit être positif');
+        }
+        
         return $this->categoryQuizRepository->find($id);
     }
-
 }

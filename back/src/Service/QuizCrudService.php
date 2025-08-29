@@ -159,6 +159,8 @@ class QuizCrudService
      */
     public function delete(Quiz $quiz): void
     {
+        $this->em->beginTransaction();
+        
         try {
             foreach ($quiz->getQuestions() as $question) {
                 foreach ($question->getAnswers() as $answer) {
@@ -169,8 +171,11 @@ class QuizCrudService
 
             $this->em->remove($quiz);
             $this->em->flush();
-
+            
+            $this->em->commit();
+            
         } catch (\Exception $e) {
+            $this->em->rollback();
             $this->logger->error('Erreur lors de la suppression du quiz: ' . $e->getMessage());
             throw new \InvalidArgumentException('Erreur lors de la suppression du quiz');
         }
@@ -185,7 +190,6 @@ class QuizCrudService
      */
     public function createWithQuestions(array $data, User $user): Quiz
     {
-        $this->validateQuizData($data);
 
         $this->em->beginTransaction();
 
@@ -193,13 +197,13 @@ class QuizCrudService
             $quiz = new Quiz();
             $quiz->setTitle($data['title']);
             $quiz->setDescription($data['description']);
-            $quiz->setStatus(Status::from($data['status']));
+            $quiz->setStatus(Status::from($data['status'] ?? 'draft'));
             $quiz->setIsPublic($data['isPublic'] ?? false);
             $quiz->setDateCreation(new \DateTimeImmutable());
             $quiz->setUser($user);
 
-            if (isset($data['category']) && is_numeric($data['category'])) {
-                $category = $this->categoryQuizRepository->find($data['category']);
+            if (isset($data['category_id']) && is_numeric($data['category_id'])) {
+                $category = $this->categoryQuizRepository->find($data['category_id']);
                 if ($category) {
                     $quiz->setCategory($category);
                 }
@@ -221,7 +225,6 @@ class QuizCrudService
                 }
             }
 
-            // Persister le quiz
             $this->em->persist($quiz);
 
             // Créer les questions et réponses

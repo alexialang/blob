@@ -9,6 +9,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Validator\Constraints as Assert;
 use OpenApi\Annotations as OA;
 
 #[Route('/api')]
@@ -25,7 +26,9 @@ class LeaderboardController extends AbstractController
      * @OA\Response(response=200, description="Classement du quiz")
      */
     #[Route('/leaderboard/quiz/{id}', name: 'quiz_leaderboard', methods: ['GET'])]
-    public function getQuizLeaderboard(int $id): JsonResponse
+    public function getQuizLeaderboard(
+        #[Assert\Positive(message: 'L\'ID du quiz doit être positif')] int $id
+    ): JsonResponse
     {
         $quiz = $this->entityManager->getRepository(Quiz::class)->find($id);
         if (!$quiz) {
@@ -35,7 +38,7 @@ class LeaderboardController extends AbstractController
         $currentUser = $this->getUser();
         $data = $this->leaderboardService->getQuizLeaderboard($quiz, $currentUser);
 
-        return new JsonResponse($data);
+        return $this->json($data, 200, [], ['groups' => ['leaderboard:read']]);
     }
 
     /**
@@ -47,10 +50,17 @@ class LeaderboardController extends AbstractController
     public function getGeneralLeaderboard(Request $request): JsonResponse
     {
         $limit = (int) $request->query->get('limit', 50);
-        $currentUser = $this->getUser();
         
+        if ($limit <= 0 || $limit > 1000) {
+            return new JsonResponse([
+                'error' => 'Paramètre invalide',
+                'message' => 'La limite doit être comprise entre 1 et 1000'
+            ], 400);
+        }
+        
+        $currentUser = $this->getUser();
         $data = $this->leaderboardService->getGeneralLeaderboard($limit, $currentUser);
 
-        return new JsonResponse($data);
+        return $this->json($data, 200, [], ['groups' => ['leaderboard:read']]);
     }
 }

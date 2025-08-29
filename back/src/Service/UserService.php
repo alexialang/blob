@@ -5,8 +5,8 @@ namespace App\Service;
 use App\Entity\Company;
 use App\Entity\User;
 use App\Entity\UserPermission;
+use App\Enum\Permission;
 use App\Repository\UserRepository;
-use App\Repository\UserAnswerRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Mailer\MailerInterface;
@@ -24,7 +24,6 @@ class UserService
 {
     private EntityManagerInterface      $em;
     private UserRepository              $userRepository;
-    private UserAnswerRepository        $userAnswerRepository;
     private UserPasswordHasherInterface $passwordHasher;
     private MessageBusInterface         $bus;
     private MailerInterface             $mailer;
@@ -39,7 +38,6 @@ class UserService
         #[Autowire('%recaptcha_secret_key%')] string $recaptchaSecretKey,
         EntityManagerInterface        $em,
         UserRepository                $userRepository,
-        UserAnswerRepository          $userAnswerRepository,
         UserPasswordHasherInterface   $passwordHasher,
         MessageBusInterface           $bus,
         MailerInterface               $mailer,
@@ -50,7 +48,6 @@ class UserService
     ) {
         $this->em             = $em;
         $this->userRepository = $userRepository;
-        $this->userAnswerRepository = $userAnswerRepository;
         $this->passwordHasher = $passwordHasher;
         $this->bus            = $bus;
         $this->mailer         = $mailer;
@@ -143,44 +140,52 @@ class UserService
 
     public function create(array $data): User
     {
-        $this->validateUserData($data);
+        $this->validateUserDataForCreation($data);
         
         $existingUser = $this->userRepository->findOneBy(['email' => $data['email']]);
         if ($existingUser) {
             throw new \InvalidArgumentException('Cet email est déjà utilisé');
         }
 
+        $this->em->beginTransaction();
+        
+        try {
+            $user = new User();
+            $user->setEmail($data['email']);
+            $user->setFirstName($data['firstName']);
+            $user->setLastName($data['lastName']);
+            $user->setDateRegistration(new \DateTimeImmutable());
+            $user->setLastAccess(new \DateTime());
+            $roles = ['ROLE_USER'];
+            if ($data['is_admin'] ?? false) {
+                $roles[] = 'ROLE_ADMIN';
+            }
+            $user->setRoles($roles);
+            $user->setIsActive(true);
 
-        $user = new User();
-        $user->setEmail($data['email']);
-        $user->setFirstName($data['firstName']);
-        $user->setLastName($data['lastName']);
-        $user->setDateRegistration(new \DateTimeImmutable());
-        $user->setLastAccess(new \DateTime());
-        $roles = ['ROLE_USER'];
-        if ($data['is_admin'] ?? false) {
-            $roles[] = 'ROLE_ADMIN';
+            $hashedPassword = $this->passwordHasher->hashPassword($user, $data['password']);
+            $user->setPassword($hashedPassword);
+
+            $token = Uuid::v4()->toRfc4122();
+            $user->setConfirmationToken($token);
+            $user->setIsVerified(false);
+            
+            $this->em->persist($user);
+            $this->em->flush();
+            
+            $this->em->commit();
+            return $user;
+            
+        } catch (\Exception $e) {
+            $this->em->rollback();
+            throw $e;
         }
-        $user->setRoles($roles);
-        $user->setIsActive(true);
-
-
-        $hashedPassword = $this->passwordHasher->hashPassword($user, $data['password']);
-        $user->setPassword($hashedPassword);
-
-        $token = Uuid::v4()->toRfc4122();
-        $user->setConfirmationToken($token);
-        $user->setIsVerified(false);
-        $this->em->persist($user);
-        $this->em->flush();
-
-        return $user;
     }
 
     public function update(User $user, array $data): User
     {
         $this->validateUserData($data);
-        
+
         if (isset($data['email']) && $data['email'] !== $user->getEmail()) {
             $existingUser = $this->userRepository->findOneBy(['email' => $data['email']]);
             if ($existingUser) {
@@ -188,57 +193,75 @@ class UserService
             }
         }
 
-        if (isset($data['email']) && \is_string($data['email'])) {
-            $user->setEmail($data['email']);
-        }
-        if (isset($data['firstName']) && \is_string($data['firstName'])) {
-            $user->setFirstName($data['firstName']);
-        }
-        if (isset($data['lastName']) && \is_string($data['lastName'])) {
-            $user->setLastName($data['lastName']);
-        }
-        if (isset($data['roles']) && \is_array($data['roles'])) {
-            $user->setRoles($data['roles']);
-        }
-        if (isset($data['password']) && \is_string($data['password'])) {
-            $hashedPassword = $this->passwordHasher->hashPassword($user, $data['password']);
-            $user->setPassword($hashedPassword);
-        }
-        if (isset($data['is_admin'])) {
-            $roles = $user->getRoles();
-            if ($data['is_admin']) {
-                if (!in_array('ROLE_ADMIN', $roles)) {
-                    $roles[] = 'ROLE_ADMIN';
-                }
-            } else {
-                $roles = array_filter($roles, fn($role) => $role !== 'ROLE_ADMIN');
+        $this->em->beginTransaction();
+        
+        try {
+            if (isset($data['email']) && \is_string($data['email'])) {
+                $user->setEmail($data['email']);
             }
-            $user->setRoles($roles);
-        }
-        if (isset($data['lastAccess'])) {
-            $user->setLastAccess(new \DateTime($data['lastAccess']));
-        }
-        if (isset($data['isActive'])) {
-            $user->setIsActive((bool) $data['isActive']);
-        }
+            if (isset($data['firstName']) && \is_string($data['firstName'])) {
+                $user->setFirstName($data['firstName']);
+            }
+            if (isset($data['lastName']) && \is_string($data['lastName'])) {
+                $user->setLastName($data['lastName']);
+            }
+            if (isset($data['roles']) && \is_array($data['roles'])) {
+                $user->setRoles($data['roles']);
+            }
+            if (isset($data['password']) && \is_string($data['password'])) {
+                $hashedPassword = $this->passwordHasher->hashPassword($user, $data['password']);
+                $user->setPassword($hashedPassword);
+            }
+            if (isset($data['is_admin'])) {
+                $roles = $user->getRoles();
+                if ($data['is_admin']) {
+                    if (!in_array('ROLE_ADMIN', $roles)) {
+                        $roles[] = 'ROLE_ADMIN';
+                    }
+                } else {
+                    $roles = array_filter($roles, fn($role) => $role !== 'ROLE_ADMIN');
+                }
+                $user->setRoles($roles);
+            }
+            if (isset($data['lastAccess'])) {
+                $user->setLastAccess(new \DateTime($data['lastAccess']));
+            }
+            if (isset($data['isActive'])) {
+                $user->setIsActive((bool) $data['isActive']);
+            }
 
-        $this->em->flush();
-        return $user;
+            $this->em->flush();
+            $this->em->commit();
+            return $user;
+            
+        } catch (\Exception $e) {
+            $this->em->rollback();
+            throw $e;
+        }
     }
 
     public function anonymizeUser(User $user): void
     {
-        $user->setDeletedAt(new \DateTimeImmutable());
-        $user->setIsActive(false);
+        $this->em->beginTransaction();
+        
+        try {
+            $user->setDeletedAt(new \DateTimeImmutable());
+            $user->setIsActive(false);
 
-        $user->setEmail('anon_' . $user->getId() . '@example.com');
-        $user->setFirstName('Utilisateur');
-        $user->setLastName('Anonyme');
-        $user->setPseudo('Utilisateur_' . substr(hash('sha256', $user->getId()), 0, 8));
-        $user->setPassword('');
-        $user->setRoles(['ROLE_ANONYMOUS']);
+            $user->setEmail('anon_' . $user->getId() . '@example.com');
+            $user->setFirstName('Utilisateur');
+            $user->setLastName('Anonyme');
+            $user->setPseudo('Utilisateur_' . substr(hash('sha256', $user->getId()), 0, 8));
+            $user->setPassword('');
+            $user->setRoles(['ROLE_ANONYMOUS']);
 
-        $this->em->flush();
+            $this->em->flush();
+            $this->em->commit();
+            
+        } catch (\Exception $e) {
+            $this->em->rollback();
+            throw $e;
+        }
     }
 
 
@@ -263,6 +286,14 @@ class UserService
 
     public function confirmToken(string $token): ?User
     {
+        if (empty(trim($token))) {
+            throw new \InvalidArgumentException('Le token de confirmation ne peut pas être vide');
+        }
+        
+        if (strlen($token) < 10) {
+            throw new \InvalidArgumentException('Le token de confirmation est invalide');
+        }
+        
         $user = $this->userRepository->findOneBy(['confirmationToken' => $token]);
         
         if (null === $user) {
@@ -334,16 +365,6 @@ class UserService
 
     public function getUserStatistics(User $user): array
     {
-        static $statsCache = [];
-        static $queriesCount = 0;
-        $userId = $user->getId();
-        
-        if (isset($statsCache[$userId])) {
-            return $statsCache[$userId];
-        }
-        
-        $queriesCount++; // Track query usage for optimization
-        
         $totalQuizzesCreated = $user->getQuizs()->count();
         
         $uniqueQuizIds = [];
@@ -352,34 +373,34 @@ class UserService
         $categoryPerformance = [];
         $totalAttempts = 0;
         
-        $userAnswersData = $this->userAnswerRepository->getUserAnswersWithQuizData($userId);
-        $totalAttempts = count($userAnswersData);
-        
-        foreach ($userAnswersData as $data) {
-            $quizId = $data['quiz_id'];
-            $currentScore = $data['total_score'] ?? 0;
-            
-            if (!isset($quizScores[$quizId]) || $currentScore > $quizScores[$quizId]) {
-                $quizScores[$quizId] = $currentScore;
+        foreach ($user->getUserAnswers() as $userAnswer) {
+            $quizId = $userAnswer->getQuiz()?->getId();
+            if ($quizId) {
+                $currentScore = $userAnswer->getTotalScore() ?? 0;
+                $totalAttempts++;
+                
+                if (!isset($quizScores[$quizId]) || $currentScore > $quizScores[$quizId]) {
+                    $quizScores[$quizId] = $currentScore;
+                }
+                
+                $scoreHistory[] = [
+                    'date' => $userAnswer->getDateAttempt()->format('Y-m-d H:i:s'),
+                    'score' => $currentScore,
+                    'quizTitle' => $userAnswer->getQuiz()?->getTitle() ?? 'Quiz inconnu',
+                    'quizId' => $quizId,
+                    'attemptNumber' => $this->getAttemptNumber($user, $quizId, $userAnswer->getDateAttempt())
+                ];
             }
             
-            $scoreHistory[] = [
-                'date' => $data['date_attempt']->format('Y-m-d H:i:s'),
-                'score' => $currentScore,
-                'quizTitle' => $data['quiz_title'] ?? 'Quiz inconnu',
-                'quizId' => $quizId,
-                'attemptNumber' => $this->calculateAttemptNumberOptimized($userAnswersData, $quizId, $data['date_attempt'])
-            ];
-            
-            if ($data['category_name']) {
-                $categoryName = $data['category_name'];
+            if ($userAnswer->getQuiz() && $userAnswer->getQuiz()->getCategory()) {
+                $categoryName = $userAnswer->getQuiz()->getCategory()->getName();
                 if (!isset($categoryPerformance[$categoryName])) {
                     $categoryPerformance[$categoryName] = ['total' => 0, 'count' => 0];
                 }
                 $categoryKey = $quizId . '_cat_' . $categoryName;
                 if (!isset($uniqueQuizIds[$categoryKey])) {
                     $uniqueQuizIds[$categoryKey] = true;
-                    $categoryPerformance[$categoryName]['total'] += $currentScore;
+                    $categoryPerformance[$categoryName]['total'] += ($userAnswer->getTotalScore() ?? 0);
                     $categoryPerformance[$categoryName]['count']++;
                 }
             }
@@ -417,17 +438,15 @@ class UserService
             'categoryPerformance' => $categoryAverages
         ];
         
-        $statsCache[$userId] = $stats;
-        
         return $stats;
     }
 
-    private function calculateAttemptNumberOptimized(array $userAnswersData, int $quizId, \DateTime $attemptDate): int
+    private function getAttemptNumber(User $user, int $quizId, \DateTime $attemptDate): int
     {
         $attempts = [];
-        foreach ($userAnswersData as $data) {
-            if ($data['quiz_id'] === $quizId) {
-                $attempts[] = $data['date_attempt'];
+        foreach ($user->getUserAnswers() as $userAnswer) {
+            if ($userAnswer->getQuiz()?->getId() === $quizId) {
+                $attempts[] = $userAnswer->getDateAttempt();
             }
         }
         
@@ -478,7 +497,7 @@ class UserService
             $validPermissions = [];
             foreach ($data['permissions'] as $permission) {
                 try {
-                    $permissionEnum = \App\Enum\Permission::from($permission);
+                    $permissionEnum = Permission::from($permission);
                     $validPermissions[] = $permissionEnum;
                 } catch (\ValueError $e) {
                     continue;
@@ -545,6 +564,37 @@ class UserService
         }
     }
 
+    private function validateUserDataForCreation(array $data): void
+    {
+        $constraints = new Assert\Collection([
+            'firstName' => [
+                new Assert\NotBlank(['message' => 'Le prénom est obligatoire']),
+                new Assert\Length(['min' => 2, 'max' => 100, 'minMessage' => 'Le prénom doit contenir au moins 2 caractères', 'maxMessage' => 'Le prénom ne peut pas dépasser 100 caractères'])
+            ],
+            'lastName' => [
+                new Assert\NotBlank(['message' => 'Le nom est obligatoire']),
+                new Assert\Length(['min' => 2, 'max' => 100, 'minMessage' => 'Le nom doit contenir au moins 2 caractères', 'maxMessage' => 'Le nom ne peut pas dépasser 100 caractères'])
+            ],
+            'email' => [
+                new Assert\NotBlank(['message' => 'L\'email est obligatoire']),
+                new Assert\Email(['message' => 'L\'email n\'est pas valide']),
+                new Assert\Length(['max' => 180, 'maxMessage' => 'L\'email ne peut pas dépasser 180 caractères'])
+            ],
+            'password' => [
+                new Assert\NotBlank(['message' => 'Le mot de passe est obligatoire']),
+                new Assert\Length(['min' => 6, 'max' => 255, 'minMessage' => 'Le mot de passe doit contenir au moins 6 caractères', 'maxMessage' => 'Le mot de passe ne peut pas dépasser 255 caractères'])
+            ]
+        ]);
+
+        $errors = $this->validator->validate($data, $constraints);
+        if (count($errors) > 0) {
+            throw new ValidationFailedException($constraints, $errors);
+        }
+    }
+
+    /**
+     * Valide les données utilisateur pour la mise à jour
+     */
     private function validateUserData(array $data): void
     {
         $constraints = new Assert\Collection([
@@ -552,24 +602,25 @@ class UserService
                 'firstName' => [
                     new Assert\Optional([
                         new Assert\NotBlank(['message' => 'Le prénom ne peut pas être vide']),
-                        new Assert\Length(['max' => 100, 'maxMessage' => 'Le prénom ne peut pas dépasser 100 caractères'])
+                        new Assert\Length(['min' => 2, 'max' => 100, 'minMessage' => 'Le prénom doit contenir au moins 2 caractères', 'maxMessage' => 'Le prénom ne peut pas dépasser 100 caractères'])
                     ])
                 ],
                 'lastName' => [
                     new Assert\Optional([
                         new Assert\NotBlank(['message' => 'Le nom ne peut pas être vide']),
-                        new Assert\Length(['max' => 100, 'maxMessage' => 'Le nom ne peut pas dépasser 100 caractères'])
+                        new Assert\Length(['min' => 2, 'max' => 100, 'minMessage' => 'Le nom doit contenir au moins 2 caractères', 'maxMessage' => 'Le nom ne peut pas dépasser 100 caractères'])
                     ])
                 ],
                 'email' => [
                     new Assert\Optional([
+                        new Assert\NotBlank(['message' => 'L\'email ne peut pas être vide']),
                         new Assert\Email(['message' => 'L\'email n\'est pas valide']),
-                        new Assert\Length(['max' => 180, 'maxMessage' => 'L\'email ne peut pas dépasser 100 caractères'])
+                        new Assert\Length(['max' => 180, 'maxMessage' => 'L\'email ne peut pas dépasser 180 caractères'])
                     ])
                 ],
                 'password' => [
                     new Assert\Optional([
-                        new Assert\Length(['min' => 8, 'max' => 255, 'minMessage' => 'Le mot de passe doit contenir au moins 8 caractères'])
+                        new Assert\Length(['min' => 6, 'max' => 255, 'minMessage' => 'Le mot de passe doit contenir au moins 6 caractères', 'maxMessage' => 'Le mot de passe ne peut pas dépasser 255 caractères'])
                     ])
                 ],
                 'avatar' => [

@@ -53,50 +53,76 @@ class CompanyService
 
     public function create(array $data): Company
     {
-        $this->validateCompanyData($data);
+
+        $this->em->beginTransaction();
         
-        $company = new Company();
-        $company->setName($data['name']);
-        $company->setDateCreation(new \DateTime());
+        try {
+            $company = new Company();
+            $company->setName($data['name']);
+            $company->setDateCreation(new \DateTime());
 
-        $this->em->persist($company);
-        $this->em->flush();
-
-        return $company;
+            $this->em->persist($company);
+            $this->em->flush();
+            
+            $this->em->commit();
+            return $company;
+            
+        } catch (\Exception $e) {
+            $this->em->rollback();
+            throw $e;
+        }
     }
 
     public function update(Company $company, array $data): Company
     {
-        $this->validateCompanyData($data);
-        
-        if (isset($data['name'])) {
-            $company->setName($data['name']);
-        }
 
-        $this->em->flush();
-        return $company;
+        $this->em->beginTransaction();
+        
+        try {
+            if (isset($data['name'])) {
+                $company->setName($data['name']);
+            }
+
+            $this->em->flush();
+            $this->em->commit();
+            return $company;
+            
+        } catch (\Exception $e) {
+            $this->em->rollback();
+            throw $e;
+        }
     }
 
     public function delete(Company $company): void
     {
-        foreach ($company->getUsers() as $user) {
-            $user->setCompany(null);
+        $this->em->beginTransaction();
+        
+        try {
+            foreach ($company->getUsers() as $user) {
+                $user->setCompany(null);
+            }
+            
+            foreach ($company->getGroups() as $group) {
+                $group->setCompany(null);
+            }
+            
+            foreach ($company->getQuizs() as $quiz) {
+                $quiz->setCompany(null);
+            }
+            
+            $company->getUsers()->clear();
+            $company->getGroups()->clear();
+            $company->getQuizs()->clear();
+            
+            $this->em->remove($company);
+            $this->em->flush();
+            
+            $this->em->commit();
+            
+        } catch (\Exception $e) {
+            $this->em->rollback();
+            throw $e;
         }
-        
-        foreach ($company->getGroups() as $group) {
-            $group->setCompany(null);
-        }
-        
-        foreach ($company->getQuizs() as $quiz) {
-            $quiz->setCompany(null);
-        }
-        
-        $company->getUsers()->clear();
-        $company->getGroups()->clear();
-        $company->getQuizs()->clear();
-        
-        $this->em->remove($company);
-        $this->em->flush();
     }
 
     public function exportCompaniesToCsv(): string
@@ -163,40 +189,49 @@ class CompanyService
         $results = ['success' => 0, 'errors' => []];
         
         array_shift($lines);
+
+        $this->em->beginTransaction();
         
-        foreach ($lines as $lineNumber => $line) {
-            if (empty(trim($line))) continue;
-            
-            $data = str_getcsv($line);
-            
-            if (count($data) < 1) {
-                $results['errors'][] = "Ligne " . ($lineNumber + 2) . ": Format invalide";
-                continue;
-            }
-            
-            try {
-                $company = new Company();
-                $company->setName(trim($data[0]));
+        try {
+            foreach ($lines as $lineNumber => $line) {
+                if (empty(trim($line))) continue;
                 
-                $errors = $this->validator->validate($company);
-                if (count($errors) > 0) {
-                    $results['errors'][] = "Ligne " . ($lineNumber + 2) . ": " . $errors[0]->getMessage();
+                $data = str_getcsv($line);
+                
+                if (count($data) < 1) {
+                    $results['errors'][] = "Ligne " . ($lineNumber + 2) . ": Format invalide";
                     continue;
                 }
                 
-                $this->em->persist($company);
-                $results['success']++;
-                
-            } catch (\Exception $e) {
-                $results['errors'][] = "Ligne " . ($lineNumber + 2) . ": " . $e->getMessage();
+                try {
+                    $company = new Company();
+                    $company->setName(trim($data[0]));
+                    
+                    $errors = $this->validator->validate($company);
+                    if (count($errors) > 0) {
+                        $results['errors'][] = "Ligne " . ($lineNumber + 2) . ": " . $errors[0]->getMessage();
+                        continue;
+                    }
+                    
+                    $this->em->persist($company);
+                    $results['success']++;
+                    
+                } catch (\Exception $e) {
+                    $results['errors'][] = "Ligne " . ($lineNumber + 2) . ": " . $e->getMessage();
+                }
             }
+            
+            if ($results['success'] > 0) {
+                $this->em->flush();
+            }
+            
+            $this->em->commit();
+            return $results;
+            
+        } catch (\Exception $e) {
+            $this->em->rollback();
+            throw $e;
         }
-        
-        if ($results['success'] > 0) {
-            $this->em->flush();
-        }
-        
-        return $results;
     }
 
     public function getCompanyStats(Company $company): array

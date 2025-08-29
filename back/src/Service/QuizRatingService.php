@@ -71,22 +71,35 @@ class QuizRatingService
      */
     public function rateQuiz(User $user, Quiz $quiz, int $rating): array
     {
-        $existingRating = $this->quizRatingRepository->findUserRatingForQuiz($user->getId(), $quiz->getId());
-        
-        if ($existingRating) {
-            $existingRating->setRating($rating);
-            $existingRating->setRatedAt(new \DateTime());
-        } else {
-            $quizRating = new QuizRating();
-            $quizRating->setUser($user);
-            $quizRating->setQuiz($quiz);
-            $quizRating->setRating($rating);
-            $quizRating->setRatedAt(new \DateTime());
-            $this->em->persist($quizRating);
+        if ($rating < 1 || $rating > 5) {
+            throw new \InvalidArgumentException('La note doit être comprise entre 1 et 5');
         }
-        
-        $this->em->flush();
 
-        return $this->getRatingStatistics($quiz, $user);
+        $this->em->beginTransaction();
+        
+        try {
+            $existingRating = $this->quizRatingRepository->findUserRatingForQuiz($user->getId(), $quiz->getId());
+            
+            if ($existingRating) {
+                $existingRating->setRating($rating);
+                $existingRating->setRatedAt(new \DateTime());
+            } else {
+                $quizRating = new QuizRating();
+                $quizRating->setUser($user);
+                $quizRating->setQuiz($quiz);
+                $quizRating->setRating($rating);
+                $quizRating->setRatedAt(new \DateTime());
+                $this->em->persist($quizRating);
+            }
+            
+            $this->em->flush();
+            $this->em->commit();
+            
+            return $this->getRatingStatistics($quiz, $user);
+            
+        } catch (\Exception $e) {
+            $this->em->rollback();
+            throw $e;
+        }
     }
 }
