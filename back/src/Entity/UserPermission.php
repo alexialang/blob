@@ -17,7 +17,7 @@ class UserPermission
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', enumType: Permission::class)]
-    #[Groups(['user:read', 'user_permission:read', 'user:admin_read'])]
+    #[Groups(['user:read', 'user_permission:read', 'user:admin_read', 'user:profile'])]
     private ?Permission $permission = null;
 
     #[ORM\ManyToOne(inversedBy: 'userPermissions')]

@@ -20,9 +20,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['user:read','quiz:read','company:read','user:admin_read','user:public','company:detail','user:statistics','user:roles_update'])]
+    #[Groups(['user:read','quiz:read','company:read','user:admin_read','user:public','company:detail','user:statistics','user:roles_update','user:profile'])]
     private ?int $id = null;
-    #[Groups(['user:read', 'company:read','quiz:read','user:admin_read','user:public','company:detail','user:statistics','user:roles_update'])]
+    #[Groups(['user:read', 'company:read','quiz:read','user:admin_read','user:public','company:detail','user:statistics','user:roles_update','user:profile'])]
     #[ORM\Column(length: 180)]
     private ?string $email = null;
 
@@ -61,7 +61,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: UserAnswer::class, mappedBy: 'user')]
     private Collection $userAnswers;
 
-    #[Groups(['user:read','user:admin_read'])]
+    #[Groups(['user:read','user:admin_read','user:profile'])]
     #[ORM\OneToMany(targetEntity: UserPermission::class, mappedBy: 'user')]
     private Collection $userPermissions;
 
@@ -96,11 +96,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $passwordResetRequestAt = null;
 
-    #[Groups(['user:read'])]
+    #[Groups(['user:read','user:profile'])]
     #[ORM\Column(length: 50, nullable: true)]
     private ?string $pseudo = null;
 
-    #[Groups(['user:read'])]
+    #[Groups(['user:read','user:profile'])]
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $avatar = null;
     public function __construct()
