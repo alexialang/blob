@@ -28,15 +28,20 @@ jobs:
 
     - name: Setup test database
       working-directory: ./back
+      env:
+        APP_ENV: test
+        APP_SECRET: ${{ secrets.APP_SECRET }}
+        DATABASE_URL: sqlite:///%kernel.project_dir%/var/test.db
       run: |
-        echo "APP_ENV=test" > .env
-        echo "APP_SECRET=${{ secrets.APP_SECRET }}" >> .env
-        echo "DATABASE_URL=sqlite:///%kernel.project_dir%/var/test.db" >> .env
         php bin/console doctrine:database:create --env=test
         php bin/console doctrine:migrations:migrate --env=test --no-interaction
 
     - name: Run tests
       working-directory: ./back
+      env:
+        APP_ENV: test
+        APP_SECRET: ${{ secrets.APP_SECRET }}
+        DATABASE_URL: sqlite:///%kernel.project_dir%/var/test.db
       run: php bin/phpunit
 
     - name: Run PHPStan
@@ -52,3 +57,4 @@ jobs:
         echo "Pipeline CI/CD terminé avec succès"
         echo "Tests: PASSED"
         echo "Qualité: PASSED"
+        echo "Code prêt pour le déploiement"
