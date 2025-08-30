@@ -114,13 +114,38 @@ composer-update: ## Met à jour les dépendances Composer
 	@echo "Mise à jour des dépendances..."
 	$(DOCKER_COMPOSE) exec server composer update
 
+# Tests locaux
+test-all: ## Exécuter tous les tests
+	php bin/phpunit
+
+test-unit: ## Exécuter les tests unitaires (entités et services)
+	php bin/phpunit tests/Entity/ tests/Service/
+
+test-functional: ## Exécuter les tests fonctionnels (contrôleurs)
+	php bin/phpunit tests/Functional/
+
+test-integration: ## Exécuter les tests d'intégration
+	php bin/phpunit tests/Integration/
+
+test-security: ## Exécuter les tests de sécurité
+	php bin/phpunit tests/Security/
+
+test-coverage: ## Exécuter les tests avec couverture (si Xdebug installé)
+	php bin/phpunit --coverage-html=var/coverage/html --coverage-text
+
 # Aide contextuelle
 test-help: ## Aide pour les tests
 	@echo "Aide pour les tests:"
-	@echo "  make test          - Tous les tests PHPUnit"
-	@echo "  make test-all      - Tous les tests PHPUnit"
-	@echo "  make test-unit     - Tests unitaires uniquement"
-	@echo "  make test-integration - Tests d'intégration uniquement"
-	@echo "  make coverage      - Rapport de couverture"
-	@echo "  make quality       - Vérification qualité"
-	@echo "  make clean         - Nettoyage"
+	@echo "  make test              - Tous les tests PHPUnit (Docker)"
+	@echo "  make test-local        - Tous les tests PHPUnit (Local)"
+	@echo "  make test-all          - Tous les tests PHPUnit (Docker)"
+	@echo "  make test-unit         - Tests unitaires uniquement (Docker)"
+	@echo "  make test-unit-local   - Tests unitaires uniquement (Local)"
+	@echo "  make test-functional-local - Tests fonctionnels (Local)"
+	@echo "  make test-integration  - Tests d'intégration uniquement (Docker)"
+	@echo "  make test-integration-local - Tests d'intégration (Local)"
+	@echo "  make test-security-local - Tests de sécurité (Local)"
+	@echo "  make coverage          - Rapport de couverture (Docker)"
+	@echo "  make test-coverage-local - Rapport de couverture (Local)"
+	@echo "  make quality           - Vérification qualité"
+	@echo "  make clean             - Nettoyage"
