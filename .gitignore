@@ -21,3 +21,30 @@ node_modules/
 .angular/
 .cache/
 
+# Dossiers node_modules
+**/node_modules/
+front/node_modules/
+back/node_modules/
+
+# Cache Angular
+front/.angular/
+**/.angular/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Fichiers temporaires
+.tmp/
+temp/
+
+# Backend - Pas de librairies frontend
+back/assets/vendor/
+back/assets/@angular/
+back/assets/@taiga-ui/
+back/assets/@maskito/
+back/assets/@ng-web-apis/
+back/assets/rxjs/
+back/assets/tslib/

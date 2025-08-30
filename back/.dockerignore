@@ -1,0 +1,23 @@
+# Fichiers et dossiers à ignorer lors du build Docker
+.git/
+.gitignore
+README.md
+docs/
+var/cache/*
+var/logs/*
+var/test-reports/*
+var/coverage/*
+vendor/
+node_modules/
+.env*
+docker-compose*.yml
+Dockerfile*
+.dockerignore
+Makefile
+grumphp.yml
+phpunit.xml.dist
+composer.lock
+symfony.lock
+tests/
+scripts/
+
