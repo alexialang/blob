@@ -1,4 +1,3 @@
-# Version simplifiée pour GitHub Actions
 name: CI/CD Pipeline - Tests et Qualité
 
 on:
@@ -24,13 +23,12 @@ jobs:
         coverage: xdebug
 
     - name: Install dependencies
-      run: |
-        cd back
-        composer install --prefer-dist --no-progress
+      working-directory: ./back
+      run: composer install --prefer-dist --no-progress
 
-    - name: Setup test database (SQLite)
+    - name: Setup test database
+      working-directory: ./back
       run: |
-        cd back
         echo "APP_ENV=test" > .env
         echo "APP_SECRET=${{ secrets.APP_SECRET }}" >> .env
         echo "DATABASE_URL=sqlite:///%kernel.project_dir%/var/test.db" >> .env
@@ -38,16 +36,19 @@ jobs:
         php bin/console doctrine:migrations:migrate --env=test --no-interaction
 
     - name: Run tests
-      run: |
-        cd back
-        php bin/phpunit
+      working-directory: ./back
+      run: php bin/phpunit
 
     - name: Run PHPStan
-      run: |
-        cd back
-        vendor/bin/phpstan analyse src/ --level=5
+      working-directory: ./back
+      run: vendor/bin/phpstan analyse src/ --level=5
 
     - name: Run PHP CS Fixer
+      working-directory: ./back
+      run: vendor/bin/php-cs-fixer fix --dry-run --diff
+
+    - name: Success notification
       run: |
-        cd back
-        vendor/bin/php-cs-fixer fix --dry-run --diff
+        echo "Pipeline CI/CD terminé avec succès"
+        echo "Tests: PASSED"
+        echo "Qualité: PASSED"
