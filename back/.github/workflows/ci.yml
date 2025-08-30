@@ -53,12 +53,17 @@ jobs:
       run: composer install --prefer-dist --no-progress
 
     - name: Setup test database
+      env:
+        DATABASE_URL: mysql://blob:supersecuredpassword@127.0.0.1:3306/blob?serverVersion=11.8.1-mariadb&charset=utf8mb4
+        APP_SECRET: ${{ secrets.APP_SECRET }}
+        MAILER_DSN: null://null
+        CORS_ALLOW_ORIGIN: '^https?://(localhost|127\.0\.0\.1)(:[0-9]+)?$'
       run: |
         echo "APP_ENV=test" > .env
-        echo "APP_SECRET=cb2616cccbd111d25267679e3bbb7616" >> .env
-        echo "DATABASE_URL=mysql://blob:supersecuredpassword@127.0.0.1:3306/blob?serverVersion=11.8.1-mariadb&charset=utf8mb4" >> .env
-        echo "MAILER_DSN=null://null" >> .env
-        echo "CORS_ALLOW_ORIGIN='^https?://(localhost|127\.0\.0\.1)(:[0-9]+)?$'" >> .env
+        echo "APP_SECRET=${APP_SECRET}" >> .env
+        echo "DATABASE_URL=${DATABASE_URL}" >> .env
+        echo "MAILER_DSN=${MAILER_DSN}" >> .env
+        echo "CORS_ALLOW_ORIGIN='${CORS_ALLOW_ORIGIN}'" >> .env
         php bin/console doctrine:database:create --env=test
         php bin/console doctrine:migrations:migrate --env=test --no-interaction
 
