@@ -53,6 +53,7 @@ jobs:
       run: composer install --prefer-dist --no-progress
 
     - name: Setup test database
+      working-directory: ./back
       env:
         DATABASE_URL: mysql://blob:supersecuredpassword@127.0.0.1:3306/blob?serverVersion=11.8.1-mariadb&charset=utf8mb4
         APP_SECRET: ${{ secrets.APP_SECRET }}
