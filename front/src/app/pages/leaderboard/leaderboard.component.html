@@ -3,9 +3,7 @@
 
     <div class="header-section">
       <div class="header-content">
-        <div class="header-icon">
-          <i class="fas fa-crown"></i>
-        </div>
+
         <div class="header-text">
           <h1 class="page-title">Classement Général</h1>
           <p class="page-subtitle">Découvrez qui dominate le monde des quiz !</p>
@@ -197,7 +195,6 @@
                 </svg>
               </div>
           <div class="medal gold">
-          <i class="fas fa-crown"></i>
           <span>1</span>
           </div>
           </div>
@@ -208,7 +205,7 @@
           {{ getPlayerLevel(leaderboardData.leaderboard[0].totalScore) }}
           </span>
           </div>
-          <div class="crown-effect"></div>
+
           </div>
 
 
@@ -387,7 +384,7 @@
 
               <div class="player-avatar-small">
                 <img [src]="'assets/avatars/' + player.avatar + '.svg'" [alt]="player.pseudo">
-                <div class="online-indicator" *ngIf="player.isCurrentUser"></div>
+
               </div>
 
               <div class="player-details">

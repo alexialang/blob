@@ -168,7 +168,6 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
     this.mercureService.disconnectFromGame();
     this.stopTimer();
 
-er
     if (this.timer) {
       clearInterval(this.timer);
       this.timer = null;

@@ -42,9 +42,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $lastAccess = null;
 
-
-
-
     #[ORM\ManyToOne(inversedBy: 'users')]
     #[Groups(['user:read', 'user:admin_read'])]
     private ?Company $company = null;

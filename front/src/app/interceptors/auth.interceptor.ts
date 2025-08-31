@@ -19,6 +19,7 @@ export function AuthInterceptor(
       'token/refresh',
       'quiz/list',
       'quiz/organized',
+      'quiz/[0-9]+$',
       'quiz/[0-9]+/average-rating',
       'quiz/[0-9]+/public-leaderboard',
       'category-quiz',
@@ -56,6 +57,8 @@ export function AuthInterceptor(
           !req.url.endsWith('/token/refresh') &&
           !req.url.endsWith('/login_check')
         ) {
+          console.error('🔐 Token expiré détecté pour:', req.url);
+          console.error('🔐 Tentative de refresh automatique...');
           return handle401Error(authReq, next);
         }
         return throwError(() => err);
@@ -85,17 +88,21 @@ function handle401Error(
         switchMap(() => {
           const newToken = auth.getToken();
           if (newToken) {
+            console.log('✅ Refresh réussi, nouveau token obtenu');
             refreshSubject.next(newToken);
             return next(addTokenHeader(request, newToken));
           }
+          console.error('❌ Pas de token après refresh, déconnexion');
           auth.logout();
           return throwError(() => new Error('No token after refresh'));
         }),
         catchError(err => {
+          console.error('❌ Erreur lors du refresh:', err);
           auth.logout();
           return throwError(() => err);
         }),
         finalize(() => {
+          console.log('🔄 Fin du processus de refresh');
           isRefreshing = false;
         })
       );

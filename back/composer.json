@@ -11,7 +11,7 @@
         "doctrine/doctrine-bundle": "^2.13",
         "doctrine/doctrine-migrations-bundle": "^3.4",
         "doctrine/orm": "^3.3",
-        "gesdinet/jwt-refresh-token-bundle": "^2.0@dev",
+        "gesdinet/jwt-refresh-token-bundle": "^1.5",
         "lexik/jwt-authentication-bundle": "^3.1",
         "nelmio/api-doc-bundle": "^5.0",
         "nelmio/cors-bundle": "^2.5",
@@ -101,7 +101,6 @@
         }
     },
     "require-dev": {
-        "doctrine/doctrine-fixtures-bundle": "^3.6",
         "friendsofphp/php-cs-fixer": "^3.86",
         "infection/infection": "^0.31.2",
         "phpstan/phpstan": "^2.1",
@@ -112,7 +111,6 @@
         "symfony/maker-bundle": "^1.0",
         "symfony/phpunit-bridge": "^7.2",
         "symfony/stopwatch": "7.2.*",
-        "symfony/test-pack": "^1.1",
         "symfony/web-profiler-bundle": "7.2.*"
     }
 }
