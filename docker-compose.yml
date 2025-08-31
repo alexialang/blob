@@ -3,6 +3,8 @@ services:
     build:
       context: back
       dockerfile: Dockerfile
+      args:
+        APP_ENV: ${APP_ENV:-dev}
     container_name: blob_server
     labels:
       - 'traefik.http.routers.blob_apache.entrypoints=http'
@@ -18,6 +20,8 @@ services:
       - ~/.config/composer:/home/adimeo/.composer
       - ./back/.docker/dev/php/conf.d/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
       - ./back/.docker/dev/php/conf.d/custom.ini:/usr/local/etc/php/conf.d/custom.ini
+    environment:
+      - APP_ENV=${APP_ENV:-dev}
     networks:
       - adimeo_local_proxy
 
@@ -51,11 +55,13 @@ services:
     restart: always
     container_name: blob_bdd
     command: --max_allowed_packet=32505856 --default-authentication-plugin=mysql_native_password
+    env_file:
+      - back/.env.dev
     environment:
-      MYSQL_ROOT_PASSWORD: toor
-      MYSQL_DATABASE: blob
-      MYSQL_USER: blob
-      MYSQL_PASSWORD: supersecuredpassword
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
       - blob_data_bdd:/var/lib/mysql
     networks:

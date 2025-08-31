@@ -63,7 +63,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ->getResult();
     }
 
-    public function findAllWithStats(bool $includeDeleted = false): array
+    public function findAllWithStats(bool $includeDeleted = false, int $page = 1, int $limit = 20, ?string $search = null, string $sort = 'id'): array
     {
         $qb = $this->createQueryBuilder('u')
             ->leftJoin('u.company', 'c')
@@ -75,7 +75,39 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             $qb->andWhere('u.deletedAt IS NULL');
         }
 
+        if ($search) {
+            $qb->andWhere('u.email LIKE :search OR u.firstName LIKE :search OR u.lastName LIKE :search')
+              ->setParameter('search', '%' . $search . '%');
+        }
+
+        $validSorts = ['id', 'email', 'firstName', 'lastName', 'dateRegistration'];
+        if (in_array($sort, $validSorts)) {
+            $qb->orderBy('u.' . $sort, 'ASC');
+        } else {
+            $qb->orderBy('u.id', 'ASC');
+        }
+
+        $offset = ($page - 1) * $limit;
+        $qb->setFirstResult($offset)->setMaxResults($limit);
+
         return $qb->getQuery()->getResult();
+    }
+
+    public function countAllWithStats(bool $includeDeleted = false, ?string $search = null): int
+    {
+        $qb = $this->createQueryBuilder('u')
+            ->select('COUNT(u.id)');
+
+        if (!$includeDeleted) {
+            $qb->andWhere('u.deletedAt IS NULL');
+        }
+
+        if ($search) {
+            $qb->andWhere('u.email LIKE :search OR u.firstName LIKE :search OR u.lastName LIKE :search')
+              ->setParameter('search', '%' . $search . '%');
+        }
+
+        return (int) $qb->getQuery()->getSingleScalarResult();
     }
 
     public function findByCompanyWithStats(int $companyId, bool $includeDeleted = false): array

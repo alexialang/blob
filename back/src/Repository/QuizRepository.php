@@ -37,6 +37,74 @@ class QuizRepository extends ServiceEntityRepository
     }
 
     /**
+     * Trouve les quiz avec pagination pour la gestion
+     *
+     * @param int $page Numéro de page
+     * @param int $limit Nombre d'éléments par page
+     * @param string|null $search Terme de recherche
+     * @param string $sort Champ de tri
+     * @param User $user Utilisateur demandant les quiz
+     * @return array Résultat avec données et pagination
+     */
+    public function findWithPagination(int $page, int $limit, ?string $search, string $sort, User $user): array
+    {
+        $queryBuilder = $this->createQueryBuilder('q')
+            ->leftJoin('q.user', 'u')
+            ->leftJoin('q.category', 'c')
+            ->addSelect('u', 'c');
+
+        if (!$user->isAdmin()) {
+            $company = $user->getCompany();
+            if ($company) {
+                $queryBuilder->andWhere('u.company = :company')
+                    ->setParameter('company', $company);
+            } else {
+                $queryBuilder->andWhere('u.id = :userId')
+                    ->setParameter('userId', $user->getId());
+            }
+        }
+
+        if ($search && trim($search) !== '') {
+            $queryBuilder->andWhere(
+                $queryBuilder->expr()->orX(
+                    $queryBuilder->expr()->like('q.title', ':search'),
+                    $queryBuilder->expr()->like('q.description', ':search'),
+                    $queryBuilder->expr()->like('u.email', ':search'),
+                    $queryBuilder->expr()->like('u.firstName', ':search'),
+                    $queryBuilder->expr()->like('u.lastName', ':search'),
+                    $queryBuilder->expr()->like('c.name', ':search')
+                )
+            )->setParameter('search', '%' . trim($search) . '%');
+        }
+
+        // Tri
+        $allowedSorts = ['id', 'title', 'dateCreation', 'status'];
+        if (in_array($sort, $allowedSorts, true)) {
+            $queryBuilder->orderBy('q.' . $sort, 'ASC');
+        } else {
+            $queryBuilder->orderBy('q.id', 'ASC');
+        }
+
+        $countQuery = clone $queryBuilder;
+        $total = (int) $countQuery->select('COUNT(q.id)')->getQuery()->getSingleScalarResult();
+
+        $offset = ($page - 1) * $limit;
+        $queryBuilder->setFirstResult($offset)->setMaxResults($limit);
+
+        $data = $queryBuilder->getQuery()->getResult();
+
+        return [
+            'data' => $data,
+            'pagination' => [
+                'page' => $page,
+                'limit' => $limit,
+                'total' => $total,
+                'totalPages' => (int) ceil($total / $limit)
+            ]
+        ];
+    }
+
+    /**
 
      * @param array $userGroupIds IDs des groupes de l'utilisateur
      * @return array Quiz privés accessibles

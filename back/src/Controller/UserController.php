@@ -26,17 +26,27 @@ class UserController extends AbstractController
 
     /**
      * @OA\Get(summary="Lister tous les utilisateurs (admin)", tags={"User"})
-     * @OA\Response(response=200, description="Liste complète des utilisateurs")
+     * @OA\Parameter(name="page", in="query", required=false, @OA\Schema(type="integer", default=1))
+     * @OA\Parameter(name="limit", in="query", required=false, @OA\Schema(type="integer", default=20))
+     * @OA\Parameter(name="search", in="query", required=false, @OA\Schema(type="string"))
+     * @OA\Parameter(name="sort", in="query", required=false, @OA\Schema(type="string", enum={"id", "email", "firstName", "lastName", "dateRegistration"}))
+     * @OA\Response(response=200, description="Liste paginée des utilisateurs")
      * @OA\Security(name="bearerAuth")
      */
     #[Route('/admin/all', name: 'admin_user_list', methods: ['GET'])]
     #[IsGranted('MANAGE_USERS')]
-    public function adminList(): JsonResponse
+    public function adminList(Request $request): JsonResponse
     {
         $currentUser = $this->getUser();
-        $users = $this->userService->listWithStats(true, $currentUser);
+        
+        $page = max(1, (int) $request->query->get('page', 1));
+        $limit = min(100, max(1, (int) $request->query->get('limit', 20))); // Max 100 par page
+        $search = $request->query->get('search');
+        $sort = $request->query->get('sort', 'id');
 
-        return $this->json($users, 200, [], [
+        $result = $this->userService->listWithStatsAndPagination(true, $currentUser, $page, $limit, $search, $sort);
+
+        return $this->json($result, 200, [], [
             'groups' => ['user:admin_list']
         ]);
     }
@@ -64,14 +74,12 @@ class UserController extends AbstractController
         try {
             $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
             
-            // ✅ Validation CAPTCHA uniquement (sécurité)
             if (!$this->userService->verifyCaptcha($data['recaptchaToken'])) {
                 return $this->json(['error' => 'Échec de la vérification CAPTCHA'], 400);
             }
             
             unset($data['recaptchaToken']);
             
-            // ✅ Délégation complète au service (validation incluse)
             $user = $this->userService->create($data);
 
             return $this->json($user, 201, [], ['groups' => ['user:read']]);
@@ -80,7 +88,6 @@ class UserController extends AbstractController
             $this->logger->error('Erreur JSON dans create(): ' . $e->getMessage());
             return $this->json(['error' => 'Format JSON invalide'], 400);
         } catch (ValidationFailedException $e) {
-            // ✅ Gestion des erreurs de validation du service
             $errorMessages = [];
             foreach ($e->getViolations() as $violation) {
                 $errorMessages[] = $violation->getMessage();
@@ -146,7 +153,6 @@ class UserController extends AbstractController
         try {
             $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
             
-            // ✅ Délégation complète au service (validation incluse)
             $user = $this->userService->updateProfile($user, $data);
 
             return $this->json($user, 200, [], [
@@ -155,7 +161,6 @@ class UserController extends AbstractController
         } catch (\JsonException $e) {
             return $this->json(['error' => 'Invalid JSON'], 400);
         } catch (ValidationFailedException $e) {
-            // ✅ Gestion des erreurs de validation du service
             $errorMessages = [];
             foreach ($e->getViolations() as $violation) {
                 $errorMessages[] = $violation->getMessage();
@@ -266,7 +271,6 @@ class UserController extends AbstractController
         } catch (\JsonException $e) {
             return $this->json(['error' => 'Invalid JSON'], 400);
         } catch (ValidationFailedException $e) {
-            // ✅ Gestion des erreurs de validation du service
             $errorMessages = [];
             foreach ($e->getViolations() as $violation) {
                 $errorMessages[] = $violation->getMessage();
@@ -307,7 +311,6 @@ class UserController extends AbstractController
     #[Route('/confirmation-compte/{token}', name: 'user_confirm_account', methods: ['GET'])]
     public function confirmAccount(string $token): JsonResponse
     {
-        // ✅ Délégation complète au service (validation incluse)
         $user = $this->userService->confirmToken($token);
 
         if (!$user) {

@@ -416,3 +416,73 @@ button[tuiButton][appearance="action-grayscale"] {
     font-size: 0.9rem;
   }
 }
+
+// Styles pour la pagination
+.search-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  align-items: center;
+  
+  .search-input {
+    flex: 1;
+    max-width: 400px;
+  }
+  
+  .page-size-select {
+    min-width: 120px;
+  }
+}
+
+.td-action {
+  padding-right: 0.5rem !important;
+  padding-left: 0.75rem !important;
+  
+  .d-flex {
+    justify-content: flex-start;
+    gap: 0.5rem;
+  }
+}
+
+.btn-roles {
+  white-space: nowrap;
+  font-size: 0.875rem;
+}
+
+.search-input {
+  width: 300px !important;
+  margin-left: 1rem;
+}
+
+.search-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.pagination-info {
+  margin: 1rem 0;
+  text-align: center;
+  color: var(--color-text-secondary, #666);
+  font-size: 0.9rem;
+}
+
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  margin: 1.5rem 0;
+}
+
+@media (max-width: 768px) {
+  .search-row {
+    flex-direction: column;
+    gap: 0.5rem;
+    
+    .search-input,
+    .page-size-select {
+      width: 100%;
+      max-width: none;
+    }
+  }
+}

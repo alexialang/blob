@@ -14,16 +14,27 @@ export class UserManagementService {
     private authService: AuthService
   ) {}
 
-  getUsers(): Observable<any[]> {
+  getUsers(page: number = 1, limit: number = 20, search?: string, sort: string = 'email'): Observable<any> {
     return this.authService.hasPermission('MANAGE_USERS').pipe(
       map(hasPermission => {
         if (!hasPermission) {
           throw new Error('Permission MANAGE_USERS requise');
         }
 
-        return this.http.get<any[]>(`${this.baseUrl}/admin/all`);
+        let params = `page=${page}&limit=${limit}&sort=${sort}`;
+        if (search && search.trim()) {
+          params += `&search=${encodeURIComponent(search.trim())}`;
+        }
+
+        return this.http.get<any>(`${this.baseUrl}/admin/all?${params}`);
       }),
       switchMap(apiCall => apiCall)
+    );
+  }
+
+  getAllUsers(): Observable<any[]> {
+    return this.getUsers(1, 1000).pipe(
+      map(response => response.data || [])
     );
   }
   anonymizeUser(id: number): Observable<void> {

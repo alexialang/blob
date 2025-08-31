@@ -28,7 +28,7 @@ import {
   TuiDataList,
 } from '@taiga-ui/core';
 
-import { catchError, of, Subject, takeUntil } from 'rxjs';
+import { catchError, of, Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
 
 import { UserManagementService } from '../../services/user-management.service';
 import { AuthService } from '../../services/auth.service';
@@ -81,7 +81,6 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   readonly sizes: TuiSizeS[] = ['m', 's'];
   size: TuiSizeS = 'm';
 
-  public allRows: UserRow[] = [];
   public rows: UserRow[] = [];
   public loadError = false;
   public isLoading = false;
@@ -89,15 +88,9 @@ export class UserManagementComponent implements OnInit, OnDestroy {
 
   public page = 1;
   public pageSize = 20;
-
-  public filterOrg = '';
-  public filterRight = '';
-  public filterKeyword = '';
-  public orgOptions: string[] = [];
-  public rightsOptions: string[] = [];
-
-  public sortColumn: keyof UserRow | '' = '';
-  public sortDirection: 'asc' | 'desc' = 'asc';
+  public totalPages = 1;
+  public totalItems = 0;
+  public searchTerm = '';
 
 
 
@@ -124,6 +117,7 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   public hasViewResultsPermission = false;
 
   private destroy$ = new Subject<void>();
+  private searchSubject$ = new Subject<string>();
 
   constructor(
     private userService: UserManagementService,
@@ -138,6 +132,7 @@ export class UserManagementComponent implements OnInit, OnDestroy {
     this.generateRandomColor();
     this.loadUsers();
     this.checkAdminStatus();
+    this.setupSearchDebounce();
   }
 
   ngOnDestroy(): void {
@@ -145,17 +140,31 @@ export class UserManagementComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
+  private setupSearchDebounce(): void {
+    this.searchSubject$
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(searchTerm => {
+        this.searchTerm = searchTerm;
+        this.page = 1;
+        this.loadUsers();
+      });
+  }
+
   checkAdminStatus(): void {
     this.userService.isAdmin().subscribe(isAdmin => {
       this.isAdmin = isAdmin;
       this.cdr.markForCheck();
     });
-    
+
     this.authService.hasPermission('MANAGE_USERS').subscribe(hasPermission => {
       this.hasManageUsersPermission = hasPermission;
       this.cdr.markForCheck();
     });
-    
+
     this.authService.hasPermission('VIEW_RESULTS').subscribe(hasPermission => {
       this.hasViewResultsPermission = hasPermission;
       this.cdr.markForCheck();
@@ -170,20 +179,26 @@ export class UserManagementComponent implements OnInit, OnDestroy {
     this.dataReady = false;
 
     this.userService
-      .getUsers()
+      .getUsers(this.page, this.pageSize, this.searchTerm, 'email')
       .pipe(
         takeUntil(this.destroy$),
         catchError(err => {
           this.loadError = true;
           this.isLoading = false;
           this.cdr.markForCheck();
-          return of([]);
+          return of({ data: [], pagination: { page: 1, limit: 20, total: 0, totalPages: 1 } });
         })
       )
       .subscribe({
-        next: (users: any[]) => {
+        next: (response: any) => {
+          const users = response.data || [];
+          const pagination = response.pagination || { page: 1, limit: 20, total: 0, totalPages: 1 };
 
-          this.rows = users.map(u => {
+          this.page = pagination.page;
+          this.totalPages = pagination.totalPages;
+          this.totalItems = pagination.total;
+
+          this.rows = users.map((u: any) => {
             const joinDaysAgo = (u.id % 365) + 1;
             const groupNames = Array.isArray(u.groups) && u.groups.length > 0
               ? u.groups.map((g: any) => g.name).join(', ')
@@ -207,9 +222,6 @@ export class UserManagementComponent implements OnInit, OnDestroy {
             };
           });
 
-          this.allRows = [...this.rows];
-          this.populateFilterOptions();
-          this.applyFiltersInternal();
           this.dataReady = true;
 
           this.isLoading = false;
@@ -226,10 +238,7 @@ export class UserManagementComponent implements OnInit, OnDestroy {
 
 
 
-  private populateFilterOptions(): void {
-    this.orgOptions = [...new Set(this.allRows.map(r => r.organization).filter(org => org !== '—'))];
-    this.rightsOptions = [...new Set(this.allRows.flatMap(r => r.rights))];
-  }
+
 
   highlightColor: string = '';
 
@@ -256,93 +265,13 @@ export class UserManagementComponent implements OnInit, OnDestroy {
     return user.id;
   }
 
-  applyFilters(): void {
-    let filtered = this.allRows;
-    if (this.filterOrg) {
-      filtered = filtered.filter(r => r.organization === this.filterOrg);
-    }
-    if (this.filterRight) {
-      filtered = filtered.filter(r => r.rights.includes(this.filterRight));
-    }
-    if (this.filterKeyword) {
-      const kw = this.filterKeyword.toLowerCase();
-      filtered = filtered.filter(r =>
-        `${r.firstName} ${r.lastName}`.toLowerCase().includes(kw) ||
-        r.email.toLowerCase().includes(kw)
-      );
-    }
-    this.rows = filtered;
-    this.applySort();
-    this.page = 1;
-    this.cdr.markForCheck();
-  }
 
-  private applyFiltersInternal(): void {
-    let filtered = this.allRows;
 
-    if (this.filterOrg) {
-      filtered = filtered.filter(r => r.organization === this.filterOrg);
-    }
 
-    if (this.filterRight) {
-      filtered = filtered.filter(r => r.rights.includes(this.filterRight));
-    }
 
-    if (this.filterKeyword) {
-      const kw = this.filterKeyword.toLowerCase();
-      filtered = filtered.filter(r =>
-        `${r.firstName} ${r.lastName}`.toLowerCase().includes(kw) ||
-        r.email.toLowerCase().includes(kw)
-      );
-    }
 
-    this.rows = filtered;
-    this.applySort();
-    this.page = 1;
-  }
 
-  sortBy(column: keyof UserRow): void {
-    this.sortDirection = this.sortColumn === column
-      ? (this.sortDirection === 'asc' ? 'desc' : 'asc')
-      : 'asc';
-    this.sortColumn = column;
-    this.applySort();
-    this.cdr.markForCheck();
-  }
 
-  applySort(): void {
-    if (!this.sortColumn) return;
-
-    const { sortColumn: col, sortDirection: dir } = this;
-    this.rows.sort((a, b) => {
-      const aVal = a[col], bVal = b[col];
-
-      if (typeof aVal === 'string' && typeof bVal === 'string') {
-        return dir === 'asc'
-          ? aVal.localeCompare(bVal)
-          : bVal.localeCompare(aVal);
-      }
-      if (typeof aVal === 'number' && typeof bVal === 'number') {
-        return dir === 'asc' ? aVal - bVal : bVal - aVal;
-      }
-      if (typeof aVal === 'boolean' && typeof bVal === 'boolean') {
-        return dir === 'asc'
-          ? Number(aVal) - Number(bVal)
-          : Number(bVal) - Number(aVal);
-      }
-      return 0;
-    });
-  }
-
-  get pagedRows(): UserRow[] {
-    const start = (this.page - 1) * this.pageSize;
-    return this.rows.slice(start, start + this.pageSize);
-  }
-
-  onPageChange(newPage: number): void {
-    this.page = newPage;
-    this.cdr.markForCheck();
-  }
 
   get hasSelection(): boolean {
     return this.rows.some(r => r.selected);
@@ -437,13 +366,6 @@ export class UserManagementComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (updatedUser) => {
-          const rowIndex = this.allRows.findIndex(r => r.id === changes.userId);
-          if (rowIndex !== -1) {
-            this.allRows[rowIndex].roles = changes.roles;
-            this.allRows[rowIndex].permissions = changes.permissions;
-            this.allRows[rowIndex].rights = changes.permissions;
-          }
-
           const displayRowIndex = this.rows.findIndex(r => r.id === changes.userId);
           if (displayRowIndex !== -1) {
             this.rows[displayRowIndex].roles = changes.roles;
@@ -451,7 +373,6 @@ export class UserManagementComponent implements OnInit, OnDestroy {
             this.rows[displayRowIndex].rights = changes.permissions;
           }
 
-          this.applyFiltersInternal();
           this.cdr.markForCheck();
 
           this.closeRolesModal();
@@ -472,5 +393,38 @@ export class UserManagementComponent implements OnInit, OnDestroy {
           }).subscribe();
         }
       });
+  }
+
+  onPageChange(newPage: number): void {
+    if (newPage >= 1 && newPage <= this.totalPages && newPage !== this.page) {
+      this.page = newPage;
+      this.loadUsers();
+    }
+  }
+
+  onPageSizeChange(newSize: number): void {
+    this.pageSize = newSize;
+    this.page = 1;
+    this.loadUsers();
+  }
+
+  onSearchChange(searchTerm: string): void {
+    this.searchSubject$.next(searchTerm);
+  }
+
+  get hasNextPage(): boolean {
+    return this.page < this.totalPages;
+  }
+
+  get hasPrevPage(): boolean {
+    return this.page > 1;
+  }
+
+  get startItem(): number {
+    return (this.page - 1) * this.pageSize + 1;
+  }
+
+  get endItem(): number {
+    return Math.min(this.page * this.pageSize, this.totalItems);
   }
 }

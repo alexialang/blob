@@ -15,11 +15,11 @@ class Company
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['quiz:read','company:read','user:admin_read','company:list','company:detail'])]
+    #[Groups(['quiz:read','quiz:create','company:read','user:admin_read','company:list','company:detail'])]
     private ?int $id = null;
 
 
-    #[Groups(['quiz:read','company:read','user:admin_read','company:list','company:detail'])]
+    #[Groups(['quiz:read','quiz:create','company:read','user:admin_read','company:list','company:detail'])]
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 

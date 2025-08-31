@@ -160,7 +160,48 @@
                 <button type="button" class="btn" (click)="addMatchingPair(i)">+ Ajouter une paire</button>
               </div>
 
-              <div *ngIf="question.get('type_question')?.value !== 'matching'">
+              <div *ngIf="question.get('type_question')?.value === 'true_false'" class="true-false-interface">
+                <div class="true-false-explanation">
+                  <p><strong>Instructions :</strong> Indiquez si l'affirmation ci-dessus est vraie ou fausse.</p>
+                </div>
+
+                <div class="true-false-choice">
+                  <h5>Cette affirmation est :</h5>
+                  <div class="radio-group-vertical">
+                    <label class="radio-option true-option">
+                      <input type="radio"
+                             [value]="true"
+                             [checked]="getTrueFalseCorrectAnswer(i)"
+                             (change)="onTrueFalseCorrectAnswerChange(i, true)">
+                      <span class="radio-custom"></span>
+                      <span class="radio-text">
+                        <strong>VRAIE</strong>
+                        <small>L'affirmation est correcte</small>
+                      </span>
+                    </label>
+
+                    <label class="radio-option false-option">
+                      <input type="radio"
+                             [value]="false"
+                             [checked]="!getTrueFalseCorrectAnswer(i)"
+                             (change)="onTrueFalseCorrectAnswerChange(i, false)">
+                      <span class="radio-custom"></span>
+                      <span class="radio-text">
+                        <strong>FAUSSE</strong>
+                        <small>L'affirmation est incorrecte</small>
+                      </span>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="auto-answers-info">
+                  <small class="text-muted">
+                    Les réponses "Vrai" et "Faux" sont automatiquement créées selon votre choix.
+                  </small>
+                </div>
+              </div>
+
+              <div *ngIf="question.get('type_question')?.value !== 'matching' && question.get('type_question')?.value !== 'true_false'">
                 <button type="button" class="btn" (click)="addAnswer(i)" [disabled]="!canAddAnswer(i)">
                   + Ajouter une réponse
                   <span *ngIf="question.get('type_question')?.value === 'find_the_intruder' && !canAddAnswer(i)">
@@ -216,7 +257,7 @@
             </div>
           </div>
         </div>
-        
+
         <div class="add-question-container">
           <button type="button" class="btn btn-add-question" (click)="addQuestion()">+ Ajouter une question</button>
         </div>

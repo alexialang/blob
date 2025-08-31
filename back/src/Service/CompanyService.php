@@ -155,28 +155,10 @@ class CompanyService
     {
         $companies = $this->companyRepository->findAllWithRelations();
         
-        $data = [];
-        foreach ($companies as $company) {
-            $data[] = [
-                'id' => $company->getId(),
-                'name' => $company->getName(),
-                'userCount' => $company->getUsers()->count(),
-                'groupCount' => $company->getGroups()->count(),
-                'quizCount' => $company->getQuizs()->count(),
-                'createdAt' => $company->getDateCreation() ? $company->getDateCreation()->format('Y-m-d H:i:s') : null,
-                'users' => $company->getUsers()->map(fn($user) => [
-                    'id' => $user->getId(),
-                    'email' => $user->getEmail(),
-                    'firstName' => $user->getFirstName(),
-                    'lastName' => $user->getLastName(),
-                    'roles' => $user->getRoles()
-                ])->toArray(),
-                'groups' => $company->getGroups()->map(fn($group) => [
-                    'id' => $group->getId(),
-                    'name' => $group->getName()
-                ])->toArray()
-            ];
-        }
+        $data = json_decode(
+            $this->serializer->serialize($companies, 'json', ['groups' => ['company:detail']]),
+            true
+        );
         
         return json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
     }

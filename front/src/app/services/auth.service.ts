@@ -90,10 +90,26 @@ export class AuthService {
   hasPermission(permission: string): Observable<boolean> {
     return this.getCurrentUser().pipe(
       map((user: User) => {
+
         if (user.roles.includes('ROLE_ADMIN')) {
           return true;
         }
-        return user.userPermissions?.some((p: any) => p.permission === permission) || false;
+
+        const hasPermission = user.userPermissions?.some((p: any) => p.permission === permission) || false;
+        return hasPermission;
+      })
+    );
+  }
+
+  hasAnyPermission(permissions: string[]): Observable<boolean> {
+    return this.getCurrentUser().pipe(
+      map((user: User) => {
+        if (user.roles.includes('ROLE_ADMIN')) {
+          return true;
+        }
+        return permissions.some(permission =>
+          user.userPermissions?.some((p: any) => p.permission === permission) || false
+        );
       })
     );
   }

@@ -4,19 +4,23 @@ namespace App\Service;
 
 use App\Entity\User;
 use App\Repository\QuizRepository;
+use Symfony\Component\Serializer\SerializerInterface;
 use Psr\Log\LoggerInterface;
 
 class QuizSearchService
 {
     private QuizRepository $quizRepository;
     private LoggerInterface $logger;
+    private SerializerInterface $serializer;
 
     public function __construct(
         QuizRepository $quizRepository,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        SerializerInterface $serializer
     ) {
         $this->quizRepository = $quizRepository;
         $this->logger = $logger;
+        $this->serializer = $serializer;
     }
 
     /**
@@ -31,59 +35,31 @@ class QuizSearchService
     }
 
     /**
-     * Récupère les quiz pour la gestion d'entreprise
+     * Récupère les quiz pour la gestion d'entreprise avec pagination
      * Filtre selon les permissions de l'utilisateur
      *
      * @param User $user L'utilisateur demandant les quiz
-     * @return array Liste des quiz accessibles
+     * @param int $page Numéro de page (défaut: 1)
+     * @param int $limit Nombre d'éléments par page (défaut: 20)
+     * @param string|null $search Terme de recherche optionnel
+     * @param string $sort Champ de tri (défaut: 'id')
+     * @return array Résultat avec données et pagination
      * @throws \Exception
      */
-    public function getQuizzesForCompanyManagement(User $user): array
+    public function getQuizzesForCompanyManagement(User $user, int $page = 1, int $limit = 20, ?string $search = null, string $sort = 'id'): array
     {
         try {
-            if ($user->isAdmin()) {
-                $quizzes = $this->quizRepository->findAll();
-            } else {
-                $allQuizzes = $this->quizRepository->findAll();
-                $quizzes = [];
-                
-                foreach ($allQuizzes as $quiz) {
-                    if ($this->canUserAccessQuiz($user, $quiz)) {
-                        $quizzes[] = $quiz;
-                    }
-                }
-            }
+            $result = $this->quizRepository->findWithPagination($page, $limit, $search, $sort, $user);
+            
+            $formattedData = json_decode(
+                $this->serializer->serialize($result['data'], 'json', ['groups' => ['quiz:organized']]),
+                true
+            );
 
-            $result = [];
-            foreach ($quizzes as $quiz) {
-                $result[] = [
-                    'id' => $quiz->getId(),
-                    'title' => $quiz->getTitle(),
-                    'description' => $quiz->getDescription(),
-                    'status' => $quiz->getStatus()->value,
-                    'isPublic' => $quiz->isPublic(),
-                    'dateCreation' => $quiz->getDateCreation()?->format('Y-m-d H:i:s'),
-                    'user' => [
-                        'id' => $quiz->getUser()->getId(),
-                        'firstName' => $quiz->getUser()->getFirstName(),
-                        'lastName' => $quiz->getUser()->getLastName(),
-                        'email' => $quiz->getUser()->getEmail()
-                    ],
-                    'category' => $quiz->getCategory() ? [
-                        'id' => $quiz->getCategory()->getId(),
-                        'name' => $quiz->getCategory()->getName()
-                    ] : null,
-                    'groups' => $quiz->getGroups()->map(function($group) {
-                        return [
-                            'id' => $group->getId(),
-                            'name' => $group->getName()
-                        ];
-                    })->toArray(),
-                    'questionCount' => $quiz->getQuestions()->count()
-                ];
-            }
-
-            return $result;
+            return [
+                'data' => $formattedData,
+                'pagination' => $result['pagination']
+            ];
             
         } catch (\Exception $e) {
             $this->logger->error('Erreur dans getQuizzesForCompanyManagement: ' . $e->getMessage());
@@ -101,20 +77,10 @@ class QuizSearchService
     {
         $privateQuizzes = $this->quizRepository->findPrivateQuizzesForUser($user);
         
-        return array_map(function($quiz) {
-            return [
-                'id' => $quiz->getId(),
-                'title' => $quiz->getTitle(),
-                'description' => $quiz->getDescription(),
-                'difficulty' => $quiz->getDifficulty()?->value,
-                'category' => $quiz->getCategory() ? [
-                    'id' => $quiz->getCategory()->getId(),
-                    'name' => $quiz->getCategory()->getName()
-                ] : null,
-                'questionCount' => $quiz->getQuestions()->count(),
-                'dateCreation' => $quiz->getDateCreation()?->format('Y-m-d H:i:s')
-            ];
-        }, $privateQuizzes);
+        return json_decode(
+            $this->serializer->serialize($privateQuizzes, 'json', ['groups' => ['quiz:organized']]),
+            true
+        );
     }
 
     /**
@@ -127,16 +93,10 @@ class QuizSearchService
     {
         $quizzes = $this->quizRepository->findByUser($user);
         
-        return array_map(function($quiz) {
-            return [
-                'id' => $quiz->getId(),
-                'title' => $quiz->getTitle(),
-                'description' => $quiz->getDescription(),
-                'status' => $quiz->getStatus()->value,
-                'isPublic' => $quiz->isPublic(),
-                'dateCreation' => $quiz->getDateCreation()?->format('Y-m-d H:i:s')
-            ];
-        }, $quizzes);
+        return json_decode(
+            $this->serializer->serialize($quizzes, 'json', ['groups' => ['quiz:organized']]),
+            true
+        );
     }
 
     /**

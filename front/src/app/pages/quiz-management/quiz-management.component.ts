@@ -24,7 +24,7 @@ import {
 import { TuiCell } from '@taiga-ui/layout';
 import { QuizManagementService } from '../../services/quiz-management.service';
 import { FileDownloadService } from '../../services/file-download.service';
-import { forkJoin, Subject, takeUntil } from 'rxjs';
+import { forkJoin, Subject, takeUntil, debounceTime, distinctUntilChanged, catchError, of } from 'rxjs';
 import { PaginationComponent } from '../../components/pagination/pagination.component';
 
 type TuiSizeS = 's' | 'm';
@@ -73,27 +73,28 @@ interface QuizRow {
 })
 export class QuizManagementComponent implements OnInit, OnDestroy {
   public rows: QuizRow[] = [];
-  public filterStatus = '';
-  public filterKeyword = '';
-  public statusOptions: string[] = ['Actif', 'Inactif'];
-
-  public size: TuiSizeS = 's';
+  public loadError = false;
+  public isLoading = false;
+  public dataReady = false;
 
   public page = 1;
-  public pageSize = 10;
-  public sortColumn: keyof QuizRow | '' = '';
-  public sortDirection: 'asc' | 'desc' = 'asc';
+  public pageSize = 20;
+  public totalPages = 1;
+  public totalItems = 0;
+  public searchTerm = '';
+
+  public size: TuiSizeS = 's';
   public open = false;
 
   highlightColor: string = '';
 
-  public loadError = false;
   public isDeleting = false;
   public showImportModal = false;
   public selectedFile: File | null = null;
 
   private readonly MAX_VISIBLE_GROUPS = 2;
   private destroy$ = new Subject<void>();
+  private searchSubject$ = new Subject<string>();
 
   constructor(
     private quizService: QuizManagementService,
@@ -107,6 +108,26 @@ export class QuizManagementComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.generateRandomColor();
     this.loadQuizzes();
+    this.setupSearchDebounce();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private setupSearchDebounce(): void {
+    this.searchSubject$
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(searchTerm => {
+        this.searchTerm = searchTerm;
+        this.page = 1;
+        this.loadQuizzes();
+      });
   }
 
   private generateRandomColor(): void {
@@ -134,91 +155,98 @@ export class QuizManagementComponent implements OnInit, OnDestroy {
     }
   }
 
-  private loadQuizzes(): void {
-    this.quizService.getQuizzes().subscribe({
-      next: quizzes => {
-        this.rows = quizzes.map(quiz => {
-          const createdDaysAgo = Math.floor(Math.random() * 180) + 1;
-          const questionsCount = Math.floor(Math.random() * 15) + 5;
+  loadQuizzes(): void {
+    this.isLoading = true;
+    this.loadError = false;
+    this.dataReady = false;
 
-          return {
-            id: quiz.id,
-            selected: false,
-            title: quiz.title,
-            description: quiz.description,
-            createdBy: `${quiz.user?.email || ''} ${quiz.user?.lastName || ''}`.trim(),
-            category: quiz.category?.name ?? null,
-            isPublic: quiz.isPublic ?? false,
-            status: quiz.status ?? 'draft',
-            groups: quiz.groups || [],
-            stats: `${questionsCount} questions • Créé il y a ${createdDaysAgo}j`,
-            createdAt: new Date(Date.now() - createdDaysAgo * 24 * 60 * 60 * 1000).toLocaleDateString('fr-FR'),
-            questionsCount: questionsCount
-          };
-        });
-        this.applyFilters();
-      },
-      error: () => {
-        this.loadError = true;
-        this.cdr.markForCheck();
-      },
-    });
-  }
+    this.quizService
+      .getQuizzes(this.page, this.pageSize, this.searchTerm, 'title')
+      .pipe(
+        takeUntil(this.destroy$),
+        catchError(err => {
+          this.loadError = true;
+          this.isLoading = false;
+          this.cdr.markForCheck();
+          return of({ data: [], pagination: { page: 1, limit: 20, total: 0, totalPages: 1 } });
+        })
+      )
+      .subscribe({
+        next: (response: any) => {
+          const quizzes = response.data || [];
+          const pagination = response.pagination || { page: 1, limit: 20, total: 0, totalPages: 1 };
 
-  applyFilters(): void {
-    let filtered = [...this.rows];
+          this.page = pagination.page;
+          this.totalPages = pagination.totalPages;
+          this.totalItems = pagination.total;
 
-    if (this.filterKeyword) {
-      const keyword = this.filterKeyword.toLowerCase();
-      filtered = filtered.filter(q =>
-        q.title.toLowerCase().includes(keyword) ||
-        q.createdBy.toLowerCase().includes(keyword)
-      );
-    }
+          this.rows = quizzes.map((quiz: any) => {
+            const createdDaysAgo = Math.floor(Math.random() * 180) + 1;
+            const questionsCount = quiz.questionCount || Math.floor(Math.random() * 15) + 5;
 
-    this.rows = filtered;
-    this.applySort();
-    this.page = 1;
-    this.cdr.markForCheck();
-  }
+            return {
+              id: quiz.id,
+              selected: false,
+              title: quiz.title,
+              description: quiz.description,
+              createdBy: `${quiz.user?.firstName || ''} ${quiz.user?.lastName || ''}`.trim() || quiz.user?.email || '',
+              category: quiz.category?.name ?? null,
+              isPublic: quiz.isPublic ?? false,
+              status: quiz.status ?? 'draft',
+              groups: quiz.groups || [],
+              stats: `${questionsCount} questions • Créé il y a ${createdDaysAgo}j`,
+              createdAt: quiz.dateCreation ? new Date(quiz.dateCreation).toLocaleDateString('fr-FR') : 'N/A',
+              questionsCount: questionsCount
+            };
+          });
 
-  sortBy(column: keyof QuizRow): void {
-    this.sortDirection = this.sortColumn === column
-      ? (this.sortDirection === 'asc' ? 'desc' : 'asc')
-      : 'asc';
-    this.sortColumn = column;
-    this.applySort();
-  }
-
-  private applySort(): void {
-    if (!this.sortColumn) return;
-
-    const { sortColumn: col, sortDirection: dir } = this;
-    this.rows.sort((a, b) => {
-      const aVal = a[col];
-      const bVal = b[col];
-
-      if (typeof aVal === 'string' && typeof bVal === 'string') {
-        return dir === 'asc'
-          ? aVal.localeCompare(bVal)
-          : bVal.localeCompare(aVal);
-      }
-
-      return 0;
-    });
-
-    this.cdr.markForCheck();
-  }
-
-  get pagedRows(): QuizRow[] {
-    const start = (this.page - 1) * this.pageSize;
-    return this.rows.slice(start, start + this.pageSize);
+          this.dataReady = true;
+          this.isLoading = false;
+          this.cdr.markForCheck();
+        },
+        error: (error) => {
+          console.error('Erreur dans le subscribe:', error);
+          this.loadError = true;
+          this.isLoading = false;
+          this.cdr.markForCheck();
+        }
+      });
   }
 
   onPageChange(newPage: number): void {
-    this.page = newPage;
-    this.cdr.markForCheck();
+    if (newPage >= 1 && newPage <= this.totalPages && newPage !== this.page) {
+      this.page = newPage;
+      this.loadQuizzes();
+    }
   }
+
+  onPageSizeChange(newSize: number): void {
+    this.pageSize = newSize;
+    this.page = 1;
+    this.loadQuizzes();
+  }
+
+  onSearchChange(searchTerm: string): void {
+    this.searchSubject$.next(searchTerm);
+  }
+
+  get hasNextPage(): boolean {
+    return this.page < this.totalPages;
+  }
+
+  get hasPrevPage(): boolean {
+    return this.page > 1;
+  }
+
+  get startItem(): number {
+    return (this.page - 1) * this.pageSize + 1;
+  }
+
+  get endItem(): number {
+    return Math.min(this.page * this.pageSize, this.totalItems);
+  }
+
+
 
   get hasSelection(): boolean {
     return this.rows.some(r => r.selected);
@@ -388,11 +416,6 @@ export class QuizManagementComponent implements OnInit, OnDestroy {
     };
 
     reader.readAsText(this.selectedFile);
-  }
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
   }
 
   onCreateQuiz(): void {

@@ -16,7 +16,11 @@ class GlobalStatisticsRepository extends ServiceEntityRepository
         parent::__construct($registry, Quiz::class);
     }
 
-    public function getTeamScoresByQuiz(): array
+    /**
+     * @param int $limit Limite de résultats (défaut: 20)
+     * @return array Array de statistiques par quiz
+     */
+    public function getTeamScoresByQuiz(int $limit = 20): array
     {
         try {
             $qb = $this->createQueryBuilder('q');
@@ -34,7 +38,7 @@ class GlobalStatisticsRepository extends ServiceEntityRepository
                 ->groupBy('q.id, q.title')
                 ->having('COUNT(ua.id) > 0')
                 ->orderBy('q.date_creation', 'ASC')
-                ->setMaxResults(50)
+                ->setMaxResults($limit)
                 ->getQuery()
                 ->getResult();
             
@@ -54,7 +58,14 @@ class GlobalStatisticsRepository extends ServiceEntityRepository
         }
     }
 
-    public function getTeamScoresByQuizForCompany(int $companyId): array
+    /**
+     * Récupère les scores par quiz filtrés pour une entreprise spécifique (OPTIMIZED)
+     * 
+     * @param int $companyId ID de l'entreprise à analyser
+     * @param int $limit Limite de résultats (défaut: 20)
+     * @return array Statistiques des quiz pour cette entreprise
+     */
+    public function getTeamScoresByQuizForCompany(int $companyId, int $limit = 20): array
     {
         try {
             $qb = $this->createQueryBuilder('q');
@@ -74,7 +85,7 @@ class GlobalStatisticsRepository extends ServiceEntityRepository
                 ->groupBy('q.id, q.title')
                 ->having('COUNT(ua.id) > 0')
                 ->orderBy('q.date_creation', 'ASC')
-                ->setMaxResults(50)
+                ->setMaxResults($limit)
                 ->getQuery()
                 ->getResult();
 
@@ -118,7 +129,7 @@ class GlobalStatisticsRepository extends ServiceEntityRepository
                 ->groupBy('g.id, g.name, q.id, q.title')
                 ->orderBy('g.name', 'ASC')
                 ->addOrderBy('q.date_creation', 'ASC')
-                ->setMaxResults(50)
+                ->setMaxResults($limit)
                 ->getQuery()
                 ->getResult();
             
@@ -165,7 +176,7 @@ class GlobalStatisticsRepository extends ServiceEntityRepository
                 ->groupBy('g.id, g.name, q.id, q.title')
                 ->orderBy('g.name', 'ASC')
                 ->addOrderBy('q.date_creation', 'ASC')
-                ->setMaxResults(50)
+                ->setMaxResults($limit)
                 ->getQuery()
                 ->getResult();
             

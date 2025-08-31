@@ -79,6 +79,10 @@ export class CompanyDetailsComponent implements OnInit, OnDestroy {
   newGroupName = '';
   newGroupDescription = '';
   selectedMembersForGroup: number[] = [];
+  selectedGroupId: number | null = null;
+  availableMembersForGroup: any[] = [];
+  selectedMemberForGroup: number | null = null;
+  showAddMemberToGroupModal = false;
 
   highlightColor: string = '';
   activeTabIndex = 0;
@@ -416,8 +420,9 @@ export class CompanyDetailsComponent implements OnInit, OnDestroy {
   }
 
   addMemberToGroup(groupId: number): void {
-    this.showAddMemberModal = true;
-    this.alertService.open('Sélectionnez l\'utilisateur à ajouter au groupe').subscribe();
+    this.selectedGroupId = groupId;
+    this.availableMembersForGroup = this.getAvailableMembersForGroup(groupId);
+    this.showAddMemberToGroupModal = true;
   }
 
   selectAllMembers(): void {
@@ -469,5 +474,57 @@ export class CompanyDetailsComponent implements OnInit, OnDestroy {
 
   deleteCompany(): void {
 
+  }
+
+  // Nouvelles méthodes pour ajouter un membre à un groupe
+  getAvailableMembersForGroup(groupId: number): any[] {
+    if (!this.company?.users || !this.company?.groups) return [];
+    
+    const targetGroup = this.company.groups.find(g => g.id === groupId);
+    if (!targetGroup) return [];
+    
+    // Récupérer les IDs des membres déjà dans le groupe
+    const membersInGroup = new Set(targetGroup.users?.map((u: any) => u.id) || []);
+    
+    // Retourner les membres de l'entreprise qui ne sont pas encore dans ce groupe
+    return this.company.users.filter(user => !membersInGroup.has(user.id));
+  }
+
+  selectMemberForGroup(memberId: number): void {
+    this.selectedMemberForGroup = memberId;
+  }
+
+  confirmAddMemberToGroup(): void {
+    if (!this.selectedMemberForGroup || !this.selectedGroupId || !this.company?.id) return;
+    
+    this.companyService.addUserToGroup(this.company.id, this.selectedGroupId, this.selectedMemberForGroup)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (result) => {
+          this.alertService.open(`Membre ajouté au groupe avec succès !`, {
+            appearance: 'success'
+          }).subscribe();
+          
+          this.closeAddMemberToGroupModal();
+          // Recharger les données
+          if (this.company?.id) {
+            this.loadCompany(this.company.id);
+          }
+        },
+        error: (error) => {
+          console.error('Erreur lors de l\'ajout du membre au groupe:', error);
+          this.alertService.open(
+            error.message || 'Erreur lors de l\'ajout du membre au groupe',
+            { appearance: 'error' }
+          ).subscribe();
+        }
+      });
+  }
+
+  closeAddMemberToGroupModal(): void {
+    this.showAddMemberToGroupModal = false;
+    this.selectedGroupId = null;
+    this.selectedMemberForGroup = null;
+    this.availableMembersForGroup = [];
   }
 }

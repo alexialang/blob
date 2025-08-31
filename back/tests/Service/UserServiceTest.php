@@ -171,4 +171,197 @@ class UserServiceTest extends TestCase
 
         $this->assertFalse($result);
     }
+
+    public function testUpdateUserWithValidData(): void
+    {
+        $user = new User();
+        $user->setEmail('old@example.com');
+        $user->setFirstName('Old');
+        $user->setLastName('Name');
+
+        $updateData = [
+            'email' => 'new@example.com',
+            'firstName' => 'New',
+            'lastName' => 'Name',
+            'roles' => ['ROLE_USER', 'ROLE_ADMIN']
+        ];
+
+        $this->validator
+            ->expects($this->once())
+            ->method('validate')
+            ->willReturn(new ConstraintViolationList());
+
+        $this->userRepository
+            ->expects($this->once())
+            ->method('findOneBy')
+            ->with(['email' => 'new@example.com'])
+            ->willReturn(null);
+
+        $this->entityManager
+            ->expects($this->once())
+            ->method('flush');
+
+        $result = $this->userService->update($user, $updateData);
+
+        $this->assertEquals('new@example.com', $result->getEmail());
+        $this->assertEquals('New', $result->getFirstName());
+        $this->assertContains('ROLE_ADMIN', $result->getRoles());
+    }
+
+    public function testUpdateUserWithExistingEmail(): void
+    {
+        $user = new User();
+        $user->setEmail('current@example.com');
+
+        $existingUser = new User();
+        $existingUser->setEmail('existing@example.com');
+
+        $updateData = ['email' => 'existing@example.com'];
+
+        $this->validator
+            ->expects($this->once())
+            ->method('validate')
+            ->willReturn(new ConstraintViolationList());
+
+        $this->userRepository
+            ->expects($this->once())
+            ->method('findOneBy')
+            ->with(['email' => 'existing@example.com'])
+            ->willReturn($existingUser);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Cet email est déjà utilisé');
+
+        $this->userService->update($user, $updateData);
+    }
+
+    public function testAnonymizeUser(): void
+    {
+        $user = new User();
+        $user->setEmail('user@example.com');
+        $user->setFirstName('John');
+        $user->setLastName('Doe');
+        $user->setPseudo('johndoe');
+
+        $this->entityManager
+            ->expects($this->once())
+            ->method('flush');
+
+        $this->userService->anonymizeUser($user);
+
+        $this->assertStringContainsString('anon_', $user->getEmail());
+        $this->assertEquals('Utilisateur', $user->getFirstName());
+        $this->assertEquals('Anonyme', $user->getLastName());
+        $this->assertStringContainsString('Utilisateur_', $user->getPseudo());
+        $this->assertFalse($user->isActive());
+        $this->assertNotNull($user->getDeletedAt());
+        $this->assertContains('ROLE_ANONYMOUS', $user->getRoles());
+    }
+
+    public function testConfirmTokenWithValidToken(): void
+    {
+        $token = 'valid-token-123';
+        $user = new User();
+        $user->setConfirmationToken($token);
+        $user->setIsVerified(false);
+
+        $this->userRepository
+            ->expects($this->once())
+            ->method('findOneBy')
+            ->with(['confirmationToken' => $token])
+            ->willReturn($user);
+
+        $this->entityManager
+            ->expects($this->once())
+            ->method('flush');
+
+        $result = $this->userService->confirmToken($token);
+
+        $this->assertInstanceOf(User::class, $result);
+        $this->assertTrue($result->isVerified());
+        $this->assertNull($result->getConfirmationToken());
+    }
+
+    public function testConfirmTokenWithInvalidToken(): void
+    {
+        $token = 'invalid-token';
+
+        $this->userRepository
+            ->expects($this->once())
+            ->method('findOneBy')
+            ->with(['confirmationToken' => $token])
+            ->willReturn(null);
+
+        $result = $this->userService->confirmToken($token);
+
+        $this->assertNull($result);
+    }
+
+    public function testConfirmTokenAlreadyVerified(): void
+    {
+        $token = 'already-used-token';
+        $user = new User();
+        $user->setConfirmationToken($token);
+        $user->setIsVerified(true); // Déjà vérifié
+
+        $this->userRepository
+            ->expects($this->once())
+            ->method('findOneBy')
+            ->with(['confirmationToken' => $token])
+            ->willReturn($user);
+
+        $result = $this->userService->confirmToken($token);
+
+        $this->assertNull($result);
+    }
+
+    public function testUpdateProfileWithAvatarData(): void
+    {
+        $user = new User();
+        $user->setEmail('user@example.com');
+
+        $updateData = [
+            'firstName' => 'Updated',
+            'avatarShape' => 'circle',
+            'avatarColor' => '#FF5733'
+        ];
+
+        $this->validator
+            ->expects($this->once())
+            ->method('validate')
+            ->willReturn(new ConstraintViolationList());
+
+        $this->entityManager
+            ->expects($this->once())
+            ->method('flush');
+
+        $result = $this->userService->updateProfile($user, $updateData);
+
+        $this->assertEquals('Updated', $result->getFirstName());
+        $avatarData = json_decode($result->getAvatar(), true);
+        $this->assertEquals('circle', $avatarData['shape']);
+        $this->assertEquals('#FF5733', $avatarData['color']);
+    }
+
+    public function testGetUserStatistics(): void
+    {
+        $user = new User();
+        $user->setDateRegistration(new \DateTimeImmutable('2023-01-01'));
+        $user->setLastAccess(new \DateTime('2023-12-31'));
+
+        // Mock des collections vides pour simplifier
+        $user->__construct(); // Initialise les collections
+
+        $stats = $this->userService->getUserStatistics($user);
+
+        $this->assertIsArray($stats);
+        $this->assertArrayHasKey('totalQuizzesCreated', $stats);
+        $this->assertArrayHasKey('totalQuizzesCompleted', $stats);
+        $this->assertArrayHasKey('averageScore', $stats);
+        $this->assertArrayHasKey('badgesEarned', $stats);
+        $this->assertArrayHasKey('memberSince', $stats);
+        $this->assertArrayHasKey('lastAccess', $stats);
+        $this->assertEquals('2023-01-01', $stats['memberSince']);
+        $this->assertEquals('2023-12-31 00:00:00', $stats['lastAccess']);
+    }
 }

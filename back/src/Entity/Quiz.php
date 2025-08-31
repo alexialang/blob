@@ -33,7 +33,7 @@ class Quiz
     private ?bool $isPublic = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    #[Groups(['quiz:read'])]
+    #[Groups(['quiz:read', 'quiz:create'])]
     private ?\DateTimeInterface $date_creation = null;
 
     #[ORM\Column(length: 50, enumType: Status::class)]
@@ -41,11 +41,11 @@ class Quiz
     private ?Status $status = null;
 
     #[ORM\ManyToOne(inversedBy: 'quizs')]
-    #[Groups(['quiz:read'])]
+    #[Groups(['quiz:read', 'quiz:create'])]
     private ?Company $company = null;
 
     #[ORM\ManyToOne(inversedBy: 'quizs')]
-    #[Groups(['quiz:read'])]
+    #[Groups(['quiz:read', 'quiz:create'])]
     private ?User $user = null;
 
     /**
@@ -53,7 +53,7 @@ class Quiz
      */
     #[ORM\ManyToMany(targetEntity: Group::class)]
     #[ORM\JoinTable(name: 'quiz_group')]
-    #[Groups(['quiz:read', 'company:detail'])]
+    #[Groups(['quiz:read', 'quiz:create', 'company:detail'])]
     private Collection $groups;
 
     #[ORM\ManyToOne(inversedBy: 'quizs')]
@@ -64,7 +64,7 @@ class Quiz
      * @var Collection<int, Question>
      */
     #[ORM\OneToMany(targetEntity: Question::class, mappedBy: 'quiz')]
-    #[Groups(['quiz:read'])]
+    #[Groups(['quiz:read', 'quiz:create'])]
     private Collection $questions;
 
     /**

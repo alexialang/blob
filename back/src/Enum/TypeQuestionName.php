@@ -16,6 +16,8 @@ enum TypeQuestionName: string
 
     case BLIND_TEST = 'blind_test';
 
+    case TRUE_FALSE = 'true_false';
+
 
 
     public function getName(): string
@@ -27,6 +29,7 @@ enum TypeQuestionName: string
         self::MATCHING => 'Association d\'élément ',
         self::FIND_THE_INTRUDER => 'Trouver l\'intrus',
         self::BLIND_TEST => 'Blind test',
+        self::TRUE_FALSE => 'Vrai/Faux',
     };
 }
 }

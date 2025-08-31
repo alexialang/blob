@@ -4,29 +4,25 @@
   <h1 class="page-title">Gestion <br /> des <span class="quiz-highlight" [ngStyle]="{ 'color': highlightColor }">Quiz</span></h1>
 
   <div class="filters-container">
-    <div class="filters-row">
+    <div class="search-row">
       <select
-        class="form-control"
-        [(ngModel)]="filterStatus"
-        (ngModelChange)="applyFilters()"
+        class="form-control page-size-select"
+        [(ngModel)]="pageSize"
+        (ngModelChange)="onPageSizeChange($event)"
       >
-        <option value="">Statut</option>
-        <option *ngFor="let status of statusOptions" [value]="status">
-          {{ status }}
-        </option>
+        <option [value]="10">10 par page</option>
+        <option [value]="20">20 par page</option>
+        <option [value]="50">50 par page</option>
+        <option [value]="100">100 par page</option>
       </select>
 
       <input
         type="text"
-        class="form-control"
-        placeholder="Mot-clé"
-        [(ngModel)]="filterKeyword"
-        (ngModelChange)="applyFilters()"
+        class="form-control search-input"
+        placeholder="Rechercher par titre, créateur..."
+        [(ngModel)]="searchTerm"
+        (ngModelChange)="onSearchChange($event)"
       />
-
-      <button tuiButton class="form-control" (click)="applyFilters()">
-        Rechercher
-      </button>
     </div>
 
     <div class="action-buttons-wrapper">
@@ -49,11 +45,18 @@
     </div>
   </div>
 
-  <div *ngIf="loadError" class="alert alert-danger">
-    Impossible de charger les quiz.
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Chargement des quiz...</p>
   </div>
 
-  <div class="table-scroll-wrapper">
+  <div *ngIf="loadError && !isLoading" class="error-container">
+    <p class="error-message">Erreur lors du chargement des quiz</p>
+    <button (click)="loadQuizzes()" class="retry-button">Réessayer</button>
+  </div>
+
+  <div *ngIf="!isLoading && !loadError && dataReady && rows.length > 0">
+    <div class="table-scroll-wrapper">
     <table tuiTable class="custom-table table-striped">
       <thead>
       <tr>
@@ -65,27 +68,13 @@
             (ngModelChange)="toggleAll($event); onQuizSelectionChange()"
           />
         </th>
-        <th tuiTh (click)="sortBy('title')" class="th-quiz">
+        <th tuiTh class="th-quiz">
           Quiz
-          <button
-            tuiIconButton
-            size="xs"
-            class="sort-btn"
-            *ngIf="sortColumn === 'title'"
-            [iconStart]="sortDirection === 'asc' ? 'tuiIconChevronUp' : 'tuiIconChevronDown'"
-          ></button>
         </th>
         <th tuiTh class="th-creator">Créateur</th>
         <th tuiTh class="th-groups">Groupes</th>
-        <th tuiTh (click)="sortBy('category')" class="th-category">
+        <th tuiTh class="th-category">
           Catégorie
-          <button
-            tuiIconButton
-            size="xs"
-            class="sort-btn"
-            *ngIf="sortColumn === 'category'"
-            [iconStart]="sortDirection === 'asc' ? 'tuiIconChevronUp' : 'tuiIconChevronDown'"
-          ></button>
         </th>
         <th tuiTh>Public</th>
         <th tuiTh>Statut</th>
@@ -106,7 +95,7 @@
       </thead>
 
       <tbody tuiTbody>
-      <tr *ngFor="let row of pagedRows" class="table-row">
+      <tr *ngFor="let row of rows" class="table-row">
         <td tuiTd>
           <input type="checkbox" tuiCheckbox [(ngModel)]="row.selected" (ngModelChange)="onQuizSelectionChange()" />
         </td>
@@ -175,17 +164,29 @@
       </tr>
       </tbody>
     </table>
+    </div>
+
+    <!-- Informations de pagination -->
+    <div class="pagination-info" *ngIf="totalItems > 0">
+      <p>Affichage de {{ startItem }} à {{ endItem }} sur {{ totalItems }} quiz</p>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination-container" *ngIf="totalPages > 1">
+      <app-pagination
+        [totalItems]="totalItems"
+        [pageSize]="pageSize"
+        [page]="page"
+        [activePadding]="2"
+        (pageChange)="onPageChange($event)"
+      ></app-pagination>
+    </div>
   </div>
 
-  <div class="pagination-container">
-    <app-pagination
-      [totalItems]="rows.length"
-      [pageSize]="pageSize"
-      [page]="page"
-      [activePadding]="2"
-      (pageChange)="onPageChange($event)"
-    ></app-pagination>
+  <div *ngIf="!isLoading && !loadError && dataReady && rows.length === 0" class="no-data-container">
+    <p>Aucun quiz trouvé.</p>
   </div>
+
 </div>
 
 <div *ngIf="showImportModal" class="modal-overlay">

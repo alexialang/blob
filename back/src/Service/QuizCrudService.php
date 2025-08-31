@@ -19,6 +19,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Exception\ValidationFailedException;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\Serializer\SerializerInterface;
 use App\Entity\TypeQuestion;
 
 class QuizCrudService
@@ -31,6 +32,7 @@ class QuizCrudService
     private ValidatorInterface $validator;
     private LoggerInterface $logger;
     private EventDispatcherInterface $eventDispatcher;
+    private SerializerInterface $serializer;
 
     public function __construct(
         EntityManagerInterface $em,
@@ -40,7 +42,8 @@ class QuizCrudService
         GroupRepository $groupRepository,
         ValidatorInterface $validator,
         LoggerInterface $logger,
-        EventDispatcherInterface $eventDispatcher
+        EventDispatcherInterface $eventDispatcher,
+        SerializerInterface $serializer
     ) {
         $this->em = $em;
         $this->quizRepository = $quizRepository;
@@ -50,6 +53,7 @@ class QuizCrudService
         $this->validator = $validator;
         $this->logger = $logger;
         $this->eventDispatcher = $eventDispatcher;
+        $this->serializer = $serializer;
     }
 
     /**
@@ -57,9 +61,9 @@ class QuizCrudService
      * 
      * @param Quiz $quiz Le quiz à afficher
      * @param User|null $user L'utilisateur qui demande l'affichage
-     * @return array Quiz formaté pour l'affichage
+     * @return Quiz Quiz avec toutes ses relations chargées
      */
-    public function show(Quiz $quiz, ?User $user = null): array
+    public function show(Quiz $quiz, ?User $user = null): Quiz
     {
         if ($user) {
             $accessibleQuiz = $this->quizRepository->findWithUserAccess($quiz->getId(), $user);
@@ -72,32 +76,10 @@ class QuizCrudService
             $quiz = $accessibleQuiz;
         } else {
             $quiz = $this->quizRepository->findWithAllRelations($quiz->getId()) ?? $quiz;
+            if (!$quiz->isPublic()) {
+                throw new \InvalidArgumentException('Accès refusé : ce quiz n\'est pas public');
+            }
         }
-
-        $quizData = [
-            'id' => $quiz->getId(),
-            'title' => $quiz->getTitle(),
-            'description' => $quiz->getDescription(),
-            'status' => $quiz->getStatus()->value,
-            'isPublic' => $quiz->isPublic(),
-            'dateCreation' => $quiz->getDateCreation()?->format('Y-m-d H:i:s'),
-            'user' => [
-                'id' => $quiz->getUser()->getId(),
-                'firstName' => $quiz->getUser()->getFirstName(),
-                'lastName' => $quiz->getUser()->getLastName()
-            ],
-            'category' => $quiz->getCategory() ? [
-                'id' => $quiz->getCategory()->getId(),
-                'name' => $quiz->getCategory()->getName()
-            ] : null,
-            'groups' => array_map(function($group) {
-                return [
-                    'id' => $group->getId(),
-                    'name' => $group->getName()
-                ];
-            }, $quiz->getGroups()->toArray()),
-            'questions' => []
-        ];
 
         $this->logger->info('DEBUG show method', [
             'quiz_id' => $quiz->getId(),
@@ -106,38 +88,16 @@ class QuizCrudService
         ]);
 
         foreach ($quiz->getQuestions() as $question) {
-            $questionData = [
-                'id' => $question->getId(),
-                'question' => $question->getQuestion(),
-                'type_question' => $question->getTypeQuestion() ? [
-                    'id' => $question->getTypeQuestion()->getId(),
-                    'name' => $question->getTypeQuestion()->getName()
-                ] : null,
-                'difficulty' => $question->getDifficulty()?->value,
-                'answers' => []
-            ];
-
             $this->logger->info('DEBUG question', [
                 'question_id' => $question->getId(),
                 'answers_count' => $question->getAnswers()->count(),
                 'answers_loaded' => $question->getAnswers()->isInitialized()
             ]);
-
-            foreach ($question->getAnswers() as $answer) {
-                $questionData['answers'][] = [
-                    'id' => $answer->getId(),
-                    'answer' => $answer->getAnswer(),
-                    'is_correct' => $answer->isCorrect(),
-                    'order_correct' => $answer->getOrderCorrect(),
-                    'pair_id' => $answer->getPairId(),
-                    'is_intrus' => $answer->isIntrus()
-                ];
-            }
-
-            $quizData['questions'][] = $questionData;
+            
+            $question->getAnswers()->toArray();
         }
 
-        return $quizData;
+        return $quiz;
     }
 
     /**
@@ -184,7 +144,7 @@ class QuizCrudService
     /**
      * Crée un nouveau quiz avec ses questions
      * 
-     * @param array $data Les données du quiz
+     * @param array $data Les données du quiz (déjà validées par le contrôleur)
      * @param User $user L'utilisateur créateur
      * @return Quiz Le quiz créé
      */
@@ -225,6 +185,7 @@ class QuizCrudService
                 }
             }
 
+            // Persister le quiz
             $this->em->persist($quiz);
 
             // Créer les questions et réponses
@@ -314,9 +275,9 @@ class QuizCrudService
      * 
      * @param Quiz $quiz Le quiz à préparer pour l'édition
      * @param User $user L'utilisateur demandant l'édition
-     * @return array Quiz formaté pour l'édition
+     * @return Quiz Quiz avec toutes ses relations chargées pour l'édition
      */
-    public function getQuizForEdit(Quiz $quiz, User $user): array
+    public function getQuizForEdit(Quiz $quiz, User $user): Quiz
     {
         try {
             $fullQuiz = $this->quizRepository->findWithAllRelations($quiz->getId());
@@ -332,16 +293,13 @@ class QuizCrudService
                 'questions_count' => $fullQuiz->getQuestions()->count()
             ]);
 
-            $quizData = $this->transformQuizForFrontend($fullQuiz, $user);
+            // Précharger les relations pour éviter le lazy loading
+            foreach ($fullQuiz->getQuestions() as $question) {
+                $question->getAnswers()->toArray();
+                $question->getTypeQuestion();
+            }
 
-            // Debug données transformées
-            $this->logger->info('DEBUG quiz transformé', [
-                'data_keys' => array_keys($quizData),
-                'title' => $quizData['title'] ?? 'VIDE',
-                'questions_count' => count($quizData['questions'] ?? [])
-            ]);
-
-            return $quizData;
+            return $fullQuiz;
         } catch (\Exception $e) {
             $this->logger->error('Erreur getQuizForEdit: ' . $e->getMessage());
             throw $e;
@@ -504,7 +462,6 @@ class QuizCrudService
             return $this->findOrCreateTypeQuestion($questionData['type_question']);
         }
 
-        // Type de question par défaut si aucun n'est spécifié
         $defaultType = $this->typeQuestionRepository->findOneBy(['name' => 'QCM']);
         if (!$defaultType) {
             $defaultType = new TypeQuestion();
@@ -555,60 +512,5 @@ class QuizCrudService
         }
     }
 
-    /**
-     * Transforme un quiz pour le frontend
-     */
-    private function transformQuizForFrontend(Quiz $quiz, User $user): array
-    {
-        $quizData = [
-            'id' => $quiz->getId(),
-            'title' => $quiz->getTitle(),
-            'description' => $quiz->getDescription(),
-            'status' => $quiz->getStatus()?->value,
-            'isPublic' => $quiz->isPublic(),
-            'dateCreation' => $quiz->getDateCreation()?->format('Y-m-d H:i:s'),
-            'category' => $quiz->getCategory() ? [
-                'id' => $quiz->getCategory()->getId(),
-                'name' => $quiz->getCategory()->getName()
-            ] : null,
-            'groups' => [],
-            'questions' => []
-        ];
 
-        foreach ($quiz->getGroups() as $group) {
-            $quizData['groups'][] = [
-                'id' => $group->getId(),
-                'name' => $group->getName()
-            ];
-        }
-
-        foreach ($quiz->getQuestions() as $question) {
-            $questionData = [
-                'id' => $question->getId(),
-                'question' => $question->getQuestion(),
-                'type_question' => $question->getTypeQuestion() ? [
-                    'id' => $question->getTypeQuestion()->getId(),
-                    'name' => $question->getTypeQuestion()->getName()
-                ] : null,
-                'difficulty' => $question->getDifficulty()?->value,
-                'points' => 10,
-                'answers' => []
-            ];
-
-            foreach ($question->getAnswers() as $answer) {
-                $questionData['answers'][] = [
-                    'id' => $answer->getId(),
-                    'answer' => $answer->getAnswer(),
-                    'is_correct' => $answer->isCorrect(),
-                    'order_correct' => $answer->getOrderCorrect(),
-                    'pair_id' => $answer->getPairId(),
-                    'is_intrus' => $answer->isIntrus()
-                ];
-            }
-
-            $quizData['questions'][] = $questionData;
-        }
-
-        return $quizData;
-    }
 }

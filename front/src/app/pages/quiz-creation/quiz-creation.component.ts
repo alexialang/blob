@@ -220,6 +220,8 @@ export class QuizCreationComponent implements OnInit {
         this.addAnswer(questionIndex);
       }
       this.initializeMatchingPairs(questionIndex);
+    } else if (questionType === 'true_false') {
+      this.initializeTrueFalseAnswers(questionIndex);
     } else {
       for (let i = 0; i < minAnswers; i++) {
         this.addAnswer(questionIndex);
@@ -240,6 +242,48 @@ export class QuizCreationComponent implements OnInit {
     }
   }
 
+  private initializeTrueFalseAnswers(questionIndex: number): void {
+    const answers = this.getAnswers(questionIndex);
+
+    // Ajouter la réponse "Vrai"
+    const trueAnswer = this.fb.group({
+      answer: ['Vrai', Validators.required],
+      is_correct: [true],
+      order_correct: [null],
+      pair_id: [null],
+      is_intrus: [false]
+    });
+    answers.push(trueAnswer);
+
+    const falseAnswer = this.fb.group({
+      answer: ['Faux', Validators.required],
+      is_correct: [false],
+      order_correct: [null],
+      pair_id: [null],
+      is_intrus: [false]
+    });
+    answers.push(falseAnswer);
+  }
+
+  onTrueFalseCorrectAnswerChange(questionIndex: number, isTrue: boolean): void {
+    const answers = this.getAnswers(questionIndex);
+
+    // Mettre à jour les réponses Vrai/Faux
+    if (answers.length >= 2) {
+      // La première réponse est "Vrai", la seconde est "Faux"
+      answers.at(0).get('is_correct')?.setValue(isTrue);
+      answers.at(1).get('is_correct')?.setValue(!isTrue);
+    }
+  }
+
+  getTrueFalseCorrectAnswer(questionIndex: number): boolean {
+    const answers = this.getAnswers(questionIndex);
+    if (answers.length >= 2) {
+      return answers.at(0).get('is_correct')?.value || false;
+    }
+    return true; // Par défaut, "Vrai" est la bonne réponse
+  }
+
   private getMinAnswersForType(questionType: string): number {
     const MIN_ANSWERS_CONFIG = {
       'MCQ': 3,
@@ -247,7 +291,8 @@ export class QuizCreationComponent implements OnInit {
       'right_order': 3,
       'matching': 4,
       'find_the_intruder': 3,
-      'blind_test': 1
+      'blind_test': 1,
+      'true_false': 2
     } as const;
 
     return MIN_ANSWERS_CONFIG[questionType as keyof typeof MIN_ANSWERS_CONFIG] || 2;
@@ -417,6 +462,7 @@ export class QuizCreationComponent implements OnInit {
 
     const payload = {
       ...formValue,
+      category_id: formValue.category,
       isPublic: formValue.is_public,
       questions: formValue.questions.map((q: any) => ({
         question: q.question,
@@ -430,6 +476,7 @@ export class QuizCreationComponent implements OnInit {
     };
 
     delete payload.is_public;
+    delete payload.category;
 
     const action = this.isEditMode
       ? this.quizService.updateQuiz(this.quizId!, payload)

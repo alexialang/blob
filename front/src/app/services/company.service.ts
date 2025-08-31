@@ -105,22 +105,7 @@ export class CompanyService {
   }
 
   getCompany(id: number): Observable<Company> {
-    return this.authService.hasPermission('MANAGE_USERS').pipe(
-      switchMap(hasManageUsers => {
-        if (hasManageUsers) {
-          return this.http.get<Company>(`${this.apiUrl}/${id}`);
-        } else {
-          return this.authService.hasPermission('VIEW_RESULTS').pipe(
-            switchMap(hasViewResults => {
-              if (!hasViewResults) {
-                throw new Error('Permission MANAGE_USERS ou VIEW_RESULTS requise');
-              }
-              return this.http.get<Company>(`${this.apiUrl}/${id}`);
-            })
-          );
-        }
-      })
-    );
+    return this.http.get<Company>(`${this.apiUrl}/${id}`);
   }
 
   createCompany(company: Partial<Company>): Observable<Company> {
@@ -134,18 +119,6 @@ export class CompanyService {
       switchMap(apiCall => apiCall)
     );
   }
-
-/*  updateCompany(id: number, company: Partial<Company>): Observable<Company> {
-    return this.authService.hasPermission('MANAGE_USERS').pipe(
-      map(hasPermission => {
-        if (!hasPermission) {
-          throw new Error('Permission MANAGE_USERS requise');
-        }
-        return this.http.put<Company>(`${this.apiUrl}/${id}`, company);
-      }),
-      switchMap(apiCall => apiCall)
-    );
-  }*/
 
   deleteCompany(id: number): Observable<void> {
     return this.authService.hasPermission('MANAGE_USERS').pipe(

@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use App\Entity\Quiz;
-
 use App\Service\QuizRatingService;
 use App\Service\QuizSearchService;
 use App\Service\QuizCrudService;
@@ -42,18 +41,28 @@ class QuizController extends AbstractController
     }
 
     /**
-     * @OA\Get(summary="Lister les quiz pour la gestion", tags={"Quiz"})
-     * @OA\Response(response=200, description="Liste des quiz pour la gestion")
+     * @OA\Get(summary="Lister les quiz pour la gestion avec pagination", tags={"Quiz"})
+     * @OA\Parameter(name="page", in="query", required=false, @OA\Schema(type="integer", default=1))
+     * @OA\Parameter(name="limit", in="query", required=false, @OA\Schema(type="integer", default=20))
+     * @OA\Parameter(name="search", in="query", required=false, @OA\Schema(type="string"))
+     * @OA\Parameter(name="sort", in="query", required=false, @OA\Schema(type="string", enum={"id", "title", "dateCreation", "status"}))
+     * @OA\Response(response=200, description="Liste paginée des quiz pour la gestion")
      * @OA\Security(name="bearerAuth")
      */
     #[Route('/quiz/management/list', name: 'quiz_management_list', methods: ['GET'])]
     #[IsGranted('CREATE_QUIZ')]
-    public function managementList(): JsonResponse
+    public function managementList(Request $request): JsonResponse
     {
         $user = $this->getUser();
-        $quizList = $this->quizSearchService->getQuizzesForCompanyManagement($user);
+        
+        $page = max(1, (int) $request->query->get('page', 1));
+        $limit = min(100, max(1, (int) $request->query->get('limit', 20))); // Max 100 par page
+        $search = $request->query->get('search');
+        $sort = $request->query->get('sort', 'id');
+        
+        $result = $this->quizSearchService->getQuizzesForCompanyManagement($user, $page, $limit, $search, $sort);
 
-        return $this->json($quizList, 200, [], ['groups' => ['quiz:read']]);
+        return $this->json($result, 200, [], ['groups' => ['quiz:read']]);
     }
 
     /**
@@ -278,11 +287,14 @@ class QuizController extends AbstractController
 
 
     #[Route('/quiz/{id}', name: 'quiz_show', methods: ['GET'])]
-    #[IsGranted('CREATE_QUIZ', subject: 'quiz')]
     public function show(Quiz $quiz): JsonResponse
     {
         try {
-            $user = $this->getUser();
+            $user = null;
+            try {
+                $user = $this->getUser();
+            } catch (\Exception $e) {
+            }
             
             $secureQuiz = $this->quizCrudService->show($quiz, $user);
 
@@ -323,7 +335,7 @@ class QuizController extends AbstractController
             
             $quizData = $this->quizCrudService->getQuizForEdit($quiz, $user);
     
-            return $this->json($quizData, 200, [], ['groups' => ['quiz:read']]);
+            return $this->json($quizData, 200, [], ['groups' => ['quiz:create']]);
         } catch (\InvalidArgumentException $e) {
             return $this->json(['error' => $e->getMessage()], 403);
         } catch (\Exception $e) {

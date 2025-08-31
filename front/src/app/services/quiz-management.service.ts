@@ -17,15 +17,27 @@ export class QuizManagementService {
   ) {}
 
 
-  getQuizzes(): Observable<any[]> {
+  getQuizzes(page: number = 1, limit: number = 20, search?: string, sort: string = 'id'): Observable<any> {
     return this.authService.hasPermission('CREATE_QUIZ').pipe(
       map(hasPermission => {
         if (!hasPermission) {
           throw new Error('Permission CREATE_QUIZ requise');
         }
-        return this.http.get<any[]>(`${this.apiUrl}/quiz/management/list`);
+
+        let params = `page=${page}&limit=${limit}&sort=${sort}`;
+        if (search && search.trim()) {
+          params += `&search=${encodeURIComponent(search.trim())}`;
+        }
+
+        return this.http.get<any>(`${this.apiUrl}/quiz/management/list?${params}`);
       }),
       switchMap(apiCall => apiCall)
+    );
+  }
+
+  getAllQuizzes(): Observable<any[]> {
+    return this.getQuizzes(1, 1000).pipe(
+      map(response => response.data || [])
     );
   }
 

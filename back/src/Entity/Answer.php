@@ -12,27 +12,27 @@ class Answer
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['answer:read', 'question:read', 'quiz:read'])]
+    #[Groups(['answer:read', 'question:read', 'quiz:read', 'quiz:create'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['answer:read', 'answer:create', 'question:read', 'question:create', 'quiz:read'])]
+    #[Groups(['answer:read', 'answer:create', 'question:read', 'question:create', 'quiz:read', 'quiz:create'])]
     private ?string $answer = null;
 
     #[ORM\Column(nullable: true)]
-    #[Groups(['answer:read', 'answer:create', 'question:read', 'question:create', 'quiz:read'])]
+    #[Groups(['answer:read', 'answer:create', 'question:read', 'question:create', 'quiz:read', 'quiz:create'])]
     private ?bool $is_correct = null;
 
     #[ORM\Column(length: 50, nullable: true)]
-    #[Groups(['answer:read', 'answer:create', 'question:read', 'question:create', 'quiz:read'])]
+    #[Groups(['answer:read', 'answer:create', 'question:read', 'question:create', 'quiz:read', 'quiz:create'])]
     private ?string $order_correct = null;
 
     #[ORM\Column(length: 20, nullable: true)]
-    #[Groups(['answer:read', 'answer:create', 'question:read', 'question:create', 'quiz:read'])]
+    #[Groups(['answer:read', 'answer:create', 'question:read', 'question:create', 'quiz:read', 'quiz:create'])]
     private ?string $pair_id = null;
 
     #[ORM\Column(nullable: true)]
-    #[Groups(['answer:read', 'answer:create', 'question:read', 'question:create', 'quiz:read'])]
+    #[Groups(['answer:read', 'answer:create', 'question:read', 'question:create', 'quiz:read', 'quiz:create'])]
     private ?bool $is_intrus = null;
 
     #[ORM\ManyToOne(inversedBy: 'answers')]

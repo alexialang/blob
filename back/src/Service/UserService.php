@@ -68,7 +68,7 @@ class UserService
         return $this->userRepository->findBy(['deletedAt' => null]);
     }
 
-    public function listWithStats(bool $includeDeleted = false, ?User $currentUser = null): array
+    public function listWithStats(bool $includeDeleted = false, ?User $currentUser = null, int $page = 1, int $limit = 20, ?string $search = null, string $sort = 'id'): array
     {
         if ($currentUser && !$currentUser->isAdmin()) {
             $company = $currentUser->getCompany();
@@ -78,7 +78,7 @@ class UserService
                 $users = [$this->userRepository->findWithStats($currentUser->getId())];
             }
         } else {
-            $users = $this->userRepository->findAllWithStats($includeDeleted);
+            $users = $this->userRepository->findAllWithStats($includeDeleted, $page, $limit, $search, $sort);
         }
 
         $userMap = [];
@@ -129,6 +129,31 @@ class UserService
         }
 
         return array_values($userMap);
+    }
+
+    public function listWithStatsAndPagination(bool $includeDeleted = false, ?User $currentUser = null, int $page = 1, int $limit = 20, ?string $search = null, string $sort = 'id'): array
+    {
+        $users = $this->listWithStats($includeDeleted, $currentUser, $page, $limit, $search, $sort);
+        
+        if ($currentUser && $currentUser->isAdmin()) {
+            $total = $this->userRepository->countAllWithStats($includeDeleted, $search);
+            $totalPages = (int) ceil($total / $limit);
+        } else {
+            $total = count($users);
+            $totalPages = 1;
+        }
+
+        return [
+            'data' => $users,
+            'pagination' => [
+                'page' => $page,
+                'limit' => $limit,
+                'total' => $total,
+                'totalPages' => $totalPages,
+                'hasNext' => $page < $totalPages,
+                'hasPrev' => $page > 1
+            ]
+        ];
     }
 
 

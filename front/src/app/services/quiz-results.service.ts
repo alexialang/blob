@@ -62,7 +62,7 @@ export class QuizResultsService {
       return this.getGuestLeaderboardWithRealData(quizId);
     }
     
-    return this.http.get<QuizLeaderboard>(`${environment.apiBaseUrl}/user-answer/leaderboard/quiz/${quizId}`);
+    return this.http.get<QuizLeaderboard>(`${environment.apiBaseUrl}/leaderboard/quiz/${quizId}`);
   }
 
   private getGuestLeaderboardWithRealData(quizId: number): Observable<QuizLeaderboard> {

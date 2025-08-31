@@ -30,6 +30,34 @@ export function createPermissionGuard(permission: string): CanActivateFn {
   };
 }
 
+export function createAnyPermissionGuard(permissions: string[]): CanActivateFn {
+  return (route, state) => {
+    const auth = inject(AuthService);
+    const router = inject(Router);
+
+    if (!auth.isLoggedIn()) {
+      router.navigate(['/connexion']);
+      return false;
+    }
+
+    return auth.hasAnyPermission(permissions).pipe(
+      map(hasAnyPermission => {
+        if (!hasAnyPermission) {
+          router.navigate(['/quiz']);
+          return false;
+        }
+        return true;
+      }),
+      catchError(() => {
+        router.navigate(['/connexion']);
+        return of(false);
+      })
+    );
+  };
+}
+
 export const createQuizGuard = createPermissionGuard('CREATE_QUIZ');
 export const manageUsersGuard = createPermissionGuard('MANAGE_USERS');
 export const viewResultsGuard = createPermissionGuard('VIEW_RESULTS');
+
+export const companyDetailsGuard = createAnyPermissionGuard(['VIEW_RESULTS', 'MANAGE_USERS']);

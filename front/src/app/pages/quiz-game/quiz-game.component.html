@@ -70,8 +70,8 @@
       Écoutez l’extrait et identifiez l’artiste ou le titre.
     </p>
     <p class="question-instruction"
-       *ngIf="currentQuestion.type_question === 'Vrai/Faux'">
-      Indiquez si l’énoncé est vrai ou faux.
+       *ngIf="currentQuestion.type_question === 'true_false'">
+      Indiquez si l'énoncé est vrai ou faux.
     </p>
 
 
@@ -104,7 +104,7 @@
 
 
     <app-true-false-question
-      *ngIf="currentQuestion.type_question === 'Vrai/Faux'"
+      *ngIf="currentQuestion.type_question === 'true_false'"
       [question]="currentQuestion"
       [progress]="{ current: currentQuestionIndex, total: totalQuestions, percentage: getProgressPercentage() }"
       (answerSelected)="onAnswerSelected($event)"

@@ -39,14 +39,13 @@ USER application
 COPY ./.docker/all/php/conf.d/custom.ini /opt/docker/etc/php/php.ini
 
 COPY --chown=adimeo:adimeo ./composer.json ./composer.lock* /srv/app/
-COPY --chown=adimeo:adimeo ./symfony.lock /srv/app/
 
 RUN composer config --global repositories.packagist composer https://packagist.org
 
 COPY --chown=application:application . /srv/app/
 RUN mkdir /srv/app/var/data -p
 
-RUN APP_ENV=prod composer run auto-scripts
+RUN composer install --no-interaction --optimize-autoloader
 
 COPY .docker/all/nginx/custom.conf /opt/docker/etc/nginx/vhost.common.d/10-location-root.conf
 COPY .docker/all/nginx/vhost.conf /opt/docker/etc/nginx/vhost.conf

@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './guards/auth.guard';
 import { adminGuard } from './guards/admin.guard';
-import { createQuizGuard, manageUsersGuard, viewResultsGuard } from './guards/permission.guard';
+import { createQuizGuard, manageUsersGuard, viewResultsGuard, companyDetailsGuard } from './guards/permission.guard';
 import { quizAccessGuard } from './guards/quiz-access.guard';
 
 import { LoginComponent }             from './pages/login/login.component';
@@ -41,7 +41,7 @@ export const routes: Routes = [
   {
     path: 'gestion-entreprise',
     component: CompanyManagementComponent,
-    canActivate: [authGuard, adminGuard],
+    canActivate: [authGuard, manageUsersGuard],
   },
   {
     path: 'gestion-quiz',
@@ -137,7 +137,7 @@ export const routes: Routes = [
   {
     path: 'company/:id',
     component: CompanyDetailsComponent,
-    canActivate: [authGuard, manageUsersGuard]
+    canActivate: [authGuard, companyDetailsGuard]
   },
 
   { path: '',  component: LoginComponent, pathMatch: 'full', data: { hideNavbar: true } },

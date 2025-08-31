@@ -197,7 +197,7 @@ export class QuizGameComponent implements OnInit, OnDestroy {
         switch (t) {
             case 'MCQ':
             case 'QCM':
-            case 'Vrai/Faux':
+            case 'true_false':
             case 'find_the_intruder':
             case 'blind_test':
                 ok = !!this.selectedAnswer?.is_correct;
