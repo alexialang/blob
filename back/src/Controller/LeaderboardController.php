@@ -25,11 +25,13 @@ class LeaderboardController extends AbstractController
      * @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer"))
      * @OA\Response(response=200, description="Classement du quiz")
      */
-    #[Route('/leaderboard/quiz/{id}', name: 'quiz_leaderboard', methods: ['GET'])]
-    public function getQuizLeaderboard(
-        #[Assert\Positive(message: 'L\'ID du quiz doit être positif')] int $id
-    ): JsonResponse
+    #[Route('/leaderboard/quiz/{id}', name: 'quiz_leaderboard', methods: ['GET'], requirements: ['id' => '\d+'])]
+    public function getQuizLeaderboard(int $id): JsonResponse
     {
+        if ($id <= 0) {
+            return new JsonResponse(['error' => 'L\'ID du quiz doit être positif'], 400);
+        }
+
         $quiz = $this->entityManager->getRepository(Quiz::class)->find($id);
         if (!$quiz) {
             return new JsonResponse(['error' => 'Quiz non trouvé'], 404);
