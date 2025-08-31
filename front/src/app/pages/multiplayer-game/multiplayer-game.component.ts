@@ -5,9 +5,6 @@ import {MultiplayerGame, MultiplayerService} from '../../services/multiplayer.se
 import {MercureService} from '../../services/mercure.service';
 import {QuizGameService} from '../../services/quiz-game.service';
 import { AnalyticsService } from '../../services/analytics.service';
-import { MultiplayerScoreService } from '../../services/multiplayer-score.service';
-import { MultiplayerTimingService } from '../../services/multiplayer-timing.service';
-import { MultiplayerStateService, GameState } from '../../services/multiplayer-state.service';
 import {Subscription} from 'rxjs';
 import {animate, state, style, transition, trigger} from '@angular/animations';
 import {McqQuestionComponent} from '../../components/question-types/mcq-question/mcq-question.component';
@@ -140,16 +137,19 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
     private multiplayerService: MultiplayerService,
     private mercureService: MercureService,
     private quizGameService: QuizGameService,
-    private analytics: AnalyticsService,
-    private scoreService: MultiplayerScoreService,
-    private timingService: MultiplayerTimingService,
-    private stateService: MultiplayerStateService
+    private analytics: AnalyticsService
   ) {}
 
   ngOnInit(): void {
     this.gameId = this.route.snapshot.params['id'];
 
-    this.preventNavigation();
+    window.addEventListener('beforeunload', (event) => {
+      if (this.currentGame && !this.gameCompleted && this.timeLeft > 0) {
+        event.preventDefault();
+        event.returnValue = 'Êtes-vous sûr de vouloir quitter la partie ? Votre progression sera perdue.';
+        return event.returnValue;
+      }
+    });
 
     this.lastProcessedQuestionIndex = -1;
     this.questionProcessingCooldown = 0;
@@ -168,7 +168,11 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
     this.mercureService.disconnectFromGame();
     this.stopTimer();
 
-    this.timingService.cleanup();
+er
+    if (this.timer) {
+      clearInterval(this.timer);
+      this.timer = null;
+    }
 
     if (this.syncInterval) {
       clearInterval(this.syncInterval);
@@ -299,7 +303,6 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
           this.showFinalResults(game.leaderboard || []);
           return;
         }
-
         if (game.questionStartTime && game.questionDuration) {
           this.questionStartTimestamp = game.questionStartTime * 1000;
           this.questionDuration = game.questionDuration;
@@ -327,7 +330,7 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
 
         this.initializeLiveScoreboard(game);
 
-        this.calculateServerTimeOffset();
+        this.serverTimeOffset = (this.currentGame?.startedAt || Date.now()) - Date.now();
 
         this.quizGameService.loadQuiz(game.quiz.id).subscribe({
           next: (quiz) => {
@@ -352,22 +355,27 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
 
   private initializeLiveScoreboard(game: MultiplayerGame): void {
     const currentUsername = this.getCurrentUsername() || '';
-    this.livePlayers = this.scoreService.initializePlayerScores(game, currentUsername);
+
+    this.livePlayers = game.players.map((player: any) => ({
+      username: player.username,
+      score: game.playerScores?.[player.id] || game.sharedScores?.[player.username] || 0,
+      isCurrentUser: player.username === currentUsername,
+      rank: 1,
+      isOnline: true,
+      lastAnswerCorrect: undefined
+    }));
 
     const currentPlayer = this.livePlayers.find(p => p.username === currentUsername);
     if (currentPlayer) {
       this.currentScore = currentPlayer.score;
     }
-    this.updateLiveScoreboard();
+    this.livePlayers.sort((a, b) => b.score - a.score);
+    this.livePlayers.forEach((player, index) => {
+      player.rank = index + 1;
+    });
   }
 
-  private calculateServerTimeOffset(): void {
-    this.serverTimeOffset = this.timingService.calculateServerTimeOffset(this.currentGame?.startedAt);
-  }
 
-  private updateLiveScoreboard(): void {
-    this.livePlayers = this.scoreService.updateLeaderboard(this.livePlayers);
-  }
 
 
 
@@ -376,16 +384,12 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
       const player = this.livePlayers.find(p => p.username === event.username);
       if (player) {
         player.score = event.score;
-        this.updateLiveScoreboard();
+    this.livePlayers.sort((a, b) => b.score - a.score);
+    this.livePlayers.forEach((player, index) => {
+      player.rank = index + 1;
+    });
       }
     }
-  }
-
-  private updatePlayerScore(username: string | undefined, isCorrect: boolean, points: number): void {
-    if (!username) return;
-
-    this.livePlayers = this.scoreService.updatePlayerScore(this.livePlayers, username, points, isCorrect);
-    this.lastAnswerResults[username] = isCorrect;
   }
 
 
@@ -398,7 +402,10 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
     this.currentQuestionIndex = index;
     this.showFeedback = false;
     this.questionStartTime = Date.now();
-    this.resetAnswers();
+    this.selectedAnswer = null;
+    this.selectedAnswers = [];
+    this.hasAnswered = false;
+    this.waitingForPlayers = false;
 
     this.questionDuration = 30;
     this.timeLeft = 30;
@@ -431,7 +438,10 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
     this.showFeedback = false;
     this.playersAnswered = [];
     this.questionStartTime = Date.now();
-    this.resetAnswers();
+    this.selectedAnswer = null;
+    this.selectedAnswers = [];
+    this.hasAnswered = false;
+    this.waitingForPlayers = false;
 
     this.lastAnswerResults = {};
     this.livePlayers.forEach(player => {
@@ -465,25 +475,21 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
 
   private startTimer(): void {
     this.stopTimer();
-
-    this.timingService.startQuestionTimer(
-      this.gameId,
-      this.timeLeft,
-      (timeLeft) => {
-        if (!this.gameCompleted) {
-          this.timeLeft = timeLeft;
-        }
-      },
-      () => {
-        if (!this.gameCompleted) {
-          this.handleTimeExpired();
-        }
+    this.timer = setInterval(() => {
+      if (this.timeLeft > 0 && !this.gameCompleted) {
+        this.timeLeft--;
       }
-    );
+
+      if (this.timeLeft <= 0 && !this.gameCompleted) {
+        this.stopTimer();
+        this.handleTimeExpired();
+      }
+    }, 1000);
 
   }
 
 
+  // Gère l'expiration du temps côté client (soumission automatique si pas répondu)
   private handleTimeExpired(): void {
     console.log(' Timer local - Temps écoulé');
 
@@ -497,7 +503,7 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
       this.overlayCorrect = false;
 
       this.tempPlayerScore = {
-        username: this.currentUser?.username || '',
+        username: this.getCurrentActualUsername(),
         points: 0,
         isCorrect: false
       };
@@ -505,10 +511,24 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
       const currentPlayer = this.livePlayers.find(p => p.username === this.currentUser?.username);
       if (currentPlayer) {
         currentPlayer.lastAnswerCorrect = false;
-        this.updateLiveScoreboard();
+    this.livePlayers.sort((a, b) => b.score - a.score);
+    this.livePlayers.forEach((player, index) => {
+      player.rank = index + 1;
+    });
       }
 
-      this.saveAllScoresToLocalStorage();
+      const gameId = this.currentGame?.id;
+      if (gameId && this.livePlayers.length) {
+        const storageKey = `game_scores_${gameId}`;
+        const allScores: { [username: string]: number } = {};
+        this.livePlayers.forEach(player => {
+          allScores[player.username] = player.score;
+        });
+        const nonZeroScores = Object.values(allScores).filter(score => score > 0);
+        if (nonZeroScores.length > 0) {
+          localStorage.setItem(storageKey, JSON.stringify(allScores));
+        }
+      }
 
       if (this.currentUser?.username) {
         this.onPlayerAnswered(this.currentUser.username);
@@ -525,7 +545,13 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
 
     } else if (this.hasAnswered) {
       console.log(' Joueur a déjà répondu - Force timeout');
-      this.forceFeedbackDueToTimeout();
+      if (this.currentGame?.players) {
+        this.currentGame.players.forEach(player => {
+          if (!this.playersAnswered.includes(player.username)) {
+            this.onPlayerAnswered(player.username);
+          }
+        });
+      }
     }
   }
 
@@ -541,7 +567,7 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
       this.overlayCorrect = false;
 
       this.tempPlayerScore = {
-        username: this.currentUser?.username || '',
+        username: this.getCurrentActualUsername(),
         points: 0,
         isCorrect: false
       };
@@ -549,17 +575,30 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
       const currentPlayer = this.livePlayers.find(p => p.username === this.currentUser?.username);
       if (currentPlayer) {
         currentPlayer.lastAnswerCorrect = false;
-        this.updateLiveScoreboard();
+    this.livePlayers.sort((a, b) => b.score - a.score);
+    this.livePlayers.forEach((player, index) => {
+      player.rank = index + 1;
+    });
       }
 
-      this.saveAllScoresToLocalStorage();
+      const gameId = this.currentGame?.id;
+      if (gameId && this.livePlayers.length) {
+        const storageKey = `game_scores_${gameId}`;
+        const allScores: { [username: string]: number } = {};
+        this.livePlayers.forEach(player => {
+          allScores[player.username] = player.score;
+        });
+        const nonZeroScores = Object.values(allScores).filter(score => score > 0);
+        if (nonZeroScores.length > 0) {
+          localStorage.setItem(storageKey, JSON.stringify(allScores));
+        }
+      }
     }
 
     this.showFeedbackPhase(leaderboard);
   }
 
   private stopTimer(): void {
-    this.timingService.stopTimer(this.gameId);
 
     if (this.timer) {
       clearInterval(this.timer);
@@ -577,6 +616,7 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
     }
   }
 
+
   private onPlayerAnswered(username: string): void {
     if (!this.playersAnswered.includes(username)) {
       this.playersAnswered.push(username);
@@ -590,7 +630,18 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
         player.isOnline = true;
       }
       setTimeout(() => {
-        this.saveAllScoresToLocalStorage();
+      const gameId = this.currentGame?.id;
+      if (gameId && this.livePlayers.length) {
+        const storageKey = `game_scores_${gameId}`;
+        const allScores: { [username: string]: number } = {};
+        this.livePlayers.forEach(player => {
+          allScores[player.username] = player.score;
+        });
+        const nonZeroScores = Object.values(allScores).filter(score => score > 0);
+        if (nonZeroScores.length > 0) {
+          localStorage.setItem(storageKey, JSON.stringify(allScores));
+        }
+      }
 
       }, 1000);
 
@@ -678,18 +729,35 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
       }
     });
 
-    this.updateLiveScoreboard();
+    this.livePlayers.sort((a, b) => b.score - a.score);
+    this.livePlayers.forEach((player, index) => {
+      player.rank = index + 1;
+    });
 
   }
 
   private updateLiveScoreboardAfterFeedback(): void {
     if (this.tempPlayerScore) {
-      this.updatePlayerScore(this.tempPlayerScore.username, this.tempPlayerScore.isCorrect, this.tempPlayerScore.points);
+      if (this.tempPlayerScore.username) {
+        const player = this.livePlayers.find(p => p.username === this.tempPlayerScore!.username);
+        if (player) {
+          player.score += this.tempPlayerScore.points;
+          player.lastAnswerCorrect = this.tempPlayerScore.isCorrect;
+        }
+        this.livePlayers.sort((a, b) => b.score - a.score);
+        this.livePlayers.forEach((player, index) => {
+          player.rank = index + 1;
+        });
+        this.lastAnswerResults[this.tempPlayerScore.username] = this.tempPlayerScore.isCorrect;
+      }
       this.tempPlayerScore = null;
     }
     this.forceScoreboardUpdate();
     this.syncAllPlayerScores();
-    this.updateLiveScoreboard();
+    this.livePlayers.sort((a, b) => b.score - a.score);
+    this.livePlayers.forEach((player, index) => {
+      player.rank = index + 1;
+    });
   }
 
   private forceScoreboardUpdate(): void {
@@ -708,7 +776,10 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
       });
 
       this.syncAllPlayerScores();
-      this.updateLiveScoreboard();
+    this.livePlayers.sort((a, b) => b.score - a.score);
+    this.livePlayers.forEach((player, index) => {
+      player.rank = index + 1;
+    });
 
     }
   }
@@ -756,8 +827,22 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
           });
 
           if (scoresUpdated) {
-            this.updateLiveScoreboard();
-            this.saveAllScoresToLocalStorage();
+    this.livePlayers.sort((a, b) => b.score - a.score);
+    this.livePlayers.forEach((player, index) => {
+      player.rank = index + 1;
+    });
+      const gameId = this.currentGame?.id;
+      if (gameId && this.livePlayers.length) {
+        const storageKey = `game_scores_${gameId}`;
+        const allScores: { [username: string]: number } = {};
+        this.livePlayers.forEach(player => {
+          allScores[player.username] = player.score;
+        });
+        const nonZeroScores = Object.values(allScores).filter(score => score > 0);
+        if (nonZeroScores.length > 0) {
+          localStorage.setItem(storageKey, JSON.stringify(allScores));
+        }
+      }
             return;
           }
         }
@@ -799,9 +884,23 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
         }
 
         if (scoresUpdated) {
-          this.updateLiveScoreboard();
+    this.livePlayers.sort((a, b) => b.score - a.score);
+    this.livePlayers.forEach((player, index) => {
+      player.rank = index + 1;
+    });
 
-          this.saveAllScoresToLocalStorage();
+      const gameId = this.currentGame?.id;
+      if (gameId && this.livePlayers.length) {
+        const storageKey = `game_scores_${gameId}`;
+        const allScores: { [username: string]: number } = {};
+        this.livePlayers.forEach(player => {
+          allScores[player.username] = player.score;
+        });
+        const nonZeroScores = Object.values(allScores).filter(score => score > 0);
+        if (nonZeroScores.length > 0) {
+          localStorage.setItem(storageKey, JSON.stringify(allScores));
+        }
+      }
         } else {
         }
         },
@@ -916,7 +1015,8 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
     this.waitingForPlayers = false;
     this.finalLeaderboard = leaderboard;
 
-    this.analytics.trackMultiplayerGameComplete(this.getCurrentNormalizedScore());
+    const normalizedScore = this.totalQuestions === 0 ? 0 : Math.min(Math.round((this.currentScore / (this.totalQuestions * 10)) * 100), 100);
+    this.analytics.trackMultiplayerGameComplete(normalizedScore);
 
     const currentUser = this.getCurrentUsername();
 
@@ -959,11 +1059,6 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
         this.selectedAnswers.push(answerId);
       }
     }
-  }
-
-  selectSingleAnswer(answerId: number): void {
-    if (this.hasAnswered || answerId === 0) return;
-    this.selectedAnswer = answerId;
   }
 
   canValidate(): boolean {
@@ -1011,7 +1106,7 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
         this.overlayCorrect = result.isCorrect;
 
         this.tempPlayerScore = {
-          username: this.currentUser?.username || '',
+          username: this.getCurrentActualUsername(),
           points: backendPoints,
           isCorrect: result.isCorrect
         };
@@ -1020,7 +1115,10 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
           const oldScore = currentPlayer.score;
           currentPlayer.score = feedbackScore;
 
-          this.updateLiveScoreboard();
+    this.livePlayers.sort((a, b) => b.score - a.score);
+    this.livePlayers.forEach((player, index) => {
+      player.rank = index + 1;
+    });
         }
 
         this.currentScore = feedbackScore;
@@ -1032,7 +1130,18 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
 
         this.shareCurrentPlayerScoreWithServer(feedbackScore);
 
-        this.saveAllScoresToLocalStorage();
+      const gameId = this.currentGame?.id;
+      if (gameId && this.livePlayers.length) {
+        const storageKey = `game_scores_${gameId}`;
+        const allScores: { [username: string]: number } = {};
+        this.livePlayers.forEach(player => {
+          allScores[player.username] = player.score;
+        });
+        const nonZeroScores = Object.values(allScores).filter(score => score > 0);
+        if (nonZeroScores.length > 0) {
+          localStorage.setItem(storageKey, JSON.stringify(allScores));
+        }
+      }
 
         if (this.currentUser?.username) {
           this.onPlayerAnswered(this.currentUser.username);
@@ -1059,12 +1168,6 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
     });
   }
 
-  private resetAnswers(): void {
-    this.selectedAnswer = null;
-    this.selectedAnswers = [];
-    this.hasAnswered = false;
-    this.waitingForPlayers = false;
-  }
 
   private getCurrentUsername(): string | null {
     const token = localStorage.getItem('JWT_TOKEN');
@@ -1076,6 +1179,31 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
     } catch {
       return null;
     }
+  }
+
+  /**
+   * Trouve le vrai username du joueur actuel depuis livePlayers
+   * (car getCurrentUsername() retourne l'email du JWT, pas le username)
+   */
+  private getCurrentActualUsername(): string {
+    const currentPlayer = this.livePlayers.find(p => p.isCurrentUser === true);
+    if (currentPlayer) {
+      return currentPlayer.username;
+    }
+
+    if (this.currentUser?.username) {
+      const playerExists = this.livePlayers.find(p => p.username === this.currentUser.username);
+      if (playerExists) {
+        return this.currentUser.username;
+      }
+    }
+
+    if (this.livePlayers.length > 0) {
+      console.warn('⚠ Joueur actuel non trouvé, utilisation du premier joueur comme fallback');
+      return this.livePlayers[0].username;
+    }
+
+    return this.getCurrentUsername() || '';
   }
 
   private findCurrentUser(players: any[], tokenUsername: string | null): any {
@@ -1107,10 +1235,6 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
     return null;
   }
 
-  getUserInitials(): string {
-    const username = this.currentUser?.username || 'U';
-    return username.charAt(0).toUpperCase();
-  }
 
   getProgressPercentage(): number {
     if (this.totalQuestions === 0) return 0;
@@ -1121,12 +1245,10 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
     return this.currentQuestionIndex + 1;
   }
 
-  private normalizeScoreToPercentage(score: number, totalQuestions: number): number {
-    return this.scoreService.normalizeScoreToPercentage(score, totalQuestions);
-  }
 
   getCurrentNormalizedScore(): number {
-    return this.scoreService.normalizeScoreToPercentage(this.currentScore, this.totalQuestions);
+    if (this.totalQuestions === 0) return 0;
+    return Math.min(Math.round((this.currentScore / (this.totalQuestions * 10)) * 100), 100);
   }
 
   onAnswerSelected(answer: any): void {
@@ -1138,14 +1260,11 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
   }
 
   onOrderChanged(order: any[]): void {
-
+    console.warn('onOrderChanged appelée mais non implémentée:', order);
   }
 
   onMatchingAnswersSelected(matches: any): void {
-  }
-
-  validateAnswer(): void {
-    this.submitAnswer();
+    console.warn('onMatchingAnswersSelected appelée mais non implémentée:', matches);
   }
 
   shareQuiz(): void {
@@ -1166,21 +1285,14 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
 
   rateQuiz(rating: number): void {
     this.userRating = rating;
+    console.log('Quiz noté:', rating, '/5 étoiles');
   }
 
+  // TrackBy pour les étoiles de notation (optimisation Angular)
   trackByStar(index: number, star: number): number {
     return star;
   }
 
-
-
-  getProgressObject() {
-    return {
-      current: this.currentQuestionIndex + 1,
-      total: this.totalQuestions,
-      percentage: this.getProgressPercentage()
-    };
-  }
 
 
   replayQuiz(): void {
@@ -1194,7 +1306,18 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
   endGameOnServer(): void {
     if (!this.gameId) return;
 
-    this.saveAllScoresToLocalStorage();
+        const gameId = this.currentGame?.id;
+        if (gameId && this.livePlayers.length) {
+          const storageKey = `game_scores_${gameId}`;
+          const allScores: { [username: string]: number } = {};
+          this.livePlayers.forEach(player => {
+            allScores[player.username] = player.score;
+          });
+          const nonZeroScores = Object.values(allScores).filter(score => score > 0);
+          if (nonZeroScores.length > 0) {
+            localStorage.setItem(storageKey, JSON.stringify(allScores));
+          }
+        }
 
     if (this.livePlayers.length > 0) {
       const finalScores: { [username: string]: number } = {};
@@ -1223,16 +1346,6 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
     });
   }
 
-  private preventNavigation(): void {
-    window.addEventListener('beforeunload', (event) => {
-      if (this.currentGame && !this.gameCompleted && this.timeLeft > 0) {
-        event.preventDefault();
-        event.returnValue = 'Êtes-vous sûr de vouloir quitter la partie ? Votre progression sera perdue.';
-        return event.returnValue;
-      }
-    });
-  }
-
   private setupLocalStorageSync(): void {
     window.addEventListener('storage', (event) => {
       if (event.key && event.key.startsWith('game_scores_') && event.newValue) {
@@ -1250,14 +1363,6 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
         }
       }, 8000);
     }
-  }
-
-
-  private saveAllScoresToLocalStorage(): void {
-    const gameId = this.currentGame?.id;
-    if (!gameId || !this.livePlayers.length) return;
-
-    this.scoreService.saveScoresToLocalStorage(gameId, this.livePlayers);
   }
 
   private shareCurrentPlayerScoreWithServer(score: number): void {
@@ -1284,7 +1389,6 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
       });
     }
   }
-
 
   private showTransitionScreen(leaderboard: any[]): void {
 
@@ -1324,7 +1428,7 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
 
         const gamePlayer: any = this.currentGame?.players?.find((p: any) => p.username === player.username);
 
-        const calculatedPercentage = this.normalizeScoreToPercentage(player.score, this.totalQuestions);
+        const calculatedPercentage = this.totalQuestions === 0 ? 0 : Math.min(Math.round((player.score / (this.totalQuestions * 10)) * 100), 100);
 
         return {
           id: gamePlayer?.id || 0,

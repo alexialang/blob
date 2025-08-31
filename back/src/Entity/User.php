@@ -20,9 +20,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['user:read','quiz:read','company:read','user:admin_read','user:public','company:detail','user:statistics','user:roles_update','user:profile'])]
+    #[Groups(['user:read','quiz:read','quiz:create','company:read','user:admin_read','user:public','company:detail','user:statistics','user:roles_update','user:profile'])]
     private ?int $id = null;
-    #[Groups(['user:read', 'company:read','quiz:read','user:admin_read','user:public','company:detail','user:statistics','user:roles_update','user:profile'])]
+    #[Groups(['user:read', 'company:read','quiz:read','quiz:create','user:admin_read','user:public','company:detail','user:statistics','user:roles_update','user:profile'])]
     #[ORM\Column(length: 180)]
     private ?string $email = null;
 
@@ -69,10 +69,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\ManyToMany(targetEntity: Group::class, inversedBy: 'users')]
     private Collection $groups;
 
-    #[Groups(['user:read','user:admin_read','user:public','company:detail','user:admin_list','user:profile'])]
+    #[Groups(['user:read','quiz:create','user:admin_read','user:public','company:detail','user:admin_list','user:profile'])]
     #[ORM\Column(length: 70)]
     private ?string $firstName = null;
-    #[Groups(['user:read','user:admin_read','user:public','company:detail','user:admin_list','user:profile'])]
+    #[Groups(['user:read','quiz:create','user:admin_read','user:public','company:detail','user:admin_list','user:profile'])]
     #[ORM\Column(length: 70)]
     private ?string $lastName = null;
 

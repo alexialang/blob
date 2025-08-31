@@ -40,7 +40,7 @@
       <div class="user-level">
         <span class="level-badge">MULTI</span>
         <div class="user-avatar">
-          <span>{{ getUserInitials() }}</span>
+          <span>{{ (currentUser?.username || 'U').charAt(0).toUpperCase() }}</span>
         </div>
       </div>
     </div>
@@ -95,16 +95,16 @@
       Écoutez l'extrait et identifiez l'artiste ou le titre.
     </p>
     <p class="question-instruction"
-       *ngIf="currentQuestion.type_question?.name === 'Vrai/Faux'">
+       *ngIf="currentQuestion.type_question?.name === 'true_false'">
       Indiquez si l'énoncé est vrai ou faux.
     </p>
 
     <app-mcq-question
       *ngIf="currentQuestion.type_question?.name === 'MCQ' || currentQuestion.type_question?.name === 'QCM'"
       [question]="currentQuestion"
-      [progress]="getProgressObject()"
+      [progress]="{ current: currentQuestionIndex + 1, total: totalQuestions, percentage: totalQuestions === 0 ? 0 : ((currentQuestionIndex + 1) / totalQuestions) * 100 }"
       (answerSelected)="onAnswerSelected($event)"
-      (answerValidated)="validateAnswer()">
+      (answerValidated)="submitAnswer()">
     </app-mcq-question>
 
 
@@ -113,7 +113,7 @@
       [question]="currentQuestion"
       [progress]="{ current: getCurrentQuestionDisplayIndex(), total: totalQuestions, percentage: getProgressPercentage() }"
       (answerSelected)="onAnswersSelected($event)"
-      (answerValidated)="validateAnswer()">
+      (answerValidated)="submitAnswer()">
     </app-multiple-choice-question>
 
 
@@ -122,16 +122,16 @@
       [question]="currentQuestion"
       [progress]="{ current: getCurrentQuestionDisplayIndex(), total: totalQuestions, percentage: getProgressPercentage() }"
       (answerSelected)="onOrderChanged($event)"
-      (answerValidated)="validateAnswer()">
+      (answerValidated)="submitAnswer()">
     </app-right-order-question>
 
 
     <app-true-false-question
-      *ngIf="currentQuestion.type_question?.name === 'Vrai/Faux'"
+      *ngIf="currentQuestion.type_question?.name === 'true_false'"
       [question]="currentQuestion"
       [progress]="{ current: getCurrentQuestionDisplayIndex(), total: totalQuestions, percentage: getProgressPercentage() }"
       (answerSelected)="onAnswerSelected($event)"
-      (answerValidated)="validateAnswer()">
+      (answerValidated)="submitAnswer()">
     </app-true-false-question>
 
 
@@ -140,7 +140,7 @@
       [question]="currentQuestion"
       [progress]="{ current: getCurrentQuestionDisplayIndex(), total: totalQuestions, percentage: getProgressPercentage() }"
       (answerSelected)="onMatchingAnswersSelected($event)"
-      (answerValidated)="validateAnswer()">
+      (answerValidated)="submitAnswer()">
     </app-matching-question>
 
 
@@ -149,7 +149,7 @@
       [question]="currentQuestion"
       [progress]="{ current: getCurrentQuestionDisplayIndex(), total: totalQuestions, percentage: getProgressPercentage() }"
       (answerSelected)="onAnswerSelected($event)"
-      (answerValidated)="validateAnswer()">
+      (answerValidated)="submitAnswer()">
     </app-intruder-question>
 
 
@@ -158,7 +158,7 @@
       [question]="currentQuestion"
       [progress]="{ current: getCurrentQuestionDisplayIndex(), total: totalQuestions, percentage: getProgressPercentage() }"
       (answerSelected)="onAnswerSelected($event)"
-      (answerValidated)="validateAnswer()">
+      (answerValidated)="submitAnswer()">
     </app-blind-test-question>
 
   </div>
@@ -232,7 +232,7 @@
           <h3>Noter ce quiz</h3>
           <div class="star-rating">
           <span
-            *ngFor="let star of [1,2,3,4,5]"
+            *ngFor="let star of [1,2,3,4,5]; trackBy: trackByStar"
             class="star"
             [class.filled]="star <= userRating"
             [class.hover]="star <= hoverRating"

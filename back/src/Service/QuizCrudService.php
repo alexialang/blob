@@ -286,14 +286,12 @@ class QuizCrudService
                 throw new \InvalidArgumentException('Quiz non trouvé');
             }
 
-            // Debug temporaire
             $this->logger->info('DEBUG getQuizForEdit', [
                 'quiz_id' => $fullQuiz->getId(),
                 'quiz_title' => $fullQuiz->getTitle(),
                 'questions_count' => $fullQuiz->getQuestions()->count()
             ]);
 
-            // Précharger les relations pour éviter le lazy loading
             foreach ($fullQuiz->getQuestions() as $question) {
                 $question->getAnswers()->toArray();
                 $question->getTypeQuestion();
@@ -493,7 +491,6 @@ class QuizCrudService
      */
     private function updateQuizQuestions(Quiz $quiz, array $questionsData): void
     {
-        // Supprimer toutes les questions et réponses existantes
         $existingQuestions = $quiz->getQuestions()->toArray();
         foreach ($existingQuestions as $existingQuestion) {
             $existingAnswers = $existingQuestion->getAnswers()->toArray();
@@ -506,7 +503,6 @@ class QuizCrudService
         $quiz->getQuestions()->clear();
         $this->em->flush();
 
-        // Créer les nouvelles questions et réponses
         foreach ($questionsData as $questionData) {
             $this->createQuestion($quiz, $questionData);
         }

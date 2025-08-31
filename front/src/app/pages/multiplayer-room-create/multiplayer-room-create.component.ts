@@ -55,7 +55,6 @@ export class MultiplayerRoomCreateComponent implements OnInit {
     this.generateRandomColor();
 
   }
-
   private loadQuiz(quizId: number): void {
     this.quizService.getQuiz(quizId).subscribe({
       next: (quiz: any) => {
@@ -144,14 +143,7 @@ export class MultiplayerRoomCreateComponent implements OnInit {
 
         this.multiplayerService.setCurrentRoom(room);
 
-        if (this.selectedUserIds.length > 0) {
-          this.multiplayerService.sendInvitation(room.id, this.selectedUserIds).subscribe({
-            next: () => {
-            },
-            error: (error) => {
-            }
-          });
-        }
+        this.sendInvitations(room.id);
 
         this.router.navigate(['/multiplayer/room', room.id]);
       },
@@ -160,6 +152,33 @@ export class MultiplayerRoomCreateComponent implements OnInit {
         alert('Erreur lors de la création du salon: ' + (error.error?.error || error.message || 'Erreur inconnue'));
       }
     });
+  }
+
+  private sendInvitations(roomId: string): void {
+    let userIdsToInvite: number[] = [];
+
+    if (this.invitationType === 'group' && this.selectedGroupId) {
+      const selectedGroup = this.availableGroups.find(g => g.id === this.selectedGroupId);
+      if (selectedGroup && selectedGroup.users) {
+        userIdsToInvite = selectedGroup.users
+          .filter((user: any) => user.id !== this.currentUser?.id)
+          .map((user: any) => user.id);
+      }
+    } else if (this.invitationType === 'users') {
+
+      userIdsToInvite = [...this.selectedUserIds];
+    }
+
+    if (userIdsToInvite.length > 0) {
+      this.multiplayerService.sendInvitation(roomId, userIdsToInvite).subscribe({
+        next: () => {
+          console.log(`Invitations envoyées à ${userIdsToInvite.length} utilisateur(s)`);
+        },
+        error: (error) => {
+          console.error('Erreur lors de l\'envoi des invitations:', error);
+        }
+      });
+    }
   }
 
   getCurrentUsername(): string {
@@ -200,6 +219,9 @@ export class MultiplayerRoomCreateComponent implements OnInit {
         this.maxPlayers = Math.min(this.selectedUserIds.length + 1, 8);
 
       }
+    } else {
+
+      this.selectedUserIds = [];
     }
   }
 
@@ -224,7 +246,11 @@ export class MultiplayerRoomCreateComponent implements OnInit {
 
   canCreateRoom(): boolean {
     if (this.invitationType === 'group') {
-      return this.selectedGroupId !== null;
+      if (this.selectedGroupId !== null) {
+        const selectedGroup = this.availableGroups.find(g => g.id === this.selectedGroupId);
+        return selectedGroup && selectedGroup.users && selectedGroup.users.length > 0;
+      }
+      return false;
     } else {
       return this.selectedUserIds.length > 0;
     }
