@@ -434,9 +434,8 @@ server {
 
 
 ### Disponibilité
-- **Début octobre** pour CDI/Mission
-- **Mobilité** : Région Grand Est + Remote
-- **Prétentions** : Selon expérience et projet
+- **Début octobre** pour CDI
+- **Mobilité** : Metz et alentours + Remote
 
 ---
 
