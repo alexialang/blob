@@ -173,15 +173,7 @@ private function canAccessSubject(User $authUser, mixed $subject): bool {
 
 ### 7 Types de Questions Implémentés
 
-| Type | Complexité | Caractéristiques |
-|------|------------|------------------|
-| **QCM** | Intermédiaire | Choix unique, validation instantanée |
-| **Choix Multiple** | Avancé | Sélection multiple avec scoring |
-| **Associations** | Expert | Drag & drop, correspondances |
-| **Remise en Ordre** | Avancé | Tri d'éléments, logique séquentielle |
-| **Intrus** | Avancé | Identification d'éléments différents |
-| **Vrai/Faux** | Basique | Questions binaires rapides |
-| **Blind Test** | Expert | Intégration média, questions audio |
+**Choisir la bonne réponse**, **Choix Multiple**, **Associations**, **Remise en Ordre**, **Intrus**, **Vrai/Faux**, **Blind Test**
 
 ---
 
