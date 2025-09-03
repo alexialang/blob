@@ -430,7 +430,7 @@ server {
 ## Contact
 
 **Alexia LANG** - *Développeuse Full Stack*
-- **Email** : alexia.dev@example.com
+- **Email** : alexialang2@gmail.com
 
 
 ### Disponibilité
