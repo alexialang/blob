@@ -1,0 +1,26 @@
+<div class="multiple-choice-question-container">
+
+  <div class="answers-container">
+    <div
+      *ngFor="let answer of question.answers; let i = index"
+      class="answer-option"
+      [class.selected]="isSelected(answer.id)"
+      (click)="toggleAnswer(answer.id)">
+      <div class="answer-checkbox">
+        <div class="checkbox-mark" [class.checked]="isSelected(answer.id)">✓</div>
+      </div>
+      <div class="answer-content">
+        <span class="answer-text">{{ answer.answer }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="validation-container">
+    <button
+      class="validate-btn"
+      [disabled]="selectedAnswerIds.length === 0"
+      (click)="validateAnswer()">
+      Valider ({{ selectedAnswerIds.length }} sélectionnée{{ selectedAnswerIds.length > 1 ? 's' : '' }})
+    </button>
+  </div>
+</div>

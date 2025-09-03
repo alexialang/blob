@@ -1,1 +1,280 @@
-/* You can add global styles to this file, and also import other style files */
+:root {
+  --color-primary: #257D54;
+  --color-secondary: #91DEDA;
+  --color-accent: #FAA24B;
+  --color-pink: #D30D4C;
+  --color-danger: #DC2626;
+  --color-dark: #0B0C1E;
+  --color-light: #F2F2F2;
+  --color-white: #FFFFFF;
+
+  --color-primary-light: #2E9A68;
+  --color-primary-dark: #1E6B47;
+  --color-secondary-light: #A8E5E2;
+  --color-pink-light: #E63D6F;
+  --color-danger-light: #EF4444;
+  --color-danger-dark: #B91C1C;
+
+  --color-accent-dark: #D35400;
+  --color-secondary-dark: #48A09D;
+  --color-pink-dark: #B91C5C;
+
+  --color-success: var(--color-primary);
+  --color-warning: var(--color-accent);
+  --color-error: var(--color-danger);
+  --color-info: var(--color-secondary);
+
+  --text-primary: var(--color-dark);
+  --text-secondary: #6B7280;
+  --text-muted: #9CA3AF;
+  --text-inverse: var(--color-white);
+
+  --bg-primary: var(--color-white);
+  --bg-secondary: var(--color-light);
+  --bg-dark: var(--color-dark);
+  --bg-overlay: rgba(11, 12, 30, 0.8);
+
+  --border-light: #E5E7EB;
+  --border-medium: #D1D5DB;
+  --border-dark: var(--color-dark);
+
+  --font-primary: "Archivo", sans-serif;
+  --font-display: "LCMogiA", sans-serif;
+
+  --font-size-h1: 8em;
+  --font-size-h2: 100px;
+  --font-size-h3: 40px;
+
+  --letter-spacing-h1: 0.01em;
+  --letter-spacing-h2: 10px;
+  --letter-spacing-h3: 8px;
+
+  --line-height-h1: 1em;
+  --line-height-base: 1.5;
+
+  --font-weight-light: 300;
+  --font-weight-normal: normal;
+  --font-weight-medium: 500;
+  --font-weight-bold: 700;
+
+  --hover-opacity: 0.8;
+  --active-opacity: 0.9;
+  --disabled-opacity: 0.5;
+
+  --focus-outline: 2px solid var(--color-primary);
+  --focus-outline-offset: 2px;
+  --focus-border-color: var(--color-primary);
+  --focus-bg-color: rgba(37, 125, 84, 0.05);
+
+  --focus-outline-width: 3px;
+  --focus-outline-color: var(--color-accent);
+
+  --focus-outline-base: var(--focus-outline-width) solid var(--focus-outline-color);
+  --focus-outline-offset-small: 2px;
+  --focus-outline-offset-medium: 4px;
+  --border-radius-small: 4px;
+  --border-radius-medium: 8px;
+
+  --transition-fast: 0.2s ease;
+  --transition-normal: 0.3s ease;
+}
+
+/* Support pour le mode high contrast - préserve mieux les couleurs */
+@media (prefers-contrast: high) {
+  :root {
+    --border-light: #000000;
+    --border-medium: #000000;
+  }
+  
+  /* Force le texte noir sur les couleurs claires pour le high contrast */
+  .podium-player.second-place,
+  .podium-player.third-place {
+    color: #000 !important;
+  }
+}
+
+body {
+  background-color: var(--color-light) !important;
+  margin: 0;
+  padding: 0;
+}
+
+@font-face {
+  font-family: "LCMogiA";
+  src: url("../public/font/LCMogi-A.otf");
+  font-weight: 200; /* extra light weight pour cette police */
+  font-style: normal;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-primary);
+  font-optical-sizing: auto;
+  font-style: normal;
+  box-sizing: border-box;
+}
+
+html, body {
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100%;
+}
+
+input, textarea, select, button {
+  outline: none;
+  transition: all var(--transition-fast);
+}
+
+input:focus, textarea:focus, select:focus, button:focus {
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-outline-offset);
+  border-color: var(--focus-border-color);
+  background-color: var(--focus-bg-color);
+}
+
+.focus-visible-base {
+  outline: var(--focus-outline-base) !important;
+  outline-offset: var(--focus-outline-offset-small) !important;
+  border-radius: var(--border-radius-small) !important;
+}
+
+.focus-visible-medium {
+  outline: var(--focus-outline-base) !important;
+  outline-offset: var(--focus-outline-offset-medium) !important;
+  border-radius: var(--border-radius-medium) !important;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  @extend .focus-visible-base;
+}
+
+div:focus,
+span:focus,
+p:focus {
+  outline: none !important;
+}
+
+
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: var(--color-accent);
+  color: white;
+  padding: 8px 16px;
+  text-decoration: none;
+  border-radius: var(--border-radius-small);
+  font-weight: 500;
+  z-index: 1000;
+  transition: top var(--transition-normal);
+}
+
+.skip-link:focus {
+  top: 6px;
+}
+
+.quiz-card:focus-visible {
+  @extend .focus-visible-medium;
+  transition: outline var(--transition-fast) !important;
+}
+
+.btn:focus-visible {
+  box-shadow: 0 0 0 3px var(--focus-outline-color), 0 0 0 1px var(--color-white) !important;
+}
+
+.modal-content:focus-visible {
+  outline: none !important;
+}
+
+.form-help {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-top: 0.25rem;
+}
+
+[aria-selected="true"] {
+  box-shadow: 0 0 0 2px var(--color-accent) !important;
+}
+
+.answer-option:focus-visible {
+  @extend .focus-visible-medium;
+}
+
+
+[role="radio"]:focus-visible {
+  @extend .focus-visible-base;
+}
+
+.stars .star {
+  transition: color 0.2s ease;
+}
+
+.stars .star.filled {
+  color: var(--color-accent);
+}
+
+button:disabled,
+input:disabled,
+select:disabled,
+textarea:disabled {
+  opacity: var(--disabled-opacity);
+  cursor: not-allowed;
+}
+
+h1 {
+  font-family: var(--font-display);
+  font-size: var(--font-size-h1);
+  letter-spacing: var(--letter-spacing-h1);
+  line-height: var(--line-height-h1);
+  font-weight: 200;
+  color: var(--color-dark);
+}
+
+h2 {
+  font-family: var(--font-display);
+  font-size: var(--font-size-h2);
+  letter-spacing: var(--letter-spacing-h2);
+  color: var(--text-primary);
+  font-weight: 200;
+}
+
+h3 {
+  font-family: var(--font-display);
+  font-size: var(--font-size-h3);
+  letter-spacing: var(--letter-spacing-h3);
+  color: var(--text-primary);
+  font-weight: 200;
+}
+
+/* Force letter-spacing à 0 pour tous les graphiques Chart.js */
+canvas {
+  font-family: Arial, sans-serif !important;
+  letter-spacing: 0 !important;
+}
+
+/* Force letter-spacing à 0 pour tous les titres de graphiques */
+.chart-info h3,
+.chart-card h3,
+.chart-header h3,
+.statistics-charts h3 {
+  letter-spacing: 0 !important;
+  font-family: Arial, sans-serif !important;
+}

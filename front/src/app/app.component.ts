@@ -1,14 +1,51 @@
-import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import { TuiRoot } from '@taiga-ui/core';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
+import { NavbarComponent } from './components/navbar/navbar.component';
+import { GameInvitationToastComponent } from './components/game-invitation-toast/game-invitation-toast.component';
+import { QuizTransitionComponent } from './components/quiz-transition/quiz-transition.component';
+import { AlertComponent } from './components/alert/alert.component';
+import { CookieBannerComponent } from './components/cookie-banner/cookie-banner.component';
+
+import { AuthService } from './services/auth.service';
+import { filter } from 'rxjs/operators';
 
 @Component({
-  standalone: true,
   selector: 'app-root',
-  imports:  [TuiRoot, RouterOutlet],
+  standalone: true,
+  imports: [
+    CommonModule,
+    RouterOutlet,
+    NavbarComponent,
+    GameInvitationToastComponent,
+    QuizTransitionComponent,
+    AlertComponent,
+    CookieBannerComponent
+  ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
-export class AppComponent {
-  title = 'blob-front';
+export class AppComponent implements OnInit {
+  showNavbar: boolean = true;
+
+  constructor(
+    private router: Router,
+    private authService: AuthService
+  ) {}
+
+  ngOnInit() {
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe((event: any) => {
+      const route = this.router.routerState.root;
+      let currentRoute = route;
+
+      while (currentRoute.children.length > 0) {
+        currentRoute = currentRoute.children[0];
+      }
+
+      const hideNavbar = currentRoute.snapshot.data['hideNavbar'];
+      this.showNavbar = !hideNavbar;
+    });
+  }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Enum\Difficulty;
 use App\Repository\QuizRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -16,24 +17,23 @@ class Quiz
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['quiz:read', 'question:read'])]
-
+    #[Groups(['quiz:read', 'quiz:create', 'question:read', 'quiz:organized'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 100)]
-    #[Groups(['quiz:read', 'quiz:create'])]
+    #[Groups(['quiz:read', 'quiz:create', 'quiz:organized'])]
     private ?string $title = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['quiz:read', 'quiz:create'])]
+    #[Groups(['quiz:read', 'quiz:create', 'quiz:organized'])]
     private ?string $description = null;
 
     #[ORM\Column]
     #[Groups(['quiz:read', 'quiz:create'])]
-    private ?bool $is_public = null;
+    private ?bool $isPublic = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    #[Groups(['quiz:read'])]
+    #[Groups(['quiz:read', 'quiz:create'])]
     private ?\DateTimeInterface $date_creation = null;
 
     #[ORM\Column(length: 50, enumType: Status::class)]
@@ -41,22 +41,30 @@ class Quiz
     private ?Status $status = null;
 
     #[ORM\ManyToOne(inversedBy: 'quizs')]
-    #[Groups(['quiz:read'])]
+    #[Groups(['quiz:read', 'quiz:create'])]
     private ?Company $company = null;
 
     #[ORM\ManyToOne(inversedBy: 'quizs')]
-    #[Groups(['quiz:read'])]
+    #[Groups(['quiz:read', 'quiz:create'])]
     private ?User $user = null;
 
+    /**
+     * @var Collection<int, Group>
+     */
+    #[ORM\ManyToMany(targetEntity: Group::class)]
+    #[ORM\JoinTable(name: 'quiz_group')]
+    #[Groups(['quiz:read', 'quiz:create', 'company:detail'])]
+    private Collection $groups;
+
     #[ORM\ManyToOne(inversedBy: 'quizs')]
-    #[Groups(['quiz:read', 'quiz:create'])]
+    #[Groups(['quiz:read', 'quiz:create', 'quiz:organized'])]
     private ?CategoryQuiz $category = null;
 
     /**
      * @var Collection<int, Question>
      */
     #[ORM\OneToMany(targetEntity: Question::class, mappedBy: 'quiz')]
-    #[Groups(['quiz:read'])]
+    #[Groups(['quiz:read', 'quiz:create'])]
     private Collection $questions;
 
     /**
@@ -70,8 +78,8 @@ class Quiz
     {
         $this->questions = new ArrayCollection();
         $this->userAnswers = new ArrayCollection();
+        $this->groups = new ArrayCollection();
     }
-
 
     public function getId(): ?int
     {
@@ -102,12 +110,12 @@ class Quiz
 
     public function isPublic(): ?bool
     {
-        return $this->is_public;
+        return $this->isPublic;
     }
 
-    public function setIsPublic(bool $is_public): static
+    public function setIsPublic(bool $isPublic): static
     {
-        $this->is_public = $is_public;
+        $this->isPublic = $isPublic;
         return $this;
     }
 
@@ -218,5 +226,74 @@ class Quiz
             }
         }
         return $this;
+    }
+
+    /**
+     * @return Collection<int, Group>
+     */
+    public function getGroups(): Collection
+    {
+        return $this->groups;
+    }
+
+    public function addGroup(Group $group): static
+    {
+        if (!$this->groups->contains($group)) {
+            $this->groups->add($group);
+        }
+
+        return $this;
+    }
+
+    public function removeGroup(Group $group): static
+    {
+        $this->groups->removeElement($group);
+
+        return $this;
+    }
+
+    #[Groups(['quiz:read', 'quiz:organized'])]
+    public function getDifficultyLabel(): string
+    {
+        if ($this->questions->isEmpty()) {
+            return 'Facile';
+        }
+
+        $totalWeight = 0;
+        $questionCount = 0;
+
+        foreach ($this->questions as $question) {
+            $difficulty = $question->getDifficulty();
+            if ($difficulty) {
+                $totalWeight += $difficulty->getWeight();
+                $questionCount++;
+            }
+        }
+
+        if ($questionCount === 0) {
+            return 'Facile';
+        }
+
+        $avgWeight = $totalWeight / $questionCount;
+        return Difficulty::fromWeight($avgWeight)->getLabel();
+    }
+
+    #[Groups(['quiz:read'])]
+    public function getTotalAttempts(): int
+    {
+        return $this->userAnswers->count();
+    }
+
+    #[Groups(['quiz:read'])]
+    public function getPopularity(): int
+    {
+        $attempts = $this->getTotalAttempts();
+        return min(5, max(1, ceil($attempts / 2)));
+    }
+
+    #[Groups(['quiz:read'])]
+    public function getQuestionCount(): int
+    {
+        return $this->questions->count();
     }
 }

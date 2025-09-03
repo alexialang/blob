@@ -1,0 +1,189 @@
+
+.avatar-selection-container {
+  height: calc(100vh - 9.5em);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--color-light);
+}
+
+.container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+}
+
+.header-section {
+  flex: 0 0 auto;
+  margin: 0 clamp(2rem, 5vw, 2rem) clamp(2rem, 5vw, 5rem) clamp(2rem, 5vw, 2rem);
+  position: relative;
+  z-index: 1;
+
+  .back-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50px;
+    color: white;
+    font-weight: 600;
+    font-size: clamp(0.8rem, 1.5vw, 0.9rem);
+    transition: var(--transition);
+    z-index: 2;
+    position: relative;
+
+    i { margin-right: 0.5rem; }
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateX(-5px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    }
+  }
+
+  .title-container {
+    position: absolute;
+    top: calc(100% + clamp(1rem, 2vw, 1.5rem));
+    left: calc(clamp(0.5rem, 1.5vw, 0.75rem) + clamp(1rem, 3vw, 1.5rem) + clamp(1rem, 3vw, 1.5rem) + clamp(0.5rem, 1.5vw, 0.75rem) + clamp(2.5rem, 4.5vw, 3.5rem));
+  }
+
+  .header-title {
+    margin: 0;
+    color: var(--color-dark);
+    font-size: clamp(2.5rem, 9vw, 6rem) !important;
+    font-family: var(--font-display);
+    letter-spacing: 1px;
+    line-height: 1.1;
+    text-align: left;
+  }
+
+  /* (Optionnel) Sous-titre si utilisé */
+  .page-subtitle {
+    grid-column: 2;
+    grid-row: 3;
+    margin: 0;
+    font-size: clamp(1rem, 2vw, 1.2rem);
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 300;
+  }
+}
+
+/* Section de preview de la forme */
+.preview-shape-section {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(1rem, 5vw, 2rem);
+  margin-top: clamp(2rem, 4vw, 3rem);
+  margin-bottom: 2em;
+  overflow: hidden;
+
+  .nav-btn {
+    background: transparent;
+    border: none;
+    padding: clamp(2.5rem, 1.5vw, 0.75rem);
+    transition: var(--transition);
+
+    i {
+      font-size: clamp(4rem, 2vw, 1.5rem);
+      color: var(--color-dark);
+    }
+
+    &:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--hover-shadow);
+    }
+  }
+
+  .shape-preview {
+    width: 17em;
+    height: 25em;
+    aspect-ratio: 350 / 425;
+    overflow: hidden;
+    transition: var(--transition);
+
+    svg {
+      width: 100%;
+      height: 100%;
+    }
+  }
+}
+
+/* Sélecteur de couleur */
+.color-picker {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: center;
+  gap: clamp(2rem, 10vw, 6rem);
+  margin-bottom: clamp(1rem, 5vw, 3rem);
+
+  .color-dot {
+    width: clamp(60px, 10vw, 100px);
+    height: clamp(60px, 10vw, 100px);
+    border-radius: 50%;
+    cursor: pointer;
+    border: 3px solid transparent;
+    transition: var(--transition);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+    &.selected {
+      border-color: white;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+      transform: scale(1.05);
+    }
+
+    &:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+    }
+  }
+}
+
+/* Bouton d’action */
+.action-section {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 clamp(1rem, 5vw, 2rem) clamp(1rem, 5vw, 2rem);
+
+  .primary-button {
+    padding: clamp(0.5rem, 2vw, 0.75rem) clamp(1rem, 3vw, 1.5rem);
+    font-size: clamp(0.9rem, 2vw, 1rem);
+    font-weight: 600;
+    border-radius: 50px;
+    background: transparent;
+    cursor: pointer;
+    position: relative;
+  }
+}
+
+/* État de chargement */
+.loading-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: white;
+
+  .spinner {
+    width: clamp(40px, 8vw, 60px);
+    height: clamp(40px, 8vw, 60px);
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-top: 4px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: clamp(0.5rem, 2vw, 1rem);
+  }
+
+  p {
+    font-size: clamp(1rem, 2vw, 1.1rem);
+    opacity: 0.8;
+  }
+}
+
+@keyframes spin {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

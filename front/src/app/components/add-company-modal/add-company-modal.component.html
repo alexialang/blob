@@ -1,0 +1,35 @@
+<div class="modal-content">
+  <h3>Ajouter une entreprise</h3>
+  
+  <div class="form-group">
+    <label for="companyName">Nom de l'entreprise</label>
+    <input 
+      id="companyName"
+      type="text" 
+      [(ngModel)]="companyName" 
+      placeholder="Entrez le nom de l'entreprise"
+      class="form-control"
+    />
+  </div>
+  
+  <div class="actions">
+    <button 
+      type="button" 
+      class="btn btn-secondary"
+      (click)="cancel()"
+    >
+      Annuler
+    </button>
+    <button 
+      type="button" 
+      class="btn btn-primary"
+      [disabled]="!companyName?.trim()"
+      (click)="save()"
+    >
+      Créer
+    </button>
+  </div>
+</div>
+
+
+

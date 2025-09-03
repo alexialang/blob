@@ -1,0 +1,223 @@
+
+
+.charts-container {
+  margin-top: 2rem;
+  width: 100%;
+}
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2rem;
+  margin: 0;
+}
+
+.chart-section {
+  margin-bottom: 0;
+
+  .chart-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    overflow: hidden;
+    transition: var(--transition);
+
+    &:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 16px 48px rgba(0,0,0,0.15);
+    }
+
+    .chart-header {
+      padding: 1.5rem 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      height: 80px;
+      background: var(--color-accent-dark);
+
+      .chart-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 15px;
+        background: var(--color-accent-dark);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        box-shadow: 0 10px 20px rgba(230, 126, 34, 0.3);
+      }
+
+      .chart-info {
+        h3 {
+          color: white;
+          font-weight: 700;
+          font-size: 1.25rem;
+          margin-bottom: 0.5rem;
+          font-family: Arial, Helvetica, sans-serif; /* Force Arial au lieu de LCMogi */
+          letter-spacing: 0 !important;
+        }
+
+        p {
+          color: rgba(255, 255, 255, 0.9);
+          margin: 0;
+          font-size: 0.9rem;
+        }
+      }
+    }
+
+    .chart-wrapper {
+      padding: 1rem 2rem 2rem;
+      height: 400px;
+      position: relative;
+
+      canvas {
+        max-height: 100%;
+      }
+    }
+  }
+}
+
+/* Force letter-spacing à 0 pour les titres Chart.js */
+.chart-wrapper canvas {
+  font-family: Arial, sans-serif !important;
+}
+
+/* Force letter-spacing à 0 pour tous les titres de graphiques */
+.chart-info h3,
+.chart-card h3,
+.chart-header h3 {
+  letter-spacing: 0 !important;
+  font-family: Arial, sans-serif !important;
+}
+
+.chart-section:first-child .chart-card .chart-header {
+  background: var(--color-accent-dark);
+}
+
+.chart-section:last-child .chart-card .chart-header {
+  background: var(--color-pink-dark);
+}
+
+.chart-section:last-child .chart-card .chart-header .chart-icon {
+  background: var(--color-pink-dark);
+  box-shadow: 0 10px 20px rgba(185, 28, 92, 0.3);
+}
+
+.no-data-message {
+  .no-data-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 3rem 2rem;
+    text-align: center;
+
+    .no-data-icon {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #e9ecef 0%, #f8f9fa 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 2rem;
+      font-size: 2rem;
+      color: #adb5bd;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    h3 {
+      color: #333;
+      font-weight: 700;
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      font-family: Arial, Helvetica, sans-serif; /* Force Arial au lieu de LCMogi */
+    }
+
+    p {
+      color: #666;
+      font-size: 1.1rem;
+      margin-bottom: 2rem;
+      line-height: 1.6;
+    }
+
+    .suggestion {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--info-gradient);
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border-radius: 25px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      box-shadow: 0 5px 15px rgba(250, 112, 154, 0.3);
+    }
+  }
+}
+
+
+
+@media (max-width: 768px) {
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .chart-section .chart-card {
+    .chart-header {
+      padding: 1.5rem 1.5rem 1rem;
+      flex-direction: column;
+      text-align: center;
+
+      .chart-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 1.2rem;
+      }
+
+      .chart-info h3 {
+        font-size: 1.25rem;
+        font-family: Arial, Helvetica, sans-serif; /* Force Arial sur mobile aussi */
+      }
+    }
+
+    .chart-wrapper {
+      padding: 1rem 1.5rem 1.5rem;
+      height: 300px;
+    }
+  }
+
+  .no-data-message .no-data-card {
+    padding: 2rem 1.5rem;
+
+    .no-data-icon {
+      width: 60px;
+      height: 60px;
+      font-size: 1.5rem;
+    }
+  }
+}
+
+
+@keyframes chartFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.chart-card {
+  animation: chartFadeIn 0.6s ease-out;
+}
+
+.insight-item {
+  animation: chartFadeIn 0.8s ease-out;
+}

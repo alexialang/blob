@@ -1,0 +1,337 @@
+<div class="company-details-page">
+
+<div class="container">
+  <div *ngIf="company">
+    <h1 class="page-title">Détails <br /> de <span class="company-highlight" [ngStyle]="{ 'color': highlightColor }">{{ company.name }}</span></h1>
+    <div class="company-info">
+      <p class="company-address">Adresse non renseignée</p>
+      <div class="company-stats">
+        <div class="stat-item">
+          <span class="stat-number">{{ company.users?.length || 0 }}</span>
+          <span class="stat-label">Collaborateurs</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">{{ company.groups?.length || 0 }}</span>
+          <span class="stat-label">Groupes</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">{{ getActiveUsersCount() }}</span>
+          <span class="stat-label">Actifs</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions mb-4">
+      <button class="btn-modern btn-secondary" (click)="refreshCompanyData()">
+        <i class="fas fa-sync-alt"></i>
+        Actualiser
+      </button>
+      <button *hasPermission="'MANAGE_USERS'" class="btn-modern btn-primary" (click)="editCompany()">
+        <i class="fas fa-edit"></i>
+        Modifier
+      </button>
+      <button *hasPermission="'MANAGE_USERS'" class="btn-modern btn-danger" (click)="deleteCompany()">
+        <i class="fas fa-trash"></i>
+        Supprimer
+      </button>
+    </div>
+
+    <ng-container *ngIf="canViewStats">
+      <div class="company-statistics-section mb-4">
+        <h3 class="section-title">Statistiques de l'entreprise</h3>
+        <app-global-statistics [companyId]="company?.id ?? null"></app-global-statistics>
+      </div>
+    </ng-container>
+
+    <div class="tabs-container mb-4">
+      <div class="tabs-header">
+        <button
+          class="tab-button"
+          [class.active]="activeTabIndex === 0"
+          (click)="activeTabIndex = 0"
+        >
+          Groupes
+        </button>
+      </div>
+    </div>
+
+    <ng-container *ngIf="activeTabIndex === 0">
+          <div class="section-header">
+      <div class="section-title-container">
+        <h3 class="section-title">Groupes de l'entreprise</h3>
+        <span class="groups-count">{{ company.groups?.length || 0 }} groupe(s)</span>
+      </div>
+      <button *hasPermission="'MANAGE_USERS'" tuiButton size="s" appearance="primary" (click)="showCreateGroupModalAction()" class="create-group-btn">
+        <i class="icon-plus"></i> Créer un groupe
+      </button>
+    </div>
+
+      <ng-container *ngIf="company.groups?.length; else noGroupsTpl">
+        <div *ngFor="let g of company.groups" class="group-card">
+          <div class="group-header" (click)="toggleGroup(g)">
+            <div class="group-header-left">
+              <div class="expand-icon" [class.expanded]="g.expanded">
+                <i class="chevron"></i>
+              </div>
+              <div class="group-info">
+                <h4 class="group-name">{{ g.name }}</h4>
+                <span class="group-members-count">{{ g.users?.length || 0 }} membre(s)</span>
+              </div>
+            </div>
+            <div class="group-actions" (click)="$event.stopPropagation()">
+              <button *hasPermission="'MANAGE_USERS'" tuiButton size="s" appearance="outline" (click)="addMemberToGroup(g.id)" class="add-member-btn">
+                <i class="icon-user-plus"></i> Ajouter
+              </button>
+              <button *hasPermission="'MANAGE_USERS'" tuiButton size="s" appearance="secondary" (click)="deleteGroup(g.id)" class="delete-group-btn">
+                <i class="icon-trash"></i> Supprimer
+              </button>
+            </div>
+          </div>
+
+          <div *ngIf="g.expanded" class="group-content">
+            <div *ngIf="g.description" class="group-description">
+              <p>{{ g.description }}</p>
+            </div>
+            
+            <div *ngIf="!g.users?.length" class="no-members">
+              <i class="icon-users"></i>
+              <p>Aucun membre dans ce groupe</p>
+              <button *hasPermission="'MANAGE_USERS'" tuiButton size="s" appearance="primary" (click)="addMemberToGroup(g.id)">
+                Ajouter le premier membre
+              </button>
+            </div>
+
+            <div *ngIf="g.users?.length" class="members-grid">
+              <div *ngFor="let m of g.users" class="member-card">
+                <div class="member-info">
+                  <div class="member-avatar">
+                    {{ (m.firstName?.charAt(0) || '') + (m.lastName?.charAt(0) || '') }}
+                  </div>
+                  <div class="member-details">
+                    <h5 class="member-name">{{ m.firstName }} {{ m.lastName }}</h5>
+                    <p class="member-email">{{ m.email }}</p>
+                    <span class="member-status" [class.active]="m.isActive" [class.inactive]="!m.isActive">
+                      {{ m.isActive ? 'Actif' : 'Inactif' }}
+                    </span>
+                  </div>
+                </div>
+                <div class="member-actions">
+                  <button *hasPermission="'MANAGE_USERS'" tuiButton size="xs" appearance="flat" (click)="removeUserFromGroup(g.id, m.id)" class="remove-btn">
+                    <i class="icon-x"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </ng-container>
+
+    <div class="collaborators-section mt-5">
+      <div class="section-header">
+        <div class="section-title-container">
+          <h2 class="section-title">Collaborateurs</h2>
+          <span class="collaborators-count">{{ company.users?.length || 0 }} collaborateur(s)</span>
+        </div>
+        <button *hasPermission="'MANAGE_USERS'" tuiButton size="s" appearance="primary" (click)="showAddMemberModalAction()" class="add-member-btn">
+          <i class="icon-plus"></i> Ajouter un membre
+        </button>
+      </div>
+      <div class="filters-container">
+        <div class="filters-row">
+          <div class="filter-group">
+            <label class="filter-label">Groupe</label>
+            <select class="form-control" [(ngModel)]="filterByGroup" (ngModelChange)="applyFilters()">
+              <option value="">Tous groupes</option>
+              <option *ngFor="let g of groupList" [value]="g">{{ g }}</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label class="filter-label">Statut</label>
+            <select class="form-control" [(ngModel)]="filterByStatus" (ngModelChange)="applyFilters()">
+              <option value="">Tous statuts</option>
+              <option value="active">Actif</option>
+              <option value="inactive">Inactif</option>
+            </select>
+          </div>
+
+          <div class="filter-group search-group">
+            <label class="filter-label">Recherche</label>
+            <div class="search-input-container">
+              <i class="search-icon"></i>
+              <input class="form-control search-input" placeholder="Nom, email..." [(ngModel)]="searchKeyword" (ngModelChange)="applyFilters()" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-scroll-wrapper">
+        <table tuiTable size="m" class="custom-table table-striped mb-3">
+          <thead>
+          <tr tuiThGroup>
+            <th tuiTh>Nom</th>
+            <th tuiTh>Email</th>
+            <th tuiTh (click)="sortBy('isActive')" style="cursor: pointer;">
+              Actif
+              <span *ngIf="sortColumn === 'isActive'">
+                  {{ sortDirection === 'asc' ? '↑' : '↓' }}
+                </span>
+            </th>
+            <th tuiTh>Groupes</th>
+            <th tuiTh>Statistiques</th>
+            <th tuiTh>Droits</th>
+            <th tuiTh>Actions</th>
+          </tr>
+          </thead>
+          <tbody tuiTbody>
+          <tr *ngFor="let c of pagedCollaborators">
+            <td tuiTd>
+              <div class="user-info">
+                <span class="user-name">{{ c.name }}</span>
+              </div>
+            </td>
+            <td tuiTd>
+              <span class="user-email">{{ c.email }}</span>
+            </td>
+            <td tuiTd>
+              <span class="status-badge" [class.active]="c.isActive" [class.inactive]="!c.isActive">
+                {{ c.isActive ? 'Oui' : 'Non' }}
+              </span>
+            </td>
+            <td tuiTd>
+              <div class="groups-container">
+                <span *ngFor="let group of c.groups.slice(0, 2)" class="group-badge">
+                  {{ group }}
+                </span>
+                <span *ngIf="c.groups.length > 2" class="group-badge group-badge-more">
+                  +{{ c.groups.length - 2 }}
+                </span>
+              </div>
+            </td>
+            <td tuiTd>
+              <button tuiButton appearance="action-grayscale" size="s" class="stats-button">
+                {{ getCollaboratorStats(c.id) }} <span>Voir plus</span>
+              </button>
+            </td>
+            <td tuiTd>
+              <div class="rights-container">
+                <span *ngFor="let right of c.rights.slice(0, 2)" class="right-badge">
+                  {{ right }}
+                </span>
+                <span *ngIf="c.rights.length > 2" class="right-badge right-badge-more">
+                  +{{ c.rights.length - 2 }}
+                </span>
+              </div>
+            </td>
+            <td tuiTd>
+              <div class="action-buttons">
+                <button tuiButton size="xs" appearance="outline" class="view-btn">Voir</button>
+                <button *hasPermission="'MANAGE_USERS'" tuiButton size="xs" appearance="secondary" (click)="deleteCollaborator(c.id)" class="delete-btn">Supprimer</button>
+              </div>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <app-pagination [totalItems]="filteredCollaborators.length" [pageSize]="pageSize" [page]="page" (pageChange)="onPageChange($event)"></app-pagination>
+    </div>
+
+    <div *ngIf="showAddMemberModal" class="modal-overlay">
+      <div class="modal-container">
+        <ng-container *ngIf="company?.id as companyId">
+          <app-add-member-modal
+            [companyId]="companyId"
+            (memberAdded)="onMemberAdded($event)"
+            (modalClosed)="onModalClosed()"
+          ></app-add-member-modal>
+        </ng-container>
+      </div>
+    </div>
+
+    <div *ngIf="showCreateGroupModal" class="modal-overlay">
+      <div class="modal-content">
+        <h3>Créer un groupe</h3>
+        <input [(ngModel)]="newGroupName" placeholder="Nom du groupe" class="form-control mb-2" />
+        <textarea [(ngModel)]="newGroupDescription" placeholder="Description" class="form-control mb-2"></textarea>
+        <h4>Membres</h4>
+        <div class="mb-2">
+          <button (click)="selectAllMembers()">Tout sélectionner</button>
+          <button (click)="deselectAllMembers()">Tout désélectionner</button>
+        </div>
+        <ul class="list-unstyled mb-3" style="max-height: 200px; overflow-y: auto;">
+          <li *ngFor="let u of availableMembersForNewGroup">
+            <label>
+              <input type="checkbox" [checked]="isMemberSelected(u.id)" (change)="toggleMemberSelection(u.id)" />
+              {{ u.firstName }} {{ u.lastName }} ({{ u.email }})
+            </label>
+          </li>
+        </ul>
+        <div class="d-flex justify-content-end gap-2">
+          <button tuiButton size="s" appearance="secondary" (click)="cancelCreateGroup()">Annuler</button>
+          <button tuiButton size="s" appearance="primary" (click)="confirmCreateGroup()">Valider</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<!-- Modal pour ajouter un membre à un groupe -->
+<div *ngIf="showAddMemberToGroupModal" class="modal-overlay">
+  <div class="modal-content">
+    <h3>Ajouter un membre au groupe</h3>
+    <p class="modal-description">Sélectionnez un collaborateur de l'entreprise à ajouter à ce groupe :</p>
+    
+    <div *ngIf="availableMembersForGroup.length > 0; else noAvailableMembers" class="members-selection">
+      <div 
+        *ngFor="let member of availableMembersForGroup" 
+        class="member-selection-item"
+        [class.selected]="selectedMemberForGroup === member.id"
+        (click)="selectMemberForGroup(member.id)"
+      >
+        <div class="member-selection-info">
+          <div class="member-selection-avatar">
+            {{ (member.firstName?.charAt(0) || '') + (member.lastName?.charAt(0) || '') }}
+          </div>
+          <div class="member-selection-details">
+            <h5>{{ member.firstName }} {{ member.lastName }}</h5>
+            <p>{{ member.email }}</p>
+            <span class="member-selection-status" [class.active]="member.isActive">
+              {{ member.isActive ? 'Actif' : 'Inactif' }}
+            </span>
+          </div>
+        </div>
+        <div class="selection-indicator" *ngIf="selectedMemberForGroup === member.id">
+          ✓
+        </div>
+      </div>
+    </div>
+    
+    <ng-template #noAvailableMembers>
+      <div class="no-available-members">
+        <i class="icon-info"></i>
+        <p>Tous les collaborateurs de l'entreprise sont déjà membres de ce groupe.</p>
+      </div>
+    </ng-template>
+    
+    <div class="modal-actions">
+      <button tuiButton size="s" appearance="secondary" (click)="closeAddMemberToGroupModal()">Annuler</button>
+      <button 
+        tuiButton 
+        size="s" 
+        appearance="primary" 
+        [disabled]="!selectedMemberForGroup"
+        (click)="confirmAddMemberToGroup()"
+      >
+        Ajouter au groupe
+      </button>
+    </div>
+  </div>
+</div>
+
+<ng-template #noGroupsTpl>
+  <p class="no-data">Aucun groupe trouvé.</p>
+</ng-template>

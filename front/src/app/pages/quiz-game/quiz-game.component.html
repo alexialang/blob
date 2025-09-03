@@ -1,0 +1,230 @@
+<div class="quiz-game" [attr.data-hide-nav]="true">
+
+
+  <div *ngIf="!quizCompleted" class="quiz-header">
+    <div class="logo">
+      <img ngSrc="/assets/svg/logo.svg" alt="BLOB" height="45" width="192">
+    </div>
+
+    <div class="quiz-info">
+      <div class="timer" [class.warning]="timeLeft <= 10">
+        <span class="timer-icon">⏱️</span>
+        <span class="timer-text">{{ timeLeft }}s</span>
+      </div>
+      <div class="score">
+        <span class="score-icon">🏆</span>
+        <span class="score-text">{{ getCurrentNormalizedScore() }}/100</span>
+      </div>
+    </div>
+
+    <div class="user-info">
+      <span class="username">Jeanne Dufour</span>
+      <div class="user-level">
+        <span class="level-badge">LV 2</span>
+        <div class="user-avatar">
+          <span>JD</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <div *ngIf="!quizCompleted" class="progress-container">
+    <div class="progress-bar">
+      <div class="progress-fill" [style.width.%]="getProgressPercentage()"></div>
+    </div>
+  </div>
+
+
+  <div *ngIf="currentQuestion && !showFeedback" class="question-container">
+    <div class="question-number">Question {{ currentQuestionIndex }} / {{ totalQuestions }}</div>
+    <h1 class="question-text">{{ currentQuestion.question }}</h1>
+
+
+  </div>
+
+
+  <div *ngIf="currentQuestion && !showFeedback" class="question-type-container">
+    <p class="question-instruction"
+       *ngIf="currentQuestion.type_question === 'MCQ' || currentQuestion.type_question === 'QCM'">
+      Choisissez la bonne réponse parmi les propositions.
+    </p>
+    <p class="question-instruction"
+       *ngIf="currentQuestion.type_question === 'multiple_choice'">
+      Sélectionnez toutes les réponses correctes.
+    </p>
+    <p class="question-instruction"
+       *ngIf="currentQuestion.type_question === 'right_order'">
+      Remettez les éléments dans le bon ordre.
+    </p>
+    <p class="question-instruction"
+       *ngIf="currentQuestion.type_question === 'matching'">
+      Associez chaque élément de gauche à son correspondant de droite.
+    </p>
+    <p class="question-instruction"
+       *ngIf="currentQuestion.type_question === 'find_the_intruder'">
+      Repérez l’intrus parmi les propositions.
+    </p>
+    <p class="question-instruction"
+       *ngIf="currentQuestion.type_question === 'blind_test'">
+      Écoutez l’extrait et identifiez l’artiste ou le titre.
+    </p>
+    <p class="question-instruction"
+       *ngIf="currentQuestion.type_question === 'true_false'">
+      Indiquez si l'énoncé est vrai ou faux.
+    </p>
+
+
+
+    <app-mcq-question
+      *ngIf="currentQuestion.type_question === 'MCQ' || currentQuestion.type_question === 'QCM'"
+      [question]="currentQuestion"
+      [progress]="{ current: currentQuestionIndex, total: totalQuestions, percentage: getProgressPercentage() }"
+      (answerSelected)="onAnswerSelected($event)"
+      (answerValidated)="validateAnswer()">
+    </app-mcq-question>
+
+
+    <app-multiple-choice-question
+      *ngIf="currentQuestion.type_question === 'multiple_choice'"
+      [question]="currentQuestion"
+      [progress]="{ current: currentQuestionIndex, total: totalQuestions, percentage: getProgressPercentage() }"
+      (answerSelected)="onAnswersSelected($event)"
+      (answerValidated)="validateAnswer()">
+    </app-multiple-choice-question>
+
+
+    <app-right-order-question
+      *ngIf="currentQuestion.type_question === 'right_order'"
+      [question]="currentQuestion"
+      [progress]="{ current: currentQuestionIndex, total: totalQuestions, percentage: getProgressPercentage() }"
+      (answerSelected)="onOrderChanged($event)"
+      (answerValidated)="validateAnswer()">
+    </app-right-order-question>
+
+
+    <app-true-false-question
+      *ngIf="currentQuestion.type_question === 'true_false'"
+      [question]="currentQuestion"
+      [progress]="{ current: currentQuestionIndex, total: totalQuestions, percentage: getProgressPercentage() }"
+      (answerSelected)="onAnswerSelected($event)"
+      (answerValidated)="validateAnswer()">
+    </app-true-false-question>
+
+
+    <app-matching-question
+      *ngIf="currentQuestion.type_question === 'matching'"
+      [question]="currentQuestion"
+      [progress]="{ current: currentQuestionIndex, total: totalQuestions, percentage: getProgressPercentage() }"
+      (answerSelected)="onMatchingAnswersSelected($event)"
+      (answerValidated)="validateAnswer()">
+    </app-matching-question>
+
+
+    <app-intruder-question
+      *ngIf="currentQuestion.type_question === 'find_the_intruder'"
+      [question]="currentQuestion"
+      [progress]="{ current: currentQuestionIndex, total: totalQuestions, percentage: getProgressPercentage() }"
+      (answerSelected)="onAnswerSelected($event)"
+      (answerValidated)="validateAnswer()">
+    </app-intruder-question>
+
+
+    <app-blind-test-question
+      *ngIf="currentQuestion.type_question === 'blind_test'"
+      [question]="currentQuestion"
+      [progress]="{ current: currentQuestionIndex, total: totalQuestions, percentage: getProgressPercentage() }"
+      (answerSelected)="onAnswerSelected($event)"
+      (answerValidated)="validateAnswer()">
+    </app-blind-test-question>
+
+  </div>
+
+
+  <div *ngIf="showFeedback"
+       @slideFeedback
+       class="full-feedback"
+       [class.correct]="overlayCorrect"
+       [class.incorrect]="!overlayCorrect">
+
+    <div class="ff-content">
+      <h1 class="ff-title">
+        {{ overlayCorrect ? 'Bonne réponse!' : 'Mauvaise réponse!' }}
+      </h1>
+
+      <p class="ff-score">Score: {{ getCurrentNormalizedScore() }}/100</p>
+
+      <div *ngIf="showCorrectAnswer" class="ff-correct-list">
+        <h3>Bonne(s) réponse(s)&nbsp;:</h3>
+        <span *ngFor="let a of correctAnswers" class="ff-answer">{{ a.answer }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="quizCompleted" class="quiz-end-screen">
+
+    <div class="end-content">
+      <app-back-button>
+
+      </app-back-button>
+      <h1 class="end-title">Quiz terminé !</h1>
+      <div class="background-blob">
+
+        <div class="final-score">
+          <div class="score-circle">
+            <span class="score-text">Votre score est de :</span>
+            <span class="score-number">{{ totalScore }}</span>
+            <span class="score-max">/ 100</span>
+          </div>
+        </div>
+
+
+        <div class="ranking-section">
+          <h2>Votre classement</h2>
+          <div class="ranking-position">
+            <span class="position-badge">#{{ playerRank }}</span>
+            <span class="position-text">/ sur {{ totalPlayers }} joueurs</span>
+          </div>
+
+          <app-slide-button
+            class="leaderboard-btn"
+            label="Voir le classement complet"
+            [negative]="true"
+            backgroundColor="var(--color-dark)"
+            (buttonClick)="showFullLeaderboard()">
+          </app-slide-button>
+        </div>
+        <div class="end-actions">
+          <button class="share-btn" (click)="shareQuiz()"><tui-icon icon="@tui.share-2"/> Partager</button>
+          <button class="back-btn" (click)="replayQuiz()"><tui-icon icon="@tui.rotate-ccw" [style.color]="'var(--color-ligth)'"/> Rejouer</button>
+        </div>
+      </div>
+
+
+      <div class="rating-circle">
+        <div class="rating-section">
+          <h3>Noter ce quiz</h3>
+          <div class="star-rating">
+          <span
+            *ngFor="let star of [1,2,3,4,5]"
+            class="star"
+            [class.filled]="star <= userRating"
+            [class.hover]="star <= hoverRating"
+            (click)="rateQuiz(star)"
+            (mouseenter)="hoverRating = star"
+            (mouseleave)="hoverRating = 0">
+            <tui-icon
+              icon="@tui.star"
+              [style.color]="(star <= userRating || star <= hoverRating) ? '#ffd700' : 'rgba(255, 255, 255, 0.3)'">
+            </tui-icon>
+          </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+
+</div>

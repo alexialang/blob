@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\QuestionRepository;
+use App\Enum\Difficulty;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -14,26 +15,30 @@ class Question
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['question:read'])]
+    #[Groups(['question:read', 'quiz:read', 'quiz:create'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['question:read', 'question:create'])]
+    #[Groups(['question:read', 'question:create', 'quiz:read', 'quiz:create'])]
     private ?string $question = null;
+
+    #[ORM\Column(enumType: Difficulty::class, nullable: true)]
+    #[Groups(['question:read', 'question:create', 'quiz:read', 'quiz:create'])]
+    private ?Difficulty $difficulty = null;
 
     #[ORM\ManyToOne(inversedBy: 'questions')]
     #[Groups(['question:read', 'question:create'])]
     private ?Quiz $quiz = null;
 
     #[ORM\ManyToOne(inversedBy: 'questions')]
-    #[Groups(['question:read', 'question:create'])]
+    #[Groups(['question:read', 'question:create', 'quiz:read', 'quiz:create'])]
     private ?TypeQuestion $type_question = null;
 
     /**
      * @var Collection<int, Answer>
      */
     #[ORM\OneToMany(targetEntity: Answer::class, mappedBy: 'question')]
-    #[Groups(['question:read'])]
+    #[Groups(['question:read', 'quiz:read', 'quiz:create'])]
     private Collection $answers;
 
     public function __construct()
@@ -103,6 +108,17 @@ class Question
                 $answer->setQuestion(null);
             }
         }
+        return $this;
+    }
+
+    public function getDifficulty(): ?Difficulty
+    {
+        return $this->difficulty;
+    }
+
+    public function setDifficulty(?Difficulty $difficulty): static
+    {
+        $this->difficulty = $difficulty;
         return $this;
     }
 }

@@ -1,0 +1,53 @@
+.back-button {
+  background: transparent;
+  border: 2px solid var(--text-primary);
+  border-radius: 25px;
+  padding: 0.8rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: var(--color-dark);
+  font-size: 1rem;
+  font-weight: 500;
+
+  .arrow-icon {
+    width: 20px;
+    height: 20px;
+    color: var(--color-dark);
+    flex-shrink: 0;
+  }
+
+  .arrow-head {
+    transition: none;
+  }
+
+  .arrow-line {
+    transition: transform 0.3s ease;
+    transform-origin: left center;
+  }
+
+  .text {
+    transition: color 0.3s ease;
+    white-space: nowrap;
+  }
+
+  &:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+    padding: 0.8rem 3rem;
+
+    .arrow-icon {
+      color:var(--color-accent);
+    }
+
+    .arrow-line {
+      transform: scaleX(2.2);
+    }
+
+    .text {
+      color: var(--color-accent);
+    }
+  }
+}

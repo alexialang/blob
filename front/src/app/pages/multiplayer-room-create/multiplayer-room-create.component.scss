@@ -1,0 +1,484 @@
+.page-container {
+  background: var(--color-light);
+  min-height: 100vh;
+  padding: 0;
+}
+
+.page-header {
+  background: var(--color-light);
+  padding: 40px 80px;
+
+  .page-title {
+    margin-bottom: 40px;
+
+    h1 {
+      font-size: 10em !important;
+      margin: 0;
+      color: var(--color-dark);
+      font-family: var(--font-display);
+    }
+    .quiz-highlight
+    {
+      font-family: var(--font-display);
+    }
+
+    p {
+      color: var(--text-secondary);
+      font-size: 18px;
+      margin: 10px 0 0 0;
+    }
+  }
+}
+
+.page-content {
+  padding: 60px 80px 120px 80px;
+}
+
+.create-room-card {
+  background: var(--color-white);
+  border-radius: 20px;
+  padding: 40px;
+  max-width: 800px;
+  margin: 0 auto;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 2px solid var(--bg-secondary);
+
+  h2 {
+    font-size: 32px !important;
+    margin: 0;
+    color: var(--color-dark);
+    font-family: var(--font-primary);
+    font-weight: 600;
+    letter-spacing: 0px;
+  }
+
+  .close-btn {
+    background: none;
+    border: none;
+    font-size: 32px;
+    color: var(--color-dark);
+    cursor: pointer;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background: var(--bg-secondary);
+      transform: scale(1.1);
+    }
+  }
+}
+
+.quiz-info {
+  background: var(--color-primary);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 32px;
+
+  .quiz-preview {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    color: white;
+
+    .quiz-icon {
+      font-size: 48px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      width: 80px;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .quiz-details {
+      h3 {
+        font-size: 32px;
+        font-weight: 900;
+        color: var(--color-light);
+        font-family: var(--font-primary);
+        margin: 0;
+        line-height: 1.2;
+        letter-spacing: -1px;
+
+      }
+
+      p {
+        font-size: 16px;
+        margin: 0;
+        color: rgba(255, 255, 255, 0.9);
+      }
+    }
+  }
+}
+
+.room-form {
+  .form-section {
+    margin-bottom: 32px;
+    padding: 24px 0;
+
+    &:not(:last-child) {
+      border-bottom: 1px solid var(--bg-secondary);
+    }
+
+    h3 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--color-dark);
+      margin: 0 0 24px 0;
+      font-family: var(--font-display);
+    }
+  }
+
+  .form-group {
+    margin-bottom: 24px;
+
+    label {
+      display: block;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--color-dark);
+      margin-bottom: 8px;
+    }
+
+    .form-input,
+    .form-select {
+      width: 100%;
+      height: 48px;
+      padding: 0 20px;
+      border: 2px solid var(--color-dark);
+      border-radius: 25px;
+      background: var(--color-white);
+      color: var(--color-dark);
+      font-size: 16px;
+      transition: all 0.3s ease;
+      box-sizing: border-box;
+
+      &:focus {
+        outline: none;
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 3px rgba(37, 125, 84, 0.1);
+      }
+
+      &:hover {
+        border-color: var(--color-accent);
+      }
+
+      &::placeholder {
+        color: var(--text-secondary);
+      }
+    }
+
+    .help-text {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-top: 8px;
+      display: block;
+    }
+  }
+
+  .radio-group,
+  .checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .radio-label,
+  .checkbox-label {
+    display: flex !important;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    font-weight: 500 !important;
+    margin-bottom: 0 !important;
+
+    input[type="radio"],
+    input[type="checkbox"] {
+      display: none;
+    }
+
+    .radio-mark,
+    .checkmark {
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--color-dark);
+      border-radius: 50%;
+      position: relative;
+      transition: all 0.3s ease;
+
+      &::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 8px;
+        height: 8px;
+        background: var(--color-primary);
+        border-radius: 50%;
+        transform: translate(-50%, -50%) scale(0);
+        transition: transform 0.3s ease;
+      }
+    }
+
+    .checkmark {
+      border-radius: 4px;
+
+      &::after {
+        width: 6px;
+        height: 10px;
+        border: 2px solid var(--color-primary);
+        border-left: none;
+        border-top: none;
+        background: none;
+        transform: translate(-50%, -60%) rotate(45deg) scale(0);
+      }
+    }
+
+    input:checked + .radio-mark::after,
+    input:checked + .checkmark::after {
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    input:checked + .checkmark::after {
+      transform: translate(-50%, -60%) rotate(45deg) scale(1);
+    }
+
+    input:checked + .radio-mark,
+    input:checked + .checkmark {
+      border-color: var(--color-primary);
+    }
+  }
+
+  .users-list {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 2px solid var(--color-dark);
+    border-radius: 16px;
+    padding: 8px;
+    background: var(--bg-secondary);
+
+    .user-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 12px 16px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 4px;
+
+      &:hover:not(.disabled) {
+        background: var(--color-white);
+        transform: translateX(4px);
+      }
+
+      &.selected {
+        background: var(--color-primary);
+        color: white;
+
+        .user-name,
+        .user-email {
+          color: white;
+        }
+
+        .user-avatar {
+          background: rgba(255, 255, 255, 0.2);
+        }
+      }
+
+      &.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--color-dark);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 14px;
+      }
+
+      .user-info {
+        flex: 1;
+
+        .user-name {
+          display: block;
+          font-weight: 600;
+          font-size: 16px;
+          color: var(--color-dark);
+          margin-bottom: 4px;
+        }
+
+        .user-email {
+          font-size: 14px;
+          color: var(--text-secondary);
+        }
+      }
+
+      .user-checkbox {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: var(--color-primary);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      &.selected .user-checkbox {
+        opacity: 1;
+      }
+    }
+  }
+
+  .form-actions {
+    display: flex;
+    gap: 16px;
+    justify-content: flex-end;
+    padding-top: 32px;
+    border-top: 1px solid var(--bg-secondary);
+    margin-top: 32px;
+
+    .btn {
+      padding: 12px 32px;
+      border-radius: 25px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: 2px solid transparent;
+      min-width: 140px;
+
+      &.btn-primary {
+        background: var(--color-primary);
+        color: white;
+        border-color: var(--color-primary);
+
+        &:hover:not(:disabled) {
+          background: var(--color-primary-light);
+          transform: translateY(-2px);
+          box-shadow: 0 8px 25px rgba(37, 125, 84, 0.3);
+        }
+
+        &:disabled {
+          background: var(--text-secondary);
+          border-color: var(--text-secondary);
+          cursor: not-allowed;
+          transform: none;
+          box-shadow: none;
+        }
+      }
+
+      &.btn-secondary {
+        background: transparent;
+        color: var(--color-dark);
+        border-color: var(--color-dark);
+
+        &:hover {
+          background: var(--color-dark);
+          color: white;
+          transform: translateY(-2px);
+        }
+      }
+    }
+  }
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+  gap: 20px;
+
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--color-light);
+    border-top: 4px solid var(--color-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  p {
+    font-size: 18px;
+    color: var(--text-secondary);
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .page-header {
+    padding: 20px 40px;
+
+    .page-title h1 {
+      font-size: 60px;
+    }
+  }
+
+  .page-content {
+    padding: 40px 20px;
+  }
+
+  .create-room-card {
+    padding: 24px;
+  }
+
+  .card-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 16px;
+
+    .close-btn {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+    }
+  }
+
+  .room-form {
+    .form-actions {
+      flex-direction: column;
+
+      .btn {
+        min-width: auto;
+      }
+    }
+
+    .radio-group {
+      flex-direction: column;
+      gap: 12px;
+    }
+  }
+}

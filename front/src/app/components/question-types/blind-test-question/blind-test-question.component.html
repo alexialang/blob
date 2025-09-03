@@ -1,0 +1,93 @@
+<div class="blind-test-container">
+  <div class="question-header">
+    <div class="progress-info">
+      <span>Question {{ progress.current }} / {{ progress.total }}</span>
+      <div class="progress-bar">
+        <div class="progress-fill" [style.width.%]="progress.percentage"></div>
+      </div>
+    </div>
+    <h2 class="question-title">{{ question.question }}</h2>
+    <div class="question-instruction">
+      <span>Écoutez l'extrait audio et choisissez la bonne réponse</span>
+    </div>
+  </div>
+
+  <div class="audio-player">
+    <div class="player-container">
+      <div class="vinyl-record" [class.spinning]="isPlaying">
+        <div class="vinyl-center">
+          <div class="vinyl-hole"></div>
+        </div>
+        <div class="vinyl-grooves">
+          <div class="groove" *ngFor="let groove of [1,2,3,4,5]"></div>
+        </div>
+      </div>
+
+      <div class="player-controls">
+        <button class="control-btn play-btn"
+                [class.playing]="isPlaying"
+                (click)="togglePlayPause()">
+          <span *ngIf="!isPlaying">play</span>
+          <span *ngIf="isPlaying">pause</span>
+        </button>
+
+        <button class="control-btn stop-btn"
+                (click)="resetPlayback()">
+          Relecture
+        </button>
+
+        <div class="time-display">
+          <span class="current-time">{{ getFormattedTime() }}</span>
+          <span class="duration">/ 0:30</span>
+        </div>
+      </div>
+
+      <div class="audio-progress">
+        <div class="progress-track">
+          <div class="progress-bar-audio"
+               [style.width.%]="getProgressPercentage()"></div>
+        </div>
+        <div class="time-markers">
+          <span class="marker" *ngFor="let mark of [0, 10, 20, 30]">{{ mark }}s</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="answers-section">
+    <h3 class="answers-title">Choisissez votre réponse :</h3>
+    <div class="answers-grid">
+      <div *ngFor="let answer of shuffledAnswers; let i = index"
+           class="answer-option"
+           [class.selected]="isSelected(answer.id)"
+           (click)="selectAnswer(answer.id)">
+        <div class="answer-letter">{{ getAnswerLetter(i) }}</div>
+        <div class="answer-content">
+          <span class="answer-text">{{ answer.answer }}</span>
+        </div>
+        <div class="answer-indicator">
+          <span class="checkmark" *ngIf="isSelected(answer.id)">✓</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="blind-test-tips">
+    <div class="tip-card">
+      <h4>Conseils d'écoute</h4>
+      <ul>
+        <li>Portez un casque ou des écouteurs pour une meilleure qualité</li>
+        <li>Vous pouvez réécouter l'extrait autant de fois que nécessaire</li>
+        <li>Concentrez-vous sur les éléments distinctifs du son</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="validation-area">
+    <button class="validate-btn"
+            [disabled]="!selectedAnswerId"
+            (click)="validateAnswer()">
+      Valider ma réponse
+    </button>
+  </div>
+</div>

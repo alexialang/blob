@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Doctrine\DBAL\Types\Types;
 
 #[ORM\Entity(repositoryClass: CompanyRepository::class)]
 class Company
@@ -14,23 +15,29 @@ class Company
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['quiz:read'])]
+    #[Groups(['quiz:read','quiz:create','company:read','user:admin_read','company:list','company:detail'])]
     private ?int $id = null;
 
-    #[Groups(['quiz:read'])]
+
+    #[Groups(['quiz:read','quiz:create','company:read','user:admin_read','company:list','company:detail'])]
     #[ORM\Column(length: 255)]
     private ?string $name = null;
+
+    #[Groups(['company:read','user:admin_read','company:detail','company:create'])]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    private ?\DateTimeInterface $dateCreation = null;
 
     /**
      * @var Collection<int, User>
      */
-    #[Groups(['company:read'])]
+    #[Groups(['company:detail'])]
     #[ORM\OneToMany(targetEntity: User::class, mappedBy: 'company')]
     private Collection $users;
 
     /**
      * @var Collection<int, Group>
      */
+    #[Groups(['company:detail', 'company:list'])]
     #[ORM\OneToMany(targetEntity: Group::class, mappedBy: 'company')]
     private Collection $groups;
 
@@ -64,6 +71,18 @@ class Company
         return $this;
     }
 
+    public function getDateCreation(): ?\DateTimeInterface
+    {
+        return $this->dateCreation;
+    }
+
+    public function setDateCreation(\DateTimeInterface $dateCreation): static
+    {
+        $this->dateCreation = $dateCreation;
+
+        return $this;
+    }
+
     /**
      * @return Collection<int, User>
      */
@@ -85,7 +104,6 @@ class Company
     public function removeUser(User $user): static
     {
         if ($this->users->removeElement($user)) {
-            // set the owning side to null (unless already changed)
             if ($user->getCompany() === $this) {
                 $user->setCompany(null);
             }
@@ -115,7 +133,6 @@ class Company
     public function removeGroup(Group $group): static
     {
         if ($this->groups->removeElement($group)) {
-            // set the owning side to null (unless already changed)
             if ($group->getCompany() === $this) {
                 $group->setCompany(null);
             }
@@ -127,6 +144,7 @@ class Company
     /**
      * @return Collection<int, Quiz>
      */
+    #[Groups(['company:detail'])]
     public function getQuizs(): Collection
     {
         return $this->quizs;
@@ -145,12 +163,37 @@ class Company
     public function removeQuiz(Quiz $quiz): static
     {
         if ($this->quizs->removeElement($quiz)) {
-            // set the owning side to null (unless already changed)
             if ($quiz->getCompany() === $this) {
                 $quiz->setCompany(null);
             }
         }
 
         return $this;
+    }
+
+
+
+    #[Groups(['company:list', 'company:detail'])]
+    public function getUserCount(): int
+    {
+        return $this->users->count();
+    }
+
+    #[Groups(['company:list', 'company:detail'])]
+    public function getGroupCount(): int
+    {
+        return $this->groups->count();
+    }
+
+    #[Groups(['company:list', 'company:detail'])]
+    public function getQuizCount(): int
+    {
+        return $this->quizs->count();
+    }
+
+    #[Groups(['company:detail'])]
+    public function getCreatedAt(): ?string
+    {
+        return $this->dateCreation ? $this->dateCreation->format('Y-m-d H:i:s') : null;
     }
 }

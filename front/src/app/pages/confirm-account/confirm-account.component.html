@@ -1,0 +1,5 @@
+<div class="container">
+  <p *ngIf="loading">Confirmation en cours...</p>
+  <p *ngIf="!loading" [class.error]="error" [class.success]="!error">{{ message }}</p>
+  <a *ngIf="!loading && !error" routerLink="/connexion">Se connecter</a>
+</div>

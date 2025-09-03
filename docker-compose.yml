@@ -3,6 +3,8 @@ services:
     build:
       context: back
       dockerfile: Dockerfile
+      args:
+        APP_ENV: ${APP_ENV:-dev}
     container_name: blob_server
     labels:
       - 'traefik.http.routers.blob_apache.entrypoints=http'
@@ -18,6 +20,8 @@ services:
       - ~/.config/composer:/home/adimeo/.composer
       - ./back/.docker/dev/php/conf.d/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
       - ./back/.docker/dev/php/conf.d/custom.ini:/usr/local/etc/php/conf.d/custom.ini
+    environment:
+      - APP_ENV=${APP_ENV:-dev}
     networks:
       - adimeo_local_proxy
 
@@ -25,7 +29,10 @@ services:
     build:
       context: front
       dockerfile: Dockerfile
-    container_name: angular_app
+      target: ${MODE:-prod}
+    container_name: blob_angular
+    ports:
+      - "4200:4200"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.angular.entrypoints=http"
@@ -35,6 +42,9 @@ services:
       - "traefik.http.routers.angular-secure.entrypoints=https"
       - "traefik.http.routers.angular-secure.rule=Host(`angular.dev.local`)"
       - "traefik.http.routers.angular-secure.tls=true"
+      - "traefik.http.services.angular.loadbalancer.server.port=4200"
+    volumes:
+      - ./front:/app
     networks:
       - adimeo_local_proxy
 
@@ -45,11 +55,13 @@ services:
     restart: always
     container_name: blob_bdd
     command: --max_allowed_packet=32505856 --default-authentication-plugin=mysql_native_password
+    env_file:
+      - back/.env.dev
     environment:
-      MYSQL_ROOT_PASSWORD: toor
-      MYSQL_DATABASE: blob
-      MYSQL_USER: blob
-      MYSQL_PASSWORD: supersecuredpassword
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
       - blob_data_bdd:/var/lib/mysql
     networks:
@@ -69,6 +81,9 @@ services:
     container_name: blob_mails
     networks:
       - adimeo_local_proxy
+    ports:
+      - "1025:1025"
+      - "8025:1080"
     labels:
       - "traefik.http.routers.blob_mails.entrypoints=http"
       - "traefik.http.routers.blob_mails.rule=Host(`blob-mails.dev.local`)"
@@ -79,28 +94,33 @@ services:
       - "traefik.http.routers.blob_mails-secure.tls=true"
       - "traefik.http.services.blob_mails.loadbalancer.server.port=1080"
 
+
   mercure:
-    image: dunglas/mercure
+    image: dunglas/mercure:v0.13
     container_name: blob_mercure
     networks:
       - adimeo_local_proxy
+    ports:
+      - "3000:8080"
+    env_file:
+      - back/.env.dev
     environment:
-      SERVER_NAME: ":80"
-      MERCURE_PUBLISHER_JWT_KEY: '${MERCURE_JWT_SECRET}'
-      MERCURE_SUBSCRIBER_JWT_KEY: '${MERCURE_JWT_SECRET}'
-      MERCURE_EXTRA_DIRECTIVES: |-
-        cors_origins "*"
+      SERVER_NAME: :8080
+      ADDR: :8080
+      DEMO: 1
+      MERCURE_PUBLISHER_JWT_KEY: "b3zxO05Kh6sZsymfjQjAdx0SOwyJjPuF"
+      MERCURE_SUBSCRIBER_JWT_KEY: "b3zxO05Kh6sZsymfjQjAdx0SOwyJjPuF"
+      MERCURE_EXTRA_DIRECTIVES: |
+        cors_origins *
         anonymous
-    command: /usr/bin/caddy run --config /etc/caddy/Caddyfile.dev
-    volumes:
-      - blob_mercure_data:/data
-      - blob_mercure_config:/config
     labels:
-      traefik.enable: true
-      traefik.http.routers.blob_mercure.entrypoints: https
-      traefik.http.routers.blob_mercure.rule: "Host(`blob-mercure.dev.local`)"
-      traefik.http.routers.blob_mercure.tls: true
-      traefik.http.services.blob_mercure.loadbalancer.server.port: 80
+      - "traefik.enable=true"
+      - "traefik.http.routers.blob_mercure.entrypoints=http"
+      - "traefik.http.middlewares.traefik-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.blob_mercure.rule=Host(`blob-mercure.dev.local`)"
+      - "traefik.http.services.blob_mercure.loadbalancer.server.port=8080"
+
+
 
 networks:
   adimeo_local_proxy:

@@ -1,0 +1,17 @@
+nelmio_cors:
+    defaults:
+        origin_regex: false
+        allow_origin: ['https://blob.dev.local', 'http://blob.dev.local', 'https://angular.dev.local', 'http://angular.dev.local']
+        allow_methods: ['GET', 'OPTIONS', 'POST', 'PUT', 'DELETE', 'PATCH']
+        allow_headers: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin']
+        expose_headers: ['Link']
+        max_age: 3600
+        allow_credentials: true
+    paths:
+        '^/api/':
+            allow_origin: ['https://blob.dev.local', 'http://blob.dev.local', 'https://angular.dev.local', 'http://angular.dev.local']
+            allow_methods: ['GET', 'OPTIONS', 'POST', 'PUT', 'DELETE', 'PATCH']
+            allow_headers: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin']
+            max_age: 3600
+            allow_credentials: true
+

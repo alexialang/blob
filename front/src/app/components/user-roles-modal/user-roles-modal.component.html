@@ -1,0 +1,114 @@
+<div class="modal-overlay" *ngIf="isOpen" (click)="onCancel()">
+  <div class="user-roles-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Gérer les droits utilisateur</h2>
+      <button class="close-btn" (click)="onCancel()">&times;</button>
+      <div class="user-info" *ngIf="user">
+        <strong>{{ user.name }}</strong>
+        <span class="user-email">{{ user.email }}</span>
+      </div>
+    </div>
+
+    <div class="modal-content">
+      <div class="section">
+        <h3>Rôles</h3>
+        <p class="section-description">
+          Les rôles définissent le niveau d'accès général de l'utilisateur.
+        </p>
+
+        <div class="roles-list">
+          <div
+            *ngFor="let role of ['ROLE_USER', 'ROLE_ADMIN']"
+            class="role-item"
+            [class.disabled]="role === 'ROLE_USER'"
+          >
+            <label class="role-label">
+              <input
+                type="checkbox"
+                [ngModel]="isRoleSelected(role)"
+                (ngModelChange)="toggleRole(role)"
+                [disabled]="role === 'ROLE_USER'"
+              />
+              <div class="role-info">
+                <span class="role-name">{{ getRoleLabel(role) }}</span>
+                <span class="role-description">{{ getRoleDescription(role) }}</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div class="role-note" *ngIf="isRoleSelected('ROLE_USER')">
+          <span class="info-icon">ℹ️</span>
+          Le rôle "Utilisateur" est automatiquement attribué à tous les utilisateurs.
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>Permissions spécifiques</h3>
+        <p class="section-description">
+          Les permissions accordent des droits spécifiques sur certaines fonctionnalités.
+        </p>
+
+        <div class="permissions-grid" [class.disabled]="isPermissionDisabled()">
+          <div
+            *ngFor="let permission of availablePermissions"
+            class="permission-item"
+          >
+            <label class="permission-label">
+              <input
+                type="checkbox"
+                [ngModel]="isPermissionSelected(permission)"
+                (ngModelChange)="togglePermission(permission)"
+                [disabled]="isPermissionDisabled()"
+              />
+              <span>{{ getPermissionLabel(permission) }}</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="permission-note" *ngIf="isPermissionDisabled()">
+          <span class="check-icon">✓</span>
+          Les administrateurs ont automatiquement toutes les permissions.
+        </div>
+      </div>
+
+      <div class="section summary-section">
+        <h3>Résumé des droits</h3>
+        <div class="rights-summary">
+          <div class="current-roles">
+            <strong>Rôles :</strong>
+            <span
+              *ngFor="let role of selectedRoles"
+              class="badge"
+              [class.admin-badge]="role === 'ROLE_ADMIN'"
+              [class.user-badge]="role === 'ROLE_USER'"
+            >
+              {{ getRoleLabel(role) }}
+            </span>
+            <span *ngIf="selectedRoles.size === 0" class="no-roles">Aucun rôle sélectionné</span>
+          </div>
+
+          <div class="current-permissions">
+            <strong>Permissions :</strong>
+            <span
+              *ngFor="let permission of selectedPermissions"
+              class="badge permission-badge"
+            >
+              {{ getPermissionLabel(permission) }}
+            </span>
+            <span *ngIf="selectedPermissions.size === 0" class="no-permissions">Aucune permission</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="onCancel()">
+        Annuler
+      </button>
+      <button class="btn btn-primary" (click)="onSave()">
+        Enregistrer les modifications
+      </button>
+    </div>
+  </div>
+</div>

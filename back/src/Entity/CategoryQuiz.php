@@ -14,11 +14,11 @@ class CategoryQuiz
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['quiz:read'])]
+    #[Groups(['quiz:read', 'quiz:create', 'quiz:organized'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 100)]
-    #[Groups(['quiz:read'])]
+    #[Groups(['quiz:read', 'quiz:create', 'quiz:organized'])]
     private ?string $name = null;
 
     /**
@@ -70,7 +70,6 @@ class CategoryQuiz
     public function removeQuiz(Quiz $quiz): static
     {
         if ($this->quizs->removeElement($quiz)) {
-            // set the owning side to null (unless already changed)
             if ($quiz->getCategory() === $this) {
                 $quiz->setCategory(null);
             }

@@ -1,0 +1,200 @@
+.multiple-choice-question-container {
+  position: relative;
+  min-height: 100vh;
+  background: var(--color-light);
+  padding: 0;
+}
+
+.quiz-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 40px;
+
+  .logo img {
+    height: 40px;
+  }
+
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    .username {
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .user-level {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      .level-badge {
+        background: var(--text-primary);
+        color: var(--color-light);
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+      }
+
+      .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--text-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--color-white);
+        font-weight: 600;
+      }
+    }
+  }
+}
+
+.progress-container {
+  padding: 0 40px;
+  margin-bottom: 40px;
+
+  .progress-bar {
+    width: 300px;
+    height: 8px;
+    background: var(--border-light);
+    border-radius: 4px;
+    overflow: hidden;
+
+    .progress-fill {
+      height: 100%;
+      background: var(--text-primary);
+      transition: width 0.3s ease;
+    }
+  }
+}
+
+.question-container {
+  padding: 0 40px;
+  margin-bottom: 60px;
+
+  .question-number {
+    font-size: 16px;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+  }
+
+  .question-text {
+    font-size: 48px;
+    font-weight: 900;
+    color: var(--text-primary);
+    margin: 0 0 16px 0;
+    line-height: 1.2;
+  }
+
+  .question-hint {
+    font-size: 16px;
+    color: var(--text-secondary);
+    margin: 0;
+    font-style: italic;
+  }
+}
+
+.answers-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 0 40px;
+  margin-bottom: 60px;
+  max-width: 800px;
+
+  .answer-option {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    border: 2px solid var(--border-light);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+      border-color: var(--text-primary);
+      background: var(--bg-secondary);
+    }
+
+    &.selected {
+      border-color: var(--text-primary);
+      background: var(--text-primary);
+      color: var(--color-white);
+
+      .answer-checkbox {
+        background: var(--color-white);
+        border-color: var(--color-white);
+
+        .checkbox-mark {
+          color: var(--text-primary);
+        }
+      }
+    }
+  }
+
+  .answer-checkbox {
+    width: 24px;
+    height: 24px;
+    border: 2px solid var(--text-primary);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-white);
+    flex-shrink: 0;
+
+    .checkbox-mark {
+      font-size: 16px;
+      font-weight: bold;
+      color: var(--text-primary);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+
+      &.checked {
+        opacity: 1;
+      }
+    }
+  }
+
+  .answer-content {
+    flex: 1;
+
+    .answer-text {
+      font-size: 18px;
+      font-weight: 500;
+    }
+  }
+}
+
+.validation-container {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 40px;
+
+  .validate-btn {
+    background: var(--color-white);
+    border: 2px solid var(--text-primary);
+    color: var(--text-primary);
+    padding: 12px 32px;
+    border-radius: 30px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover:not(:disabled) {
+      background: var(--text-primary);
+      color: var(--color-white);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+}

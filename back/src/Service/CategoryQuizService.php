@@ -5,13 +5,15 @@ namespace App\Service;
 use App\Entity\CategoryQuiz;
 use App\Repository\CategoryQuizRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
+
 
 class CategoryQuizService
 {
     private EntityManagerInterface $em;
     private CategoryQuizRepository $categoryQuizRepository;
 
-    public function __construct(EntityManagerInterface $em, CategoryQuizRepository $categoryQuizRepository)
+    public function __construct(EntityManagerInterface $em, CategoryQuizRepository $categoryQuizRepository, ValidatorInterface $validator)
     {
         $this->em = $em;
         $this->categoryQuizRepository = $categoryQuizRepository;
@@ -22,36 +24,19 @@ class CategoryQuizService
         return $this->categoryQuizRepository->findAll();
     }
 
+    /**
+     * Trouve une catégorie par son ID
+     * 
+     * @param int $id L'ID de la catégorie
+     * @return CategoryQuiz|null La catégorie trouvée ou null
+     * @throws \InvalidArgumentException Si l'ID est invalide
+     */
     public function find(int $id): ?CategoryQuiz
     {
-        return $this->categoryQuizRepository->find($id);
-    }
-
-    public function create(array $data): CategoryQuiz
-    {
-        $category = new CategoryQuiz();
-        $category->setName($data['name']);
-
-        $this->em->persist($category);
-        $this->em->flush();
-
-        return $category;
-    }
-
-    public function update(CategoryQuiz $category, array $data): CategoryQuiz
-    {
-        if (isset($data['name'])) {
-            $category->setName($data['name']);
+        if ($id <= 0) {
+            throw new \InvalidArgumentException('L\'ID de la catégorie doit être positif');
         }
-
-        $this->em->flush();
-
-        return $category;
-    }
-
-    public function delete(CategoryQuiz $category): void
-    {
-        $this->em->remove($category);
-        $this->em->flush();
+        
+        return $this->categoryQuizRepository->find($id);
     }
 }

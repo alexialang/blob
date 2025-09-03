@@ -1,0 +1,44 @@
+grumphp:
+    tasks:
+        phpunit:
+            config_file: phpunit.xml.dist
+            always_execute: false
+        
+        composer:
+            strict: true
+        
+        git_blacklist:
+            keywords:
+                - "die("
+                - "var_dump("
+                - "print_r("
+                - "dump("
+                - "dd("
+        
+        git_commit_message:
+            allow_empty_message: false
+            type_scope_convention: true
+        
+        git_pre_commit:
+            hooks:
+                - 'phpunit'
+        
+        git_pre_push:
+            hooks:
+                - 'phpunit'
+        
+        custom_task:
+            name: 'test:coverage'
+            command: 'php bin/phpunit --coverage-html var/coverage/html --coverage-clover var/coverage/clover.xml'
+            description: 'Génère un rapport de couverture complet'
+        
+        custom_task:
+            name: 'test:all'
+            command: 'php bin/phpunit --log-junit var/test-reports/junit.xml'
+            description: 'Exécute tous les tests avec rapport XML'
+        
+        custom_task:
+            name: 'clean:cache'
+            command: 'rm -rf var/cache/* var/logs/*'
+            description: 'Nettoie le cache de l\'application'
+

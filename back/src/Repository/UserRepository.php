@@ -19,9 +19,6 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         parent::__construct($registry, User::class);
     }
 
-    /**
-     * Used to upgrade (rehash) the user's password automatically over time.
-     */
     public function upgradePassword(PasswordAuthenticatedUserInterface $user, string $newHashedPassword): void
     {
         if (!$user instanceof User) {
@@ -33,28 +30,114 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $this->getEntityManager()->flush();
     }
 
-    //    /**
-    //     * @return User[] Returns an array of User objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('u')
-    //            ->andWhere('u.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('u.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    public function findActiveUsersForLeaderboard(): array
+    {
+        return $this->createQueryBuilder('u')
+            ->where('u.deletedAt IS NULL')
+            ->andWhere('u.isActive = true')
+            ->getQuery()
+            ->getResult();
+    }
 
-    //    public function findOneBySomeField($value): ?User
-    //    {
-    //        return $this->createQueryBuilder('u')
-    //            ->andWhere('u.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    public function findUserGameHistory(User $user, int $limit = 50): array
+    {
+        return $this->createQueryBuilder('u')
+            ->select('u.id, u.email, u.firstName, u.lastName, u.pseudo')
+            ->where('u.id = :userId')
+            ->setParameter('userId', $user->getId())
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findUsersFromOtherCompanies(int $excludeCompanyId): array
+    {
+        return $this->createQueryBuilder('u')
+            ->leftJoin('u.company', 'c')
+            ->addSelect('c')
+            ->where('u.company IS NOT NULL')
+            ->andWhere('u.company != :excludeCompanyId')
+            ->andWhere('u.deletedAt IS NULL')
+            ->andWhere('u.isActive = true')
+            ->setParameter('excludeCompanyId', $excludeCompanyId)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findAllWithStats(bool $includeDeleted = false, int $page = 1, int $limit = 20, ?string $search = null, string $sort = 'id'): array
+    {
+        $qb = $this->createQueryBuilder('u')
+            ->leftJoin('u.company', 'c')
+            ->leftJoin('u.groups', 'g')
+            ->leftJoin('u.userPermissions', 'up')
+            ->addSelect('c', 'g', 'up');
+
+        if (!$includeDeleted) {
+            $qb->andWhere('u.deletedAt IS NULL');
+        }
+
+        if ($search) {
+            $qb->andWhere('u.email LIKE :search OR u.firstName LIKE :search OR u.lastName LIKE :search')
+              ->setParameter('search', '%' . $search . '%');
+        }
+
+        $validSorts = ['id', 'email', 'firstName', 'lastName', 'dateRegistration'];
+        if (in_array($sort, $validSorts)) {
+            $qb->orderBy('u.' . $sort, 'ASC');
+        } else {
+            $qb->orderBy('u.id', 'ASC');
+        }
+
+        $offset = ($page - 1) * $limit;
+        $qb->setFirstResult($offset)->setMaxResults($limit);
+
+        return $qb->getQuery()->getResult();
+    }
+
+    public function countAllWithStats(bool $includeDeleted = false, ?string $search = null): int
+    {
+        $qb = $this->createQueryBuilder('u')
+            ->select('COUNT(u.id)');
+
+        if (!$includeDeleted) {
+            $qb->andWhere('u.deletedAt IS NULL');
+        }
+
+        if ($search) {
+            $qb->andWhere('u.email LIKE :search OR u.firstName LIKE :search OR u.lastName LIKE :search')
+              ->setParameter('search', '%' . $search . '%');
+        }
+
+        return (int) $qb->getQuery()->getSingleScalarResult();
+    }
+
+    public function findByCompanyWithStats(int $companyId, bool $includeDeleted = false): array
+    {
+        $qb = $this->createQueryBuilder('u')
+            ->leftJoin('u.company', 'c')
+            ->leftJoin('u.groups', 'g')
+            ->leftJoin('u.userPermissions', 'up')
+            ->addSelect('c', 'g', 'up')
+            ->where('u.company = :companyId')
+            ->setParameter('companyId', $companyId);
+
+        if (!$includeDeleted) {
+            $qb->andWhere('u.deletedAt IS NULL');
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
+
+    public function findWithStats(int $userId): ?User
+    {
+        return $this->createQueryBuilder('u')
+            ->leftJoin('u.company', 'c')
+            ->leftJoin('u.groups', 'g')
+            ->leftJoin('u.userPermissions', 'up')
+            ->addSelect('c', 'g', 'up')
+            ->where('u.id = :userId')
+            ->setParameter('userId', $userId)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }

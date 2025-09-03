@@ -1,0 +1,87 @@
+:host {
+  display: inline-block;
+  width: 100%;
+}
+
+.slide-btn {
+  --duration: 0.4s;
+  --angle: 5.7deg;
+  --bg: #fff;
+  --btn-bg: transparent;
+  --border-color: #fff;
+  --white-text: #fff;
+  --black-text: #000;
+
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  background: var(--btn-bg);
+  padding: 0.9rem 2rem;
+  cursor: pointer;
+  transition: all var(--duration) ease;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: -100%;
+    bottom: 0;
+    width: 200%;
+    height: 300%;
+    background: var(--bg);
+    transform: rotate(var(--angle)) translateY(110%);
+    transform-origin: bottom center;
+    transition: transform var(--duration) ease;
+    z-index: 1;
+  }
+
+  .btn-text {
+    &.white {
+      position: relative;
+      z-index: 3;
+      color: var(--white-text);
+      transition: opacity var(--duration) ease;
+    }
+
+    &.black {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, 150%);
+      z-index: 2;
+      color: var(--black-text);
+      transition: transform var(--duration) ease;
+    }
+  }
+
+  &:hover {
+    border-color: #fff;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+
+    &::before {
+      transform: rotate(var(--angle)) translateY(0);
+    }
+
+    .btn-text.black {
+      transform: translate(-50%, -50%);
+    }
+
+    .btn-text.white {
+      opacity: 0;
+    }
+  }
+
+  &.negative {
+    --btn-bg: #fff;
+    --bg: #000;
+    --border-color: #000;
+    --white-text: #000;
+    --black-text: #fff;
+
+    &:hover {
+      border-color: #fff;
+      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5);
+    }
+  }
+}

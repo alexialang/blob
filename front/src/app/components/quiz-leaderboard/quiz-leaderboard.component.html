@@ -1,0 +1,66 @@
+<div class="full-leaderboard-screen">
+  <div class="leaderboard-header">
+    <h1>🏆 Classement Global</h1>
+    <p>{{ quizTitle }}</p>
+    <button class="close-leaderboard" (click)="onClose()">×</button>
+  </div>
+
+  <div class="leaderboard-content">
+    <div class="user-highlight" *ngIf="leaderboard[playerRank - 1]">
+      <div class="highlight-card">
+        <div class="user-rank">#{{ playerRank }}</div>
+        <div class="user-info">
+          <span class="user-name">Vous</span>
+          <span class="user-company">{{ leaderboard[playerRank - 1]?.company }}</span>
+        </div>
+        <div class="user-score">{{ totalScore }} pts</div>
+      </div>
+    </div>
+
+    <div class="leaderboard-list">
+      <div class="leaderboard-item"
+           *ngFor="let player of leaderboard"
+           [class.current-user]="player.isCurrentUser">
+        <div class="rank">
+          <span class="rank-number">#{{ player.rank }}</span>
+          <div class="rank-medal" *ngIf="player.rank <= 3">
+            <span *ngIf="player.rank === 1">🥇</span>
+            <span *ngIf="player.rank === 2">🥈</span>
+            <span *ngIf="player.rank === 3">🥉</span>
+          </div>
+        </div>
+
+        <div class="player-info">
+          <span class="player-name">{{ player.name }}</span>
+          <span class="player-company">{{ player.company }}</span>
+        </div>
+
+        <div class="player-score">{{ player.score }} pts</div>
+      </div>
+    </div>
+
+    <div class="leaderboard-stats">
+      <div class="stat">
+        <span class="stat-label">Total participants</span>
+        <span class="stat-value">{{ totalPlayers }}</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Votre position</span>
+        <span class="stat-value">#{{ playerRank }}</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Votre score</span>
+        <span class="stat-value">{{ totalScore }} pts</span>
+      </div>
+    </div>
+
+    <div class="leaderboard-actions">
+      <button class="action-btn primary" (click)="onReplay()">
+        🔄 Rejouer
+      </button>
+      <button class="action-btn secondary" (click)="onShare()">
+        📤 Partager
+      </button>
+    </div>
+  </div>
+</div>

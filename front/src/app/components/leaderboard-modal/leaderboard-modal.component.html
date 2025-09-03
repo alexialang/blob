@@ -1,0 +1,101 @@
+<div class="modal-overlay" *ngIf="isVisible" (click)="closeModal()" style="background: rgba(0,0,0,0.9); z-index: 999999;">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2 class="modal-title">
+        <i class="icon">🏆</i>
+        Classement - {{ quizTitle }}
+      </h2>
+      <button class="close-btn" (click)="closeModal()">×</button>
+    </div>
+
+    <div class="user-highlight">
+      <div class="highlight-card">
+        <div class="user-rank">
+          {{ playerRank }}{{ getPositionSuffix(playerRank) }}
+        </div>
+        <div class="user-info">
+          <div class="user-name">Votre position</div>
+          <div class="user-score">{{ totalScore }} points</div>
+        </div>
+        <div class="user-total">
+          sur {{ totalPlayers }} joueurs
+        </div>
+      </div>
+    </div>
+
+    <div class="podium-section" *ngIf="leaderboard.length >= 3">
+      <h3 class="section-title">Le Podium</h3>
+      <div class="podium">
+        <div class="podium-player second">
+          <div class="medal">{{ getMedalIcon(2) }}</div>
+          <div class="player-name">{{ leaderboard[1]?.name || 'Joueur 2' }}</div>
+          <div class="player-score">{{ leaderboard[1]?.score || 0 }} pts</div>
+          <div class="player-company">{{ leaderboard[1]?.company || 'Entreprise' }}</div>
+        </div>
+
+        <div class="podium-player first">
+          <div class="medal">{{ getMedalIcon(1) }}</div>
+          <div class="player-name">{{ leaderboard[0]?.name || 'Joueur 1' }}</div>
+          <div class="player-score">{{ leaderboard[0]?.score || 0 }} pts</div>
+          <div class="player-company">{{ leaderboard[0]?.company || 'Entreprise' }}</div>
+        </div>
+
+        <div class="podium-player third">
+          <div class="medal">{{ getMedalIcon(3) }}</div>
+          <div class="player-name">{{ leaderboard[2]?.name || 'Joueur 3' }}</div>
+          <div class="player-score">{{ leaderboard[2]?.score || 0 }} pts</div>
+          <div class="player-company">{{ leaderboard[2]?.company || 'Entreprise' }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ranking-section">
+      <h3 class="section-title">Classement complet</h3>
+      <div class="ranking-list">
+        <div class="ranking-item"
+             *ngFor="let player of leaderboard; let i = index"
+             [class.current-user]="player.isCurrentUser"
+             [class.top-three]="i < 3">
+
+          <div class="rank">
+            <span class="rank-number" *ngIf="i >= 3">{{ i + 1 }}</span>
+            <span class="rank-medal" *ngIf="i < 3">{{ getMedalIcon(i + 1) }}</span>
+          </div>
+
+          <div class="player-info">
+            <div class="player-name">
+              {{ player.name }}
+              <span class="you-indicator" *ngIf="player.isCurrentUser">(Vous)</span>
+            </div>
+            <div class="player-company">{{ player.company }}</div>
+          </div>
+
+          <div class="player-score">
+            {{ player.score }} pts
+          </div>
+
+          <div class="player-level">
+            <span class="level-badge">{{ getPlayerLevel(player.score) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="modal-actions">
+      <app-slide-button
+        label="Partager"
+        [negative]="false"
+        backgroundColor="var(--color-primary)"
+        (buttonClick)="onShare()">
+      </app-slide-button>
+
+      <app-slide-button
+        label="Rejouer"
+        [negative]="true"
+        backgroundColor="var(--color-accent)"
+        (buttonClick)="onReplay()">
+      </app-slide-button>
+    </div>
+  </div>
+</div>

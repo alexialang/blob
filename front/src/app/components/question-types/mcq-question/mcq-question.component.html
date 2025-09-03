@@ -1,0 +1,43 @@
+<div class="mcq-question-container" role="region" [attr.aria-labelledby]="'question-instruction-' + question.id">
+  <div class="answers-container" role="radiogroup" aria-label="Options de réponse pour la question">
+    <div
+      *ngFor="let answer of question.answers; let i = index"
+      class="answer-option"
+      [class.selected]="isSelected(answer.id)"
+      (click)="selectAnswer(answer.id)"
+      (keydown.enter)="selectAnswer(answer.id)"
+      (keydown.space)="selectAnswer(answer.id)"
+      role="radio"
+      [attr.aria-checked]="isSelected(answer.id)"
+      [attr.aria-label]="'Option ' + (i + 1) + ': ' + answer.answer"
+      tabindex="0"
+      appAccessibility>
+      <div class="answer-shape">
+        <img
+          [src]="getFlowerShape(i)"
+          alt="Forme florale décorative pour l'option de réponse {{ i + 1 }}"
+          class="flower-shape flower-{{ i + 1 }}"
+          [class.selected]="isSelected(answer.id)"
+          aria-hidden="true">
+        <span class="answer-text">{{ answer.answer }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="validation-container">
+    <button
+      class="validate-btn"
+      [disabled]="!selectedAnswerId"
+      (click)="validateAnswer()"
+      [attr.aria-label]="selectedAnswerId ? 'Valider la réponse sélectionnée' : 'Sélectionnez une réponse pour valider'"
+      [attr.aria-describedby]="selectedAnswerId ? 'validation-help' : 'validation-help-disabled'">
+      Valider cette réponse
+    </button>
+    <div id="validation-help" class="sr-only" *ngIf="selectedAnswerId">
+      Appuyez sur Entrée ou cliquez pour valider votre réponse
+    </div>
+    <div id="validation-help-disabled" class="sr-only" *ngIf="!selectedAnswerId">
+      Vous devez d'abord sélectionner une réponse
+    </div>
+  </div>
+</div>

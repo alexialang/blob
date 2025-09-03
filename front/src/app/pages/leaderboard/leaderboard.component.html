@@ -1,0 +1,439 @@
+<div class="leaderboard-container">
+  <div class="container">
+
+    <div class="header-section">
+      <div class="header-content">
+
+        <div class="header-text">
+          <h1 class="page-title">Classement Général</h1>
+          <p class="page-subtitle">Découvrez qui dominate le monde des quiz !</p>
+        </div>
+        <button class="refresh-btn" (click)="refreshLeaderboard()" [disabled]="isLoading">
+          <i class="fas fa-sync-alt" [class.fa-spin]="isLoading"></i>
+        </button>
+      </div>
+    </div>
+
+
+    <div class="loading-container" *ngIf="isLoading">
+      <div class="spinner"></div>
+      <p>Chargement du classement...</p>
+    </div>
+
+
+    <div class="error-container" *ngIf="error && !isLoading">
+      <div class="error-card">
+        <i class="fas fa-exclamation-triangle"></i>
+        <h3>Erreur</h3>
+        <p>{{ error }}</p>
+        <button class="btn-retry" (click)="refreshLeaderboard()">Réessayer</button>
+      </div>
+    </div>
+
+
+    <div class="leaderboard-content" *ngIf="leaderboardData && !isLoading">
+
+
+      <div class="podium-section">
+        <div class="podium-card">
+          <h2 class="podium-title">
+            <i class="fas fa-trophy"></i>
+            Le Podium
+          </h2>
+
+          <div class="podium" *ngIf="leaderboardData.leaderboard.length > 0">
+
+          <div class="podium-player second-place" *ngIf="leaderboardData.leaderboard.length >= 2">
+          <div class="player-avatar">
+              <div class="avatar-svg">
+                <svg *ngIf="getUserAvatarShape(leaderboardData.leaderboard[1]) === 'blob_circle'" width="100" height="132" viewBox="0 0 28 37" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <g clip-path="url(#clip0_201_411)">
+                    <path d="M13.202 23.5661C19.1373 23.5661 23.9489 18.908 23.9489 13.1619C23.9489 7.41581 19.1373 2.75769 13.202 2.75769C7.26663 2.75769 2.45508 7.41581 2.45508 13.1619C2.45508 18.908 7.26663 23.5661 13.202 23.5661Z" [attr.fill]="getUserAvatarColor(leaderboardData.leaderboard[1])"/>
+                    <path d="M11.3382 17.9075L9.08687 37H0.0604247C-0.45737 34.3915 2.38161 30.2257 7.46358 32.7555L10.9317 17.9075H11.337H11.3382Z" [attr.fill]="getUserAvatarColor(leaderboardData.leaderboard[1])"/>
+                    <path d="M20.4192 37H11.6736L13.9296 17.9075H14.336L14.0268 32.7555C19.6348 30.1864 21.565 34.4392 20.4192 37Z" [attr.fill]="getUserAvatarColor(leaderboardData.leaderboard[1])"/>
+                    <path d="M9.94247 16.1439C11.5778 16.1439 12.9035 14.8088 12.9035 13.1619C12.9035 11.515 11.5778 10.1799 9.94247 10.1799C8.30714 10.1799 6.98145 11.515 6.98145 13.1619C6.98145 14.8088 8.30714 16.1439 9.94247 16.1439Z" fill="white"/>
+                    <path d="M10.4709 14.0067C11.3321 14.0067 12.0302 13.3037 12.0302 12.4364C12.0302 11.5691 11.3321 10.866 10.4709 10.866C9.60975 10.866 8.91162 11.5691 8.91162 12.4364C8.91162 13.3037 9.60975 14.0067 10.4709 14.0067Z" fill="#0B0C1E"/>
+                    <path d="M16.4605 16.1439C18.0959 16.1439 19.4216 14.8088 19.4216 13.1619C19.4216 11.515 18.0959 10.1799 16.4605 10.1799C14.8252 10.1799 13.4995 11.515 13.4995 13.1619C13.4995 14.8088 14.8252 16.1439 16.4605 16.1439Z" fill="white"/>
+                    <path d="M17.2318 14.2788C18.093 14.2788 18.7911 13.5757 18.7911 12.7084C18.7911 11.8411 18.093 11.1381 17.2318 11.1381C16.3706 11.1381 15.6725 11.8411 15.6725 12.7084C15.6725 13.5757 16.3706 14.2788 17.2318 14.2788Z" fill="#0B0C1E"/>
+                  </g>
+                  <defs>
+                    <clipPath id="clip0_201_411">
+                      <rect width="28" height="37" fill="white"/>
+                    </clipPath>
+                  </defs>
+                </svg>
+                <svg *ngIf="getUserAvatarShape(leaderboardData.leaderboard[1]) === 'blob_flower'" width="100" height="132" viewBox="0 0 27 37" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <g clip-path="url(#clip0_201_397)">
+                    <path d="M22.2229 13.6034L21.0198 13.1284L22.2195 12.6428C23.8351 11.9889 24.596 10.1954 23.9185 8.63575C23.241 7.07614 21.382 6.34227 19.7664 6.99619L18.5667 7.48185L19.0592 6.3196C19.723 4.75521 18.946 2.96648 17.3247 2.32689C15.7034 1.6861 13.8513 2.43547 13.1875 4.00106L12.6951 5.16331L12.1923 4.00583C11.5148 2.44621 9.65584 1.71235 8.04025 2.36626C6.42466 3.02018 5.66371 4.81368 6.34125 6.3733L6.84398 7.53078L5.64086 7.05585C4.01955 6.41506 2.16745 7.16444 1.50362 8.73002C0.839789 10.2944 1.61673 12.0831 3.23804 12.7227L4.44116 13.1977L3.24146 13.6833C1.62587 14.3372 0.864925 16.1307 1.54247 17.6904C2.22001 19.25 4.07897 19.9838 5.69456 19.3299L6.89425 18.8443L6.4018 20.0065C5.73797 21.5709 6.51492 23.3596 8.13622 23.9992C9.75752 24.6388 11.6096 23.8906 12.2735 22.325L12.7659 21.1628L13.2686 22.3203C13.9462 23.8799 15.8051 24.6138 17.4207 23.9598C19.0363 23.3059 19.7973 21.5124 19.1197 19.9528L18.617 18.7953L19.8201 19.2703C21.4414 19.911 23.2935 19.1617 23.9573 17.5961C24.6212 16.0317 23.8442 14.243 22.2229 13.6034Z" [attr.fill]="getUserAvatarColor(leaderboardData.leaderboard[1])"/>
+                    <path d="M10.9332 17.9075L8.76234 37H0.0582667C-0.441035 34.3915 2.29656 30.2257 7.19702 32.7555L10.5413 17.9075H10.9321H10.9332Z" [attr.fill]="getUserAvatarColor(leaderboardData.leaderboard[1])"/>
+                    <path d="M19.6899 37H11.2566L13.432 17.9075H13.8239L13.5257 32.7555C18.9335 30.1864 20.7947 34.4392 19.6899 37Z" [attr.fill]="getUserAvatarColor(leaderboardData.leaderboard[1])"/>
+                    <path d="M9.58721 16.1439C11.1641 16.1439 12.4425 14.8088 12.4425 13.1619C12.4425 11.515 11.1641 10.1799 9.58721 10.1799C8.01028 10.1799 6.73193 11.515 6.73193 13.1619C6.73193 14.8088 8.01028 16.1439 9.58721 16.1439Z" fill="white"/>
+                    <path d="M10.0969 14.0067C10.9273 14.0067 11.6005 13.3037 11.6005 12.4364C11.6005 11.5691 10.9273 10.866 10.0969 10.866C9.26645 10.866 8.59326 11.5691 8.59326 12.4364C8.59326 13.5757 9.26645 14.0067 10.0969 14.0067Z" fill="#0B0C1E"/>
+                    <path d="M15.8724 16.1439C17.4493 16.1439 18.7276 14.8088 18.7276 13.1619C18.7276 11.515 17.4493 10.1799 15.8724 10.1799C14.2954 10.1799 13.0171 11.515 13.0171 13.1619C13.0171 14.8088 14.2954 16.1439 15.8724 16.1439Z" fill="white"/>
+                    <path d="M16.6162 14.2788C17.4466 14.2788 18.1198 13.5757 18.1198 12.7084C18.1198 11.8411 17.4466 11.1381 16.6162 11.1381C15.7857 11.1381 15.1125 11.8411 15.1125 12.7084C15.1125 13.5757 15.7857 14.2788 16.6162 14.2788Z" fill="#0B0C1E"/>
+                  </g>
+                  <defs>
+                    <clipPath id="clip0_201_397">
+                      <rect width="27" height="37" fill="white"/>
+                    </clipPath>
+                  </defs>
+                </svg>
+                <svg *ngIf="getUserAvatarShape(leaderboardData.leaderboard[1]) === 'blob_pic'" width="100" height="132" viewBox="0 0 28 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <g clip-path="url(#clip0_201_383)">
+                    <path d="M26.2701 8.10398C18.2342 9.27545 17.0931 8.12952 19.0494 0.426097C14.3217 6.87213 12.6913 6.76183 8.40318 0C9.59873 7.87409 8.42925 8.99216 0.567543 7.0753C7.14602 11.7078 7.03346 13.3054 0.13269 17.5071C8.16858 16.3357 9.30962 17.4816 7.35338 25.185C12.0811 18.739 13.7115 18.8493 17.9996 25.6111C16.804 17.737 17.9735 16.619 25.8352 18.5358C19.2567 13.9033 19.3693 12.3057 26.2701 8.10398Z" [attr.fill]="getUserAvatarColor(leaderboardData.leaderboard[1])"/>
+                    <path d="M11.3382 17.4235L9.08687 36H0.0604247C-0.45737 33.462 2.29656 29.4088 7.46358 31.8702L10.9317 17.4235H11.337H11.3382Z" [attr.fill]="getUserAvatarColor(leaderboardData.leaderboard[1])"/>
+                    <path d="M20.4191 36H11.6735L13.9295 17.4235H14.3359L14.0266 31.8702C19.6347 29.3705 21.5649 33.5084 20.4191 36Z" [attr.fill]="getUserAvatarColor(leaderboardData.leaderboard[1])"/>
+                    <path d="M9.94235 15.7075C11.5777 15.7075 12.9034 14.4085 12.9034 12.8061C12.9034 11.2037 11.5777 9.90472 9.94235 9.90472C8.30702 9.90472 6.98132 11.2037 6.98132 12.8061C6.98132 14.4085 8.30702 15.7075 9.94235 15.7075Z" fill="white"/>
+                    <path d="M10.4708 13.6282C11.332 13.6282 12.0301 12.9441 12.0301 12.1002C12.0301 11.2564 11.332 10.5723 10.4708 10.5723C9.60963 10.5723 8.9115 11.2564 8.9115 12.1002C8.9115 12.9441 9.60963 13.6282 10.4708 13.6282Z" fill="#0B0C1E"/>
+                    <path d="M16.4604 15.7075C18.0957 15.7075 19.4214 14.4085 19.4214 12.8061C19.4214 11.2037 18.0957 9.90472 16.4604 9.90472C14.8251 9.90472 13.4994 11.2037 13.4994 12.8061C13.4994 14.4085 14.8251 15.7075 16.4604 15.7075Z" fill="white"/>
+                    <path d="M17.2318 13.8929C18.093 13.8929 18.7911 13.2088 18.7911 12.3649C18.7911 11.5211 18.093 10.837 17.2318 10.837C16.3706 10.837 15.6725 11.5211 15.6725 12.3649C15.6725 13.2088 16.3706 13.8929 17.2318 13.8929Z" fill="#0B0C1E"/>
+                  </g>
+                  <defs>
+                    <clipPath id="clip0_201_383">
+                      <rect width="28" height="36" fill="white"/>
+                    </clipPath>
+                  </defs>
+                </svg>
+                <svg *ngIf="getUserAvatarShape(leaderboardData.leaderboard[1]) === 'blob_wave'" width="100" height="132" viewBox="0 0 27 37" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <g clip-path="url(#clip0_201_425)">
+                    <path d="M18.1553 7.49619C18.1553 4.36742 15.7262 1.83051 12.7304 1.83051C9.73462 1.83051 7.30552 4.36742 7.30552 7.49619C4.30971 7.49619 1.88062 10.0331 1.88062 13.1619C1.88062 16.2907 4.30971 18.8276 7.30552 18.8276C7.30552 21.9563 9.73462 24.4933 12.7304 24.4933C15.7262 24.4933 18.1553 21.9563 18.1553 18.8276C21.1511 18.8276 23.5802 16.2907 23.5802 13.1619C23.5802 10.0331 21.1511 7.49619 18.1553 7.49619Z" [attr.fill]="getUserAvatarColor(leaderboardData.leaderboard[1])"/>
+                    <path d="M10.9332 17.9075L8.76234 37H0.0582667C-0.441035 34.3915 2.29656 30.2257 7.19702 32.7555L10.5413 17.9075H10.9321H10.9332Z" [attr.fill]="getUserAvatarColor(leaderboardData.leaderboard[1])"/>
+                    <path d="M19.6899 37H11.2566L13.432 17.9075H13.8239L13.5257 32.7555C18.9335 30.1864 20.7947 34.4392 19.6899 37Z" [attr.fill]="getUserAvatarColor(leaderboardData.leaderboard[1])"/>
+                    <path d="M9.58733 16.1439C11.1643 16.1439 12.4426 14.8088 12.4426 13.1619C12.4426 11.515 11.1643 10.1799 9.58733 10.1799C8.01041 10.1799 6.73206 11.515 6.73206 13.1619C6.73206 14.8088 8.01041 16.1439 9.58733 16.1439Z" fill="white"/>
+                    <path d="M10.0969 14.0067C10.9273 14.0067 11.6005 13.3037 11.6005 12.4364C11.6005 11.5691 10.9273 10.866 10.0969 10.866C9.26645 10.866 8.59326 11.5691 8.59326 12.4364C8.59326 13.5757 9.26645 14.0067 10.0969 14.0067Z" fill="#0B0C1E"/>
+                    <path d="M15.8724 16.1439C17.4493 16.1439 18.7276 14.8088 18.7276 13.1619C18.7276 11.515 17.4493 10.1799 15.8724 10.1799C8.01041 10.1799 6.73206 11.515 6.73206 13.1619C6.73206 14.8088 8.01041 16.1439 15.8724 16.1439Z" fill="white"/>
+                    <path d="M16.6162 14.2788C17.4466 14.2788 18.1198 13.5757 18.1198 12.7084C18.1198 11.8411 17.4466 11.1381 16.6162 11.1381C15.7857 11.1381 15.1125 11.8411 15.1125 12.7084C15.1125 13.5757 15.7857 14.2788 16.6162 14.2788Z" fill="#0B0C1E"/>
+                  </g>
+                  <defs>
+                    <clipPath id="clip0_201_425)">
+                      <rect width="27" height="37" fill="white"/>
+                    </clipPath>
+                  </defs>
+                </svg>
+              </div>
+          <div class="medal silver">
+          <i class="fas fa-medal"></i>
+          <span>2</span>
+          </div>
+          </div>
+          <div class="player-info">
+          <h4>{{ leaderboardData.leaderboard[1].pseudo }}</h4>
+          <p>{{ leaderboardData.leaderboard[1].totalScore }} pts</p>
+          <span class="player-level {{ getPlayerLevelClass(leaderboardData.leaderboard[1].totalScore) }}">
+          {{ getPlayerLevel(leaderboardData.leaderboard[1].totalScore) }}
+          </span>
+          </div>
+          </div>
+
+
+          <div class="podium-player first-place" *ngIf="leaderboardData.leaderboard.length >= 1">
+          <div class="player-avatar">
+              <div class="avatar-svg">
+                <svg *ngIf="getUserAvatarShape(leaderboardData.leaderboard[0]) === 'blob_circle'" width="100" height="132" viewBox="0 0 28 37" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <g clip-path="url(#clip0_201_411)">
+                    <path d="M13.202 23.5661C19.1373 23.5661 23.9489 18.908 23.9489 13.1619C23.9489 7.41581 19.1373 2.75769 13.202 2.75769C7.26663 2.75769 2.45508 7.41581 2.45508 13.1619C2.45508 18.908 7.26663 23.5661 13.202 23.5661Z" [attr.fill]="getUserAvatarColor(leaderboardData.leaderboard[0])"/>
+                    <path d="M11.3382 17.9075L9.08687 37H0.0604247C-0.45737 34.3915 2.38161 30.2257 7.46358 32.7555L10.9317 17.9075H11.337H11.3382Z" [attr.fill]="getUserAvatarColor(leaderboardData.leaderboard[0])"/>
+                    <path d="M20.4192 37H11.6736L13.9296 17.9075H14.336L14.0268 32.7555C19.6348 30.1864 21.565 34.4392 20.4192 37Z" [attr.fill]="getUserAvatarColor(leaderboardData.leaderboard[0])"/>
+                    <path d="M9.94247 16.1439C11.5778 16.1439 12.9035 14.8088 12.9035 13.1619C12.9035 11.515 11.5778 10.1799 9.94247 10.1799C8.30714 10.1799 6.98145 11.515 6.98145 13.1619C6.98145 14.8088 8.30714 16.1439 9.94247 16.1439Z" fill="white"/>
+                    <path d="M10.4709 14.0067C11.3321 14.0067 12.0302 13.3037 12.0302 12.4364C12.0302 11.5691 11.3321 10.866 10.4709 10.866C9.60975 10.866 8.91162 11.5691 8.91162 12.4364C8.91162 13.3037 9.60975 14.0067 10.4709 14.0067Z" fill="#0B0C1E"/>
+                    <path d="M16.4605 16.1439C18.0959 16.1439 19.4216 14.8088 19.4216 13.1619C19.4216 11.515 18.0959 10.1799 16.4605 10.1799C14.8252 10.1799 13.4995 11.515 13.4995 13.1619C13.4995 14.8088 14.8252 16.1439 16.4605 16.1439Z" fill="white"/>
+                    <path d="M17.2318 14.2788C18.093 14.2788 18.7911 13.5757 18.7911 12.7084C18.7911 11.8411 18.093 11.1381 17.2318 11.1381C16.3706 11.1381 15.6725 11.8411 15.6725 12.7084C15.6725 13.5757 16.3706 14.2788 17.2318 14.2788Z" fill="#0B0C1E"/>
+                  </g>
+                  <defs>
+                    <clipPath id="clip0_201_411">
+                      <rect width="28" height="37" fill="white"/>
+                    </clipPath>
+                  </defs>
+                </svg>
+                <svg *ngIf="getUserAvatarShape(leaderboardData.leaderboard[0]) === 'blob_flower'" width="100" height="132" viewBox="0 0 27 37" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <g clip-path="url(#clip0_201_397)">
+                    <path d="M22.2229 13.6034L21.0198 13.1284L22.2195 12.6428C23.8351 11.9889 24.596 10.1954 23.9185 8.63575C23.241 7.07614 21.382 6.34227 19.7664 6.99619L18.5667 7.48185L19.0592 6.3196C19.723 4.75521 18.946 2.96648 17.3247 2.32689C15.7034 1.6861 13.8513 2.43547 13.1875 4.00106L12.6951 5.16331L12.1923 4.00583C11.5148 2.44621 9.65584 1.71235 8.04025 2.36626C6.42466 3.02018 5.66371 4.81368 6.34125 6.3733L6.84398 7.53078L5.64086 7.05585C4.01955 6.41506 2.16745 7.16444 1.50362 8.73002C0.839789 10.2944 1.61673 12.0831 3.23804 12.7227L4.44116 13.1977L3.24146 13.6833C1.62587 14.3372 0.864925 16.1307 1.54247 17.6904C2.22001 19.25 4.07897 19.9838 5.69456 19.3299L6.89425 18.8443L6.4018 20.0065C5.73797 21.5709 6.51492 23.3596 8.13622 23.9992C9.75752 24.6388 11.6096 23.8906 12.2735 22.325L12.7659 21.1628L13.2686 22.3203C13.9462 23.8799 15.8051 24.6138 17.4207 23.9598C19.0363 23.3059 19.7973 21.5124 19.1197 19.9528L18.617 18.7953L19.8201 19.2703C21.4414 19.911 23.2935 19.1617 23.9573 17.5961C24.6212 16.0317 23.8442 14.243 22.2229 13.6034Z" [attr.fill]="getUserAvatarColor(leaderboardData.leaderboard[0])"/>
+                    <path d="M10.9332 17.9075L8.76234 37H0.0582667C-0.441035 34.3915 2.29656 30.2257 7.19702 32.7555L10.5413 17.9075H10.9321H10.9332Z" [attr.fill]="getUserAvatarColor(leaderboardData.leaderboard[0])"/>
+                    <path d="M19.6899 37H11.2566L13.432 17.9075H13.8239L13.5257 32.7555C18.9335 30.1864 20.7947 34.4392 19.6899 37Z" [attr.fill]="getUserAvatarColor(leaderboardData.leaderboard[0])"/>
+                    <path d="M9.58721 16.1439C11.1641 16.1439 12.4425 14.8088 12.4425 13.1619C12.4425 11.515 11.1641 10.1799 9.58721 10.1799C8.01028 10.1799 6.73193 11.515 6.73193 13.1619C6.73193 14.8088 8.01028 16.1439 9.58721 16.1439Z" fill="white"/>
+                    <path d="M10.0969 14.0067C10.9273 14.0067 11.6005 13.3037 11.6005 12.4364C11.6005 11.5691 10.9273 10.866 10.0969 10.866C9.26645 10.866 8.59326 11.5691 8.59326 12.4364C8.59326 13.5757 9.26645 14.0067 10.0969 14.0067Z" fill="#0B0C1E"/>
+                    <path d="M15.8724 16.1439C17.4493 16.1439 18.7276 14.8088 18.7276 13.1619C18.7276 11.515 17.4493 10.1799 15.8724 10.1799C14.2954 10.1799 13.0171 11.515 13.0171 13.1619C13.0171 14.8088 14.2954 16.1439 15.8724 16.1439Z" fill="white"/>
+                    <path d="M16.6162 14.2788C17.4466 14.2788 18.1198 13.5757 18.1198 12.7084C18.1198 11.8411 17.4466 11.1381 16.6162 11.1381C15.7857 11.1381 15.1125 11.8411 15.1125 12.7084C15.1125 13.5757 15.7857 14.2788 16.6162 14.2788Z" fill="#0B0C1E"/>
+                  </g>
+                  <defs>
+                    <clipPath id="clip0_201_397">
+                      <rect width="27" height="37" fill="white"/>
+                    </clipPath>
+                  </defs>
+                </svg>
+                <svg *ngIf="getUserAvatarShape(leaderboardData.leaderboard[0]) === 'blob_pic'" width="100" height="132" viewBox="0 0 28 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <g clip-path="url(#clip0_201_383)">
+                    <path d="M26.2701 8.10398C18.2342 9.27545 17.0931 8.12952 19.0494 0.426097C14.3217 6.87213 12.6913 6.76183 8.40318 0C9.59873 7.87409 8.42925 8.99216 0.567543 7.0753C7.14602 11.7078 7.03346 13.3054 0.13269 17.5071C8.16858 16.3357 9.30962 17.4816 7.35338 25.185C12.0811 18.739 13.7115 18.8493 17.9996 25.6111C16.804 17.737 17.9735 16.619 25.8352 18.5358C19.2567 13.9033 19.3693 12.3057 26.2701 8.10398Z" [attr.fill]="getUserAvatarColor(leaderboardData.leaderboard[0])"/>
+                    <path d="M11.3382 17.4235L9.08687 36H0.0604247C-0.45737 33.462 2.29656 29.4088 7.46358 31.8702L10.9317 17.4235H11.337H11.3382Z" [attr.fill]="getUserAvatarColor(leaderboardData.leaderboard[0])"/>
+                    <path d="M20.4191 36H11.6735L13.9295 17.4235H14.3359L14.0266 31.8702C19.6347 29.3705 21.5649 33.5084 20.4191 36Z" [attr.fill]="getUserAvatarColor(leaderboardData.leaderboard[0])"/>
+                    <path d="M9.94235 15.7075C11.5777 15.7075 12.9034 14.4085 12.9034 12.8061C12.9034 11.2037 11.5777 9.90472 9.94235 9.90472C8.30702 9.90472 6.98132 11.2037 6.98132 12.8061C6.98132 14.4085 8.30702 15.7075 9.94235 15.7075Z" fill="white"/>
+                    <path d="M10.4708 13.6282C11.332 13.6282 12.0301 12.9441 12.0301 12.1002C12.0301 11.2564 11.332 10.5723 10.4708 10.5723C9.60963 10.5723 8.9115 11.2564 8.9115 12.1002C8.9115 12.9441 9.60963 13.6282 10.4708 13.6282Z" fill="#0B0C1E"/>
+                    <path d="M16.4604 15.7075C18.0957 15.7075 19.4214 14.4085 19.4214 12.8061C19.4214 11.2037 18.0957 9.90472 16.4604 9.90472C14.8251 9.90472 13.4994 11.2037 13.4994 12.8061C13.4994 14.4085 14.8251 15.7075 16.4604 15.7075Z" fill="white"/>
+                    <path d="M17.2318 13.8929C18.093 13.8929 18.7911 13.2088 18.7911 12.3649C18.7911 11.5211 18.093 10.837 17.2318 10.837C16.3706 10.837 15.6725 11.5211 15.6725 12.3649C15.6725 13.2088 16.3706 13.8929 17.2318 13.8929Z" fill="#0B0C1E"/>
+                  </g>
+                  <defs>
+                    <clipPath id="clip0_201_383">
+                      <rect width="28" height="36" fill="white"/>
+                    </clipPath>
+                  </defs>
+                </svg>
+                <svg *ngIf="getUserAvatarShape(leaderboardData.leaderboard[0]) === 'blob_wave'" width="100" height="132" viewBox="0 0 27 37" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <g clip-path="url(#clip0_201_425)">
+                    <path d="M18.1553 7.49619C18.1553 4.36742 15.7262 1.83051 12.7304 1.83051C9.73462 1.83051 7.30552 4.36742 7.30552 7.49619C4.30971 7.49619 1.88062 10.0331 1.88062 13.1619C1.88062 16.2907 4.30971 18.8276 7.30552 18.8276C7.30552 21.9563 9.73462 24.4933 12.7304 24.4933C15.7262 24.4933 18.1553 21.9563 18.1553 18.8276C21.1511 18.8276 23.5802 16.2907 23.5802 13.1619C23.5802 10.0331 21.1511 7.49619 18.1553 7.49619Z" [attr.fill]="getUserAvatarColor(leaderboardData.leaderboard[0])"/>
+                    <path d="M10.9332 17.9075L8.76234 37H0.0582667C-0.441035 34.3915 2.29656 30.2257 7.19702 32.7555L10.5413 17.9075H10.9321H10.9332Z" [attr.fill]="getUserAvatarColor(leaderboardData.leaderboard[0])"/>
+                    <path d="M19.6899 37H11.2566L13.432 17.9075H13.8239L13.5257 32.7555C18.9335 30.1864 20.7947 34.4392 19.6899 37Z" [attr.fill]="getUserAvatarColor(leaderboardData.leaderboard[0])"/>
+                    <path d="M9.58733 16.1439C11.1643 16.1439 12.4426 14.8088 12.4426 13.1619C12.4426 11.515 11.1643 10.1799 9.58733 10.1799C8.01041 10.1799 6.73206 11.515 6.73206 13.1619C6.73206 14.8088 8.01041 16.1439 9.58733 16.1439Z" fill="white"/>
+                    <path d="M10.0969 14.0067C10.9273 14.0067 11.6005 13.3037 11.6005 12.4364C11.6005 11.5691 10.9273 10.866 10.0969 10.866C9.26645 10.866 8.59326 11.5691 8.59326 12.4364C8.59326 13.5757 9.26645 14.0067 10.0969 14.0067Z" fill="#0B0C1E"/>
+                    <path d="M15.8724 16.1439C17.4493 16.1439 18.7276 14.8088 18.7276 13.1619C18.7276 11.515 17.4493 10.1799 15.8724 10.1799C8.01041 10.1799 6.73206 11.515 6.73206 13.1619C6.73206 14.8088 8.01041 16.1439 15.8724 16.1439Z" fill="white"/>
+                    <path d="M16.6162 14.2788C17.4466 14.2788 18.1198 13.5757 18.1198 12.7084C18.1198 11.8411 17.4466 11.1381 16.6162 11.1381C15.7857 11.1381 15.1125 11.8411 15.1125 12.7084C15.1125 13.5757 15.7857 14.2788 16.6162 14.2788Z" fill="#0B0C1E"/>
+                  </g>
+                  <defs>
+                    <clipPath id="clip0_201_425)">
+                      <rect width="27" height="37" fill="white"/>
+                    </clipPath>
+                  </defs>
+                </svg>
+              </div>
+          <div class="medal gold">
+          <span>1</span>
+          </div>
+          </div>
+          <div class="player-info">
+          <h4>{{ leaderboardData.leaderboard[0].pseudo }}</h4>
+          <p>{{ leaderboardData.leaderboard[0].totalScore }} pts</p>
+          <span class="player-level {{ getPlayerLevelClass(leaderboardData.leaderboard[0].totalScore) }}">
+          {{ getPlayerLevel(leaderboardData.leaderboard[0].totalScore) }}
+          </span>
+          </div>
+
+          </div>
+
+
+          <div class="podium-player third-place" *ngIf="leaderboardData.leaderboard.length >= 3">
+          <div class="player-avatar">
+              <div class="avatar-svg">
+                <svg *ngIf="getUserAvatarShape(leaderboardData.leaderboard[2]) === 'blob_circle'" width="100" height="132" viewBox="0 0 28 37" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <g clip-path="url(#clip0_201_411)">
+                    <path d="M13.202 23.5661C19.1373 23.5661 23.9489 18.908 23.9489 13.1619C23.9489 7.41581 19.1373 2.75769 13.202 2.75769C7.26663 2.75769 2.45508 7.41581 2.45508 13.1619C2.45508 18.908 7.26663 23.5661 13.202 23.5661Z" [attr.fill]="getUserAvatarColor(leaderboardData.leaderboard[2])"/>
+                    <path d="M11.3382 17.9075L9.08687 37H0.0604247C-0.45737 34.3915 2.38161 30.2257 7.46358 32.7555L10.9317 17.9075H11.337H11.3382Z" [attr.fill]="getUserAvatarColor(leaderboardData.leaderboard[2])"/>
+                    <path d="M20.4192 37H11.6736L13.9296 17.9075H14.336L14.0268 32.7555C19.6348 30.1864 21.565 34.4392 20.4192 37Z" [attr.fill]="getUserAvatarColor(leaderboardData.leaderboard[2])"/>
+                    <path d="M9.94247 16.1439C11.5778 16.1439 12.9035 14.8088 12.9035 13.1619C12.9035 11.515 11.5778 10.1799 9.94247 10.1799C8.30714 10.1799 6.98145 11.515 6.98145 13.1619C6.98145 14.8088 8.30714 16.1439 9.94247 16.1439Z" fill="white"/>
+                    <path d="M10.4709 14.0067C11.3321 14.0067 12.0302 13.3037 12.0302 12.4364C12.0302 11.5691 11.3321 10.866 10.4709 10.866C9.60975 10.866 8.91162 11.5691 8.91162 12.4364C8.91162 13.3037 9.60975 14.0067 10.4709 14.0067Z" fill="#0B0C1E"/>
+                    <path d="M16.4605 16.1439C18.0959 16.1439 19.4216 14.8088 19.4216 13.1619C19.4216 11.515 18.0959 10.1799 16.4605 10.1799C14.8252 10.1799 13.4995 11.515 13.4995 13.1619C13.4995 14.8088 14.8252 16.1439 16.4605 16.1439Z" fill="white"/>
+                    <path d="M17.2318 14.2788C18.093 14.2788 18.7911 13.5757 18.7911 12.7084C18.7911 11.8411 18.093 11.1381 17.2318 11.1381C16.3706 11.1381 15.6725 11.8411 15.6725 12.7084C15.6725 13.5757 16.3706 14.2788 17.2318 14.2788Z" fill="#0B0C1E"/>
+                  </g>
+                  <defs>
+                    <clipPath id="clip0_201_411">
+                      <rect width="28" height="37" fill="white"/>
+                    </clipPath>
+                  </defs>
+                </svg>
+                <svg *ngIf="getUserAvatarShape(leaderboardData.leaderboard[2]) === 'blob_flower'" width="100" height="132" viewBox="0 0 27 37" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <g clip-path="url(#clip0_201_397)">
+                    <path d="M22.2229 13.6034L21.0198 13.1284L22.2195 12.6428C23.8351 11.9889 24.596 10.1954 23.9185 8.63575C23.241 7.07614 21.382 6.34227 19.7664 6.99619L18.5667 7.48185L19.0592 6.3196C19.723 4.75521 18.946 2.96648 17.3247 2.32689C15.7034 1.6861 13.8513 2.43547 13.1875 4.00106L12.6951 5.16331L12.1923 4.00583C11.5148 2.44621 9.65584 1.71235 8.04025 2.36626C6.42466 3.02018 5.66371 4.81368 6.34125 6.3733L6.84398 7.53078L5.64086 7.05585C4.01955 6.41506 2.16745 7.16444 1.50362 8.73002C0.839789 10.2944 1.61673 12.0831 3.23804 12.7227L4.44116 13.1977L3.24146 13.6833C1.62587 14.3372 0.864925 16.1307 1.54247 17.6904C2.22001 19.25 4.07897 19.9838 5.69456 19.3299L6.89425 18.8443L6.4018 20.0065C5.73797 21.5709 6.51492 23.3596 8.13622 23.9992C9.75752 24.6388 11.6096 23.8906 12.2735 22.325L12.7659 21.1628L13.2686 22.3203C13.9462 23.8799 15.8051 24.6138 17.4207 23.9598C19.0363 23.3059 19.7973 21.5124 19.1197 19.9528L18.617 18.7953L19.8201 19.2703C21.4414 19.911 23.2935 19.1617 23.9573 17.5961C24.6212 16.0317 23.8442 14.243 22.2229 13.6034Z" [attr.fill]="getUserAvatarColor(leaderboardData.leaderboard[2])"/>
+                    <path d="M10.9332 17.9075L8.76234 37H0.0582667C-0.441035 34.3915 2.29656 30.2257 7.19702 32.7555L10.5413 17.9075H10.9321H10.9332Z" [attr.fill]="getUserAvatarColor(leaderboardData.leaderboard[2])"/>
+                    <path d="M19.6899 37H11.2566L13.432 17.9075H13.8239L13.5257 32.7555C18.9335 30.1864 20.7947 34.4392 19.6899 37Z" [attr.fill]="getUserAvatarColor(leaderboardData.leaderboard[2])"/>
+                    <path d="M9.58721 16.1439C11.1641 16.1439 12.4425 14.8088 12.4425 13.1619C12.4425 11.515 11.1641 10.1799 9.58721 10.1799C8.01028 10.1799 6.73193 11.515 6.73193 13.1619C6.73193 14.8088 8.01028 16.1439 9.58721 16.1439Z" fill="white"/>
+                    <path d="M10.0969 14.0067C10.9273 14.0067 11.6005 13.3037 11.6005 12.4364C11.6005 11.5691 10.9273 10.866 10.0969 10.866C9.26645 10.866 8.59326 11.5691 8.59326 12.4364C8.59326 13.5757 9.26645 14.0067 10.0969 14.0067Z" fill="#0B0C1E"/>
+                    <path d="M15.8724 16.1439C17.4493 16.1439 18.7276 14.8088 18.7276 13.1619C18.7276 11.515 17.4493 10.1799 15.8724 10.1799C14.2954 10.1799 13.0171 11.515 13.0171 13.1619C13.0171 14.8088 14.2954 16.1439 15.8724 16.1439Z" fill="white"/>
+                    <path d="M16.6162 14.2788C17.4466 14.2788 18.1198 13.5757 18.1198 12.7084C18.1198 11.8411 17.4466 11.1381 16.6162 11.1381C15.7857 11.1381 15.1125 11.8411 15.1125 12.7084C15.1125 13.5757 15.7857 14.2788 16.6162 14.2788Z" fill="#0B0C1E"/>
+                  </g>
+                  <defs>
+                    <clipPath id="clip0_201_397">
+                      <rect width="27" height="37" fill="white"/>
+                    </clipPath>
+                  </defs>
+                </svg>
+                <svg *ngIf="getUserAvatarShape(leaderboardData.leaderboard[2]) === 'blob_pic'" width="100" height="132" viewBox="0 0 28 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <g clip-path="url(#clip0_201_383)">
+                    <path d="M26.2701 8.10398C18.2342 9.27545 17.0931 8.12952 19.0494 0.426097C14.3217 6.87213 12.6913 6.76183 8.40318 0C9.59873 7.87409 8.42925 8.99216 0.567543 7.0753C7.14602 11.7078 7.03346 13.3054 0.13269 17.5071C8.16858 16.3357 9.30962 17.4816 7.35338 25.185C12.0811 18.739 13.7115 18.8493 17.9996 25.6111C16.804 17.737 17.9735 16.619 25.8352 18.5358C19.2567 13.9033 19.3693 12.3057 26.2701 8.10398Z" [attr.fill]="getUserAvatarColor(leaderboardData.leaderboard[2])"/>
+                    <path d="M11.3382 17.4235L9.08687 36H0.0604247C-0.45737 33.462 2.29656 29.4088 7.46358 31.8702L10.9317 17.4235H11.337H11.3382Z" [attr.fill]="getUserAvatarColor(leaderboardData.leaderboard[2])"/>
+                    <path d="M20.4191 36H11.6735L13.9295 17.4235H14.3359L14.0266 31.8702C19.6347 29.3705 21.5649 33.5084 20.4191 36Z" [attr.fill]="getUserAvatarColor(leaderboardData.leaderboard[2])"/>
+                    <path d="M9.94235 15.7075C11.5777 15.7075 12.9034 14.4085 12.9034 12.8061C12.9034 11.2037 11.5777 9.90472 9.94235 9.90472C8.30702 9.90472 6.98132 11.2037 6.98132 12.8061C6.98132 14.4085 8.30702 15.7075 9.94235 15.7075Z" fill="white"/>
+                    <path d="M10.4708 13.6282C11.332 13.6282 12.0301 12.9441 12.0301 12.1002C12.0301 11.2564 11.332 10.5723 10.4708 10.5723C9.60963 10.5723 8.9115 11.2564 8.9115 12.1002C8.9115 12.9441 9.60963 13.6282 10.4708 13.6282Z" fill="#0B0C1E"/>
+                    <path d="M16.4604 15.7075C18.0957 15.7075 19.4214 14.4085 19.4214 12.8061C19.4214 11.2037 18.0957 9.90472 16.4604 9.90472C14.8251 9.90472 13.4994 11.2037 13.4994 12.8061C13.4994 14.4085 14.8251 15.7075 16.4604 15.7075Z" fill="white"/>
+                    <path d="M17.2318 13.8929C18.093 13.8929 18.7911 13.2088 18.7911 12.3649C18.7911 11.5211 18.093 10.837 17.2318 10.837C16.3706 10.837 15.6725 11.5211 15.6725 12.3649C15.6725 13.2088 16.3706 13.8929 17.2318 13.8929Z" fill="#0B0C1E"/>
+                  </g>
+                  <defs>
+                    <clipPath id="clip0_201_383">
+                      <rect width="28" height="36" fill="white"/>
+                    </clipPath>
+                  </defs>
+                </svg>
+                <svg *ngIf="getUserAvatarShape(leaderboardData.leaderboard[2]) === 'blob_wave'" width="100" height="132" viewBox="0 0 27 37" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <g clip-path="url(#clip0_201_425)">
+                    <path d="M18.1553 7.49619C18.1553 4.36742 15.7262 1.83051 12.7304 1.83051C9.73462 1.83051 7.30552 4.36742 7.30552 7.49619C4.30971 7.49619 1.88062 10.0331 1.88062 13.1619C1.88062 16.2907 4.30971 18.8276 7.30552 18.8276C7.30552 21.9563 9.73462 24.4933 12.7304 24.4933C15.7262 24.4933 18.1553 21.9563 18.1553 18.8276C21.1511 18.8276 23.5802 16.2907 23.5802 13.1619C23.5802 10.0331 21.1511 7.49619 18.1553 7.49619Z" [attr.fill]="getUserAvatarColor(leaderboardData.leaderboard[2])"/>
+                    <path d="M10.9332 17.9075L8.76234 37H0.0582667C-0.441035 34.3915 2.29656 30.2257 7.19702 32.7555L10.5413 17.9075H10.9321H10.9332Z" [attr.fill]="getUserAvatarColor(leaderboardData.leaderboard[2])"/>
+                    <path d="M19.6899 37H11.2566L13.432 17.9075H13.8239L13.5257 32.7555C18.9335 30.1864 20.7947 34.4392 19.6899 37Z" [attr.fill]="getUserAvatarColor(leaderboardData.leaderboard[2])"/>
+                    <path d="M9.58733 16.1439C11.1643 16.1439 12.4426 14.8088 12.4426 13.1619C12.4426 11.515 11.1643 10.1799 9.58733 10.1799C8.01041 10.1799 6.73206 11.515 6.73206 13.1619C6.73206 14.8088 8.01041 16.1439 9.58733 16.1439Z" fill="white"/>
+                    <path d="M10.0969 14.0067C10.9273 14.0067 11.6005 13.3037 11.6005 12.4364C11.6005 11.5691 10.9273 10.866 10.0969 10.866C9.26645 10.866 8.59326 11.5691 8.59326 12.4364C8.59326 13.5757 9.26645 14.0067 10.0969 14.0067Z" fill="#0B0C1E"/>
+                    <path d="M15.8724 16.1439C17.4493 16.1439 18.7276 14.8088 18.7276 13.1619C18.7276 11.515 17.4493 10.1799 15.8724 10.1799C8.01041 10.1799 6.73206 11.515 6.73206 13.1619C6.73206 14.8088 8.01041 16.1439 15.8724 16.1439Z" fill="white"/>
+                    <path d="M16.6162 14.2788C17.4466 14.2788 18.1198 13.5757 18.1198 12.7084C18.1198 11.8411 17.4466 11.1381 16.6162 11.1381C15.7857 11.1381 15.1125 11.8411 15.1125 12.7084C15.1125 13.5757 15.7857 14.2788 16.6162 14.2788Z" fill="#0B0C1E"/>
+                  </g>
+                  <defs>
+                    <clipPath id="clip0_201_425)">
+                      <rect width="27" height="37" fill="white"/>
+                    </clipPath>
+                  </defs>
+                </svg>
+              </div>
+          <div class="medal bronze">
+          <i class="fas fa-award"></i>
+          <span>3</span>
+          </div>
+          </div>
+          <div class="player-info">
+          <h4>{{ leaderboardData.leaderboard[2].pseudo }}</h4>
+          <p>{{ leaderboardData.leaderboard[2].totalScore }} pts</p>
+          <span class="player-level {{ getPlayerLevelClass(leaderboardData.leaderboard[2].totalScore) }}">
+          {{ getPlayerLevel(leaderboardData.leaderboard[2].totalScore) }}
+          </span>
+          </div>
+          </div>
+
+
+            <div class="podium-player empty-place second-place" *ngIf="leaderboardData.leaderboard.length < 2">
+              <div class="player-avatar empty">
+                <div class="medal silver">
+                  <i class="fas fa-medal"></i>
+                  <span>2</span>
+                </div>
+              </div>
+              <div class="player-info">
+                <h4>En attente...</h4>
+                <p>0 pts</p>
+              </div>
+            </div>
+
+            <div class="podium-player empty-place third-place" *ngIf="leaderboardData.leaderboard.length < 3">
+              <div class="player-avatar empty">
+                <div class="medal bronze">
+                  <i class="fas fa-award"></i>
+                  <span>3</span>
+                </div>
+              </div>
+              <div class="player-info">
+                <h4>En attente...</h4>
+                <p>0 pts</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="my-position-section" *ngIf="leaderboardData.currentUser">
+        <div class="my-position-card">
+          <div class="card-header">
+            <h3>
+              Ma Position
+            </h3>
+          </div>
+          <div class="position-content">
+            <div class="position-rank">
+              <div class="rank-number">
+                {{ leaderboardData.currentUser.position }}
+                <sup>{{ getPositionSuffix(leaderboardData.currentUser.position) }}</sup>
+              </div>
+              <div class="rank-info">
+                <p>sur {{ leaderboardData.currentUser.totalUsers }} joueurs</p>
+              </div>
+            </div>
+            <div class="position-details">
+              <div class="detail-item">
+                <i class="fas fa-star"></i>
+                <span>{{ leaderboardData.currentUser.data?.totalScore || 0 }} points</span>
+              </div>
+              <div class="detail-item">
+                <i class="fas fa-chart-line"></i>
+                <span>{{ leaderboardData.currentUser.data?.averageScore || 0 }} pts/quiz</span>
+              </div>
+              <div class="detail-item">
+                <i class="fas fa-trophy"></i>
+                <span>{{ leaderboardData.currentUser.data?.badgesCount || 0 }} badges</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="ranking-section">
+        <div class="ranking-card">
+          <div class="card-header">
+            <h3>
+              Classement Complet
+            </h3>
+            <span class="total-count">{{ leaderboardData.meta.totalUsers }} joueurs</span>
+          </div>
+
+          <div class="ranking-list">
+        <div class="ranking-item"
+             *ngFor="let player of leaderboardData.leaderboard; trackBy: trackByPlayerId"
+             [class.current-user]="player.isCurrentUser"
+             [class.top-three]="player.position <= 3">
+
+              <div class="player-rank">
+                <div class="rank-badge" [class]="getMedalClass(player.position)">
+                  <i *ngIf="player.position <= 3" [class]="getMedalIcon(player.position)"></i>
+                  <span *ngIf="player.position > 3">{{ player.position }}</span>
+                </div>
+              </div>
+
+              <div class="player-avatar-small">
+                <img [src]="'assets/avatars/' + getHeadAvatarFromShape(getUserAvatarShape(player)) + '.svg'" [alt]="player.pseudo">
+
+              </div>
+
+              <div class="player-details">
+                <h4 class="player-name">
+                  {{ player.pseudo }}
+                  <span class="you-indicator" *ngIf="player.isCurrentUser">(Vous)</span>
+                </h4>
+                <div class="player-stats">
+                  <span class="stat">
+                    <i class="fas fa-gamepad"></i>
+                    {{ player.quizzesCompleted }} quiz
+                  </span>
+                  <span class="stat">
+                    <i class="fas fa-medal"></i>
+                    {{ player.badgesCount }} badges
+                  </span>
+                </div>
+              </div>
+
+              <div class="player-scores">
+                <div class="total-score">
+                  {{ player.totalScore }}
+                  <span>pts total</span>
+                </div>
+                <div class="average-score">
+                  {{ player.averageScore }}
+                  <span>pts/quiz</span>
+                </div>
+              </div>
+
+              <div class="player-level">
+                <span class="level-badge {{ getPlayerLevelClass(player.totalScore) }}">
+                  {{ getPlayerLevel(player.totalScore) }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="footer-stats">
+        <div class="stat-item">
+          <i class="fas fa-users"></i>
+          <span>{{ leaderboardData.meta.totalUsers }} joueurs actifs</span>
+        </div>
+        <div class="stat-item">
+          <i class="fas fa-clock"></i>
+          <span>Mis à jour le {{ leaderboardData.meta.generatedAt | date:'dd/MM/yyyy à HH:mm' }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

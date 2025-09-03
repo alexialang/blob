@@ -1,0 +1,232 @@
+<div class="quiz-page">
+
+<div class="container">
+  <h1 class="page-title">Gestion <br /> des <span class="quiz-highlight" [ngStyle]="{ 'color': highlightColor }">Quiz</span></h1>
+
+  <div class="filters-container">
+    <div class="search-row">
+      <select
+        class="form-control page-size-select"
+        [(ngModel)]="pageSize"
+        (ngModelChange)="onPageSizeChange($event)"
+      >
+        <option [value]="10">10 par page</option>
+        <option [value]="20">20 par page</option>
+        <option [value]="50">50 par page</option>
+        <option [value]="100">100 par page</option>
+      </select>
+
+      <input
+        type="text"
+        class="form-control search-input"
+        placeholder="Rechercher par titre, créateur..."
+        [(ngModel)]="searchTerm"
+        (ngModelChange)="onSearchChange($event)"
+      />
+    </div>
+
+    <div class="action-buttons-wrapper">
+      <button tuiButton appearance="primary" (click)="onCreateQuiz()" class="action-btn">
+        <tui-icon icon="@tui.plus" class="btn-icon"></tui-icon>
+        Créer un quiz
+      </button>
+      <button tuiButton appearance="secondary" (click)="exportQuizzes()" 
+              class="action-btn" 
+              [class.export-selected]="hasSelection"
+              [tuiHint]="getExportTooltip()" 
+              tuiHintDirection="bottom">
+        <tui-icon icon="@tui.download" class="btn-icon"></tui-icon>
+        {{ getExportButtonText() }}
+      </button>
+      <button tuiButton appearance="secondary" (click)="showImportDialog()" class="action-btn">
+        <tui-icon icon="@tui.upload" class="btn-icon"></tui-icon>
+        Importer JSON
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Chargement des quiz...</p>
+  </div>
+
+  <div *ngIf="loadError && !isLoading" class="error-container">
+    <p class="error-message">Erreur lors du chargement des quiz</p>
+    <button (click)="loadQuizzes()" class="retry-button">Réessayer</button>
+  </div>
+
+  <div *ngIf="!isLoading && !loadError && dataReady && rows.length > 0">
+    <div class="table-scroll-wrapper">
+    <table tuiTable class="custom-table table-striped">
+      <thead>
+      <tr>
+        <th tuiTh class="th-checkbox">
+          <input
+            type="checkbox"
+            tuiCheckbox
+            [ngModel]="allSelected"
+            (ngModelChange)="toggleAll($event); onQuizSelectionChange()"
+          />
+        </th>
+        <th tuiTh class="th-quiz">
+          Quiz
+        </th>
+        <th tuiTh class="th-creator">Créateur</th>
+        <th tuiTh class="th-groups">Groupes</th>
+        <th tuiTh class="th-category">
+          Catégorie
+        </th>
+        <th tuiTh>Public</th>
+        <th tuiTh>Statut</th>
+        <th tuiTh class="th-action">
+          Action
+          <button
+            tuiButton
+            appearance="action"
+            size="xs"
+            iconStart="@tui.trash"
+            tuiIconButton
+            (click)="deleteSelected()"
+            [disabled]="!hasSelection"
+            class="btn-delete-all"
+          ></button>
+        </th>
+      </tr>
+      </thead>
+
+      <tbody tuiTbody>
+      <tr *ngFor="let row of rows" class="table-row">
+        <td tuiTd>
+          <input type="checkbox" tuiCheckbox [(ngModel)]="row.selected" (ngModelChange)="onQuizSelectionChange()" />
+        </td>
+        <td tuiTd class="td-quiz">
+          <div [tuiCell]="size" class="d-flex align-center gap-2 quiz-cell">
+            <tui-avatar [size]="size">{{ row.title.charAt(0) }}</tui-avatar>
+            <div class="quiz-info">
+              <div class="quiz-title" [title]="row.title">{{ row.title }}</div>
+              <div class="quiz-description" *ngIf="row.description" [title]="row.description">
+                {{ row.description }}
+              </div>
+            </div>
+          </div>
+        </td>
+        <td tuiTd class="td-creator">{{ row.createdBy }}</td>
+        <td tuiTd class="td-groups">
+          <div class="groups-container">
+            <tui-chip
+              *ngFor="let group of getVisibleGroups(row.groups)"
+              [size]="'s'"
+              class="group-chip"
+            >
+              {{ group.name }}
+            </tui-chip>
+            <tui-chip
+              *ngIf="getRemainingGroupsCount(row.groups) > 0"
+              [size]="'s'"
+              class="group-chip group-chip-more"
+              [tuiHint]="getGroupsTooltip(row.groups)"
+              tuiHintDirection="top"
+            >
+              +{{ getRemainingGroupsCount(row.groups) }}
+            </tui-chip>
+          </div>
+        </td>
+        <td tuiTd class="td-category">{{ row.category || '—' }}</td>
+        <td tuiTd class="td-public">{{ row.isPublic ? 'Oui' : 'Non' }}</td>
+        <td tuiTd class="td-status">{{ row.status }}</td>
+        <td tuiTd class="td-action">
+          <div class="action-buttons">
+            <button
+              tuiButton
+              appearance="action"
+              size="xs"
+              iconStart="@tui.pencil"
+              tuiIconButton
+              class="btn-edit"
+              (click)="editQuiz(row.id)"
+              title="Modifier">
+            </button>
+            <button
+              tuiButton
+              appearance="action"
+              size="xs"
+              iconStart="@tui.trash"
+              tuiIconButton
+              class="btn-delete-single"
+              (click)="deleteSingle(row.id)"
+              title="Supprimer">
+            </button>
+          </div>
+        </td>
+      </tr>
+      <tr *ngIf="rows.length === 0">
+        <td tuiTd colspan="8" class="no-data">Aucun quiz trouvé.</td>
+      </tr>
+      </tbody>
+    </table>
+    </div>
+
+    <!-- Informations de pagination -->
+    <div class="pagination-info" *ngIf="totalItems > 0">
+      <p>Affichage de {{ startItem }} à {{ endItem }} sur {{ totalItems }} quiz</p>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination-container" *ngIf="totalPages > 1">
+      <app-pagination
+        [totalItems]="totalItems"
+        [pageSize]="pageSize"
+        [page]="page"
+        [activePadding]="2"
+        (pageChange)="onPageChange($event)"
+      ></app-pagination>
+    </div>
+  </div>
+
+  <div *ngIf="!isLoading && !loadError && dataReady && rows.length === 0" class="no-data-container">
+    <p>Aucun quiz trouvé.</p>
+  </div>
+
+</div>
+
+<div *ngIf="showImportModal" class="modal-overlay">
+  <div class="modal-container">
+    <div class="modal-content">
+      <div class="modal-header">
+        <tui-icon icon="@tui.upload" class="modal-icon"></tui-icon>
+        <h3>Importer des quiz</h3>
+      </div>
+      <div class="modal-body">
+        <p class="modal-description">
+          <tui-icon icon="@tui.info" class="info-icon"></tui-icon>
+          Format JSON attendu : <strong>Fichier d'export de quiz</strong>
+        </p>
+        <div class="file-input-wrapper">
+          <input 
+            type="file" 
+            accept=".json"
+            (change)="onFileSelected($event)"
+            id="jsonFile"
+            class="file-input" />
+          <label for="jsonFile" class="file-input-label">
+            <tui-icon icon="@tui.upload-cloud" class="upload-icon"></tui-icon>
+            <span *ngIf="!selectedFile" class="file-text">Choisir un fichier JSON</span>
+            <span *ngIf="selectedFile" class="file-text selected">{{ selectedFile.name }}</span>
+          </label>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button tuiButton appearance="secondary" (click)="onImportCancelled()" class="action-btn">
+          <tui-icon icon="@tui.x" class="btn-icon"></tui-icon>
+          Annuler
+        </button>
+        <button tuiButton appearance="primary" [disabled]="!selectedFile" (click)="importQuizFile()" class="action-btn">
+          <tui-icon icon="@tui.upload" class="btn-icon"></tui-icon>
+          Importer
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>

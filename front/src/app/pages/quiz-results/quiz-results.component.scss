@@ -1,0 +1,359 @@
+.quiz-results-page {
+  background: var(--color-light);
+  min-height: 100vh;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+}
+
+.results-header {
+  background: var(--color-light);
+  padding: 40px 80px 20px 80px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+
+  .page-title {
+    font-size: 4em;
+    margin: 0;
+    color: var(--color-dark);
+    font-family: var(--font-display);
+    font-weight: 900;
+  }
+}
+
+.results-content {
+  padding: 40px 80px 120px 80px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.score-section {
+  background: var(--color-white);
+  border-radius: 24px;
+  padding: 48px;
+  margin-bottom: 32px;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+
+  .quiz-info {
+    margin-bottom: 40px;
+
+    .quiz-title {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--color-dark);
+      margin: 0 0 8px 0;
+      font-family: var(--font-display);
+    }
+
+    .quiz-completion {
+      font-size: 18px;
+      color: var(--text-secondary);
+      margin: 0;
+    }
+  }
+
+  .main-score {
+    margin-bottom: 40px;
+
+    .score-circle {
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto;
+      color: white;
+      position: relative;
+      box-shadow: 0 8px 32px rgba(37, 125, 84, 0.3);
+
+      .score-value {
+        font-size: 48px;
+        font-weight: 900;
+        line-height: 1;
+      }
+
+      .score-total {
+        font-size: 20px;
+        opacity: 0.9;
+        margin-bottom: 4px;
+      }
+
+      .score-percentage {
+        font-size: 16px;
+        opacity: 0.8;
+        background: rgba(255, 255, 255, 0.2);
+        padding: 4px 12px;
+        border-radius: 12px;
+      }
+    }
+  }
+
+  .score-details {
+    display: flex;
+    justify-content: center;
+    gap: 48px;
+
+    .detail-item {
+      text-align: center;
+
+      .label {
+        display: block;
+        font-size: 14px;
+        color: var(--text-secondary);
+        margin-bottom: 8px;
+        font-weight: 500;
+      }
+
+      .value {
+        display: block;
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--color-dark);
+
+        &.level {
+          color: var(--color-primary);
+        }
+      }
+    }
+  }
+}
+
+.ranking-section {
+  background: var(--color-white);
+  border-radius: 24px;
+  padding: 32px;
+  margin-bottom: 32px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+
+  .ranking-header {
+    text-align: center;
+    margin-bottom: 32px;
+
+    h3 {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--color-dark);
+      margin: 0 0 16px 0;
+      font-family: var(--font-display);
+    }
+
+    .rank-display {
+      display: flex;
+      align-items: baseline;
+      justify-content: center;
+      gap: 4px;
+
+      .rank-number {
+        font-size: 64px;
+        font-weight: 900;
+        color: var(--color-primary);
+        line-height: 1;
+      }
+
+      .rank-suffix {
+        font-size: 24px;
+        color: var(--color-primary);
+        font-weight: 600;
+      }
+
+      .rank-total {
+        font-size: 18px;
+        color: var(--text-secondary);
+        margin-left: 8px;
+      }
+    }
+  }
+
+  .top-players {
+    h4 {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--color-dark);
+      margin: 0 0 20px 0;
+      text-align: center;
+    }
+
+    .podium-mini {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+
+      .podium-player {
+        display: flex;
+        align-items: center;
+        padding: 16px 20px;
+        background: var(--bg-secondary);
+        border-radius: 16px;
+        transition: all 0.3s ease;
+        position: relative;
+
+        &:hover {
+          transform: translateX(8px);
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .player-position {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          min-width: 60px;
+
+          .medal {
+            font-size: 24px;
+          }
+
+          .position {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--color-dark);
+          }
+        }
+
+        .player-info {
+          flex: 1;
+          margin-left: 20px;
+
+          .player-name {
+            display: block;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--color-dark);
+            margin-bottom: 4px;
+          }
+
+          .player-score {
+            font-size: 14px;
+            color: var(--text-secondary);
+          }
+        }
+
+        .current-indicator {
+          background: var(--color-primary);
+          color: white;
+          padding: 4px 12px;
+          border-radius: 12px;
+          font-size: 12px;
+          font-weight: 600;
+        }
+      }
+    }
+  }
+}
+
+.actions-section {
+  .primary-actions {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 32px;
+    justify-content: center;
+  }
+
+  .secondary-actions {
+    display: flex;
+    gap: 32px;
+    justify-content: center;
+
+    .link-btn {
+      background: none;
+      border: none;
+      color: var(--color-primary);
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: underline;
+      transition: all 0.3s ease;
+
+      &:hover {
+        color: var(--color-accent);
+        transform: translateY(-2px);
+      }
+    }
+  }
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  gap: 20px;
+
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--color-light);
+    border-top: 4px solid var(--color-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  p {
+    font-size: 18px;
+    color: var(--text-secondary);
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .results-header {
+    padding: 20px 40px 20px 40px;
+
+    .page-title {
+      font-size: 2.5em;
+    }
+  }
+
+  .results-content {
+    padding: 20px 20px 80px 20px;
+  }
+
+  .score-section {
+    padding: 32px 24px;
+
+    .main-score .score-circle {
+      width: 160px;
+      height: 160px;
+
+      .score-value {
+        font-size: 36px;
+      }
+    }
+
+    .score-details {
+      flex-direction: column;
+      gap: 24px;
+    }
+  }
+
+  .ranking-section {
+    padding: 24px 20px;
+
+    .ranking-header .rank-display .rank-number {
+      font-size: 48px;
+    }
+  }
+
+  .actions-section {
+    .primary-actions {
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .secondary-actions {
+      flex-direction: column;
+      gap: 20px;
+    }
+  }
+}

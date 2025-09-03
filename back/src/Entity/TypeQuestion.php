@@ -14,11 +14,11 @@ class TypeQuestion
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['question:read'])]
+    #[Groups(['question:read', 'quiz:read', 'quiz:create', 'type_question:list'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['question:read'])]
+    #[Groups(['question:read', 'quiz:read', 'quiz:create', 'type_question:list'])]
     private ?string $name = null;
 
     /**
@@ -70,7 +70,6 @@ class TypeQuestion
     public function removeQuestion(Question $question): static
     {
         if ($this->questions->removeElement($question)) {
-            // set the owning side to null (unless already changed)
             if ($question->getTypeQuestion() === $this) {
                 $question->setTypeQuestion(null);
             }
