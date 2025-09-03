@@ -219,26 +219,47 @@ class QuizController extends AbstractController
     #[IsGranted('CREATE_QUIZ', subject: 'quiz')]
     public function update(Request $request, Quiz $quiz): JsonResponse
     {
+        $user = $this->getUser();
+        $this->logger->info('DEBUG Quiz Update', [
+            'user_id' => $user ? $user->getId() : 'null',
+            'user_email' => $user ? $user->getEmail() : 'null',
+            'quiz_id' => $quiz->getId(),
+            'quiz_user_id' => $quiz->getUser() ? $quiz->getUser()->getId() : 'null',
+            'quiz_company_id' => $quiz->getCompany() ? $quiz->getCompany()->getId() : 'null',
+            'user_company_id' => $user && $user->getCompany() ? $user->getCompany()->getId() : 'null',
+            'user_is_admin' => $user ? $user->isAdmin() : false,
+            'user_permissions' => $user ? $user->getUserPermissions()->map(fn($p) => $p->getPermission())->toArray() : []
+        ]);
         try {
             $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
             
+            $this->logger->info('DEBUG Quiz Update Data', [
+                'data_received' => $data,
+                'data_keys' => array_keys($data)
+            ]);
+            
             if (isset($data['title']) && empty(trim($data['title']))) {
+                $this->logger->warning('DEBUG: Title is empty');
                 return $this->json(['error' => 'Le titre ne peut pas être vide'], 400);
             }
             
             if (isset($data['description']) && empty(trim($data['description']))) {
+                $this->logger->warning('DEBUG: Description is empty');
                 return $this->json(['error' => 'La description ne peut pas être vide'], 400);
             }
             
             if (isset($data['category_id']) && (!is_numeric($data['category_id']) || $data['category_id'] <= 0)) {
+                $this->logger->warning('DEBUG: Invalid category_id', ['category_id' => $data['category_id']]);
                 return $this->json(['error' => 'L\'ID de catégorie doit être un nombre positif'], 400);
             }
             
             if (isset($data['questions']) && (!is_array($data['questions']) || empty($data['questions']))) {
+                $this->logger->warning('DEBUG: Invalid questions', ['questions' => $data['questions']]);
                 return $this->json(['error' => 'Les questions doivent être un tableau non vide'], 400);
             }
             
         } catch (\JsonException $e) {
+            $this->logger->error('DEBUG: JSON Exception', ['error' => $e->getMessage()]);
             return $this->json(['error' => 'Invalid JSON'], 400);
         }
 
@@ -246,7 +267,7 @@ class QuizController extends AbstractController
             $user = $this->getUser();
             $quiz = $this->quizCrudService->updateWithQuestions($quiz, $data, $user);
 
-            return $this->json($quiz, 200, [], ['groups' => ['quiz:read']]);
+            return $this->json($quiz, 200, [], ['groups' => ['quiz:read', 'quiz:create']]);
         } catch (\Exception $e) {
             return $this->json([
                 'error' => 'Erreur lors de la mise à jour du quiz',

@@ -46,7 +46,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups(['user:read', 'user:admin_read'])]
     private ?Company $company = null;
 
-    #[Groups(['user:read','user:admin_read'])]
+    #[Groups(['user:read','user:admin_read','user:profile'])]
     #[ORM\ManyToMany(targetEntity: Badge::class, inversedBy: 'users')]
     private Collection $badges;
 

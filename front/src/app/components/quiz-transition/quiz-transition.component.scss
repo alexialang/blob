@@ -34,9 +34,9 @@
   padding: clamp(2rem, 8vw, 6rem) clamp(1rem, 5vw, 4rem) 2rem;
   width: 100%;
   max-width: 1200px;
-  max-height: 50%;
-  height: clamp(300px, 40vh, 500px);
-  overflow: hidden;
+  max-height: 60%;
+  height: clamp(300px, 50vh, 600px);
+  overflow: visible;
   text-align: start;
   display: flex;
   flex-direction: column;
@@ -102,7 +102,7 @@
 
 .transition-title {
   font-size: clamp(2rem, 8vw, 5rem);
-  font-weight: 900;
+  font-weight: 200;
   color: white;
   margin: 0 0 clamp(0.5rem, 2vw, 1rem);
   line-height: 1.1;

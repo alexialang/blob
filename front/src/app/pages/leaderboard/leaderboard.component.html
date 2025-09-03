@@ -326,7 +326,6 @@
         <div class="my-position-card">
           <div class="card-header">
             <h3>
-              <i class="fas fa-user"></i>
               Ma Position
             </h3>
           </div>
@@ -363,7 +362,6 @@
         <div class="ranking-card">
           <div class="card-header">
             <h3>
-              <i class="fas fa-list-ol"></i>
               Classement Complet
             </h3>
             <span class="total-count">{{ leaderboardData.meta.totalUsers }} joueurs</span>
@@ -383,7 +381,7 @@
               </div>
 
               <div class="player-avatar-small">
-                <img [src]="'assets/avatars/' + player.avatar + '.svg'" [alt]="player.pseudo">
+                <img [src]="'assets/avatars/' + getHeadAvatarFromShape(getUserAvatarShape(player)) + '.svg'" [alt]="player.pseudo">
 
               </div>
 

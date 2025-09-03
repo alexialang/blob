@@ -117,6 +117,13 @@ export class CompanyDetailsComponent implements OnInit, OnDestroy {
     this.loadCompanyFull(companyId);
   }
 
+  refreshCompanyData(): void {
+    const companyId = Number(this.route.snapshot.paramMap.get('id'));
+    if (companyId) {
+      this.loadCompany(companyId);
+    }
+  }
+
   private loadCompanyFull(companyId: number): void {
     this.companyService.getCompany(companyId)
       .pipe(

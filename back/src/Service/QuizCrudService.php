@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Entity\Quiz;
+use App\Entity\QuizRating;
 use App\Entity\User;
 use App\Entity\Question;
 use App\Entity\Answer;
@@ -122,6 +123,15 @@ class QuizCrudService
         $this->em->beginTransaction();
         
         try {
+            foreach ($quiz->getUserAnswers() as $userAnswer) {
+                $this->em->remove($userAnswer);
+            }
+            
+            $quizRatings = $this->em->getRepository(QuizRating::class)->findBy(['quiz' => $quiz]);
+            foreach ($quizRatings as $rating) {
+                $this->em->remove($rating);
+            }
+            
             foreach ($quiz->getQuestions() as $question) {
                 foreach ($question->getAnswers() as $answer) {
                     $this->em->remove($answer);
@@ -263,7 +273,14 @@ class QuizCrudService
         }
 
         if (isset($data['questions']) && is_array($data['questions'])) {
-            $this->updateQuizQuestions($quiz, $data['questions']);
+            $this->logger->info('DEBUG: Updating questions', ['questions_count' => count($data['questions'])]);
+            try {
+                $this->updateQuizQuestions($quiz, $data['questions']);
+                $this->logger->info('DEBUG: Questions updated successfully');
+            } catch (\Exception $e) {
+                $this->logger->error('DEBUG: Error updating questions', ['error' => $e->getMessage()]);
+                throw $e;
+            }
         }
 
         $this->em->flush();

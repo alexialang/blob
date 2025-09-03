@@ -15,15 +15,15 @@ class Badge
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['badge:read', 'user:read'])]
+    #[Groups(['badge:read', 'user:read', 'user:profile'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 100)]
-    #[Groups(['badge:read', 'badge:create', 'user:read'])]
+    #[Groups(['badge:read', 'badge:create', 'user:read', 'user:profile'])]
     private ?string $name = null;
 
     #[ORM\Column(type: Types::TEXT)]
-    #[Groups(['badge:read', 'badge:create'])]
+    #[Groups(['badge:read', 'badge:create', 'user:profile'])]
     private ?string $description = null;
 
     /**
@@ -33,6 +33,7 @@ class Badge
     private Collection $users;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['badge:read', 'badge:create', 'user:read', 'user:profile'])]
     private ?string $image = null;
 
     public function __construct()

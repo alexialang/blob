@@ -31,7 +31,6 @@
       (click)="validateAnswer()"
       [attr.aria-label]="selectedAnswerId ? 'Valider la réponse sélectionnée' : 'Sélectionnez une réponse pour valider'"
       [attr.aria-describedby]="selectedAnswerId ? 'validation-help' : 'validation-help-disabled'">
-      <span class="btn-icon" aria-hidden="true">✓</span>
       Valider cette réponse
     </button>
     <div id="validation-help" class="sr-only" *ngIf="selectedAnswerId">

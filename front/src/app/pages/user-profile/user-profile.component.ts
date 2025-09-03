@@ -126,9 +126,9 @@ export class UserProfileComponent implements OnInit {
   loadUserStatistics() {
     this.isLoadingStatistics = true;
     this.userStatistics = null; // Reset des statistiques pendant le chargement
-    
+
     console.log('Chargement des statistiques - isOwnProfile:', this.isOwnProfile, 'targetUserId:', this.targetUserId);
-    
+
     if (this.isOwnProfile) {
       this.userService.getUserStatistics().subscribe({
         next: (stats) => {
@@ -168,10 +168,11 @@ export class UserProfileComponent implements OnInit {
 
   loadAllBadges() {
     this.allBadges = [
-      { id: 1, name: 'Premier Quiz', description: 'Complétez votre premier quiz', image: 'badge-first-quiz.svg' },
-      { id: 2, name: 'Expert', description: 'Réussissez 10 quiz avec 80% de réussite', image: 'badge-expert.svg' },
-      { id: 3, name: 'Créateur', description: 'Créez votre premier quiz', image: 'badge-creator.svg' },
-      { id: 4, name: 'Social', description: 'Rejoignez un groupe', image: 'badge-social.svg' }
+      { id: 1, name: 'Premier Quiz', description: 'Félicitations ! Vous avez créé votre premier quiz.', image: 'badge-first-quiz.svg' },
+      { id: 2, name: 'Quiz Master', description: 'Impressionnant ! Vous avez créé 10 quiz.', image: 'badge-creator.svg' },
+      { id: 3, name: 'Première Victoire', description: 'Bravo ! Vous avez terminé votre premier quiz.', image: 'badge-first-quiz.svg' },
+      { id: 4, name: 'Expert', description: 'Parfait ! Vous avez obtenu un score de 100%.', image: 'badge-expert.svg' },
+      { id: 5, name: 'Joueur Assidu', description: 'Incroyable ! Vous avez joué 50 quiz.', image: 'badge-expert.svg' }
     ];
   }
 
@@ -213,8 +214,19 @@ export class UserProfileComponent implements OnInit {
   }
 
   getAvailableBadges(): Badge[] {
-    const userBadgeIds = this.getUserBadges().map((badge: Badge) => badge.id);
-    return this.allBadges.filter((badge: Badge) => !userBadgeIds.includes(badge.id));
+    if (!this.allBadges || this.allBadges.length === 0) {
+      this.loadAllBadges();
+    }
+
+    const userBadges = this.getUserBadges();
+    const userBadgeNames = userBadges.map((badge: Badge) => badge.name);
+    const userBadgeIds = userBadges.map((badge: Badge) => badge.id);
+
+    const availableBadges = this.allBadges.filter((badge: Badge) =>
+      !userBadgeNames.includes(badge.name) && !userBadgeIds.includes(badge.id)
+    );
+
+    return availableBadges;
   }
 
   getDisplayName(): string {
@@ -228,5 +240,44 @@ export class UserProfileComponent implements OnInit {
 
   getUserAvatarColor(): string {
     return this.user?.avatarColor || '#257D54';
+  }
+
+  getBadgeImagePath(badge: Badge): string {
+    if (badge.image) {
+      let imagePath = badge.image;
+      if (imagePath.endsWith('.png')) {
+        imagePath = imagePath.replace('.png', '.svg');
+      }
+
+      return 'assets/badges/' + imagePath;
+    }
+
+    const matchingBadge = this.allBadges.find(b => b.name === badge.name);
+
+    if (matchingBadge && matchingBadge.image) {
+      let imagePath = matchingBadge.image;
+      if (imagePath.endsWith('.png')) {
+        imagePath = imagePath.replace('.png', '.svg');
+      }
+      return 'assets/badges/' + imagePath;
+    }
+
+    const badgeNameMapping: {[key: string]: string} = {
+      'Premier Quiz': 'badge-first-quiz.svg',
+      'Quiz Master': 'badge-expert.svg',
+      'Première Victoire': 'badge-first-quiz.svg',
+      'Créateur': 'badge-creator.svg',
+      'Social': 'badge-social.svg'
+    };
+
+    const defaultImage = badgeNameMapping[badge.name] || 'badge-first-quiz.svg';
+    return 'assets/badges/' + defaultImage;
+  }
+
+  onBadgeImageError(event: Event): void {
+    const target = event.target as HTMLImageElement;
+    if (target) {
+      target.src = 'assets/badges/badge-first-quiz.svg';
+    }
   }
 }

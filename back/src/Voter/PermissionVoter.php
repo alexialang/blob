@@ -27,11 +27,12 @@ class PermissionVoter extends Voter
     {
         try {
             $authUser = $token->getUser();
+            
             if (!$authUser instanceof User) {
                 return false;
             }
 
-            if ($authUser->isAdmin()) {
+                        if ($authUser->isAdmin()) {
                 return true;
             }
 
@@ -76,8 +77,10 @@ class PermissionVoter extends Voter
 
     private function canAccessQuiz(User $authUser, Quiz $quiz): bool
     {
+
         if ($quiz->getCompany()) {
-            return $this->sameCompany($authUser, $quiz->getCompany());
+            $result = $this->sameCompany($authUser, $quiz->getCompany());
+            return $result;
         }
         
         if ($quiz->getUser() && $quiz->getUser()->getId() === $authUser->getId()) {
@@ -85,7 +88,8 @@ class PermissionVoter extends Voter
         }
         
         if ($quiz->getUser() && $quiz->getUser()->getCompany() && $authUser->getCompany()) {
-            return $this->sameCompany($authUser, $quiz->getUser()->getCompany());
+            $result = $this->sameCompany($authUser, $quiz->getUser()->getCompany());
+            return $result;
         }
         
         return false;

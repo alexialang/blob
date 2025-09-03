@@ -267,7 +267,11 @@ export class GlobalStatisticsComponent implements OnInit, AfterViewInit, OnDestr
               display: true,
               text: 'Évolution des scores moyens par quiz',
               font: { size: 18, weight: 'bold' },
-              color: '#2c3e50'
+              color: '#2c3e50',
+              padding: {
+                top: 10,
+                bottom: 20
+              }
             },
             legend: {
               position: 'top',

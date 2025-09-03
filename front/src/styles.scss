@@ -52,6 +52,7 @@
   --line-height-h1: 1em;
   --line-height-base: 1.5;
 
+  --font-weight-light: 300;
   --font-weight-normal: normal;
   --font-weight-medium: 500;
   --font-weight-bold: 700;
@@ -101,7 +102,7 @@ body {
 @font-face {
   font-family: "LCMogiA";
   src: url("../public/font/LCMogi-A.otf");
-  font-weight: var(--font-weight-normal);
+  font-weight: 200; /* extra light weight pour cette police */
   font-style: normal;
 }
 
@@ -243,7 +244,7 @@ h1 {
   font-size: var(--font-size-h1);
   letter-spacing: var(--letter-spacing-h1);
   line-height: var(--line-height-h1);
-  font-weight: var(--font-weight-normal);
+  font-weight: 200;
   color: var(--color-dark);
 }
 
@@ -252,7 +253,7 @@ h2 {
   font-size: var(--font-size-h2);
   letter-spacing: var(--letter-spacing-h2);
   color: var(--text-primary);
-  font-weight: var(--font-weight-normal);
+  font-weight: 200;
 }
 
 h3 {
@@ -260,5 +261,20 @@ h3 {
   font-size: var(--font-size-h3);
   letter-spacing: var(--letter-spacing-h3);
   color: var(--text-primary);
-  font-weight: var(--font-weight-normal);
+  font-weight: 200;
+}
+
+/* Force letter-spacing à 0 pour tous les graphiques Chart.js */
+canvas {
+  font-family: Arial, sans-serif !important;
+  letter-spacing: 0 !important;
+}
+
+/* Force letter-spacing à 0 pour tous les titres de graphiques */
+.chart-info h3,
+.chart-card h3,
+.chart-header h3,
+.statistics-charts h3 {
+  letter-spacing: 0 !important;
+  font-family: Arial, sans-serif !important;
 }

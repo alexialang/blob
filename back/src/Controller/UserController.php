@@ -74,7 +74,7 @@ class UserController extends AbstractController
         try {
             $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
             
-            if (!$this->userService->verifyCaptcha($data['recaptchaToken'])) {
+            if (!$this->userService->verifyCaptcha($data['recaptchaToken'], 'register')) {
                 return $this->json(['error' => 'Échec de la vérification CAPTCHA'], 400);
             }
             

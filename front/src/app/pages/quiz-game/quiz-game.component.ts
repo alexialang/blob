@@ -82,7 +82,7 @@ export class QuizGameComponent implements OnInit, OnDestroy {
     quizCompleted = false;
 
     playerRank = 1;
-    totalPlayers = 100;
+    totalPlayers = 1;
     userRating = 0;
     hoverRating = 0;
     leaderboard: any[] = [];

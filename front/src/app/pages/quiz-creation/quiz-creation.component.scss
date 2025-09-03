@@ -20,6 +20,11 @@
   color: var(--text-secondary);
 }
 
+.lcmogi-font {
+  font-family: 'LCMogiA', Arial, sans-serif;
+  font-weight: 200;
+}
+
 h2 {
   font-size: var(--font-size-h3);
   letter-spacing: 2px;
@@ -163,6 +168,28 @@ label {
   border-radius: 8px;
   margin-bottom: 2rem;
   background-color: var(--color-white);
+}
+
+.question-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-light);
+
+  .question-title {
+    font-family: Arial, sans-serif;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+    letter-spacing: 0;
+  }
+
+  .btn-danger {
+    margin-bottom: 1rem;
+  }
 }
 
 .answer-item {

@@ -15,6 +15,7 @@ import { PasswordStrengthIndicatorComponent } from '../../components/password-st
 import { isPlatformBrowser } from '@angular/common';
 import {SeoService} from '../../services/seo.service';
 import { AnalyticsService } from '../../services/analytics.service';
+import { recaptchaConfig } from '../../../environments/recaptcha';
 
 @Component({
   standalone: true,
@@ -49,8 +50,7 @@ export class RegistrationComponent implements OnInit {
       email:     ['', [Validators.required, Validators.email]],
       password:  ['', [Validators.required, Validators.minLength(8), this.passwordStrengthValidator()]],
       confirm:   ['', [Validators.required]],
-      tos:       [false, [Validators.requiredTrue]],
-      recaptcha: ['', [Validators.required]]
+      tos:       [false, [Validators.requiredTrue]]
     }, { validators: this.passwordsMatch });
   }
 
@@ -72,14 +72,10 @@ export class RegistrationComponent implements OnInit {
 
   private loadRecaptcha(): void {
     const script = document.createElement('script');
-    script.src = 'https://www.google.com/recaptcha/api.js';
+    script.src = `https://www.google.com/recaptcha/api.js?render=${recaptchaConfig.siteKey}`;
     script.async = true;
     script.defer = true;
     document.head.appendChild(script);
-
-    (window as any).onCaptchaCallback = (token: string) => {
-      this.onCaptchaResolved(token);
-    };
   }
 
   private passwordsMatch(group: FormGroup) {
@@ -111,21 +107,41 @@ export class RegistrationComponent implements OnInit {
       this.form.markAllAsTouched();
       return;
     }
-    const { firstName, lastName, email, password, recaptcha } = this.form.value;
-    this.auth
-      .register(email, password, firstName, lastName, recaptcha)
-      .subscribe({
-        next: () => {
-          this.analytics.trackRegistration();
-          this.router.navigate(['/connexion']);
-        },
-        error: () => (this.error = 'Inscription impossible')
-      });
+
+    this.executeRecaptcha().then(token => {
+      const { firstName, lastName, email, password } = this.form.value;
+      this.auth
+        .register(email, password, firstName, lastName, token)
+        .subscribe({
+          next: () => {
+            this.analytics.trackRegistration();
+            this.router.navigate(['/connexion']);
+          },
+          error: () => (this.error = 'Inscription impossible')
+        });
+    }).catch(error => {
+      this.error = 'Erreur de vérification reCAPTCHA';
+    });
   }
 
-  onCaptchaResolved(captchaResponse: string | null): void {
-    this.form.patchValue({ recaptcha: captchaResponse });
+  private executeRecaptcha(): Promise<string> {
+    return new Promise((resolve, reject) => {
+      if ((window as any).grecaptcha && (window as any).grecaptcha.ready) {
+        (window as any).grecaptcha.ready(() => {
+          (window as any).grecaptcha.execute(recaptchaConfig.siteKey, { action: recaptchaConfig.actions.register })
+            .then((token: string) => {
+              resolve(token);
+            })
+            .catch((error: any) => {
+              reject(error);
+            });
+        });
+      } else {
+        reject('reCAPTCHA not loaded');
+      }
+    });
   }
+
 
   showError(fieldName: string): boolean {
     const field = this.form.get(fieldName);

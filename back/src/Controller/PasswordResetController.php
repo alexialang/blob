@@ -40,7 +40,7 @@ class PasswordResetController extends AbstractController
                 return $this->json(['error' => 'Token CAPTCHA requis'], 400);
             }
             
-            if (!$this->userService->verifyCaptcha($data['recaptchaToken'])) {
+            if (!$this->userService->verifyCaptcha($data['recaptchaToken'], 'password_reset')) {
                 return $this->json(['error' => 'Échec de la vérification CAPTCHA'], 400);
             }
 

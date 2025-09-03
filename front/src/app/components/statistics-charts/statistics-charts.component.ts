@@ -119,7 +119,11 @@ export class StatisticsChartsComponent implements OnInit, AfterViewInit, OnDestr
               size: 16,
               weight: 'bold'
             },
-            color: '#333'
+            color: '#333',
+            padding: {
+              top: 10,
+              bottom: 20
+            }
           },
           legend: {
             display: false
@@ -209,7 +213,11 @@ export class StatisticsChartsComponent implements OnInit, AfterViewInit, OnDestr
               size: 16,
               weight: 'bold'
             },
-            color: '#333'
+            color: '#333',
+            padding: {
+              top: 10,
+              bottom: 20
+            }
           },
           legend: {
             position: 'bottom',

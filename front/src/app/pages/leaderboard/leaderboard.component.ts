@@ -61,7 +61,7 @@ export class LeaderboardComponent implements OnInit {
     this.isLoading = true;
     this.error = null;
 
-    this.http.get<LeaderboardResponse>(`${environment.apiBaseUrl}/leaderboard?limit=50`)
+    this.http.get<LeaderboardResponse>(`${environment.apiBaseUrl}/leaderboard?limit=10`)
       .subscribe({
         next: (data) => {
           if (data.leaderboard) {
@@ -150,5 +150,25 @@ export class LeaderboardComponent implements OnInit {
 
   trackByPlayerId(index: number, player: LeaderboardUser): number {
     return player.id;
+  }
+
+  getHeadAvatarFromShape(shape: string): string {
+    if (!shape) {
+      return 'head_guest';
+    }
+
+    const shapeToHeadMapping: { [key: string]: string } = {
+      'blob_flower': 'flower_head',
+      'blob_circle': 'circle_head',
+      'blob_pic': 'pic_head',
+      'blob_wave': 'wave_head'
+    };
+
+    const headAvatar = shapeToHeadMapping[shape];
+    if (headAvatar) {
+      return headAvatar;
+    }
+
+    return 'head_guest';
   }
 }

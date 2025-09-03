@@ -2,33 +2,39 @@
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+  align-items: center;
   padding: 2rem;
   width: 100%;
   overflow: visible;
-  min-height: 80px;
+  min-height: 100px;
 
 
   &__links {
     width: 100%;
     display: flex;
+    align-items: center;
     column-gap: 10%;
     overflow: visible;
 
     .logo-container {
     display: flex;
-      align-items: end;
+      align-items: center;
   }
     .links-container{
       width: 70%;
-      align-content: end;
+      display: flex;
+      align-items: center;
       font-size: 1.125em;
 
       ul {
         width: 100%;
         display: flex;
         flex-direction: row;
+        align-items: center;
         column-gap: 10%;
         list-style-type: none;
+        margin: 0;
+        padding: 0;
       }
 
       a {
@@ -56,6 +62,7 @@
       position: relative;
       display: flex;
       align-items: center;
+      height: 100%;
 
       .navbar__toggle {
         display: none;
@@ -146,8 +153,9 @@
     column-gap: 10%;
     align-items: center;
     overflow: visible;
-    min-height: 80px;
+    min-height: 100px;
     padding: 10px 0;
+    justify-content: flex-end;
 
     .progress-container{
       display: flex;
@@ -242,31 +250,50 @@
     transition: width 0.3s ease;
   }
 
-  .blob-head-direct {
-    width: 58px !important;
-    height: 55px !important;
-    max-width: 58px;
-    max-height: 55px;
-    min-width: 58px;
-    min-height: 55px;
-    transition: transform 0.2s ease;
-    cursor: pointer;
-    flex-shrink: 0;
-    position: relative;
-    display: block;
+  .user-avatar-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100px;
+    height: 100px;
+    
+    .user-avatar {
+      width: 100px !important;
+      height: 100px !important;
+      max-width: 100px;
+      max-height: 100px;
+      min-width: 100px;
+      min-height: 100px;
+      flex-shrink: 0;
+      transition: transform 0.2s ease;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
 
-    &:hover {
-      transform: scale(1.1);
+      &:hover {
+        transform: scale(1.05);
+      }
+
+      // Styles pour les SVGs intégrés - forcer le redimensionnement
+      svg {
+        width: 100px !important;
+        height: 100px !important;
+        max-width: 100px !important;
+        max-height: 100px !important;
+        min-width: 100px !important;
+        min-height: 100px !important;
+      }
+
+      // Forcer la taille sur tout le contenu HTML injecté
+      :global(*) {
+        max-width: 100px !important;
+        max-height: 100px !important;
+      }
     }
   }
 
-  .fallback-avatar {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    object-fit: cover;
-    flex-shrink: 0;
-  }
+
 
 
   &__toggle {

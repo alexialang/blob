@@ -67,6 +67,8 @@ export class QuizCreationComponent implements OnInit {
   showCategoryDropdown = false;
   selectedCategory: Category | null = null;
 
+  highlightColor: string = '';
+
   constructor(
     private readonly fb: FormBuilder,
     private readonly router: Router,
@@ -84,6 +86,7 @@ export class QuizCreationComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.generateRandomColor();
     this.quizForm = this.createQuizForm();
     this.loadTypeQuestions();
     this.loadCategories();
@@ -102,6 +105,15 @@ export class QuizCreationComponent implements OnInit {
         this.loadQuizForEdit(this.quizId);
       }
     });
+  }
+
+  private generateRandomColor(): void {
+    const colors = [
+      '#257D54', '#FAA24B', '#D30D4C',
+    ];
+
+    const index = Math.floor(Math.random() * colors.length);
+    this.highlightColor = colors[index];
   }
 
   private createQuizForm(): FormGroup {

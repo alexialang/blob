@@ -91,12 +91,16 @@
                     </defs>
                   </svg>
                 </div>
-                <a *ngIf="isOwnProfile" class="avatar-edit-btn" [routerLink]="['/profil/avatar']">
-                  <i class="fas fa-camera"></i>
-                </a>
               </div>
               <h3 class="display-name">{{ getDisplayName() }}</h3>
               <p class="user-email">{{ user.email }}</p>
+
+              <div *ngIf="isOwnProfile" class="avatar-modify-section">
+                <button class="btn-avatar-modify" [routerLink]="['/profil/avatar']">
+                  <i class="fas fa-camera"></i>
+                  Modifier mon avatar
+                </button>
+              </div>
             </div>
 
 
@@ -240,14 +244,15 @@
 
 
             <div *ngIf="!isLoadingStatistics" class="badges-section">
-              <div class="section-header badges-header mt-4">
+              <div class="badges-header">
                 <div class="section-icon"><i class="fas fa-trophy"></i></div>
                 <h6 class="section-title">{{ isOwnProfile ? 'Mes Badges' : 'Badges' }}</h6>
                 <span class="section-count">{{ getUserBadges().length }}</span>
               </div>
               <div class="badge-grid">
                 <div class="badge-card earned" *ngFor="let badge of getUserBadges()">
-                  <img [src]="'assets/badges/' + (badge.image || 'badge-first-quiz.svg')" alt="{{badge.name}}" class="badge-image">
+                  <img [src]="getBadgeImagePath(badge)" alt="{{badge.name}}" class="badge-image"
+                       (error)="onBadgeImageError($event)">
                   <div class="badge-name">{{ badge.name }}</div>
                 </div>
                 <div *ngIf="getUserBadges().length === 0" class="no-badges text-center text-muted">
@@ -255,14 +260,15 @@
                 </div>
               </div>
 
-              <div class="section-header badges-header mt-4">
+              <div class="badges-header mt-4">
                 <div class="section-icon"><i class="fas fa-bullseye"></i></div>
                 <h6 class="section-title">Badges à obtenir</h6>
                 <span class="section-count">{{ getAvailableBadges().length }}</span>
               </div>
               <div class="badge-grid">
                 <div class="badge-card available" *ngFor="let badge of getAvailableBadges()">
-                  <img [src]="'assets/badges/' + (badge.image || 'badge-first-quiz.svg')" alt="{{badge.name}}" class="badge-image">
+                  <img [src]="getBadgeImagePath(badge)" alt="{{badge.name}}" class="badge-image"
+                       (error)="onBadgeImageError($event)">
                   <div class="badge-name">{{ badge.name }}</div>
                 </div>
                 <div *ngIf="getAvailableBadges().length === 0" class="no-badges text-center text-muted">

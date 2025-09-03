@@ -1,8 +1,8 @@
 <div class="background">
   <div class="quiz-creation-container">
     <div class="header">
-      <h1>{{ isEditMode ? 'Modifier le quiz' : 'Créer un nouveau quiz' }}</h1>
-      <p>{{ isEditMode ? 'Modifiez votre quiz avec des questions et réponses' : 'Créez un quiz personnalisé avec des questions et réponses' }}</p>
+      <h1>{{ isEditMode ? 'Modifier le ' : 'Créer un nouveau ' }}<span class="lcmogi-font" [ngStyle]="{ 'color': highlightColor }">quiz</span></h1>
+      <p>{{ isEditMode ? 'Modifiez votre ' : 'Créez un ' }}<span class="lcmogi-font" [ngStyle]="{ 'color': highlightColor }">quiz</span>{{ isEditMode ? ' avec des questions et réponses' : ' personnalisé avec des questions et réponses' }}</p>
     </div>
 
     <form [formGroup]="quizForm" class="quiz-form" (ngSubmit)="onSubmit()">
@@ -94,7 +94,7 @@
         <div formArrayName="questions">
           <div *ngFor="let question of questions.controls; let i = index" [formGroupName]="i" class="question-card">
             <div class="question-header">
-              <h3>Question {{i + 1}}</h3>
+              <h3 class="question-title">Question {{i + 1}}</h3>
               <button type="button" class="btn btn-danger" (click)="removeQuestion(i)" [disabled]="questions.length <= 1">Supprimer</button>
             </div>
 

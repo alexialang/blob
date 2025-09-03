@@ -21,11 +21,17 @@
       </div>
     </div>
 
-    <div class="actions d-flex gap-2 mb-4">
-      <button *hasPermission="'MANAGE_USERS'" class="btn btn-primary" (click)="editCompany()">
+    <div class="actions mb-4">
+      <button class="btn-modern btn-secondary" (click)="refreshCompanyData()">
+        <i class="fas fa-sync-alt"></i>
+        Actualiser
+      </button>
+      <button *hasPermission="'MANAGE_USERS'" class="btn-modern btn-primary" (click)="editCompany()">
+        <i class="fas fa-edit"></i>
         Modifier
       </button>
-      <button *hasPermission="'MANAGE_USERS'" class="btn btn-danger" (click)="deleteCompany()">
+      <button *hasPermission="'MANAGE_USERS'" class="btn-modern btn-danger" (click)="deleteCompany()">
+        <i class="fas fa-trash"></i>
         Supprimer
       </button>
     </div>

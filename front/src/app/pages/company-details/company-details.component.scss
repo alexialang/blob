@@ -16,6 +16,7 @@ body {
 
 .company-highlight {
   font-family: var(--font-display);
+  font-weight: 200;
 }
 
 .container {
@@ -27,7 +28,7 @@ body {
 
 .page-title {
   font-size: 4.5rem;
-  font-weight: 800;
+  font-weight: 200;
   line-height: 0.9;
   margin-bottom: 2rem;
   color: var(--color-dark);
@@ -206,8 +207,77 @@ h2, h3, h4, h5, h6 {
 
 .actions {
   margin-bottom: 1.5rem;
+  display: flex;
+  gap: 1rem;
 
-  button {
+  .btn-modern {
+    background: white;
+    color: var(--color-dark);
+    border: 2px solid var(--color-dark);
+    border-radius: 15px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: Arial, Helvetica, sans-serif;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+
+    &.btn-primary {
+      background: var(--color-primary);
+      color: white;
+      border-color: var(--color-primary);
+
+      &:hover {
+        background: var(--color-primary-dark);
+        border-color: var(--color-primary-dark);
+        color: white;
+      }
+    }
+
+    &.btn-danger {
+      background: var(--color-pink);
+      color: white;
+      border-color: var(--color-pink);
+
+      &:hover {
+        background: var(--color-pink-dark);
+        border-color: var(--color-pink-dark);
+        color: white;
+      }
+    }
+
+    &.btn-secondary {
+      background: var(--color-secondary);
+      color: var(--color-dark);
+      border-color: var(--color-secondary);
+
+      &:hover {
+        background: var(--color-secondary-dark);
+        border-color: var(--color-secondary-dark);
+        color: white;
+      }
+    }
+
+    i {
+      font-size: 0.9rem;
+    }
+  }
+
+  // Support pour les anciens boutons pour éviter la casse
+  button:not(.btn-modern) {
     transition: all 0.2s ease;
 
     &:hover {
@@ -988,8 +1058,17 @@ button[tuiButton][appearance="action-grayscale"] {
   .actions {
     flex-direction: column;
     align-items: stretch;
+    gap: 0.75rem;
 
-    button {
+    .btn-modern {
+      width: 100%;
+      justify-content: center;
+      padding: 0.85rem 1rem;
+      font-size: 0.9rem;
+    }
+
+    // Support pour les anciens boutons
+    button:not(.btn-modern) {
       width: 100%;
       margin-bottom: 0.5rem;
     }

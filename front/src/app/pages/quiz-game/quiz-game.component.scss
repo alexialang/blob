@@ -201,12 +201,21 @@
 
   .question-text {
     font-size: 48px;
-    font-weight: 900;
+    font-weight: 300;
     color: #333;
     margin: 0;
     line-height: 1.2;
     max-width: 800px;
   }
+}
+
+.question-instruction {
+  font-size: 18px;
+  color: #666;
+  margin: 40px 0 40px 0;
+  padding: 0 40px;
+  font-weight: 500;
+  line-height: 1.4;
 }
 
 .answers-container {
@@ -452,7 +461,14 @@
 
     .question-text {
       font-size: 32px;
+      font-weight: 300;
     }
+  }
+
+  .question-instruction {
+    padding: 0 20px;
+    font-size: 16px;
+    margin: 15px 0 30px 0;
   }
 
   .answers-container {
