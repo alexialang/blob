@@ -2,12 +2,16 @@
 
 namespace App\Controller;
 
+use App\Controller\AbstractSecureController;
 use App\Entity\Quiz;
+use App\Entity\User;
 use App\Service\LeaderboardService;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Validator\Constraints as Assert;
 use OpenApi\Annotations as OA;
 
 #[Route('/api')]

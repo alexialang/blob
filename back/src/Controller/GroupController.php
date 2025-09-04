@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Controller\AbstractSecureController;
 use App\Entity\Group;
 use App\Entity\User;
 use App\Service\GroupService;

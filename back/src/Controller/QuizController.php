@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Controller\AbstractSecureController;
 use App\Entity\Quiz;
 use App\Entity\User;
 use App\Service\QuizRatingService;
@@ -309,8 +310,12 @@ class QuizController extends AbstractSecureController
 
 
     #[Route('/quiz/{id}', name: 'quiz_show', methods: ['GET'])]
-    public function show(Quiz $quiz): JsonResponse
+    public function show(?Quiz $quiz = null): JsonResponse
     {
+        if (!$quiz) {
+            return $this->json(['error' => 'Quiz non trouvé'], 404);
+        }
+        
         try {
             $user = null;
             try {
@@ -332,15 +337,23 @@ class QuizController extends AbstractSecureController
     }
 
     #[Route('/quiz/{id}/average-rating', name: 'quiz_average_rating', methods: ['GET'], requirements: ['id' => '\d+'])]
-    public function getAverageRating(Quiz $quiz): JsonResponse
+    public function getAverageRating(?Quiz $quiz = null): JsonResponse
     {
+        if (!$quiz) {
+            return $this->json(['error' => 'Quiz non trouvé'], 404);
+        }
+        
         $result = $this->quizRatingService->getAverageRating($quiz);
         return $this->json($result, 200, [], ['groups' => ['quiz:rating']]);
     }
 
     #[Route('/quiz/{id}/public-leaderboard', name: 'quiz_public_leaderboard', methods: ['GET'], requirements: ['id' => '\d+'])]
-    public function getPublicLeaderboard(Quiz $quiz): JsonResponse
+    public function getPublicLeaderboard(?Quiz $quiz = null): JsonResponse
     {
+        if (!$quiz) {
+            return $this->json(['error' => 'Quiz non trouvé'], 404);
+        }
+        
         $user = $this->getCurrentUser();
         $result = $this->leaderboardService->getQuizLeaderboard($quiz, $user);
         return $this->json($result, 200, [], ['groups' => ['quiz:leaderboard']]);

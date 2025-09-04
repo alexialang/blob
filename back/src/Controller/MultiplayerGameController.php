@@ -2,12 +2,12 @@
 
 namespace App\Controller;
 
+use App\Controller\AbstractSecureController;
 use App\Entity\User;
 use App\Service\MultiplayerGameService;
 use App\Service\GroupService;
 use App\Service\UserService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-
 use Symfony\Component\Validator\Exception\ValidationFailedException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -274,7 +274,7 @@ class MultiplayerGameController extends AbstractSecureController
     public function triggerFeedback(string $gameId): JsonResponse
     {
         try {
-            $result = $this->multiplayerService->triggerFeedbackPhase($gameId);
+            $this->multiplayerService->triggerFeedbackPhase($gameId);
             return $this->json(['success' => true, 'message' => 'Feedback déclenché']);
         } catch (\Exception $e) {
             return $this->json(['error' => $e->getMessage()], 400);
@@ -285,7 +285,7 @@ class MultiplayerGameController extends AbstractSecureController
     public function nextQuestion(string $gameId): JsonResponse
     {
         try {
-            $result = $this->multiplayerService->triggerNextQuestion($gameId);
+            $this->multiplayerService->triggerNextQuestion($gameId);
             return $this->json(['success' => true, 'message' => 'Question suivante déclenchée']);
         } catch (\Exception $e) {
             return $this->json(['error' => $e->getMessage()], 400);

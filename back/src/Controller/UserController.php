@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Controller\AbstractSecureController;
 use App\Entity\User;
 use App\Service\UserService;
 
@@ -211,7 +212,7 @@ class UserController extends AbstractSecureController
     #[Route('/user/{id}/statistics', name: 'user_statistics_by_id', methods: ['GET'])]
     #[IsGranted('ROLE_USER')]
     #[IsGranted('VIEW_RESULTS', subject: 'user')]
-    public function statisticsById(User $user): JsonResponse
+    public function statisticsById(?User $user = null): JsonResponse
     {
         if (!$user) {
             return $this->json(['error' => 'Utilisateur non trouvé'], 404);
@@ -233,7 +234,7 @@ class UserController extends AbstractSecureController
     #[Route('/user/{id}', name: 'user_show', methods: ['GET'])]
     #[IsGranted('ROLE_USER')]
     #[IsGranted('VIEW_RESULTS', subject: 'user')]
-    public function show(User $user): JsonResponse
+    public function show(?User $user = null): JsonResponse
     {
         if (!$user) {
             return $this->json(['error' => 'Utilisateur non trouvé'], 404);
@@ -261,9 +262,8 @@ class UserController extends AbstractSecureController
         try {
             $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
             
-            // ✅ Délégation complète au service (validation incluse)
             $currentUser = $this->getCurrentUser();
-            $user = $this->userService->update($user, $data, $currentUser);
+            $user = $this->userService->update($user, $data);
 
             return $this->json($user, 200, [], [
                 'groups' => ['user:profile']
@@ -295,7 +295,7 @@ class UserController extends AbstractSecureController
     {
         $currentUser = $this->getCurrentUser();
         
-        $this->userService->anonymizeUser($user, $currentUser);
+        $this->userService->anonymizeUser($user);
 
         return $this->json([
             'success' => true,
