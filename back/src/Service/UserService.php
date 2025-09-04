@@ -572,7 +572,7 @@ class UserService
         return $this->userRepository->findByCompanyWithStats($company->getId(), false);
     }
 
-    public function verifyCaptcha(string $token): bool
+    public function verifyCaptcha(string $token, string $action = 'register'): bool
     {
         try {
             $response = $this->httpClient->request('POST', 'https://www.google.com/recaptcha/api/siteverify', [
@@ -583,8 +583,37 @@ class UserService
             ]);
 
             $result = $response->toArray();
-            return $result['success'] ?? false;
+
+            if (isset($result['success']) && $result['success'] === true) {
+                $score = $result['score'] ?? 0.0;
+                $actionValid = $result['action'] ?? '';
+                
+                if ($actionValid !== $action) {
+                    $this->logger->warning('Action reCAPTCHA invalide', [
+                        'expected' => $action,
+                        'received' => $actionValid
+                    ]);
+                    return false;
+                }
+                
+                if ($score >= 0.5) {
+                    $this->logger->info('reCAPTCHA v3 validé', [
+                        'score' => $score,
+                        'action' => $action
+                    ]);
+                    return true;
+                } else {
+                    $this->logger->warning('Score reCAPTCHA trop faible', [
+                        'score' => $score,
+                        'action' => $action
+                    ]);
+                    return false;
+                }
+            }
+            
+            return false;
         } catch (\Exception $e) {
+            $this->logger->error('Erreur lors de la vérification du captcha: ' . $e->getMessage());
             return false;
         }
     }
@@ -682,5 +711,13 @@ class UserService
         if (count($errors) > 0) {
             throw new ValidationFailedException($constraints, $errors);
         }
+    }
+
+    /**
+     * Get active users for multiplayer functionality
+     */
+    public function getActiveUsersForMultiplayer(): array
+    {
+        return $this->userRepository->findBy(['isActive' => true]);
     }
 }

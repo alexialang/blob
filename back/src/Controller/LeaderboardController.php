@@ -2,7 +2,9 @@
 
 namespace App\Controller;
 
+use App\Controller\AbstractSecureController;
 use App\Entity\Quiz;
+use App\Entity\User;
 use App\Service\LeaderboardService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -13,7 +15,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 use OpenApi\Annotations as OA;
 
 #[Route('/api')]
-class LeaderboardController extends AbstractController
+class LeaderboardController extends AbstractSecureController
 {
     public function __construct(
         private LeaderboardService $leaderboardService,
@@ -37,7 +39,7 @@ class LeaderboardController extends AbstractController
             return new JsonResponse(['error' => 'Quiz non trouvé'], 404);
         }
 
-        $currentUser = $this->getUser();
+        $currentUser = $this->getCurrentUser();
         $data = $this->leaderboardService->getQuizLeaderboard($quiz, $currentUser);
 
         return $this->json($data, 200, [], ['groups' => ['leaderboard:read']]);
@@ -60,7 +62,7 @@ class LeaderboardController extends AbstractController
             ], 400);
         }
         
-        $currentUser = $this->getUser();
+        $currentUser = $this->getCurrentUser();
         $data = $this->leaderboardService->getGeneralLeaderboard($limit, $currentUser);
 
         return $this->json($data, 200, [], ['groups' => ['leaderboard:read']]);

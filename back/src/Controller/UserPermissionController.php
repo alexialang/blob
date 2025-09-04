@@ -14,7 +14,6 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use OpenApi\Annotations as OA;
-use Psr\Log\LoggerInterface;
 
 #[Route('/api/user-permission')]
 class UserPermissionController extends AbstractController
@@ -23,7 +22,6 @@ class UserPermissionController extends AbstractController
         private UserPermissionService $userPermissionService,
         private UserService $userService,
         private UserRepository $userRepository,
-        private LoggerInterface $logger,
         ) {}
 
     /**

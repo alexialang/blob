@@ -2,7 +2,9 @@
 
 namespace App\Controller;
 
+use App\Controller\AbstractSecureController;
 use App\Entity\Company;
+use App\Entity\User;
 use App\Service\CompanyService;
 use App\Service\UserService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -15,7 +17,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 use OpenApi\Annotations as OA;
 
 #[Route('/api')]
-class CompanyController extends AbstractController
+class CompanyController extends AbstractSecureController
 {
     public function __construct(
         private CompanyService $companyService,
@@ -32,7 +34,7 @@ class CompanyController extends AbstractController
     public function list(): JsonResponse
     {
         try {
-            $user = $this->getUser();
+            $user = $this->getCurrentUser();
 
             if (!$user->isAdmin()) {
                 $userCompany = $user->getCompany();
@@ -367,7 +369,7 @@ class CompanyController extends AbstractController
     public function getAvailableUsers(Company $company): JsonResponse
     {
         try {
-            $currentUser = $this->getUser();
+            $currentUser = $this->getCurrentUser();
             
             $availableUsers = $this->userService->getUsersWithoutCompany();
             

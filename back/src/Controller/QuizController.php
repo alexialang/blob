@@ -2,7 +2,9 @@
 
 namespace App\Controller;
 
+use App\Controller\AbstractSecureController;
 use App\Entity\Quiz;
+use App\Entity\User;
 use App\Service\QuizRatingService;
 use App\Service\QuizSearchService;
 use App\Service\QuizCrudService;
@@ -19,7 +21,7 @@ use Psr\Log\LoggerInterface;
 
 
 #[Route('/api')]
-class QuizController extends AbstractController
+class QuizController extends AbstractSecureController
 {
     public function __construct(
         private QuizRatingService $quizRatingService,
@@ -53,7 +55,7 @@ class QuizController extends AbstractController
     #[IsGranted('CREATE_QUIZ')]
     public function managementList(Request $request): JsonResponse
     {
-        $user = $this->getUser();
+        $user = $this->getCurrentUser();
         
         $page = max(1, (int) $request->query->get('page', 1));
         $limit = min(100, max(1, (int) $request->query->get('limit', 20))); // Max 100 par page
@@ -102,7 +104,7 @@ class QuizController extends AbstractController
                 return $this->json(['error' => 'Au moins une question est requise'], 400);
             }
 
-            $user = $this->getUser();
+            $user = $this->getCurrentUser();
 
             if (!$user) {
                 return $this->json(['error' => 'User not authenticated'], 401);
@@ -128,7 +130,7 @@ class QuizController extends AbstractController
         try {
             $user = null;
             try {
-                $user = $this->getUser();
+                $user = $this->getCurrentUser();
             } catch (\Exception $e) {
                 $this->logger->info('getOrganizedQuizzes: utilisateur non connecté', [
                     'error' => $e->getMessage(),
@@ -219,7 +221,7 @@ class QuizController extends AbstractController
     #[IsGranted('CREATE_QUIZ', subject: 'quiz')]
     public function update(Request $request, Quiz $quiz): JsonResponse
     {
-        $user = $this->getUser();
+        $user = $this->getCurrentUser();
         $this->logger->info('DEBUG Quiz Update', [
             'user_id' => $user ? $user->getId() : 'null',
             'user_email' => $user ? $user->getEmail() : 'null',
@@ -264,7 +266,7 @@ class QuizController extends AbstractController
         }
 
         try {
-            $user = $this->getUser();
+            $user = $this->getCurrentUser();
             $quiz = $this->quizCrudService->updateWithQuestions($quiz, $data, $user);
 
             return $this->json($quiz, 200, [], ['groups' => ['quiz:read', 'quiz:create']]);
@@ -281,7 +283,7 @@ class QuizController extends AbstractController
     public function delete(Quiz $quiz): JsonResponse
     {
         try {
-            $user = $this->getUser();
+            $user = $this->getCurrentUser();
             
             $this->logger->warning('SECURITY: Suppression de quiz', [
                 'user_id' => $user->getId(),
@@ -308,12 +310,16 @@ class QuizController extends AbstractController
 
 
     #[Route('/quiz/{id}', name: 'quiz_show', methods: ['GET'])]
-    public function show(Quiz $quiz): JsonResponse
+    public function show(?Quiz $quiz = null): JsonResponse
     {
+        if (!$quiz) {
+            return $this->json(['error' => 'Quiz non trouvé'], 404);
+        }
+        
         try {
             $user = null;
             try {
-                $user = $this->getUser();
+                $user = $this->getCurrentUser();
             } catch (\Exception $e) {
             }
             
@@ -331,16 +337,24 @@ class QuizController extends AbstractController
     }
 
     #[Route('/quiz/{id}/average-rating', name: 'quiz_average_rating', methods: ['GET'], requirements: ['id' => '\d+'])]
-    public function getAverageRating(Quiz $quiz): JsonResponse
+    public function getAverageRating(?Quiz $quiz = null): JsonResponse
     {
+        if (!$quiz) {
+            return $this->json(['error' => 'Quiz non trouvé'], 404);
+        }
+        
         $result = $this->quizRatingService->getAverageRating($quiz);
         return $this->json($result, 200, [], ['groups' => ['quiz:rating']]);
     }
 
     #[Route('/quiz/{id}/public-leaderboard', name: 'quiz_public_leaderboard', methods: ['GET'], requirements: ['id' => '\d+'])]
-    public function getPublicLeaderboard(Quiz $quiz): JsonResponse
+    public function getPublicLeaderboard(?Quiz $quiz = null): JsonResponse
     {
-        $user = $this->getUser();
+        if (!$quiz) {
+            return $this->json(['error' => 'Quiz non trouvé'], 404);
+        }
+        
+        $user = $this->getCurrentUser();
         $result = $this->leaderboardService->getQuizLeaderboard($quiz, $user);
         return $this->json($result, 200, [], ['groups' => ['quiz:leaderboard']]);
     }
@@ -352,7 +366,7 @@ class QuizController extends AbstractController
     public function getQuizForEdit(Quiz $quiz): JsonResponse
     {
         try {
-            $user = $this->getUser();
+            $user = $this->getCurrentUser();
             
             $quizData = $this->quizCrudService->getQuizForEdit($quiz, $user);
     

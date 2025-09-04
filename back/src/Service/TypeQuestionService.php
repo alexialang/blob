@@ -21,4 +21,11 @@ class TypeQuestionService
         return $this->typeQuestionRepository->findAll();
     }
 
+    /**
+     * Show a specific type question by ID
+     */
+    public function show(int $id): ?object
+    {
+        return $this->typeQuestionRepository->find($id);
+    }
 }
