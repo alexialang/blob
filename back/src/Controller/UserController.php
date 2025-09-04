@@ -15,7 +15,7 @@ use OpenApi\Annotations as OA;
 use Symfony\Component\Validator\Exception\ValidationFailedException;
 
 #[Route('/api')]
-class UserController extends AbstractController
+class UserController extends AbstractSecureController
 {
     public function __construct(
         private UserService $userService,
@@ -37,7 +37,7 @@ class UserController extends AbstractController
     #[IsGranted('MANAGE_USERS')]
     public function adminList(Request $request): JsonResponse
     {
-        $currentUser = $this->getUser();
+        $currentUser = $this->getCurrentUser();
         
         $page = max(1, (int) $request->query->get('page', 1));
         $limit = min(100, max(1, (int) $request->query->get('limit', 20))); // Max 100 par page
@@ -111,7 +111,7 @@ class UserController extends AbstractController
     public function profile(): JsonResponse
     {
         try {
-            $user = $this->getUser();
+            $user = $this->getCurrentUser();
             
             if (!$user) {
                 return $this->json(['error' => 'Utilisateur non authentifié'], 401);
@@ -144,7 +144,7 @@ class UserController extends AbstractController
     #[IsGranted('ROLE_USER')]
     public function updateProfile(Request $request): JsonResponse
     {
-        $user = $this->getUser();
+        $user = $this->getCurrentUser();
         
         if (!$user) {
             return $this->json(['error' => 'Utilisateur non authentifié'], 401);
@@ -183,7 +183,7 @@ class UserController extends AbstractController
     #[Route('/user/statistics', name: 'user_statistics', methods: ['GET'])]
     public function statistics(): JsonResponse
     {
-        $user = $this->getUser();
+        $user = $this->getCurrentUser();
         
         if (!$user) {
             return $this->json(['error' => 'Utilisateur non authentifié'], 401);
@@ -262,7 +262,7 @@ class UserController extends AbstractController
             $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
             
             // ✅ Délégation complète au service (validation incluse)
-            $currentUser = $this->getUser();
+            $currentUser = $this->getCurrentUser();
             $user = $this->userService->update($user, $data, $currentUser);
 
             return $this->json($user, 200, [], [
@@ -293,7 +293,7 @@ class UserController extends AbstractController
     #[IsGranted('MANAGE_USERS', subject: 'user')]
     public function anonymize(User $user): JsonResponse
     {
-        $currentUser = $this->getUser();
+        $currentUser = $this->getCurrentUser();
         
         $this->userService->anonymizeUser($user, $currentUser);
 
@@ -330,7 +330,7 @@ class UserController extends AbstractController
     #[Route('/user/game-history', name: 'user_game_history', methods: ['GET'])]
     public function gameHistory(): JsonResponse
     {
-        $user = $this->getUser();
+        $user = $this->getCurrentUser();
         
         if (!$user) {
             return $this->json(['error' => 'Utilisateur non authentifié'], 401);

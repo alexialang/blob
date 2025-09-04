@@ -712,4 +712,12 @@ class UserService
             throw new ValidationFailedException($constraints, $errors);
         }
     }
+
+    /**
+     * Get active users for multiplayer functionality
+     */
+    public function getActiveUsersForMultiplayer(): array
+    {
+        return $this->userRepository->findBy(['isActive' => true]);
+    }
 }

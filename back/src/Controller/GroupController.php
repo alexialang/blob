@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Group;
+use App\Entity\User;
 use App\Service\GroupService;
 use App\Service\UserService;
 use OpenApi\Annotations as OA;
@@ -17,7 +18,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  * @OA\Tag(name="Group")
  */
 #[Route('/api/group')]
-class GroupController extends AbstractController
+class GroupController extends AbstractSecureController
 {
     public function __construct(
         private GroupService $groupService,
@@ -31,7 +32,7 @@ class GroupController extends AbstractController
     #[IsGranted('MANAGE_USERS')]
     public function index(): JsonResponse
     {
-        $user = $this->getUser();
+        $user = $this->getCurrentUser();
         
         if (!$user->isAdmin()) {
             $userCompany = $user->getCompany();
@@ -67,7 +68,7 @@ class GroupController extends AbstractController
     public function create(Request $request): JsonResponse
     {
         try {
-            $user = $this->getUser();
+            $user = $this->getCurrentUser();
             $data = json_decode($request->getContent(), true);
             
             if (!$user->isAdmin()) {

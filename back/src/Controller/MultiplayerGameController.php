@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\User;
 use App\Service\MultiplayerGameService;
 use App\Service\GroupService;
 use App\Service\UserService;
@@ -16,7 +17,7 @@ use OpenApi\Annotations as OA;
 
 #[Route('/api/multiplayer')]
 #[IsGranted('ROLE_USER')]
-class MultiplayerGameController extends AbstractController
+class MultiplayerGameController extends AbstractSecureController
 {
     public function __construct(
         private MultiplayerGameService $multiplayerService,
@@ -46,7 +47,7 @@ class MultiplayerGameController extends AbstractController
         try {
             $data = json_decode($request->getContent(), true);
 
-            $user = $this->getUser();
+            $user = $this->getCurrentUser();
             
             if (!$user) {
                 return $this->json(['error' => 'Utilisateur non connecté'], 401);
@@ -95,7 +96,7 @@ class MultiplayerGameController extends AbstractController
         try {
             $data = json_decode($request->getContent(), true);
             
-            $user = $this->getUser();
+            $user = $this->getCurrentUser();
         
             $room = $this->multiplayerService->joinRoom($roomId, $user, $data['teamName'] ?? null);
             return $this->json($room);
@@ -119,7 +120,7 @@ class MultiplayerGameController extends AbstractController
     #[Route('/room/{roomId}/leave', name: 'leave_game_room', methods: ['POST'])]
     public function leaveRoom(string $roomId): JsonResponse
     {
-        $user = $this->getUser();
+        $user = $this->getCurrentUser();
         
         try {
             $room = $this->multiplayerService->leaveRoom($roomId, $user);
@@ -139,7 +140,7 @@ class MultiplayerGameController extends AbstractController
     #[Route('/room/{roomId}/start', name: 'start_game', methods: ['POST'])]
     public function startGame(string $roomId): JsonResponse
     {
-        $user = $this->getUser();
+        $user = $this->getCurrentUser();
         
         try {
             $game = $this->multiplayerService->startGame($roomId, $user);
@@ -188,7 +189,7 @@ class MultiplayerGameController extends AbstractController
             $data = json_decode($request->getContent(), true);
             
 
-            $user = $this->getUser();
+            $user = $this->getCurrentUser();
             if (!$user) {
                 return $this->json(['error' => 'Utilisateur non connecté'], 401);
             }
@@ -233,7 +234,7 @@ class MultiplayerGameController extends AbstractController
             $data = json_decode($request->getContent(), true);
             
 
-            $user = $this->getUser();
+            $user = $this->getCurrentUser();
             if (!$user) {
                 return $this->json(['error' => 'Utilisateur non connecté'], 401);
             }
@@ -297,7 +298,7 @@ class MultiplayerGameController extends AbstractController
         try {
             $data = json_decode($request->getContent(), true);
             
-            $user = $this->getUser();
+            $user = $this->getCurrentUser();
         
             $this->multiplayerService->sendInvitation($roomId, $user, $data['invitedUserIds']);
             return $this->json(['success' => true]);
@@ -315,7 +316,7 @@ class MultiplayerGameController extends AbstractController
     #[Route('/game/{gameId}/end', name: 'end_game', methods: ['POST'])]
     public function endGame(string $gameId): JsonResponse
     {
-        $user = $this->getUser();
+        $user = $this->getCurrentUser();
         
         try {
             $game = $this->multiplayerService->endGame($gameId, $user);
@@ -349,7 +350,7 @@ class MultiplayerGameController extends AbstractController
     #[IsGranted('ROLE_USER')]
     public function getCompanyGroups(): JsonResponse
     {
-        $user = $this->getUser();
+        $user = $this->getCurrentUser();
         $userCompany = $user->getCompany();
         
         if (!$userCompany) {
@@ -370,7 +371,7 @@ class MultiplayerGameController extends AbstractController
     #[IsGranted('ROLE_USER')]
     public function getCompanyMembers(): JsonResponse
     {
-        $user = $this->getUser();
+        $user = $this->getCurrentUser();
         $userCompany = $user->getCompany();
         
         if (!$userCompany) {
