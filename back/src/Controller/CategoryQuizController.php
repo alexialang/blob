@@ -26,7 +26,7 @@ class CategoryQuizController extends AbstractController
     public function index(): JsonResponse
     {
         $categories = $this->categoryQuizService->list();
-
+dd();
         return $this->json($categories, 200, [], ['groups' => ['quiz:read']]);
     }
 
