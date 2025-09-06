@@ -200,7 +200,6 @@ Le projet suit une approche inspirée de la méthode Agile avec :
 ### Fonctionnalités Avancées Implémentées
 
 - **SSR + SEO** : Pré-rendu Puppeteer des pages publiques pour l'indexation
-- **Google Analytics 4** : Tracking complet (G-95GW7QPNRH) + Google Tag Manager (GTM-PJ9GL9GB)
 - **Rate Limiting** : Système custom anti-brute force spécifique au login
 - **reCAPTCHA v3** : Score minimum 0.5 pour inscription et reset password
 - **CORS sécurisé** : Configuration Nelmio avec domaines autorisés
@@ -305,35 +304,6 @@ export class SeoService {
 }
 ```
 
-### Analytics et Monitoring
-
-```typescript
-// Google Analytics 4 + GTM intégré
-export class AnalyticsService {
-  private gaId = 'G-95GW7QPNRH';
-  private gtmId = 'GTM-PJ9GL9GB';
-  
-  trackEvent(event: AnalyticsEvent): void {
-    if (typeof window.gtag === 'function') {
-      window.gtag('event', event.action, {
-        event_category: event.category,
-        event_label: event.label,
-        value: event.value
-      });
-    }
-  }
-  
-  // Tracking automatique des routes
-  private trackPageViews(): void {
-    this.router.events
-      .pipe(filter(event => event instanceof NavigationEnd))
-      .subscribe((event: NavigationEnd) => {
-        this.trackPageView(event.urlAfterRedirects);
-      });
-  }
-}
-```
-
 ### Optimisation Performance
 
 ```nginx
@@ -399,7 +369,6 @@ server {
 
 - **Développement Full Stack** : Angular 19 + Symfony 7.2
 - **SEO avancé** : SSR Puppeteer, méta-tags dynamiques, sitemap
-- **Analytics** : Google Analytics 4, GTM, tracking événementiel
 - **Sécurité** : Protection login sur-mesure, reCAPTCHA v3, JWT refresh
 - **Paiements** : Intégration Stripe PaymentLinks, webhooks
 - **Performance** : Optimisation des temps de chargement
