@@ -8,7 +8,7 @@ parameters:
 services:
     _defaults:
         autowire: true
-        autoconfigure: true c.
+        autoconfigure: true
 
     App\:
         resource: '../src/'
