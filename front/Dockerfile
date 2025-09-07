@@ -30,6 +30,9 @@ RUN npm run build
 # Run Nginx for prod
 FROM nginx:stable-alpine AS prod
 
+# Install Brotli module
+RUN apk add --no-cache nginx-mod-http-brotli
+
 RUN rm /etc/nginx/conf.d/default.conf
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/dist/blob-front /usr/share/nginx/html

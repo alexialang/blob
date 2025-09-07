@@ -16,13 +16,13 @@ class TypeQuestionRepository extends ServiceEntityRepository
         parent::__construct($registry, TypeQuestion::class);
     }
 
-//    /**
-//     */
-//    {
-//        ;
-//    }
+    //    /**
+    //     */
+    //    {
+    //        ;
+    //    }
 
-//    {
-//        ;
-//    }
+    //    {
+    //        ;
+    //    }
 }

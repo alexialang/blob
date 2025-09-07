@@ -23,7 +23,7 @@ class UserChecker implements UserCheckerInterface
             throw new CustomUserMessageAccountStatusException('Votre compte a été désactivé.');
         }
 
-        if ($user->getDeletedAt() !== null) {
+        if (null !== $user->getDeletedAt()) {
             throw new CustomUserMessageAccountStatusException('Ce compte n\'existe plus.');
         }
     }

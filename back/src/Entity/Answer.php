@@ -13,7 +13,7 @@ class Answer
     #[ORM\GeneratedValue]
     #[ORM\Column]
     #[Groups(['answer:read', 'question:read', 'quiz:read', 'quiz:create'])]
-    private ?int $id = null;
+    private int $id;
 
     #[ORM\Column(length: 255)]
     #[Groups(['answer:read', 'answer:create', 'question:read', 'question:create', 'quiz:read', 'quiz:create'])]
@@ -52,6 +52,7 @@ class Answer
     public function setAnswer(string $answer): static
     {
         $this->answer = $answer;
+
         return $this;
     }
 
@@ -63,6 +64,7 @@ class Answer
     public function setIsCorrect(?bool $is_correct): static
     {
         $this->is_correct = $is_correct;
+
         return $this;
     }
 
@@ -74,6 +76,7 @@ class Answer
     public function setOrderCorrect(?string $order_correct): static
     {
         $this->order_correct = $order_correct;
+
         return $this;
     }
 
@@ -85,6 +88,7 @@ class Answer
     public function setPairId(?string $pair_id): static
     {
         $this->pair_id = $pair_id;
+
         return $this;
     }
 
@@ -96,6 +100,7 @@ class Answer
     public function setIsIntrus(?bool $is_intrus): static
     {
         $this->is_intrus = $is_intrus;
+
         return $this;
     }
 
@@ -107,6 +112,7 @@ class Answer
     public function setQuestion(?Question $question): static
     {
         $this->question = $question;
+
         return $this;
     }
 }

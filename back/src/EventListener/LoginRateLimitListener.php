@@ -20,9 +20,9 @@ class LoginRateLimitListener implements EventSubscriberInterface
 
     public function __construct(
         #[Autowire('%kernel.project_dir%')] string $projectDir,
-        private readonly ?LoggerInterface $logger = null
+        private readonly ?LoggerInterface $logger = null,
     ) {
-        $this->cacheDir = $projectDir . '/var/cache/rate_limit/';
+        $this->cacheDir = $projectDir.'/var/cache/rate_limit/';
         if (!is_dir($this->cacheDir)) {
             if (!mkdir($concurrentDirectory = $this->cacheDir, 0777, true) && !is_dir($concurrentDirectory)) {
                 throw new \RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
@@ -47,7 +47,7 @@ class LoginRateLimitListener implements EventSubscriberInterface
         $request = $event->getRequest();
         $path = $request->getPathInfo();
 
-        if ($path === '/api/login_check' && $request->isMethod('POST')) {
+        if ('/api/login_check' === $path && $request->isMethod('POST')) {
             $clientIp = $request->getClientIp();
             $requestId = uniqid('req_', true);
             $request->attributes->set('_rate_limit_id', $requestId);
@@ -55,11 +55,11 @@ class LoginRateLimitListener implements EventSubscriberInterface
             $attempts = $this->getAttempts($clientIp);
 
             if ($attempts >= self::MAX_ATTEMPTS) {
-                $this->logger?->warning('Rate limit exceeded for IP: ' . $clientIp . ' (' . $attempts . ' attempts)');
+                $this->logger?->warning('Rate limit exceeded for IP: '.$clientIp.' ('.$attempts.' attempts)');
 
                 $response = new JsonResponse([
                     'code' => 429,
-                    'message' => 'Trop de tentatives de connexion. Réessayez dans 15 minutes.'
+                    'message' => 'Trop de tentatives de connexion. Réessayez dans 15 minutes.',
                 ], 429);
                 $event->setResponse($response);
             }
@@ -76,7 +76,7 @@ class LoginRateLimitListener implements EventSubscriberInterface
         $response = $event->getResponse();
         $requestId = $request->attributes->get('_rate_limit_id');
 
-        if (!$requestId || $request->getPathInfo() !== '/api/login_check') {
+        if (!$requestId || '/api/login_check' !== $request->getPathInfo()) {
             return;
         }
 
@@ -88,25 +88,25 @@ class LoginRateLimitListener implements EventSubscriberInterface
         $clientIp = $request->getClientIp();
         $status = $response->getStatusCode();
 
-        if ($status === 200) {
+        if (200 === $status) {
             $this->resetAttempts($clientIp);
-            $this->logger?->info('Successful login for IP: ' . $clientIp . ' - attempts reset');
-        } elseif ($status === 401) {
+            $this->logger?->info('Successful login for IP: '.$clientIp.' - attempts reset');
+        } elseif (401 === $status) {
             $newAttempts = $this->incrementAttempts($clientIp);
-            $this->logger?->warning('Failed login attempt for IP: ' . $clientIp . ' - total attempts: ' . $newAttempts);
+            $this->logger?->warning('Failed login attempt for IP: '.$clientIp.' - total attempts: '.$newAttempts);
         }
     }
 
     private function getAttempts(string $clientIp): int
     {
-        $filename = $this->cacheDir . md5($clientIp) . '.json';
+        $filename = $this->cacheDir.md5($clientIp).'.json';
 
         if (!file_exists($filename)) {
             return 0;
         }
 
         $data = file_get_contents($filename);
-        if ($data === false) {
+        if (false === $data) {
             return 0;
         }
 
@@ -117,6 +117,7 @@ class LoginRateLimitListener implements EventSubscriberInterface
 
         if (time() > $decoded['expires']) {
             unlink($filename);
+
             return 0;
         }
 
@@ -127,13 +128,13 @@ class LoginRateLimitListener implements EventSubscriberInterface
     {
         $attempts = $this->getAttempts($clientIp);
         $newAttempts = $attempts + 1;
-        $filename = $this->cacheDir . md5($clientIp) . '.json';
+        $filename = $this->cacheDir.md5($clientIp).'.json';
 
         $data = [
             'attempts' => $newAttempts,
             'expires' => time() + self::LOCKOUT_DURATION,
             'ip' => $clientIp,
-            'last_attempt' => date('Y-m-d H:i:s')
+            'last_attempt' => date('Y-m-d H:i:s'),
         ];
 
         file_put_contents($filename, json_encode($data, JSON_PRETTY_PRINT));
@@ -143,11 +144,11 @@ class LoginRateLimitListener implements EventSubscriberInterface
 
     private function resetAttempts(string $clientIp): void
     {
-        $filename = $this->cacheDir . md5($clientIp) . '.json';
+        $filename = $this->cacheDir.md5($clientIp).'.json';
 
         if (file_exists($filename)) {
             unlink($filename);
-            $this->logger?->info('Reset login attempts for IP: ' . $clientIp);
+            $this->logger?->info('Reset login attempts for IP: '.$clientIp);
         }
     }
 }

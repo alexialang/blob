@@ -15,6 +15,4 @@ class CategoryQuizRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, CategoryQuiz::class);
     }
-
-
 }

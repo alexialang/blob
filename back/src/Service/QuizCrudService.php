@@ -2,13 +2,14 @@
 
 namespace App\Service;
 
+use App\Entity\Answer;
+use App\Entity\Question;
 use App\Entity\Quiz;
 use App\Entity\QuizRating;
+use App\Entity\TypeQuestion;
 use App\Entity\User;
-use App\Entity\Question;
-use App\Entity\Answer;
-use App\Enum\Status;
 use App\Enum\Difficulty;
+use App\Enum\Status;
 use App\Event\QuizCreatedEvent;
 use App\Repository\CategoryQuizRepository;
 use App\Repository\GroupRepository;
@@ -16,12 +17,10 @@ use App\Repository\QuizRepository;
 use App\Repository\TypeQuestionRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Exception\ValidationFailedException;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\Serializer\SerializerInterface;
-use App\Entity\TypeQuestion;
 
 class QuizCrudService
 {
@@ -33,7 +32,6 @@ class QuizCrudService
     private ValidatorInterface $validator;
     private LoggerInterface $logger;
     private EventDispatcherInterface $eventDispatcher;
-    private SerializerInterface $serializer;
 
     public function __construct(
         EntityManagerInterface $em,
@@ -44,7 +42,6 @@ class QuizCrudService
         ValidatorInterface $validator,
         LoggerInterface $logger,
         EventDispatcherInterface $eventDispatcher,
-        SerializerInterface $serializer
     ) {
         $this->em = $em;
         $this->quizRepository = $quizRepository;
@@ -54,14 +51,14 @@ class QuizCrudService
         $this->validator = $validator;
         $this->logger = $logger;
         $this->eventDispatcher = $eventDispatcher;
-        $this->serializer = $serializer;
     }
 
     /**
-     * Affiche un quiz avec tous ses détails
-     * 
-     * @param Quiz $quiz Le quiz à afficher
+     * Affiche un quiz avec tous ses détails.
+     *
+     * @param Quiz      $quiz Le quiz à afficher
      * @param User|null $user L'utilisateur qui demande l'affichage
+     *
      * @return Quiz Quiz avec toutes ses relations chargées
      */
     public function show(Quiz $quiz, ?User $user = null): Quiz
@@ -82,19 +79,8 @@ class QuizCrudService
             }
         }
 
-        $this->logger->info('DEBUG show method', [
-            'quiz_id' => $quiz->getId(),
-            'questions_count' => $quiz->getQuestions()->count(),
-            'questions_loaded' => $quiz->getQuestions()->isInitialized()
-        ]);
-
+        // Force loading des questions et réponses
         foreach ($quiz->getQuestions() as $question) {
-            $this->logger->info('DEBUG question', [
-                'question_id' => $question->getId(),
-                'answers_count' => $question->getAnswers()->count(),
-                'answers_loaded' => $question->getAnswers()->isInitialized()
-            ]);
-            
             $question->getAnswers()->toArray();
         }
 
@@ -102,9 +88,10 @@ class QuizCrudService
     }
 
     /**
-     * Trouve un quiz par son ID
-     * 
+     * Trouve un quiz par son ID.
+     *
      * @param int $id L'ID du quiz
+     *
      * @return Quiz|null Le quiz trouvé ou null
      */
     public function find(int $id): ?Quiz
@@ -113,25 +100,26 @@ class QuizCrudService
     }
 
     /**
-     * Supprime un quiz et toutes ses données associées
-     * 
+     * Supprime un quiz et toutes ses données associées.
+     *
      * @param Quiz $quiz Le quiz à supprimer
+     *
      * @throws \InvalidArgumentException Si l'utilisateur n'a pas les droits
      */
     public function delete(Quiz $quiz): void
     {
         $this->em->beginTransaction();
-        
+
         try {
             foreach ($quiz->getUserAnswers() as $userAnswer) {
                 $this->em->remove($userAnswer);
             }
-            
+
             $quizRatings = $this->em->getRepository(QuizRating::class)->findBy(['quiz' => $quiz]);
             foreach ($quizRatings as $rating) {
                 $this->em->remove($rating);
             }
-            
+
             foreach ($quiz->getQuestions() as $question) {
                 foreach ($question->getAnswers() as $answer) {
                     $this->em->remove($answer);
@@ -141,25 +129,27 @@ class QuizCrudService
 
             $this->em->remove($quiz);
             $this->em->flush();
-            
+
             $this->em->commit();
-            
         } catch (\Exception $e) {
             $this->em->rollback();
-            $this->logger->error('Erreur lors de la suppression du quiz: ' . $e->getMessage());
+            $this->logger->error('Erreur lors de la suppression du quiz: '.$e->getMessage());
             throw new \InvalidArgumentException('Erreur lors de la suppression du quiz');
         }
     }
 
     /**
-     * Crée un nouveau quiz avec ses questions
-     * 
+     * Crée un nouveau quiz avec ses questions.
+     *
      * @param array $data Les données du quiz (déjà validées par le contrôleur)
-     * @param User $user L'utilisateur créateur
+     * @param User  $user L'utilisateur créateur
+     *
      * @return Quiz Le quiz créé
      */
     public function createWithQuestions(array $data, User $user): Quiz
     {
+        // Validation complète des données avant traitement
+        $this->validateQuizData($data);
 
         $this->em->beginTransaction();
 
@@ -214,17 +204,18 @@ class QuizCrudService
             return $quiz;
         } catch (\Exception $e) {
             $this->em->rollback();
-            $this->logger->error('Erreur création quiz: ' . $e->getMessage());
+            $this->logger->error('Erreur création quiz: '.$e->getMessage());
             throw $e;
         }
     }
 
     /**
-     * Met à jour un quiz existant avec ses questions
-     * 
-     * @param Quiz $quiz Le quiz à mettre à jour
+     * Met à jour un quiz existant avec ses questions.
+     *
+     * @param Quiz  $quiz Le quiz à mettre à jour
      * @param array $data Les nouvelles données
-     * @param User $user L'utilisateur effectuant la modification
+     * @param User  $user L'utilisateur effectuant la modification
+     *
      * @return Quiz Le quiz mis à jour
      */
     public function updateWithQuestions(Quiz $quiz, array $data, User $user): Quiz
@@ -235,9 +226,7 @@ class QuizCrudService
         if (isset($data['description'])) {
             $quiz->setDescription($data['description']);
         }
-        if (isset($data['difficulty'])) {
-            $quiz->setDifficulty(Difficulty::from($data['difficulty']));
-        }
+        // Note: difficulty is calculated from questions, not set directly on quiz
         if (isset($data['status'])) {
             $quiz->setStatus(Status::from($data['status']));
         }
@@ -251,10 +240,10 @@ class QuizCrudService
                 $quiz->setCategory($category);
             }
         }
-        
+
         if (isset($data['groups']) && is_array($data['groups'])) {
             $quiz->getGroups()->clear();
-            
+
             if (!$quiz->isPublic()) {
                 $userCompany = $user->getCompany();
                 if ($userCompany) {
@@ -284,21 +273,23 @@ class QuizCrudService
         }
 
         $this->em->flush();
+
         return $quiz;
     }
 
     /**
-     * Récupère un quiz pour l'édition avec toutes ses relations
-     * 
+     * Récupère un quiz pour l'édition avec toutes ses relations.
+     *
      * @param Quiz $quiz Le quiz à préparer pour l'édition
      * @param User $user L'utilisateur demandant l'édition
+     *
      * @return Quiz Quiz avec toutes ses relations chargées pour l'édition
      */
     public function getQuizForEdit(Quiz $quiz, User $user): Quiz
     {
         try {
             $fullQuiz = $this->quizRepository->findWithAllRelations($quiz->getId());
-            
+
             if (!$fullQuiz) {
                 throw new \InvalidArgumentException('Quiz non trouvé');
             }
@@ -306,7 +297,7 @@ class QuizCrudService
             $this->logger->info('DEBUG getQuizForEdit', [
                 'quiz_id' => $fullQuiz->getId(),
                 'quiz_title' => $fullQuiz->getTitle(),
-                'questions_count' => $fullQuiz->getQuestions()->count()
+                'questions_count' => $fullQuiz->getQuestions()->count(),
             ]);
 
             foreach ($fullQuiz->getQuestions() as $question) {
@@ -316,15 +307,16 @@ class QuizCrudService
 
             return $fullQuiz;
         } catch (\Exception $e) {
-            $this->logger->error('Erreur getQuizForEdit: ' . $e->getMessage());
+            $this->logger->error('Erreur getQuizForEdit: '.$e->getMessage());
             throw $e;
         }
     }
 
     /**
-     * Valide les données d'un quiz
-     * 
+     * Valide les données d'un quiz.
+     *
      * @param array $data Les données à valider
+     *
      * @throws ValidationFailedException Si les données sont invalides
      */
     private function validateQuizData(array $data): void
@@ -334,12 +326,12 @@ class QuizCrudService
             'description' => [new Assert\NotBlank(), new Assert\Length(['min' => 10])],
             'status' => [new Assert\NotBlank()],
             'isPublic' => [new Assert\Type('bool')],
-            'category' => new Assert\Optional([new Assert\Type('numeric')]),
+            'category_id' => new Assert\Optional([new Assert\Type('numeric'), new Assert\GreaterThan(0)]),
             'groups' => new Assert\Optional([new Assert\Type('array')]),
             'questions' => new Assert\Optional([
                 new Assert\Type('array'),
-                new Assert\Count(['min' => 1, 'minMessage' => 'Au moins une question est requise'])
-            ])
+                new Assert\Count(['min' => 1, 'minMessage' => 'Au moins une question est requise']),
+            ]),
         ]);
 
         $violations = $this->validator->validate($data, $constraints);
@@ -356,7 +348,7 @@ class QuizCrudService
     }
 
     /**
-     * Valide les données d'une question
+     * Valide les données d'une question.
      */
     private function validateQuestionData(array $questionData, int $index): void
     {
@@ -367,8 +359,8 @@ class QuizCrudService
             'answers' => [
                 new Assert\NotBlank(),
                 new Assert\Type('array'),
-                new Assert\Count(['min' => 2, 'minMessage' => 'Au moins 2 réponses sont requises par question'])
-            ]
+                new Assert\Count(['min' => 2, 'minMessage' => 'Au moins 2 réponses sont requises par question']),
+            ],
         ]);
 
         $violations = $this->validator->validate($questionData, $constraints);
@@ -385,7 +377,7 @@ class QuizCrudService
     }
 
     /**
-     * Valide les données d'une réponse
+     * Valide les données d'une réponse.
      */
     private function validateAnswerData(array $answerData, int $questionIndex, int $answerIndex): void
     {
@@ -394,7 +386,7 @@ class QuizCrudService
             'is_correct' => new Assert\Optional([new Assert\Type('bool')]),
             'order_correct' => new Assert\Optional([new Assert\Type('string')]),
             'pair_id' => new Assert\Optional([new Assert\Type('string')]),
-            'is_intrus' => new Assert\Optional([new Assert\Type('bool')])
+            'is_intrus' => new Assert\Optional([new Assert\Type('bool')]),
         ]);
 
         $violations = $this->validator->validate($answerData, $constraints);
@@ -404,7 +396,7 @@ class QuizCrudService
     }
 
     /**
-     * Crée une question pour un quiz
+     * Crée une question pour un quiz.
      */
     private function createQuestion(Quiz $quiz, array $questionData): Question
     {
@@ -417,7 +409,7 @@ class QuizCrudService
 
         if (isset($questionData['difficulty'])) {
             $difficulty = Difficulty::tryFrom($questionData['difficulty']);
-            if ($difficulty !== null) {
+            if (null !== $difficulty) {
                 $question->setDifficulty($difficulty);
             }
         }
@@ -435,7 +427,7 @@ class QuizCrudService
     }
 
     /**
-     * Crée une réponse pour une question
+     * Crée une réponse pour une question.
      */
     private function createAnswer(Question $question, array $answerData): Answer
     {
@@ -462,7 +454,7 @@ class QuizCrudService
     }
 
     /**
-     * Récupère ou crée le type de question à partir des données
+     * Récupère ou crée le type de question à partir des données.
      */
     private function getTypeQuestionFromData(array $questionData): TypeQuestion
     {
@@ -488,7 +480,7 @@ class QuizCrudService
     }
 
     /**
-     * Trouve ou crée un type de question par son nom
+     * Trouve ou crée un type de question par son nom.
      */
     private function findOrCreateTypeQuestion(string $name): TypeQuestion
     {
@@ -504,7 +496,7 @@ class QuizCrudService
     }
 
     /**
-     * Met à jour les questions d'un quiz
+     * Met à jour les questions d'un quiz.
      */
     private function updateQuizQuestions(Quiz $quiz, array $questionsData): void
     {
@@ -516,7 +508,7 @@ class QuizCrudService
             }
             $this->em->remove($existingQuestion);
         }
-        
+
         $quiz->getQuestions()->clear();
         $this->em->flush();
 
@@ -524,6 +516,4 @@ class QuizCrudService
             $this->createQuestion($quiz, $questionData);
         }
     }
-
-
 }

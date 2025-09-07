@@ -2,11 +2,10 @@
 
 namespace App\Service;
 
-use App\Entity\User;
 use App\Entity\Quiz;
+use App\Entity\User;
 use App\Repository\UserAnswerRepository;
 use App\Repository\UserRepository;
-use Doctrine\ORM\EntityManagerInterface;
 
 class LeaderboardService
 {
@@ -14,27 +13,27 @@ class LeaderboardService
         private UserAnswerRepository $userAnswerRepository,
         private UserRepository $userRepository,
         private UserService $userService,
-        private EntityManagerInterface $entityManager
-    ) {}
+    ) {
+    }
 
     public function getQuizLeaderboard(Quiz $quiz, ?User $currentUser): array
     {
         $results = $this->userAnswerRepository->findQuizLeaderboard($quiz->getId());
-        
+
         $leaderboard = [];
         $currentUserRank = null;
         $currentUserId = $currentUser?->getId();
-        
+
         foreach ($results as $index => $result) {
             $rank = $index + 1;
             $isCurrentUser = $currentUserId && $result['userId'] == $currentUserId;
-            
+
             if ($isCurrentUser) {
                 $currentUserRank = $rank;
             }
 
-            $displayName = $result['name'] ?: ($result['firstName'] . ' ' . $result['lastName']);
-            if (!$displayName || trim($displayName) === '') {
+            $displayName = $result['name'] ?: ($result['firstName'].' '.$result['lastName']);
+            if (!$displayName || '' === trim($displayName)) {
                 $displayName = 'Joueur anonyme';
             }
 
@@ -43,7 +42,7 @@ class LeaderboardService
                 'name' => trim($displayName),
                 'company' => $result['company'] ?: 'Aucune entreprise',
                 'score' => $result['score'],
-                'isCurrentUser' => $isCurrentUser
+                'isCurrentUser' => $isCurrentUser,
             ];
         }
 
@@ -51,36 +50,36 @@ class LeaderboardService
             'leaderboard' => array_slice($leaderboard, 0, 10),
             'currentUserRank' => $currentUserRank ?: count($results) + 1,
             'totalPlayers' => count($results),
-            'currentUserScore' => $currentUserId ? $this->getCurrentUserQuizScore($quiz->getId(), $currentUserId) : 0
+            'currentUserScore' => $currentUserId ? $this->getCurrentUserQuizScore($quiz->getId(), $currentUserId) : 0,
         ];
     }
 
     public function getGeneralLeaderboard(int $limit, ?User $currentUser): array
     {
         $users = $this->userRepository->findActiveUsersForLeaderboard();
-        
+
         $leaderboard = [];
         $currentUserId = $currentUser?->getId();
         $currentUserPosition = null;
-        
+
         $allUserStats = [];
         foreach ($users as $user) {
             $allUserStats[$user->getId()] = $this->userService->getUserStatistics($user);
         }
-        
+
         foreach ($users as $user) {
             $position = count($leaderboard) + 1;
             $isCurrentUser = $currentUserId && $user->getId() == $currentUserId;
-            
+
             if ($isCurrentUser) {
                 $currentUserPosition = $position;
             }
 
             $userStats = $allUserStats[$user->getId()];
-            
+
             $avatarShape = null;
             $avatarColor = null;
-            
+
             if ($user->getAvatar()) {
                 $avatarData = json_decode($user->getAvatar(), true);
                 $avatarShape = $avatarData['shape'] ?? null;
@@ -90,7 +89,7 @@ class LeaderboardService
             $leaderboard[] = [
                 'id' => $user->getId(),
                 'position' => $position,
-                'pseudo' => $user->getPseudo() ?: ($user->getFirstName() . ' ' . $user->getLastName()),
+                'pseudo' => $user->getPseudo() ?: ($user->getFirstName().' '.$user->getLastName()),
                 'firstName' => $user->getFirstName(),
                 'lastName' => $user->getLastName(),
                 'avatar' => $user->getAvatar() ?: 'default',
@@ -103,11 +102,11 @@ class LeaderboardService
                 'badgesCount' => $userStats['badgesEarned'],
                 'rankingScore' => $userStats['totalScore'],
                 'memberSince' => $userStats['memberSince'],
-                'isCurrentUser' => $isCurrentUser
+                'isCurrentUser' => $isCurrentUser,
             ];
         }
 
-        usort($leaderboard, function($a, $b) {
+        usort($leaderboard, function ($a, $b) {
             return $b['totalScore'] - $a['totalScore'];
         });
 
@@ -133,13 +132,13 @@ class LeaderboardService
             'currentUser' => [
                 'position' => $currentUserPosition ?: $totalUsers + 1,
                 'data' => $currentUser ? $this->getCurrentUserLeaderboardData($currentUser, $allUserStats) : null,
-                'totalUsers' => $totalUsers
+                'totalUsers' => $totalUsers,
             ],
             'meta' => [
                 'totalUsers' => $totalUsers,
-                'limit' => (int)$limit,
-                'generatedAt' => (new \DateTime())->format('Y-m-d H:i:s')
-            ]
+                'limit' => (int) $limit,
+                'generatedAt' => (new \DateTime())->format('Y-m-d H:i:s'),
+            ],
         ];
     }
 
@@ -148,19 +147,17 @@ class LeaderboardService
         return $this->userAnswerRepository->getUserMaxScoreForQuiz($quizId, $userId);
     }
 
-
-
     private function getCurrentUserLeaderboardData(User $user, array $allUserStats): ?array
     {
         $userStats = $allUserStats[$user->getId()] ?? null;
-        
+
         if (!$userStats || !$userStats['totalScore']) {
             return null;
         }
 
         $avatarShape = null;
         $avatarColor = null;
-        
+
         if ($user->getAvatar()) {
             $avatarData = json_decode($user->getAvatar(), true);
             $avatarShape = $avatarData['shape'] ?? null;
@@ -169,7 +166,7 @@ class LeaderboardService
 
         return [
             'id' => $user->getId(),
-            'pseudo' => $user->getPseudo() ?: ($user->getFirstName() . ' ' . $user->getLastName()),
+            'pseudo' => $user->getPseudo() ?: ($user->getFirstName().' '.$user->getLastName()),
             'firstName' => $user->getFirstName(),
             'lastName' => $user->getLastName(),
             'avatar' => $user->getAvatar() ?: 'default',
@@ -182,8 +179,7 @@ class LeaderboardService
             'badgesCount' => $userStats['badgesEarned'],
             'rankingScore' => $userStats['totalScore'],
             'memberSince' => $userStats['memberSince'],
-            'isCurrentUser' => true
+            'isCurrentUser' => true,
         ];
     }
 }
-

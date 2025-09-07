@@ -12,7 +12,7 @@ class QuizCreatedEvent extends Event
 
     public function __construct(
         private Quiz $quiz,
-        private User $user
+        private User $user,
     ) {
     }
 

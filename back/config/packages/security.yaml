@@ -20,6 +20,10 @@ security:
         api_doc:
             pattern: ^/api/doc
             security: false
+        donations:
+            pattern: ^/api/donations
+            stateless: true
+            security: false
 
         login:
             pattern:  ^/api/login_check$

@@ -5,9 +5,9 @@ namespace App\Entity;
 use App\Repository\CompanyRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Doctrine\DBAL\Types\Types;
 
 #[ORM\Entity(repositoryClass: CompanyRepository::class)]
 class Company
@@ -15,15 +15,14 @@ class Company
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['quiz:read','quiz:create','company:read','user:admin_read','company:list','company:detail'])]
-    private ?int $id = null;
+    #[Groups(['quiz:read', 'quiz:create', 'company:read', 'user:admin_read', 'company:list', 'company:detail'])]
+    private int $id;
 
-
-    #[Groups(['quiz:read','quiz:create','company:read','user:admin_read','company:list','company:detail'])]
+    #[Groups(['quiz:read', 'quiz:create', 'company:read', 'user:admin_read', 'company:list', 'company:detail'])]
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 
-    #[Groups(['company:read','user:admin_read','company:detail','company:create'])]
+    #[Groups(['company:read', 'user:admin_read', 'company:detail', 'company:create'])]
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $dateCreation = null;
 
@@ -170,8 +169,6 @@ class Company
 
         return $this;
     }
-
-
 
     #[Groups(['company:list', 'company:detail'])]
     public function getUserCount(): int

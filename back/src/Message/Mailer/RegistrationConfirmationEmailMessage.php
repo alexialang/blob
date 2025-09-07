@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Message\Mailer;
+
 class RegistrationConfirmationEmailMessage
 {
     public string $email;
@@ -9,8 +10,8 @@ class RegistrationConfirmationEmailMessage
 
     public function __construct(string $email, string $firstName, string $confirmationToken)
     {
-        $this->email             = $email;
-        $this->firstName         = $firstName;
+        $this->email = $email;
+        $this->firstName = $firstName;
         $this->confirmationToken = $confirmationToken;
     }
 

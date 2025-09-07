@@ -1,12 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { DonationService } from '../../services/donation.service';
 import { catchError, finalize } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { SeoService } from '../../services/seo.service';
-import { AnalyticsService } from '../../services/analytics.service';
 
 @Component({
   selector: 'app-donation',
@@ -27,19 +26,24 @@ export class DonationComponent implements OnInit {
   constructor(
     private donationService: DonationService,
     private router: Router,
+    private route: ActivatedRoute,
     private readonly seoService: SeoService,
-    private analytics: AnalyticsService
   ) {}
 
   ngOnInit() {
-    this.analytics.trackDonationPageView();
+    // Vérifier si l'utilisateur revient d'une annulation de paiement
+    this.route.queryParams.subscribe(params => {
+      if (params['cancelled'] === 'true') {
+        this.error = 'Paiement annulé. Vous pouvez réessayer si vous le souhaitez.';
+      }
+    });
 
     this.seoService.updateSEO({
       title: 'Blob - Faites un don pour soutenir notre plateforme',
       description: 'Soutenez Blob et contribuez au développement des quiz interactifs éducatifs. Chaque don nous aide à innover et offrir plus de contenus.',
       keywords: 'faire un don, contribution, financement, soutenir Blob, quiz éducatif, plateforme',
       ogTitle: 'Faites un don à Blob',
-      ogDescription: 'Participez au développement de Blob et aidez-nous à offrir des quiz interactifs innovants pour l’apprentissage.',
+      ogDescription: 'Participez au développement de Blob et aidez-nous à offrir des quiz interactifs innovants pour l\'apprentissage.',
       ogUrl: '/faire-un-don'
     });
   }

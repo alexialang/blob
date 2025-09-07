@@ -15,7 +15,7 @@ class CategoryQuiz
     #[ORM\GeneratedValue]
     #[ORM\Column]
     #[Groups(['quiz:read', 'quiz:create', 'quiz:organized'])]
-    private ?int $id = null;
+    private int $id;
 
     #[ORM\Column(length: 100)]
     #[Groups(['quiz:read', 'quiz:create', 'quiz:organized'])]

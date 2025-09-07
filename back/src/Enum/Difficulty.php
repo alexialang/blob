@@ -10,7 +10,7 @@ enum Difficulty: string
 
     public function getLabel(): string
     {
-        return match($this) {
+        return match ($this) {
             self::EASY => 'Facile',
             self::MEDIUM => 'Moyen',
             self::HARD => 'Difficile',
@@ -19,7 +19,7 @@ enum Difficulty: string
 
     public function getWeight(): int
     {
-        return match($this) {
+        return match ($this) {
             self::EASY => 1,
             self::MEDIUM => 2,
             self::HARD => 3,
@@ -28,8 +28,13 @@ enum Difficulty: string
 
     public static function fromWeight(float $avgWeight): self
     {
-        if ($avgWeight <= 1.3) return self::EASY;
-        if ($avgWeight <= 2.3) return self::MEDIUM;
+        if ($avgWeight <= 1.3) {
+            return self::EASY;
+        }
+        if ($avgWeight <= 2.3) {
+            return self::MEDIUM;
+        }
+
         return self::HARD;
     }
 

@@ -13,10 +13,10 @@ class Room
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    private ?int $id = null;
+    private int $id;
 
     #[ORM\Column(length: 255, unique: true)]
-    private ?string $roomCode = null;
+    private string $roomCode;
 
     #[ORM\Column(length: 255)]
     private ?string $name = null;
@@ -30,13 +30,13 @@ class Room
     private ?User $creator = null;
 
     #[ORM\Column]
-    private ?int $maxPlayers = 4;
+    private int $maxPlayers = 4;
 
     #[ORM\Column]
-    private ?bool $isTeamMode = false;
+    private bool $isTeamMode = false;
 
     #[ORM\Column(length: 50)]
-    private ?string $status = 'waiting'; // waiting, playing, finished
+    private string $status = 'waiting'; // waiting, playing, finished
 
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
@@ -70,6 +70,7 @@ class Room
     public function setRoomCode(string $roomCode): static
     {
         $this->roomCode = $roomCode;
+
         return $this;
     }
 
@@ -81,6 +82,7 @@ class Room
     public function setName(string $name): static
     {
         $this->name = $name;
+
         return $this;
     }
 
@@ -92,6 +94,7 @@ class Room
     public function setQuiz(?Quiz $quiz): static
     {
         $this->quiz = $quiz;
+
         return $this;
     }
 
@@ -103,6 +106,7 @@ class Room
     public function setCreator(?User $creator): static
     {
         $this->creator = $creator;
+
         return $this;
     }
 
@@ -114,6 +118,7 @@ class Room
     public function setMaxPlayers(int $maxPlayers): static
     {
         $this->maxPlayers = $maxPlayers;
+
         return $this;
     }
 
@@ -125,6 +130,7 @@ class Room
     public function setIsTeamMode(bool $isTeamMode): static
     {
         $this->isTeamMode = $isTeamMode;
+
         return $this;
     }
 
@@ -136,6 +142,7 @@ class Room
     public function setStatus(string $status): static
     {
         $this->status = $status;
+
         return $this;
     }
 
@@ -147,6 +154,7 @@ class Room
     public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
@@ -158,6 +166,7 @@ class Room
     public function setGameStartedAt(?\DateTimeImmutable $gameStartedAt): static
     {
         $this->gameStartedAt = $gameStartedAt;
+
         return $this;
     }
 
@@ -197,11 +206,11 @@ class Room
 
     public function setGameSession(?GameSession $gameSession): static
     {
-        if ($gameSession === null && $this->gameSession !== null) {
+        if (null === $gameSession && null !== $this->gameSession) {
             $this->gameSession->setRoom(null);
         }
 
-        if ($gameSession !== null && $gameSession->getRoom() !== $this) {
+        if (null !== $gameSession && $gameSession->getRoom() !== $this) {
             $gameSession->setRoom($this);
         }
 
@@ -217,6 +226,6 @@ class Room
 
     public function isAvailable(): bool
     {
-        return $this->status === 'waiting' && $this->getCurrentPlayerCount() < $this->maxPlayers;
+        return 'waiting' === $this->status && $this->getCurrentPlayerCount() < $this->maxPlayers;
     }
 }

@@ -20,9 +20,10 @@ class QuizRatingService
     }
 
     /**
-     * Récupère la note moyenne et le nombre d'évaluations d'un quiz
-     * 
+     * Récupère la note moyenne et le nombre d'évaluations d'un quiz.
+     *
      * @param Quiz $quiz Le quiz à évaluer
+     *
      * @return array Array contenant 'averageRating' et 'ratingCount'
      */
     public function getAverageRating(Quiz $quiz): array
@@ -32,22 +33,23 @@ class QuizRatingService
 
         return [
             'averageRating' => $averageRating ?? 0,
-            'ratingCount' => $ratingCount
+            'ratingCount' => $ratingCount,
         ];
     }
 
     /**
-     * Récupère les statistiques détaillées des ratings d'un quiz
-     * 
-     * @param Quiz $quiz Le quiz à analyser
+     * Récupère les statistiques détaillées des ratings d'un quiz.
+     *
+     * @param Quiz      $quiz        Le quiz à analyser
      * @param User|null $currentUser L'utilisateur courant (pour sa note)
+     *
      * @return array Statistiques détaillées (moyenne, total, note utilisateur)
      */
     public function getRatingStatistics(Quiz $quiz, ?User $currentUser = null): array
     {
         $avgRating = $this->quizRatingRepository->findAverageRatingForQuiz($quiz->getId());
         $totalRatings = $this->quizRatingRepository->countRatingsForQuiz($quiz->getId());
-        
+
         $userRating = null;
         if ($currentUser) {
             $userRatingEntity = $this->quizRatingRepository->findUserRatingForQuiz($currentUser->getId(), $quiz->getId());
@@ -57,16 +59,17 @@ class QuizRatingService
         return [
             'averageRating' => $avgRating,
             'totalRatings' => $totalRatings,
-            'userRating' => $userRating
+            'userRating' => $userRating,
         ];
     }
 
     /**
-     * Ajoute ou met à jour la note d'un utilisateur pour un quiz
-     * 
-     * @param User $user L'utilisateur qui note
-     * @param Quiz $quiz Le quiz à noter
-     * @param int $rating La note (1-5)
+     * Ajoute ou met à jour la note d'un utilisateur pour un quiz.
+     *
+     * @param User $user   L'utilisateur qui note
+     * @param Quiz $quiz   Le quiz à noter
+     * @param int  $rating La note (1-5)
+     *
      * @return array Statistiques mises à jour
      */
     public function rateQuiz(User $user, Quiz $quiz, int $rating): array
@@ -76,10 +79,10 @@ class QuizRatingService
         }
 
         $this->em->beginTransaction();
-        
+
         try {
             $existingRating = $this->quizRatingRepository->findUserRatingForQuiz($user->getId(), $quiz->getId());
-            
+
             if ($existingRating) {
                 $existingRating->setRating($rating);
                 $existingRating->setRatedAt(new \DateTime());
@@ -91,12 +94,11 @@ class QuizRatingService
                 $quizRating->setRatedAt(new \DateTime());
                 $this->em->persist($quizRating);
             }
-            
+
             $this->em->flush();
             $this->em->commit();
-            
+
             return $this->getRatingStatistics($quiz, $user);
-            
         } catch (\Exception $e) {
             $this->em->rollback();
             throw $e;

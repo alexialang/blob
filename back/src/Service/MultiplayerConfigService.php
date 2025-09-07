@@ -77,7 +77,7 @@ class MultiplayerConfigService
     }
 
     /**
-     * Récupère un paramètre de configuration
+     * Récupère un paramètre de configuration.
      */
     public function get(string $key, $default = null)
     {
@@ -95,7 +95,7 @@ class MultiplayerConfigService
     }
 
     /**
-     * Récupère la configuration complète
+     * Récupère la configuration complète.
      */
     public function getAll(): array
     {
@@ -103,7 +103,7 @@ class MultiplayerConfigService
     }
 
     /**
-     * Récupère la configuration des salles
+     * Récupère la configuration des salles.
      */
     public function getRoomConfig(): array
     {
@@ -111,7 +111,7 @@ class MultiplayerConfigService
     }
 
     /**
-     * Récupère la configuration du gameplay
+     * Récupère la configuration du gameplay.
      */
     public function getGameConfig(): array
     {
@@ -119,7 +119,7 @@ class MultiplayerConfigService
     }
 
     /**
-     * Récupère la configuration de synchronisation
+     * Récupère la configuration de synchronisation.
      */
     public function getSyncConfig(): array
     {
@@ -127,7 +127,7 @@ class MultiplayerConfigService
     }
 
     /**
-     * Récupère la configuration du scoring
+     * Récupère la configuration du scoring.
      */
     public function getScoringConfig(): array
     {
@@ -135,7 +135,7 @@ class MultiplayerConfigService
     }
 
     /**
-     * Récupère la configuration de sécurité
+     * Récupère la configuration de sécurité.
      */
     public function getSecurityConfig(): array
     {
@@ -143,7 +143,7 @@ class MultiplayerConfigService
     }
 
     /**
-     * Récupère la configuration Mercure
+     * Récupère la configuration Mercure.
      */
     public function getMercureConfig(): array
     {
@@ -151,7 +151,7 @@ class MultiplayerConfigService
     }
 
     /**
-     * Récupère la configuration des logs
+     * Récupère la configuration des logs.
      */
     public function getLoggingConfig(): array
     {
@@ -159,7 +159,7 @@ class MultiplayerConfigService
     }
 
     /**
-     * Récupère la configuration des performances
+     * Récupère la configuration des performances.
      */
     public function getPerformanceConfig(): array
     {
@@ -167,7 +167,7 @@ class MultiplayerConfigService
     }
 
     /**
-     * Récupère la configuration du monitoring
+     * Récupère la configuration du monitoring.
      */
     public function getMonitoringConfig(): array
     {
@@ -175,7 +175,7 @@ class MultiplayerConfigService
     }
 
     /**
-     * Vérifie si une fonctionnalité est activée
+     * Vérifie si une fonctionnalité est activée.
      */
     public function isEnabled(string $feature): bool
     {
@@ -183,7 +183,7 @@ class MultiplayerConfigService
     }
 
     /**
-     * Récupère l'URL du hub Mercure
+     * Récupère l'URL du hub Mercure.
      */
     public function getMercureHubUrl(): string
     {
@@ -191,7 +191,7 @@ class MultiplayerConfigService
     }
 
     /**
-     * Récupère l'URL publique Mercure
+     * Récupère l'URL publique Mercure.
      */
     public function getMercurePublicUrl(): string
     {
@@ -199,7 +199,7 @@ class MultiplayerConfigService
     }
 
     /**
-     * Récupère le secret JWT Mercure
+     * Récupère le secret JWT Mercure.
      */
     public function getMercureJwtSecret(): string
     {
@@ -207,7 +207,7 @@ class MultiplayerConfigService
     }
 
     /**
-     * Récupère la durée des questions
+     * Récupère la durée des questions.
      */
     public function getQuestionDuration(): int
     {
@@ -215,7 +215,7 @@ class MultiplayerConfigService
     }
 
     /**
-     * Récupère le nombre maximum de joueurs par salle
+     * Récupère le nombre maximum de joueurs par salle.
      */
     public function getMaxPlayersPerRoom(): int
     {
@@ -223,7 +223,7 @@ class MultiplayerConfigService
     }
 
     /**
-     * Récupère le nombre minimum de joueurs pour démarrer
+     * Récupère le nombre minimum de joueurs pour démarrer.
      */
     public function getMinPlayersToStart(): int
     {
@@ -231,7 +231,7 @@ class MultiplayerConfigService
     }
 
     /**
-     * Récupère le score de base pour une bonne réponse
+     * Récupère le score de base pour une bonne réponse.
      */
     public function getCorrectAnswerBaseScore(): int
     {
@@ -239,7 +239,7 @@ class MultiplayerConfigService
     }
 
     /**
-     * Récupère le bonus de temps maximum
+     * Récupère le bonus de temps maximum.
      */
     public function getTimeBonusMax(): int
     {
@@ -247,7 +247,7 @@ class MultiplayerConfigService
     }
 
     /**
-     * Récupère le facteur de pénalité de temps
+     * Récupère le facteur de pénalité de temps.
      */
     public function getTimePenaltyFactor(): int
     {
@@ -255,7 +255,7 @@ class MultiplayerConfigService
     }
 
     /**
-     * Récupère l'intervalle de heartbeat
+     * Récupère l'intervalle de heartbeat.
      */
     public function getHeartbeatInterval(): int
     {
@@ -263,7 +263,7 @@ class MultiplayerConfigService
     }
 
     /**
-     * Récupère le nombre de tentatives de retry
+     * Récupère le nombre de tentatives de retry.
      */
     public function getRetryAttempts(): int
     {
@@ -271,11 +271,10 @@ class MultiplayerConfigService
     }
 
     /**
-     * Récupère le délai de retry
+     * Récupère le délai de retry.
      */
     public function getRetryDelay(): int
     {
         return $this->config['sync']['retry_delay'];
     }
 }
-

@@ -7,8 +7,9 @@ use App\Repository\GlobalStatisticsRepository;
 class GlobalStatisticsService
 {
     public function __construct(
-        private GlobalStatisticsRepository $globalStatisticsRepository
-    ) {}
+        private GlobalStatisticsRepository $globalStatisticsRepository,
+    ) {
+    }
 
     public function getGlobalStatistics(): array
     {
@@ -17,7 +18,7 @@ class GlobalStatisticsService
 
         return [
             'teamScores' => $teamScores,
-            'groupScores' => $groupScores
+            'groupScores' => $groupScores,
         ];
     }
 
@@ -28,7 +29,7 @@ class GlobalStatisticsService
 
         return [
             'teamScores' => $teamScores,
-            'groupScores' => $groupScores
+            'groupScores' => $groupScores,
         ];
     }
 }

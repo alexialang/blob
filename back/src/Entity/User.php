@@ -16,29 +16,27 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
-
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['user:read','quiz:read','quiz:create','company:read','user:admin_read','user:public','company:detail','user:statistics','user:roles_update','user:profile'])]
-    private ?int $id = null;
-    #[Groups(['user:read', 'company:read','quiz:read','quiz:create','user:admin_read','user:public','company:detail','user:statistics','user:roles_update','user:profile'])]
+    #[Groups(['user:read', 'quiz:read', 'quiz:create', 'company:read', 'user:admin_read', 'user:public', 'company:detail', 'user:statistics', 'user:roles_update', 'user:profile'])]
+    private int $id;
+    #[Groups(['user:read', 'company:read', 'quiz:read', 'quiz:create', 'user:admin_read', 'user:public', 'company:detail', 'user:statistics', 'user:roles_update', 'user:profile'])]
     #[ORM\Column(length: 180)]
     private ?string $email = null;
 
-
-    #[Groups(['user:read','quiz:read','user:admin_read','user:admin_list','user:profile','user:roles_update'])]
+    #[Groups(['user:read', 'quiz:read', 'user:admin_read', 'user:admin_list', 'user:profile', 'user:roles_update'])]
     #[ORM\Column]
     private array $roles = [];
 
     #[ORM\Column]
     private ?string $password = null;
 
-    #[Groups(['user:read','user:admin_read','user:admin_list','user:profile'])]
+    #[Groups(['user:read', 'user:admin_read', 'user:admin_list', 'user:profile'])]
     #[ORM\Column]
     private ?\DateTimeImmutable $dateRegistration = null;
 
-    #[Groups(['user:read','user:admin_read','company:available_users','user:admin_list','user:profile'])]
+    #[Groups(['user:read', 'user:admin_read', 'company:available_users', 'user:admin_list', 'user:profile'])]
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $lastAccess = null;
 
@@ -46,36 +44,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups(['user:read', 'user:admin_read'])]
     private ?Company $company = null;
 
-    #[Groups(['user:read','user:admin_read','user:profile'])]
+    #[Groups(['user:read', 'user:admin_read', 'user:profile'])]
     #[ORM\ManyToMany(targetEntity: Badge::class, inversedBy: 'users')]
     private Collection $badges;
 
-    #[Groups(['user:read','user:admin_read'])]
+    #[Groups(['user:read', 'user:admin_read'])]
     #[ORM\OneToMany(targetEntity: Quiz::class, mappedBy: 'user')]
     private Collection $quizs;
 
-    #[Groups(['user:read','user:admin_read'])]
+    #[Groups(['user:read', 'user:admin_read'])]
     #[ORM\OneToMany(targetEntity: UserAnswer::class, mappedBy: 'user')]
     private Collection $userAnswers;
 
-    #[Groups(['user:read','user:admin_read','user:profile'])]
+    #[Groups(['user:read', 'user:admin_read', 'user:profile'])]
     #[ORM\OneToMany(targetEntity: UserPermission::class, mappedBy: 'user')]
     private Collection $userPermissions;
 
-    #[Groups(['user:read','user:admin_read'])]
+    #[Groups(['user:read', 'user:admin_read'])]
     #[ORM\ManyToMany(targetEntity: Group::class, inversedBy: 'users')]
     private Collection $groups;
 
-    #[Groups(['user:read','quiz:create','user:admin_read','user:public','company:detail','user:admin_list','user:profile'])]
+    #[Groups(['user:read', 'quiz:create', 'user:admin_read', 'user:public', 'company:detail', 'user:admin_list', 'user:profile'])]
     #[ORM\Column(length: 70)]
     private ?string $firstName = null;
-    #[Groups(['user:read','quiz:create','user:admin_read','user:public','company:detail','user:admin_list','user:profile'])]
+    #[Groups(['user:read', 'quiz:create', 'user:admin_read', 'user:public', 'company:detail', 'user:admin_list', 'user:profile'])]
     #[ORM\Column(length: 70)]
     private ?string $lastName = null;
 
-    #[Groups(['user:read','user:admin_read','company:detail','company:available_users','user:admin_list','user:profile'])]
+    #[Groups(['user:read', 'user:admin_read', 'company:detail', 'company:available_users', 'user:admin_list', 'user:profile'])]
     #[ORM\Column]
-    private ?bool $isActive = true;
+    private bool $isActive = true;
 
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $deletedAt = null;
@@ -93,13 +91,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $passwordResetRequestAt = null;
 
-    #[Groups(['user:read','user:profile'])]
+    #[Groups(['user:read', 'user:profile'])]
     #[ORM\Column(length: 50, nullable: true)]
     private ?string $pseudo = null;
 
-    #[Groups(['user:read','user:profile'])]
+    #[Groups(['user:read', 'user:profile'])]
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $avatar = null;
+
     public function __construct()
     {
         $this->badges = new ArrayCollection();
@@ -160,7 +159,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function eraseCredentials(): void
     {
-
     }
 
     public function getDateRegistration(): ?\DateTimeImmutable
@@ -303,6 +301,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
         return $this;
     }
+
     public function hasPermission(Permission $permission): bool
     {
         foreach ($this->userPermissions as $perm) {
@@ -382,13 +381,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
         return $this;
     }
+
     public function getConfirmationToken(): ?string
     {
         return $this->confirmationToken;
     }
+
     public function setConfirmationToken(?string $confirmationToken): static
     {
         $this->confirmationToken = $confirmationToken;
+
         return $this;
     }
 
@@ -396,9 +398,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         return $this->isVerified;
     }
+
     public function setIsVerified(bool $isVerified): static
     {
         $this->isVerified = $isVerified;
+
         return $this;
     }
 
@@ -447,6 +451,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPseudo(?string $pseudo): static
     {
         $this->pseudo = $pseudo;
+
         return $this;
     }
 
@@ -459,6 +464,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setAvatar(?string $avatar): static
     {
         $this->avatar = $avatar;
+
         return $this;
     }
 
@@ -468,8 +474,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         if (!$this->avatar) {
             return null;
         }
-        
+
         $avatarData = json_decode($this->avatar, true);
+
         return $avatarData['shape'] ?? null;
     }
 
@@ -479,8 +486,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         if (!$this->avatar) {
             return null;
         }
-        
+
         $avatarData = json_decode($this->avatar, true);
+
         return $avatarData['color'] ?? null;
     }
 }

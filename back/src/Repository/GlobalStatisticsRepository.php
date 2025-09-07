@@ -18,6 +18,7 @@ class GlobalStatisticsRepository extends ServiceEntityRepository
 
     /**
      * @param int $limit Limite de résultats (défaut: 20)
+     *
      * @return array Array de statistiques par quiz
      */
     public function getTeamScoresByQuiz(int $limit = 20): array
@@ -41,28 +42,30 @@ class GlobalStatisticsRepository extends ServiceEntityRepository
                 ->setMaxResults($limit)
                 ->getQuery()
                 ->getResult();
-            
+
             $teamScores = [];
             foreach ($results as $result) {
                 $teamScores[] = [
                     'quizTitle' => $result['quizTitle'],
-                    'quizId' => (int)$result['quizId'],
-                    'averageScore' => (float)$result['averageScore'],
-                    'participants' => (int)$result['participants']
+                    'quizId' => (int) $result['quizId'],
+                    'averageScore' => (float) $result['averageScore'],
+                    'participants' => (int) $result['participants'],
                 ];
             }
+
             return $teamScores;
         } catch (\Exception $e) {
-            ("Erreur dans getTeamScoresByQuiz: " . $e->getMessage());
+            // Erreur dans getTeamScoresByQuiz: " . $e->getMessage()
             return [];
         }
     }
 
     /**
-     * Récupère les scores par quiz filtrés pour une entreprise spécifique (OPTIMIZED)
-     * 
+     * Récupère les scores par quiz filtrés pour une entreprise spécifique (OPTIMIZED).
+     *
      * @param int $companyId ID de l'entreprise à analyser
-     * @param int $limit Limite de résultats (défaut: 20)
+     * @param int $limit     Limite de résultats (défaut: 20)
+     *
      * @return array Statistiques des quiz pour cette entreprise
      */
     public function getTeamScoresByQuizForCompany(int $companyId, int $limit = 20): array
@@ -91,23 +94,24 @@ class GlobalStatisticsRepository extends ServiceEntityRepository
 
             $teamScores = [];
             foreach ($results as $result) {
-                $averageScore = $result['averageScore'] !== null ? (float)$result['averageScore'] : 0.0;
+                $averageScore = null !== $result['averageScore'] ? (float) $result['averageScore'] : 0.0;
                 $teamScores[] = [
                     'quizTitle' => $result['quizTitle'],
-                    'quizId' => (int)$result['quizId'],
+                    'quizId' => (int) $result['quizId'],
                     'averageScore' => $averageScore,
-                    'participants' => (int)$result['participants']
+                    'participants' => (int) $result['participants'],
                 ];
             }
-            
+
             return $teamScores;
         } catch (\Exception $e) {
-            error_log("Erreur dans getTeamScoresByQuizForCompany: " . $e->getMessage());
+            error_log('Erreur dans getTeamScoresByQuizForCompany: '.$e->getMessage());
+
             return [];
         }
     }
 
-    public function getGroupScoresByQuiz(): array
+    public function getGroupScoresByQuiz(int $limit = 100): array
     {
         try {
             $qb = $this->getEntityManager()->createQueryBuilder();
@@ -132,7 +136,7 @@ class GlobalStatisticsRepository extends ServiceEntityRepository
                 ->setMaxResults($limit)
                 ->getQuery()
                 ->getResult();
-            
+
             $groupScores = [];
             foreach ($results as $result) {
                 $groupName = $result['groupName'];
@@ -141,18 +145,19 @@ class GlobalStatisticsRepository extends ServiceEntityRepository
                 }
                 $groupScores[$groupName][] = [
                     'quizTitle' => $result['quizTitle'],
-                    'quizId' => (int)$result['quizId'],
-                    'averageScore' => (float)$result['averageScore'],
-                    'participants' => (int)$result['participants']
+                    'quizId' => (int) $result['quizId'],
+                    'averageScore' => (float) $result['averageScore'],
+                    'participants' => (int) $result['participants'],
                 ];
             }
+
             return $groupScores;
         } catch (\Exception $e) {
             return [];
         }
     }
 
-    public function getGroupScoresByQuizForCompany(int $companyId): array
+    public function getGroupScoresByQuizForCompany(int $companyId, int $limit = 100): array
     {
         try {
             $qb = $this->getEntityManager()->createQueryBuilder();
@@ -179,7 +184,7 @@ class GlobalStatisticsRepository extends ServiceEntityRepository
                 ->setMaxResults($limit)
                 ->getQuery()
                 ->getResult();
-            
+
             $groupScores = [];
             foreach ($results as $result) {
                 $groupName = $result['groupName'];
@@ -188,12 +193,12 @@ class GlobalStatisticsRepository extends ServiceEntityRepository
                 }
                 $groupScores[$groupName][] = [
                     'quizTitle' => $result['quizTitle'],
-                    'quizId' => (int)$result['quizId'],
-                    'averageScore' => (float)$result['averageScore'],
-                    'participants' => (int)$result['participants']
+                    'quizId' => (int) $result['quizId'],
+                    'averageScore' => (float) $result['averageScore'],
+                    'participants' => (int) $result['participants'],
                 ];
             }
-            
+
             return $groupScores;
         } catch (\Exception $e) {
             return [];

@@ -6,16 +6,16 @@ use App\Entity\User;
 use App\Message\Mailer\PasswordResetEmailMessage;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Messenger\Exception\ExceptionInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
-use Symfony\Component\Uid\Uuid;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
-use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Exception\ValidationFailedException;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class UserPasswordResetService
 {
@@ -30,7 +30,8 @@ class UserPasswordResetService
         #[Autowire('%mailer_from%')]
         private readonly string $mailerFrom,
         private readonly ValidatorInterface $validator,
-    ) {}
+    ) {
+    }
 
     /**
      * @throws ExceptionInterface
@@ -38,7 +39,7 @@ class UserPasswordResetService
     public function requestPasswordReset(string $email): void
     {
         $this->validateEmailData(['email' => $email]);
-        
+
         $user = $this->userRepository->findOneBy(['email' => $email]);
         if (!$user) {
             return;
@@ -60,7 +61,7 @@ class UserPasswordResetService
     public function resetPassword(string $token, string $newPassword, string $confirmPassword): bool
     {
         $this->validatePasswordData(['password' => $newPassword, 'confirmPassword' => $confirmPassword]);
-        
+
         if ($newPassword !== $confirmPassword) {
             return false;
         }
@@ -79,6 +80,7 @@ class UserPasswordResetService
         $user->setPassword($this->passwordHasher->hashPassword($user, $newPassword));
 
         $this->em->flush();
+
         return true;
     }
 
@@ -110,12 +112,13 @@ class UserPasswordResetService
     private function tokenExpired(User $user): bool
     {
         $requestedAt = $user->getPasswordResetRequestAt();
+
         return !$requestedAt || $requestedAt->getTimestamp() < (time() - 3600);
     }
 
     public function sendPasswordResetEmail(string $email, string $firstName, string $token): void
     {
-        $resetUrl = rtrim($this->frontendUrl, '/') . '/reset-password/' . $token;
+        $resetUrl = rtrim($this->frontendUrl, '/').'/reset-password/'.$token;
 
         $emailObject = (new TemplatedEmail())
             ->from($this->mailerFrom)
@@ -124,7 +127,7 @@ class UserPasswordResetService
             ->htmlTemplate('emails/reset_password.html.twig')
             ->context([
                 'firstName' => $firstName,
-                'resetUrl'  => $resetUrl,
+                'resetUrl' => $resetUrl,
             ]);
 
         $this->mailer->send($emailObject);
@@ -135,8 +138,8 @@ class UserPasswordResetService
         $constraints = new Assert\Collection([
             'email' => [
                 new Assert\NotBlank(['message' => 'L\'email est requis']),
-                new Assert\Email(['message' => 'L\'email n\'est pas valide'])
-            ]
+                new Assert\Email(['message' => 'L\'email n\'est pas valide']),
+            ],
         ]);
 
         $errors = $this->validator->validate($data, $constraints);
@@ -150,11 +153,11 @@ class UserPasswordResetService
         $constraints = new Assert\Collection([
             'password' => [
                 new Assert\NotBlank(['message' => 'Le mot de passe est requis']),
-                new Assert\Length(['min' => 8, 'minMessage' => 'Le mot de passe doit contenir au moins 8 caractères'])
+                new Assert\Length(['min' => 8, 'minMessage' => 'Le mot de passe doit contenir au moins 8 caractères']),
             ],
             'confirmPassword' => [
-                new Assert\NotBlank(['message' => 'La confirmation du mot de passe est requise'])
-            ]
+                new Assert\NotBlank(['message' => 'La confirmation du mot de passe est requise']),
+            ],
         ]);
 
         $errors = $this->validator->validate($data, $constraints);

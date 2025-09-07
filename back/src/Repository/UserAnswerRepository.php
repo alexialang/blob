@@ -2,8 +2,8 @@
 
 namespace App\Repository;
 
-use App\Entity\UserAnswer;
 use App\Entity\Quiz;
+use App\Entity\UserAnswer;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -47,6 +47,7 @@ class UserAnswerRepository extends ServiceEntityRepository
     public function getQuizLeaderboardData(Quiz $quiz): array
     {
         $qb = $this->createQueryBuilder('ua');
+
         return $qb->select('ua.total_score as score, u.pseudo as name, c.name as company, u.id as userId')
             ->join('ua.user', 'u')
             ->leftJoin('u.company', 'c')
@@ -69,7 +70,7 @@ class UserAnswerRepository extends ServiceEntityRepository
             ->getResult();
 
         $leaderboardData = [];
-        
+
         foreach ($users as $user) {
             $userStats = $this->getUserStats($user['userId']);
             if ($userStats) {
@@ -91,12 +92,12 @@ class UserAnswerRepository extends ServiceEntityRepository
                     'firstName' => $userData['firstName'],
                     'lastName' => $userData['lastName'],
                     'avatar' => $userData['avatar'],
-                    'companyName' => $userData['companyName']
+                    'companyName' => $userData['companyName'],
                 ];
             }
         }
 
-        usort($leaderboardData, function($a, $b) {
+        usort($leaderboardData, function ($a, $b) {
             return $b['totalScore'] - $a['totalScore'];
         });
 
@@ -187,7 +188,7 @@ class UserAnswerRepository extends ServiceEntityRepository
         return [
             'totalScore' => $totalScore,
             'quizzesCompleted' => $quizzesCompleted,
-            'averageScore' => $averageScore
+            'averageScore' => $averageScore,
         ];
     }
 

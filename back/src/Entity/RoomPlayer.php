@@ -11,7 +11,7 @@ class RoomPlayer
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    private ?int $id = null;
+    private int $id;
 
     #[ORM\ManyToOne(targetEntity: Room::class, inversedBy: 'players')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
@@ -22,10 +22,10 @@ class RoomPlayer
     private ?User $user = null;
 
     #[ORM\Column]
-    private ?bool $isReady = false;
+    private bool $isReady = false;
 
     #[ORM\Column]
-    private ?bool $isCreator = false;
+    private bool $isCreator = false;
 
     #[ORM\Column(length: 50, nullable: true)]
     private ?string $team = null;
@@ -51,6 +51,7 @@ class RoomPlayer
     public function setRoom(?Room $room): static
     {
         $this->room = $room;
+
         return $this;
     }
 
@@ -62,6 +63,7 @@ class RoomPlayer
     public function setUser(?User $user): static
     {
         $this->user = $user;
+
         return $this;
     }
 
@@ -73,6 +75,7 @@ class RoomPlayer
     public function setIsReady(bool $isReady): static
     {
         $this->isReady = $isReady;
+
         return $this;
     }
 
@@ -84,6 +87,7 @@ class RoomPlayer
     public function setIsCreator(bool $isCreator): static
     {
         $this->isCreator = $isCreator;
+
         return $this;
     }
 
@@ -95,6 +99,7 @@ class RoomPlayer
     public function setTeam(?string $team): static
     {
         $this->team = $team;
+
         return $this;
     }
 
@@ -106,6 +111,7 @@ class RoomPlayer
     public function setJoinedAt(\DateTimeImmutable $joinedAt): static
     {
         $this->joinedAt = $joinedAt;
+
         return $this;
     }
 }

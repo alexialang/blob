@@ -11,7 +11,7 @@ class GameSession
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    private ?int $id = null;
+    private int $id;
 
     #[ORM\Column(length: 255, unique: true)]
     private ?string $gameCode = null;
@@ -21,10 +21,10 @@ class GameSession
     private ?Room $room = null;
 
     #[ORM\Column(length: 50)]
-    private ?string $status = 'playing';
+    private string $status = 'playing';
 
     #[ORM\Column]
-    private ?int $currentQuestionIndex = 0;
+    private int $currentQuestionIndex = 0;
 
     #[ORM\Column]
     private ?\DateTimeImmutable $startedAt = null;
@@ -39,7 +39,7 @@ class GameSession
     private ?\DateTimeImmutable $currentQuestionStartedAt = null;
 
     #[ORM\Column(nullable: true)]
-    private ?int $currentQuestionDuration = 30;
+    private int $currentQuestionDuration = 30;
 
     public function __construct()
     {
@@ -61,6 +61,7 @@ class GameSession
     public function setGameCode(string $gameCode): static
     {
         $this->gameCode = $gameCode;
+
         return $this;
     }
 
@@ -72,6 +73,7 @@ class GameSession
     public function setRoom(?Room $room): static
     {
         $this->room = $room;
+
         return $this;
     }
 
@@ -83,6 +85,7 @@ class GameSession
     public function setStatus(string $status): static
     {
         $this->status = $status;
+
         return $this;
     }
 
@@ -94,6 +97,7 @@ class GameSession
     public function setCurrentQuestionIndex(int $currentQuestionIndex): static
     {
         $this->currentQuestionIndex = $currentQuestionIndex;
+
         return $this;
     }
 
@@ -105,6 +109,7 @@ class GameSession
     public function setStartedAt(\DateTimeImmutable $startedAt): static
     {
         $this->startedAt = $startedAt;
+
         return $this;
     }
 
@@ -116,6 +121,7 @@ class GameSession
     public function setFinishedAt(?\DateTimeImmutable $finishedAt): static
     {
         $this->finishedAt = $finishedAt;
+
         return $this;
     }
 
@@ -127,6 +133,7 @@ class GameSession
     public function setSharedScores(?array $sharedScores): static
     {
         $this->sharedScores = $sharedScores;
+
         return $this;
     }
 
@@ -138,6 +145,7 @@ class GameSession
     public function setCurrentQuestionStartedAt(\DateTimeImmutable $currentQuestionStartedAt): static
     {
         $this->currentQuestionStartedAt = $currentQuestionStartedAt;
+
         return $this;
     }
 
@@ -149,6 +157,7 @@ class GameSession
     public function setCurrentQuestionDuration(int $currentQuestionDuration): static
     {
         $this->currentQuestionDuration = $currentQuestionDuration;
+
         return $this;
     }
 }

@@ -10,8 +10,9 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 readonly class PasswordResetEmailHandler
 {
     public function __construct(
-        private UserPasswordResetService $userPasswordResetService
-    ) {}
+        private UserPasswordResetService $userPasswordResetService,
+    ) {
+    }
 
     public function __invoke(PasswordResetEmailMessage $message): void
     {

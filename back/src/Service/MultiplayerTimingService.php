@@ -8,11 +8,12 @@ use Doctrine\ORM\EntityManagerInterface;
 class MultiplayerTimingService
 {
     public function __construct(
-        private EntityManagerInterface $entityManager
-    ) {}
+        private EntityManagerInterface $entityManager,
+    ) {
+    }
 
     /**
-     * Configure le timing d'une nouvelle question
+     * Configure le timing d'une nouvelle question.
      */
     public function setupQuestionTiming(GameSession $gameSession, int $duration = 30): void
     {
@@ -22,7 +23,7 @@ class MultiplayerTimingService
     }
 
     /**
-     * Calcule le temps restant pour une question
+     * Calcule le temps restant pour une question.
      */
     public function calculateTimeLeft(GameSession $gameSession): int
     {
@@ -31,11 +32,12 @@ class MultiplayerTimingService
         }
 
         $elapsedTime = time() - $gameSession->getCurrentQuestionStartedAt()->getTimestamp();
+
         return max(0, $gameSession->getCurrentQuestionDuration() - $elapsedTime);
     }
 
     /**
-     * Vérifie si le temps est écoulé pour une question
+     * Vérifie si le temps est écoulé pour une question.
      */
     public function isTimeExpired(GameSession $gameSession): bool
     {
@@ -43,26 +45,25 @@ class MultiplayerTimingService
     }
 
     /**
-     * Met à jour automatiquement le timing si manquant
+     * Met à jour automatiquement le timing si manquant.
      */
     public function ensureTimingExists(GameSession $gameSession): void
     {
         if (!$gameSession->getCurrentQuestionStartedAt() || !$gameSession->getCurrentQuestionDuration()) {
             $this->setupQuestionTiming($gameSession);
-
         }
     }
 
     /**
-     * Vérifie la protection anti-spam pour les transitions
+     * Vérifie la protection anti-spam pour les transitions.
      */
     public function checkTransitionCooldown(GameSession $gameSession, int $cooldownSeconds = 3): bool
     {
         $lastQuestionStartTime = $gameSession->getCurrentQuestionStartedAt();
         if ($lastQuestionStartTime && (time() - $lastQuestionStartTime->getTimestamp()) < $cooldownSeconds) {
-
             return false;
         }
+
         return true;
     }
 }

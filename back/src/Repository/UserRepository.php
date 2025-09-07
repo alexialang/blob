@@ -77,12 +77,12 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
 
         if ($search) {
             $qb->andWhere('u.email LIKE :search OR u.firstName LIKE :search OR u.lastName LIKE :search')
-              ->setParameter('search', '%' . $search . '%');
+              ->setParameter('search', '%'.$search.'%');
         }
 
         $validSorts = ['id', 'email', 'firstName', 'lastName', 'dateRegistration'];
         if (in_array($sort, $validSorts)) {
-            $qb->orderBy('u.' . $sort, 'ASC');
+            $qb->orderBy('u.'.$sort, 'ASC');
         } else {
             $qb->orderBy('u.id', 'ASC');
         }
@@ -104,7 +104,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
 
         if ($search) {
             $qb->andWhere('u.email LIKE :search OR u.firstName LIKE :search OR u.lastName LIKE :search')
-              ->setParameter('search', '%' . $search . '%');
+              ->setParameter('search', '%'.$search.'%');
         }
 
         return (int) $qb->getQuery()->getSingleScalarResult();
@@ -127,7 +127,6 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         return $qb->getQuery()->getResult();
     }
 
-
     public function findWithStats(int $userId): ?User
     {
         return $this->createQueryBuilder('u')
@@ -139,5 +138,16 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ->setParameter('userId', $userId)
             ->getQuery()
             ->getOneOrNullResult();
+    }
+
+    public function findActiveUsersForMultiplayer(): array
+    {
+        return $this->createQueryBuilder('u')
+            ->select('u.id, u.email, u.firstName, u.lastName, u.pseudo, u.avatar')
+            ->where('u.deletedAt IS NULL')
+            ->andWhere('u.isActive = true')
+            ->orderBy('u.firstName', 'ASC')
+            ->getQuery()
+            ->getResult();
     }
 }

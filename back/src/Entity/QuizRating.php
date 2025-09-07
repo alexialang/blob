@@ -12,7 +12,7 @@ class QuizRating
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    private ?int $id = null;
+    private int $id;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false)]
@@ -41,6 +41,7 @@ class QuizRating
     public function setUser(?User $user): static
     {
         $this->user = $user;
+
         return $this;
     }
 
@@ -52,6 +53,7 @@ class QuizRating
     public function setQuiz(?Quiz $quiz): static
     {
         $this->quiz = $quiz;
+
         return $this;
     }
 
@@ -63,6 +65,7 @@ class QuizRating
     public function setRating(int $rating): static
     {
         $this->rating = $rating;
+
         return $this;
     }
 
@@ -74,6 +77,7 @@ class QuizRating
     public function setRatedAt(\DateTimeInterface $ratedAt): static
     {
         $this->ratedAt = $ratedAt;
+
         return $this;
     }
 }

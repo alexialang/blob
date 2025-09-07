@@ -7,7 +7,6 @@ use App\Service\UserService;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsEntityListener;
 use Doctrine\ORM\Events;
 
-
 #[AsEntityListener(event: Events::postPersist, method: 'onPostPersist', entity: User::class)]
 class UserListener
 {

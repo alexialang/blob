@@ -2,14 +2,14 @@
 
 namespace App\Service;
 
+use App\Entity\Company;
 use App\Entity\Group;
 use App\Entity\User;
-use App\Entity\Company;
 use App\Repository\GroupRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Exception\ValidationFailedException;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class GroupService
 {
@@ -60,7 +60,7 @@ class GroupService
     public function create(array $data): Group
     {
         $this->validateGroupData($data);
-        
+
         $group = new Group();
         $group->setName($data['name']);
         $group->setAccesCode($data['acces_code'] ?? '');
@@ -90,7 +90,7 @@ class GroupService
     public function createForCompany(array $data, Company $company): Group
     {
         $this->validateGroupData($data);
-        
+
         $group = new Group();
         $group->setName($data['name']);
         $group->setAccesCode($data['acces_code'] ?? '');
@@ -114,7 +114,7 @@ class GroupService
     public function update(Group $group, array $data): Group
     {
         $this->validateGroupData($data);
-        
+
         if (isset($data['name'])) {
             $group->setName($data['name']);
         }
@@ -130,6 +130,7 @@ class GroupService
 
         return $group;
     }
+
     public function delete(Group $group): void
     {
         $this->em->remove($group);
@@ -157,10 +158,10 @@ class GroupService
         if (!$this->groupRepository->isUserInGroup($group->getId(), $user->getId())) {
             return false;
         }
-        
+
         $group->removeUser($user);
         $this->em->flush();
-        
+
         return true;
     }
 
@@ -170,29 +171,29 @@ class GroupService
             'fields' => [
                 'name' => [
                     new Assert\NotBlank(['message' => 'Le nom du groupe est requis']),
-                    new Assert\Length(['max' => 100, 'maxMessage' => 'Le nom ne peut pas dépasser 100 caractères'])
+                    new Assert\Length(['max' => 100, 'maxMessage' => 'Le nom ne peut pas dépasser 100 caractères']),
                 ],
                 'description' => [
                     new Assert\Optional([
-                        new Assert\Length(['max' => 500, 'maxMessage' => 'La description ne peut pas dépasser 500 caractères'])
-                    ])
+                        new Assert\Length(['max' => 500, 'maxMessage' => 'La description ne peut pas dépasser 500 caractères']),
+                    ]),
                 ],
                 'acces_code' => [
                     new Assert\Optional([
-                        new Assert\Length(['max' => 50, 'maxMessage' => 'Le code d\'accès ne peut pas dépasser 50 caractères'])
-                    ])
+                        new Assert\Length(['max' => 50, 'maxMessage' => 'Le code d\'accès ne peut pas dépasser 50 caractères']),
+                    ]),
                 ],
                 'company_id' => [
                     new Assert\Optional([
-                        new Assert\Type(['type' => 'integer', 'message' => 'L\'ID de l\'entreprise doit être un entier'])
-                    ])
+                        new Assert\Type(['type' => 'integer', 'message' => 'L\'ID de l\'entreprise doit être un entier']),
+                    ]),
                 ],
                 'member_ids' => [
                     new Assert\Optional([
-                        new Assert\Type(['type' => 'array', 'message' => 'Les IDs des membres doivent être un tableau'])
-                    ])
-                ]
-            ]
+                        new Assert\Type(['type' => 'array', 'message' => 'Les IDs des membres doivent être un tableau']),
+                    ]),
+                ],
+            ],
         ]);
 
         $errors = $this->validator->validate($data, $constraints);
