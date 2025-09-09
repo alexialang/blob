@@ -1,0 +1,92 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Property App\\Entity\\Answer\:\:\$id is never written, only read\.$#'
+			identifier: property.onlyRead
+			count: 1
+			path: src/Entity/Answer.php
+
+		-
+			message: '#^Property App\\Entity\\Badge\:\:\$id is never written, only read\.$#'
+			identifier: property.onlyRead
+			count: 1
+			path: src/Entity/Badge.php
+
+		-
+			message: '#^Property App\\Entity\\CategoryQuiz\:\:\$id is never written, only read\.$#'
+			identifier: property.onlyRead
+			count: 1
+			path: src/Entity/CategoryQuiz.php
+
+		-
+			message: '#^Property App\\Entity\\Company\:\:\$id is never written, only read\.$#'
+			identifier: property.onlyRead
+			count: 1
+			path: src/Entity/Company.php
+
+		-
+			message: '#^Property App\\Entity\\GameSession\:\:\$id is never written, only read\.$#'
+			identifier: property.onlyRead
+			count: 1
+			path: src/Entity/GameSession.php
+
+		-
+			message: '#^Property App\\Entity\\Group\:\:\$id is never written, only read\.$#'
+			identifier: property.onlyRead
+			count: 1
+			path: src/Entity/Group.php
+
+		-
+			message: '#^Property App\\Entity\\Question\:\:\$id is never written, only read\.$#'
+			identifier: property.onlyRead
+			count: 1
+			path: src/Entity/Question.php
+
+		-
+			message: '#^Property App\\Entity\\Quiz\:\:\$id is never written, only read\.$#'
+			identifier: property.onlyRead
+			count: 1
+			path: src/Entity/Quiz.php
+
+		-
+			message: '#^Property App\\Entity\\QuizRating\:\:\$id is never written, only read\.$#'
+			identifier: property.onlyRead
+			count: 1
+			path: src/Entity/QuizRating.php
+
+		-
+			message: '#^Property App\\Entity\\Room\:\:\$id is never written, only read\.$#'
+			identifier: property.onlyRead
+			count: 1
+			path: src/Entity/Room.php
+
+		-
+			message: '#^Property App\\Entity\\RoomPlayer\:\:\$id is never written, only read\.$#'
+			identifier: property.onlyRead
+			count: 1
+			path: src/Entity/RoomPlayer.php
+
+		-
+			message: '#^Property App\\Entity\\TypeQuestion\:\:\$id is never written, only read\.$#'
+			identifier: property.onlyRead
+			count: 1
+			path: src/Entity/TypeQuestion.php
+
+		-
+			message: '#^Property App\\Entity\\User\:\:\$id is never written, only read\.$#'
+			identifier: property.onlyRead
+			count: 1
+			path: src/Entity/User.php
+
+		-
+			message: '#^Property App\\Entity\\UserAnswer\:\:\$id is never written, only read\.$#'
+			identifier: property.onlyRead
+			count: 1
+			path: src/Entity/UserAnswer.php
+
+		-
+			message: '#^Property App\\Entity\\UserPermission\:\:\$id is never written, only read\.$#'
+			identifier: property.onlyRead
+			count: 1
+			path: src/Entity/UserPermission.php
+
