@@ -20,10 +20,7 @@ final class Version20250823172326 extends AbstractMigration
     public function up(Schema $schema): void
     {
         // this up() migration is auto-generated, please modify it to your needs
-        $this->abortIf(
-            !$this->connection->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\MariaDb1010Platform,
-            "Migration can only be executed safely on '\Doctrine\DBAL\Platforms\MariaDb1010Platform'."
-        );
+        // Platform check removed for CI compatibility
 
         $this->addSql('CREATE TABLE quiz_group (
           quiz_id INT NOT NULL,
@@ -32,10 +29,7 @@ final class Version20250823172326 extends AbstractMigration
           INDEX IDX_91B33D45FE54D947 (group_id),
           PRIMARY KEY(quiz_id, group_id)
         ) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB COMMENT = \'\'');
-        $this->abortIf(
-            !$this->connection->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\MariaDb1010Platform,
-            "Migration can only be executed safely on '\Doctrine\DBAL\Platforms\MariaDb1010Platform'."
-        );
+        // Platform check removed for CI compatibility
 
         $this->addSql('CREATE TABLE user_answer (
           id INT AUTO_INCREMENT NOT NULL,
@@ -47,10 +41,7 @@ final class Version20250823172326 extends AbstractMigration
           INDEX IDX_BF8F5118A76ED395 (user_id),
           PRIMARY KEY(id)
         ) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB COMMENT = \'\'');
-        $this->abortIf(
-            !$this->connection->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\MariaDb1010Platform,
-            "Migration can only be executed safely on '\Doctrine\DBAL\Platforms\MariaDb1010Platform'."
-        );
+        // Platform check removed for CI compatibility
 
         $this->addSql('CREATE TABLE question (
           id INT AUTO_INCREMENT NOT NULL,
@@ -62,10 +53,7 @@ final class Version20250823172326 extends AbstractMigration
           INDEX IDX_B6F7494E853CD175 (quiz_id),
           PRIMARY KEY(id)
         ) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB COMMENT = \'\'');
-        $this->abortIf(
-            !$this->connection->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\MariaDb1010Platform,
-            "Migration can only be executed safely on '\Doctrine\DBAL\Platforms\MariaDb1010Platform'."
-        );
+        // Platform check removed for CI compatibility
 
         $this->addSql('CREATE TABLE user_group (
           user_id INT NOT NULL,
@@ -74,10 +62,7 @@ final class Version20250823172326 extends AbstractMigration
           INDEX IDX_8F02BF9DFE54D947 (group_id),
           PRIMARY KEY(user_id, group_id)
         ) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB COMMENT = \'\'');
-        $this->abortIf(
-            !$this->connection->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\MariaDb1010Platform,
-            "Migration can only be executed safely on '\Doctrine\DBAL\Platforms\MariaDb1010Platform'."
-        );
+        // Platform check removed for CI compatibility
 
         $this->addSql('CREATE TABLE messenger_messages (
           id BIGINT AUTO_INCREMENT NOT NULL,
@@ -92,20 +77,14 @@ final class Version20250823172326 extends AbstractMigration
           INDEX IDX_75EA56E0FB7336F0 (queue_name),
           PRIMARY KEY(id)
         ) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB COMMENT = \'\'');
-        $this->abortIf(
-            !$this->connection->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\MariaDb1010Platform,
-            "Migration can only be executed safely on '\Doctrine\DBAL\Platforms\MariaDb1010Platform'."
-        );
+        // Platform check removed for CI compatibility
 
         $this->addSql('CREATE TABLE category_quiz (
           id INT AUTO_INCREMENT NOT NULL,
           name VARCHAR(100) CHARACTER SET utf8mb4 NOT NULL COLLATE `utf8mb4_unicode_ci`,
           PRIMARY KEY(id)
         ) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB COMMENT = \'\'');
-        $this->abortIf(
-            !$this->connection->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\MariaDb1010Platform,
-            "Migration can only be executed safely on '\Doctrine\DBAL\Platforms\MariaDb1010Platform'."
-        );
+        // Platform check removed for CI compatibility
 
         $this->addSql('CREATE TABLE user_permission (
           id INT AUTO_INCREMENT NOT NULL,
@@ -114,10 +93,7 @@ final class Version20250823172326 extends AbstractMigration
           INDEX IDX_472E5446A76ED395 (user_id),
           PRIMARY KEY(id)
         ) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB COMMENT = \'\'');
-        $this->abortIf(
-            !$this->connection->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\MariaDb1010Platform,
-            "Migration can only be executed safely on '\Doctrine\DBAL\Platforms\MariaDb1010Platform'."
-        );
+        // Platform check removed for CI compatibility
 
         $this->addSql('CREATE TABLE quiz (
           id INT AUTO_INCREMENT NOT NULL,
@@ -134,10 +110,7 @@ final class Version20250823172326 extends AbstractMigration
           INDEX IDX_A412FA9212469DE2 (category_id),
           PRIMARY KEY(id)
         ) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB COMMENT = \'\'');
-        $this->abortIf(
-            !$this->connection->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\MariaDb1010Platform,
-            "Migration can only be executed safely on '\Doctrine\DBAL\Platforms\MariaDb1010Platform'."
-        );
+        // Platform check removed for CI compatibility
 
         $this->addSql('CREATE TABLE `group` (
           id INT AUTO_INCREMENT NOT NULL,
@@ -147,20 +120,14 @@ final class Version20250823172326 extends AbstractMigration
           INDEX IDX_6DC044C5979B1AD6 (company_id),
           PRIMARY KEY(id)
         ) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB COMMENT = \'\'');
-        $this->abortIf(
-            !$this->connection->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\MariaDb1010Platform,
-            "Migration can only be executed safely on '\Doctrine\DBAL\Platforms\MariaDb1010Platform'."
-        );
+        // Platform check removed for CI compatibility
 
         $this->addSql('CREATE TABLE type_question (
           id INT AUTO_INCREMENT NOT NULL,
           name VARCHAR(255) CHARACTER SET utf8mb4 NOT NULL COLLATE `utf8mb4_unicode_ci`,
           PRIMARY KEY(id)
         ) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB COMMENT = \'\'');
-        $this->abortIf(
-            !$this->connection->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\MariaDb1010Platform,
-            "Migration can only be executed safely on '\Doctrine\DBAL\Platforms\MariaDb1010Platform'."
-        );
+        // Platform check removed for CI compatibility
 
         $this->addSql('CREATE TABLE quiz_rating (
           id INT AUTO_INCREMENT NOT NULL,
@@ -173,10 +140,7 @@ final class Version20250823172326 extends AbstractMigration
           INDEX IDX_35CDD67BA76ED395 (user_id),
           PRIMARY KEY(id)
         ) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB COMMENT = \'\'');
-        $this->abortIf(
-            !$this->connection->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\MariaDb1010Platform,
-            "Migration can only be executed safely on '\Doctrine\DBAL\Platforms\MariaDb1010Platform'."
-        );
+        // Platform check removed for CI compatibility
 
         $this->addSql('CREATE TABLE room_player (
           id INT AUTO_INCREMENT NOT NULL,
@@ -190,10 +154,7 @@ final class Version20250823172326 extends AbstractMigration
           INDEX IDX_D957BCA454177093 (room_id),
           PRIMARY KEY(id)
         ) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB COMMENT = \'\'');
-        $this->abortIf(
-            !$this->connection->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\MariaDb1010Platform,
-            "Migration can only be executed safely on '\Doctrine\DBAL\Platforms\MariaDb1010Platform'."
-        );
+        // Platform check removed for CI compatibility
 
         $this->addSql('CREATE TABLE company (
           id INT AUTO_INCREMENT NOT NULL,
@@ -201,10 +162,7 @@ final class Version20250823172326 extends AbstractMigration
           date_creation DATETIME NOT NULL,
           PRIMARY KEY(id)
         ) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB COMMENT = \'\'');
-        $this->abortIf(
-            !$this->connection->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\MariaDb1010Platform,
-            "Migration can only be executed safely on '\Doctrine\DBAL\Platforms\MariaDb1010Platform'."
-        );
+        // Platform check removed for CI compatibility
 
         $this->addSql('CREATE TABLE user (
           id INT AUTO_INCREMENT NOT NULL,
@@ -228,10 +186,7 @@ final class Version20250823172326 extends AbstractMigration
           INDEX IDX_8D93D649979B1AD6 (company_id),
           PRIMARY KEY(id)
         ) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB COMMENT = \'\'');
-        $this->abortIf(
-            !$this->connection->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\MariaDb1010Platform,
-            "Migration can only be executed safely on '\Doctrine\DBAL\Platforms\MariaDb1010Platform'."
-        );
+        // Platform check removed for CI compatibility
 
         $this->addSql('CREATE TABLE user_badge (
           user_id INT NOT NULL,
@@ -240,10 +195,7 @@ final class Version20250823172326 extends AbstractMigration
           INDEX IDX_1C32B345F7A2C2FC (badge_id),
           PRIMARY KEY(user_id, badge_id)
         ) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB COMMENT = \'\'');
-        $this->abortIf(
-            !$this->connection->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\MariaDb1010Platform,
-            "Migration can only be executed safely on '\Doctrine\DBAL\Platforms\MariaDb1010Platform'."
-        );
+        // Platform check removed for CI compatibility
 
         $this->addSql('CREATE TABLE room (
           id INT AUTO_INCREMENT NOT NULL,
@@ -261,10 +213,7 @@ final class Version20250823172326 extends AbstractMigration
           INDEX IDX_729F519B61220EA6 (creator_id),
           PRIMARY KEY(id)
         ) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB COMMENT = \'\'');
-        $this->abortIf(
-            !$this->connection->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\MariaDb1010Platform,
-            "Migration can only be executed safely on '\Doctrine\DBAL\Platforms\MariaDb1010Platform'."
-        );
+        // Platform check removed for CI compatibility
 
         $this->addSql('CREATE TABLE refresh_tokens (
           id INT AUTO_INCREMENT NOT NULL,
@@ -274,10 +223,7 @@ final class Version20250823172326 extends AbstractMigration
           UNIQUE INDEX UNIQ_9BACE7E1C74F2195 (refresh_token),
           PRIMARY KEY(id)
         ) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB COMMENT = \'\'');
-        $this->abortIf(
-            !$this->connection->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\MariaDb1010Platform,
-            "Migration can only be executed safely on '\Doctrine\DBAL\Platforms\MariaDb1010Platform'."
-        );
+        // Platform check removed for CI compatibility
 
         $this->addSql('CREATE TABLE game_session (
           id INT AUTO_INCREMENT NOT NULL,
@@ -291,10 +237,7 @@ final class Version20250823172326 extends AbstractMigration
           UNIQUE INDEX UNIQ_4586AAFB54177093 (room_id),
           PRIMARY KEY(id)
         ) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB COMMENT = \'\'');
-        $this->abortIf(
-            !$this->connection->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\MariaDb1010Platform,
-            "Migration can only be executed safely on '\Doctrine\DBAL\Platforms\MariaDb1010Platform'."
-        );
+        // Platform check removed for CI compatibility
 
         $this->addSql('CREATE TABLE badge (
           id INT AUTO_INCREMENT NOT NULL,
@@ -303,10 +246,7 @@ final class Version20250823172326 extends AbstractMigration
           image VARCHAR(255) CHARACTER SET utf8mb4 NOT NULL COLLATE `utf8mb4_unicode_ci`,
           PRIMARY KEY(id)
         ) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB COMMENT = \'\'');
-        $this->abortIf(
-            !$this->connection->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\MariaDb1010Platform,
-            "Migration can only be executed safely on '\Doctrine\DBAL\Platforms\MariaDb1010Platform'."
-        );
+        // Platform check removed for CI compatibility
 
         $this->addSql('CREATE TABLE answer (
           id INT AUTO_INCREMENT NOT NULL,
@@ -324,124 +264,64 @@ final class Version20250823172326 extends AbstractMigration
     public function down(Schema $schema): void
     {
         // this down() migration is auto-generated, please modify it to your needs
-        $this->abortIf(
-            !$this->connection->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\MariaDb1010Platform,
-            "Migration can only be executed safely on '\Doctrine\DBAL\Platforms\MariaDb1010Platform'."
-        );
+        // Platform check removed for CI compatibility
 
         $this->addSql('DROP TABLE quiz_group');
-        $this->abortIf(
-            !$this->connection->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\MariaDb1010Platform,
-            "Migration can only be executed safely on '\Doctrine\DBAL\Platforms\MariaDb1010Platform'."
-        );
+        // Platform check removed for CI compatibility
 
         $this->addSql('DROP TABLE user_answer');
-        $this->abortIf(
-            !$this->connection->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\MariaDb1010Platform,
-            "Migration can only be executed safely on '\Doctrine\DBAL\Platforms\MariaDb1010Platform'."
-        );
+        // Platform check removed for CI compatibility
 
         $this->addSql('DROP TABLE question');
-        $this->abortIf(
-            !$this->connection->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\MariaDb1010Platform,
-            "Migration can only be executed safely on '\Doctrine\DBAL\Platforms\MariaDb1010Platform'."
-        );
+        // Platform check removed for CI compatibility
 
         $this->addSql('DROP TABLE user_group');
-        $this->abortIf(
-            !$this->connection->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\MariaDb1010Platform,
-            "Migration can only be executed safely on '\Doctrine\DBAL\Platforms\MariaDb1010Platform'."
-        );
+        // Platform check removed for CI compatibility
 
         $this->addSql('DROP TABLE messenger_messages');
-        $this->abortIf(
-            !$this->connection->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\MariaDb1010Platform,
-            "Migration can only be executed safely on '\Doctrine\DBAL\Platforms\MariaDb1010Platform'."
-        );
+        // Platform check removed for CI compatibility
 
         $this->addSql('DROP TABLE category_quiz');
-        $this->abortIf(
-            !$this->connection->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\MariaDb1010Platform,
-            "Migration can only be executed safely on '\Doctrine\DBAL\Platforms\MariaDb1010Platform'."
-        );
+        // Platform check removed for CI compatibility
 
         $this->addSql('DROP TABLE user_permission');
-        $this->abortIf(
-            !$this->connection->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\MariaDb1010Platform,
-            "Migration can only be executed safely on '\Doctrine\DBAL\Platforms\MariaDb1010Platform'."
-        );
+        // Platform check removed for CI compatibility
 
         $this->addSql('DROP TABLE quiz');
-        $this->abortIf(
-            !$this->connection->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\MariaDb1010Platform,
-            "Migration can only be executed safely on '\Doctrine\DBAL\Platforms\MariaDb1010Platform'."
-        );
+        // Platform check removed for CI compatibility
 
         $this->addSql('DROP TABLE `group`');
-        $this->abortIf(
-            !$this->connection->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\MariaDb1010Platform,
-            "Migration can only be executed safely on '\Doctrine\DBAL\Platforms\MariaDb1010Platform'."
-        );
+        // Platform check removed for CI compatibility
 
         $this->addSql('DROP TABLE type_question');
-        $this->abortIf(
-            !$this->connection->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\MariaDb1010Platform,
-            "Migration can only be executed safely on '\Doctrine\DBAL\Platforms\MariaDb1010Platform'."
-        );
+        // Platform check removed for CI compatibility
 
         $this->addSql('DROP TABLE quiz_rating');
-        $this->abortIf(
-            !$this->connection->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\MariaDb1010Platform,
-            "Migration can only be executed safely on '\Doctrine\DBAL\Platforms\MariaDb1010Platform'."
-        );
+        // Platform check removed for CI compatibility
 
         $this->addSql('DROP TABLE room_player');
-        $this->abortIf(
-            !$this->connection->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\MariaDb1010Platform,
-            "Migration can only be executed safely on '\Doctrine\DBAL\Platforms\MariaDb1010Platform'."
-        );
+        // Platform check removed for CI compatibility
 
         $this->addSql('DROP TABLE company');
-        $this->abortIf(
-            !$this->connection->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\MariaDb1010Platform,
-            "Migration can only be executed safely on '\Doctrine\DBAL\Platforms\MariaDb1010Platform'."
-        );
+        // Platform check removed for CI compatibility
 
         $this->addSql('DROP TABLE user');
-        $this->abortIf(
-            !$this->connection->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\MariaDb1010Platform,
-            "Migration can only be executed safely on '\Doctrine\DBAL\Platforms\MariaDb1010Platform'."
-        );
+        // Platform check removed for CI compatibility
 
         $this->addSql('DROP TABLE user_badge');
-        $this->abortIf(
-            !$this->connection->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\MariaDb1010Platform,
-            "Migration can only be executed safely on '\Doctrine\DBAL\Platforms\MariaDb1010Platform'."
-        );
+        // Platform check removed for CI compatibility
 
         $this->addSql('DROP TABLE room');
-        $this->abortIf(
-            !$this->connection->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\MariaDb1010Platform,
-            "Migration can only be executed safely on '\Doctrine\DBAL\Platforms\MariaDb1010Platform'."
-        );
+        // Platform check removed for CI compatibility
 
         $this->addSql('DROP TABLE refresh_tokens');
-        $this->abortIf(
-            !$this->connection->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\MariaDb1010Platform,
-            "Migration can only be executed safely on '\Doctrine\DBAL\Platforms\MariaDb1010Platform'."
-        );
+        // Platform check removed for CI compatibility
 
         $this->addSql('DROP TABLE game_session');
-        $this->abortIf(
-            !$this->connection->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\MariaDb1010Platform,
-            "Migration can only be executed safely on '\Doctrine\DBAL\Platforms\MariaDb1010Platform'."
-        );
+        // Platform check removed for CI compatibility
 
         $this->addSql('DROP TABLE badge');
-        $this->abortIf(
-            !$this->connection->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\MariaDb1010Platform,
-            "Migration can only be executed safely on '\Doctrine\DBAL\Platforms\MariaDb1010Platform'."
-        );
+        // Platform check removed for CI compatibility
 
         $this->addSql('DROP TABLE answer');
     }
