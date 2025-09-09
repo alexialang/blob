@@ -46,7 +46,7 @@ class JWTCreatedListenerTest extends TestCase
     public function testOnJWTCreatedWithNonUserInstance(): void
     {
         $event = $this->createMock(JWTCreatedEvent::class);
-        $user = $this->createMock(\App\Entity\User::class);
+        $user = $this->createMock(\Symfony\Component\Security\Core\User\UserInterface::class);
         $event->method('getUser')->willReturn($user);
 
         $event->expects($this->never())

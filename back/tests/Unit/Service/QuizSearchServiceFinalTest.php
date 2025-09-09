@@ -86,13 +86,9 @@ class QuizSearchServiceFinalTest extends TestCase
             ->with(8)
             ->willReturn($quizzes);
 
-        $this->serializer->expects($this->once())
-            ->method('serialize')
-            ->willReturn('["popular"]');
-
         $result = $this->service->getMostPopularQuizzes();
 
-        $this->assertEquals(['popular'], $result);
+        $this->assertEquals($quizzes, $result);
     }
 
     public function testGetMostPopularQuizzesWithCustomLimit(): void
@@ -104,12 +100,8 @@ class QuizSearchServiceFinalTest extends TestCase
             ->with(5)
             ->willReturn($quizzes);
 
-        $this->serializer->expects($this->once())
-            ->method('serialize')
-            ->willReturn('["popular_custom"]');
-
         $result = $this->service->getMostPopularQuizzes(5);
 
-        $this->assertEquals(['popular_custom'], $result);
+        $this->assertEquals($quizzes, $result);
     }
 }

@@ -84,10 +84,10 @@ class QuizCrudServiceUltimateTest extends TestCase
     public function testServiceHasAllDependencies(): void
     {
         // Test que le service a bien tous ses repositories et services
-        $this->assertTrue(method_exists($this->service, 'list'));
+        $this->assertTrue(method_exists($this->service, 'show'));
         $this->assertTrue(method_exists($this->service, 'find'));
-        $this->assertTrue(method_exists($this->service, 'create'));
-        $this->assertTrue(method_exists($this->service, 'update'));
+        $this->assertTrue(method_exists($this->service, 'createWithQuestions'));
+        $this->assertTrue(method_exists($this->service, 'updateWithQuestions'));
         $this->assertTrue(method_exists($this->service, 'delete'));
     }
 
@@ -95,7 +95,7 @@ class QuizCrudServiceUltimateTest extends TestCase
     {
         // Vérifier que le service est correctement configuré
         $reflection = new \ReflectionClass($this->service);
-        $this->assertTrue($reflection->hasMethod('list'));
+        $this->assertTrue($reflection->hasMethod('show'));
         $this->assertTrue($reflection->hasMethod('find'));
     }
 }

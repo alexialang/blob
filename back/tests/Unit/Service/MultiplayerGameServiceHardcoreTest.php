@@ -82,8 +82,9 @@ class MultiplayerGameServiceHardcoreTest extends TestCase
         $result = $this->service->createRoom($creator, 456);
 
         $this->assertIsArray($result);
-        $this->assertArrayHasKey('room', $result);
-        $this->assertArrayHasKey('player', $result);
+        $this->assertArrayHasKey('id', $result);
+        $this->assertArrayHasKey('quiz', $result);
+        $this->assertArrayHasKey('players', $result);
     }
 
     public function testCreateRoomWithInvalidQuizId(): void
@@ -139,8 +140,9 @@ class MultiplayerGameServiceHardcoreTest extends TestCase
         $result = $this->service->createRoom($creator, 456, 6, true, 'Ma Super Room');
 
         $this->assertIsArray($result);
-        $this->assertArrayHasKey('room', $result);
-        $this->assertArrayHasKey('player', $result);
+        $this->assertArrayHasKey('id', $result);
+        $this->assertArrayHasKey('quiz', $result);
+        $this->assertArrayHasKey('players', $result);
     }
 
     public function testJoinRoomSuccess(): void
@@ -148,26 +150,43 @@ class MultiplayerGameServiceHardcoreTest extends TestCase
         $user = $this->createMock(User::class);
         $user->method('getId')->willReturn(456);
 
+        $quiz = $this->createMock(\App\Entity\Quiz::class);
+        $quiz->method('getId')->willReturn(789);
+        $quiz->method('getTitle')->willReturn('Test Quiz');
+        $quiz->method('getQuestionCount')->willReturn(5);
+        $quiz->method('getQuestions')->willReturn($this->createMock(\Doctrine\Common\Collections\Collection::class));
+
         $room = $this->createMock(Room::class);
         $room->method('getId')->willReturn(123);
+        $room->method('getRoomCode')->willReturn('ROOM123');
         $room->method('getStatus')->willReturn('waiting');
+        $room->method('getCurrentPlayerCount')->willReturn(1);
+        $room->method('getMaxPlayers')->willReturn(4);
+        $room->method('getQuiz')->willReturn($quiz);
+        $room->method('getCreator')->willReturn($user);
+        $room->method('isTeamMode')->willReturn(false);
+        $room->method('getCreatedAt')->willReturn(new \DateTimeImmutable());
+        $room->method('getGameStartedAt')->willReturn(null);
+        $room->method('getGameSession')->willReturn(null);
+        $room->method('getPlayers')->willReturn($this->createMock(\Doctrine\Common\Collections\Collection::class));
 
-        $this->roomRepository->method('findOneBy')
-            ->with(['roomCode' => 'ROOM123'])
+        $this->roomRepository->method('findByRoomCode')
+            ->with('ROOM123')
             ->willReturn($room);
 
         $this->validationService->expects($this->once())
-            ->method('validateJoinRoom')
-            ->with($user, $room);
+            ->method('validateJoinRoomData')
+            ->with(['teamName' => null]);
 
         $this->entityManager->expects($this->once())->method('persist');
         $this->entityManager->expects($this->once())->method('flush');
 
-        $result = $this->service->joinRoom($user, 'ROOM123');
+        $result = $this->service->joinRoom('ROOM123', $user);
 
         $this->assertIsArray($result);
-        $this->assertArrayHasKey('room', $result);
-        $this->assertArrayHasKey('player', $result);
+        $this->assertArrayHasKey('id', $result);
+        $this->assertArrayHasKey('quiz', $result);
+        $this->assertArrayHasKey('players', $result);
     }
 
     public function testJoinRoomNotFound(): void
@@ -180,7 +199,7 @@ class MultiplayerGameServiceHardcoreTest extends TestCase
 
         $this->expectException(RoomNotFoundException::class);
 
-        $this->service->joinRoom($user, 'NOTFOUND');
+        $this->service->joinRoom('NOTFOUND', $user);
     }
 
     public function testStartGameSuccess(): void
@@ -188,27 +207,72 @@ class MultiplayerGameServiceHardcoreTest extends TestCase
         $user = $this->createMock(User::class);
         $user->method('getId')->willReturn(123);
 
+        $player = $this->createMock(\App\Entity\RoomPlayer::class);
+        $player->method('getUser')->willReturn($user);
+        $player->method('isCreator')->willReturn(true);
+
+        $typeQuestion = $this->createMock(\App\Entity\TypeQuestion::class);
+        $typeQuestion->method('getName')->willReturn('multiple_choice');
+
+        $answer = $this->createMock(\App\Entity\Answer::class);
+        $answer->method('getId')->willReturn(1);
+        $answer->method('getAnswer')->willReturn('Test Answer');
+        $answer->method('getPairId')->willReturn(null);
+        $answer->method('getOrderCorrect')->willReturn('1');
+
+        $answersCollection = $this->createMock(\Doctrine\Common\Collections\Collection::class);
+        $answersCollection->method('toArray')->willReturn([$answer]);
+
+        $question = $this->createMock(\App\Entity\Question::class);
+        $question->method('getId')->willReturn(1);
+        $question->method('getQuestion')->willReturn('Test Question');
+        $question->method('getTypeQuestion')->willReturn($typeQuestion);
+        $question->method('getAnswers')->willReturn($answersCollection);
+
+        $questionsCollection = $this->createMock(\Doctrine\Common\Collections\Collection::class);
+        $questionsCollection->method('toArray')->willReturn([$question]);
+
+        $quiz = $this->createMock(\App\Entity\Quiz::class);
+        $quiz->method('getId')->willReturn(789);
+        $quiz->method('getTitle')->willReturn('Test Quiz');
+        $quiz->method('getQuestionCount')->willReturn(5);
+        $quiz->method('getQuestions')->willReturn($questionsCollection);
+
         $room = $this->createMock(Room::class);
         $room->method('getId')->willReturn(456);
+        $room->method('getRoomCode')->willReturn('ROOM123');
         $room->method('getStatus')->willReturn('waiting');
+        $room->method('getQuiz')->willReturn($quiz);
         $room->method('getCreator')->willReturn($user);
+        $room->method('getMaxPlayers')->willReturn(4);
+        $room->method('isTeamMode')->willReturn(false);
+        $room->method('getCreatedAt')->willReturn(new \DateTimeImmutable());
+        $room->method('getGameStartedAt')->willReturn(null);
+        $room->method('getGameSession')->willReturn(null);
+        $collection = $this->createMock(\Doctrine\Common\Collections\Collection::class);
+        $collection->method('getIterator')->willReturn(new \ArrayIterator([$player]));
+        $collection->method('toArray')->willReturn([$player]);
+        $collection->method('first')->willReturn($player);
+        $collection->method('exists')->willReturn(true);
+        $room->method('getPlayers')->willReturn($collection);
+        $room->method('getCurrentPlayerCount')->willReturn(2);
 
-        $this->roomRepository->method('findOneBy')
-            ->with(['roomCode' => 'ROOM123'])
+        $this->roomRepository->method('findByRoomCode')
+            ->with('ROOM123')
             ->willReturn($room);
 
-        $this->validationService->expects($this->once())
-            ->method('validateGameStart')
-            ->with($user, $room);
+        $this->validationService->expects($this->never())
+            ->method('validateRoomData');
 
-        $this->entityManager->expects($this->exactly(2))->method('persist');
+        $this->entityManager->expects($this->once())->method('persist');
         $this->entityManager->expects($this->once())->method('flush');
 
-        $result = $this->service->startGame($user, 'ROOM123');
+        $result = $this->service->startGame('ROOM123', $user);
 
         $this->assertIsArray($result);
-        $this->assertArrayHasKey('gameSession', $result);
-        $this->assertArrayHasKey('room', $result);
+        $this->assertArrayHasKey('id', $result);
+        $this->assertArrayHasKey('quiz', $result);
+        $this->assertArrayHasKey('players', $result);
     }
 
     public function testLeaveRoomSuccess(): void
@@ -216,49 +280,77 @@ class MultiplayerGameServiceHardcoreTest extends TestCase
         $user = $this->createMock(User::class);
         $user->method('getId')->willReturn(123);
 
-        $room = $this->createMock(Room::class);
-        $room->method('getId')->willReturn(456);
-
         $roomPlayer = $this->createMock(RoomPlayer::class);
         $roomPlayer->method('getUser')->willReturn($user);
+        $roomPlayer->method('isCreator')->willReturn(false);
 
-        $this->roomRepository->method('findOneBy')
-            ->with(['roomCode' => 'ROOM123'])
+        $collection = $this->createMock(\Doctrine\Common\Collections\Collection::class);
+        $collection->method('getIterator')->willReturn(new \ArrayIterator([$roomPlayer]));
+
+        $room = $this->createMock(Room::class);
+        $room->method('getId')->willReturn(456);
+        $room->method('getPlayers')->willReturn($collection);
+        $room->method('removePlayer')->willReturnSelf();
+
+        $this->roomRepository->method('findByRoomCode')
+            ->with('ROOM123')
             ->willReturn($room);
 
-        $roomPlayerRepo = $this->createMock(RoomPlayerRepository::class);
-        $roomPlayerRepo->method('findOneBy')
-            ->with(['room' => $room, 'user' => $user])
-            ->willReturn($roomPlayer);
-
-        $this->entityManager->method('getRepository')
-            ->with(RoomPlayer::class)
-            ->willReturn($roomPlayerRepo);
-
-        $this->entityManager->expects($this->once())->method('remove');
+        $this->entityManager->expects($this->exactly(2))->method('remove');
         $this->entityManager->expects($this->once())->method('flush');
 
-        $result = $this->service->leaveRoom($user, 'ROOM123');
+        $result = $this->service->leaveRoom('ROOM123', $user);
 
         $this->assertIsArray($result);
-        $this->assertArrayHasKey('success', $result);
-        $this->assertTrue($result['success']);
+        $this->assertArrayHasKey('deleted', $result);
+        $this->assertTrue($result['deleted']);
     }
 
     public function testGetRoomStatusSuccess(): void
     {
+        $user = $this->createMock(User::class);
+        $user->method('getId')->willReturn(123);
+
+        $player = $this->createMock(\App\Entity\RoomPlayer::class);
+        $player->method('getUser')->willReturn($user);
+        $player->method('isCreator')->willReturn(true);
+        $player->method('getTeam')->willReturn(null);
+
+        $quiz = $this->createMock(\App\Entity\Quiz::class);
+        $quiz->method('getId')->willReturn(789);
+        $quiz->method('getTitle')->willReturn('Test Quiz');
+        $quiz->method('getQuestionCount')->willReturn(5);
+        $quiz->method('getQuestions')->willReturn($this->createMock(\Doctrine\Common\Collections\Collection::class));
+
+        $collection = $this->createMock(\Doctrine\Common\Collections\Collection::class);
+        $collection->method('getIterator')->willReturn(new \ArrayIterator([$player]));
+        $collection->method('toArray')->willReturn([$player]);
+        $collection->method('first')->willReturn($player);
+        $collection->method('exists')->willReturn(true);
+
         $room = $this->createMock(Room::class);
         $room->method('getId')->willReturn(123);
+        $room->method('getRoomCode')->willReturn('ROOM123');
         $room->method('getStatus')->willReturn('waiting');
+        $room->method('getQuiz')->willReturn($quiz);
+        $room->method('getCreator')->willReturn($user);
+        $room->method('getMaxPlayers')->willReturn(4);
+        $room->method('isTeamMode')->willReturn(false);
+        $room->method('getCreatedAt')->willReturn(new \DateTimeImmutable());
+        $room->method('getGameStartedAt')->willReturn(null);
+        $room->method('getGameSession')->willReturn(null);
+        $room->method('getPlayers')->willReturn($collection);
+        $room->method('getCurrentPlayerCount')->willReturn(1);
 
-        $this->roomRepository->method('findOneBy')
-            ->with(['roomCode' => 'ROOM123'])
+        $this->roomRepository->method('findByRoomCode')
+            ->with('ROOM123')
             ->willReturn($room);
 
         $result = $this->service->getRoomStatus('ROOM123');
 
         $this->assertIsArray($result);
-        $this->assertArrayHasKey('room', $result);
+        $this->assertArrayHasKey('id', $result);
+        $this->assertArrayHasKey('quiz', $result);
         $this->assertArrayHasKey('players', $result);
     }
 

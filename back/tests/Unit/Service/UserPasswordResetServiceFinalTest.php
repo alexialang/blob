@@ -27,6 +27,8 @@ class UserPasswordResetServiceFinalTest extends TestCase
         $this->bus = $this->createMock(MessageBusInterface::class);
         $this->passwordHasher = $this->createMock(UserPasswordHasherInterface::class);
 
+        $validator = $this->createMock(\Symfony\Component\Validator\Validator\ValidatorInterface::class);
+
         $this->service = new UserPasswordResetService(
             $this->entityManager,
             $this->userRepository,
@@ -34,7 +36,8 @@ class UserPasswordResetServiceFinalTest extends TestCase
             $this->bus,
             $this->passwordHasher,
             'http://localhost',
-            'test@example.com'
+            'test@example.com',
+            $validator
         );
     }
 
@@ -47,7 +50,7 @@ class UserPasswordResetServiceFinalTest extends TestCase
     {
         $this->assertTrue(method_exists($this->service, 'requestPasswordReset'));
         $this->assertTrue(method_exists($this->service, 'resetPassword'));
-        $this->assertTrue(method_exists($this->service, 'validateResetToken'));
+        $this->assertTrue(method_exists($this->service, 'sendPasswordResetEmail'));
     }
 
     public function testServiceIsProperlyConfigured(): void

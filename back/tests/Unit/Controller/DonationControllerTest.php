@@ -24,15 +24,11 @@ class DonationControllerTest extends TestCase
 
     public function testControllerHasPaymentService(): void
     {
-        $this->assertTrue(method_exists($this->controller, 'create'));
+        $this->assertInstanceOf(PaymentService::class, $this->paymentService);
     }
 
     public function testControllerMethodsExist(): void
     {
-        $methods = ['create'];
-        
-        foreach ($methods as $method) {
-            $this->assertTrue(method_exists($this->controller, $method));
-        }
+        $this->assertTrue(method_exists($this->controller, 'createPaymentLink'));
     }
 }

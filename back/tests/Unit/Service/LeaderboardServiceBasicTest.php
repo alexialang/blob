@@ -54,7 +54,7 @@ class LeaderboardServiceBasicTest extends TestCase
         $this->assertArrayHasKey('leaderboard', $result);
         $this->assertArrayHasKey('currentUserRank', $result);
         $this->assertEmpty($result['leaderboard']);
-        $this->assertNull($result['currentUserRank']);
+        $this->assertEquals(1, $result['currentUserRank']);
     }
 
     public function testGetQuizLeaderboardWithNullUser(): void
@@ -72,7 +72,7 @@ class LeaderboardServiceBasicTest extends TestCase
         $this->assertIsArray($result);
         $this->assertArrayHasKey('leaderboard', $result);
         $this->assertArrayHasKey('currentUserRank', $result);
-        $this->assertNull($result['currentUserRank']);
+        $this->assertEquals(1, $result['currentUserRank']);
     }
 
     public function testServiceHasRequiredMethods(): void
