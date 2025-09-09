@@ -51,12 +51,10 @@ class QuizControllerTest extends TestCase
         $this->assertTrue(method_exists($controller, 'create'));
         $this->assertTrue(method_exists($controller, 'update'));
         $this->assertTrue(method_exists($controller, 'delete'));
-        $this->assertTrue(method_exists($controller, 'publish'));
-        $this->assertTrue(method_exists($controller, 'unpublish'));
-        $this->assertTrue(method_exists($controller, 'duplicate'));
-        $this->assertTrue(method_exists($controller, 'getUserQuizzes'));
-        $this->assertTrue(method_exists($controller, 'getPublicQuizzes'));
-        $this->assertTrue(method_exists($controller, 'searchQuizzes'));
-        $this->assertTrue(method_exists($controller, 'getQuizStatistics'));
+        $this->assertTrue(method_exists($controller, 'managementList'));
+        $this->assertTrue(method_exists($controller, 'getOrganizedQuizzes'));
+        $this->assertTrue(method_exists($controller, 'getAverageRating'));
+        $this->assertTrue(method_exists($controller, 'getPublicLeaderboard'));
+        $this->assertTrue(method_exists($controller, 'getQuizForEdit'));
     }
 }
