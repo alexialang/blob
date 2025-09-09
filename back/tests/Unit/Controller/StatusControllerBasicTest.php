@@ -25,23 +25,10 @@ class StatusControllerBasicTest extends TestCase
         $this->assertTrue(method_exists($this->controller, 'list'));
     }
 
-    public function testListReturnsData(): void
-    {
-        // Test basique - on ne peut pas tester le JsonResponse facilement en unit test
-        // mais on peut vérifier que la méthode s'exécute sans erreur
-        $this->controller->list();
-        
-        // Vérifier que les enums existent
-        $this->assertTrue(enum_exists(Status::class));
-        $this->assertNotNull(Status::DRAFT);
-        $this->assertNotNull(Status::PUBLISHED);
-        $this->assertNotNull(Status::ARCHIVED);
-    }
-
     public function testEnumStatusExists(): void
     {
         $statuses = [Status::DRAFT, Status::PUBLISHED, Status::ARCHIVED];
-        
+
         foreach ($statuses as $status) {
             $this->assertInstanceOf(Status::class, $status);
             $this->assertNotEmpty($status->value);

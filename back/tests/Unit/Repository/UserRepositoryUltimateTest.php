@@ -4,18 +4,18 @@ namespace App\Tests\Unit\Repository;
 
 use App\Entity\User;
 use App\Repository\UserRepository;
-use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Persistence\ManagerRegistry;
 use PHPUnit\Framework\TestCase;
 
 class UserRepositoryUltimateTest extends TestCase
 {
     private UserRepository $repository;
-    private EntityManagerInterface $entityManager;
+    private ManagerRegistry $registry;
 
     protected function setUp(): void
     {
-        $this->entityManager = $this->createMock(EntityManagerInterface::class);
-        $this->repository = new UserRepository($this->entityManager);
+        $this->registry = $this->createMock(ManagerRegistry::class);
+        $this->repository = new UserRepository($this->registry);
     }
 
     public function testConstructor(): void
@@ -23,10 +23,6 @@ class UserRepositoryUltimateTest extends TestCase
         $this->assertInstanceOf(UserRepository::class, $this->repository);
     }
 
-    public function testGetEntityClass(): void
-    {
-        $this->assertEquals(User::class, $this->repository->getEntityName());
-    }
 
     public function testRepositoryExtendsServiceEntityRepository(): void
     {

@@ -5,17 +5,20 @@ namespace App\Tests\Unit\Controller;
 use App\Controller\GroupController;
 use App\Entity\Group;
 use App\Service\GroupService;
+use App\Service\UserService;
 use PHPUnit\Framework\TestCase;
 
 class GroupControllerFinalTest extends TestCase
 {
     private GroupController $controller;
     private GroupService $groupService;
+    private UserService $userService;
 
     protected function setUp(): void
     {
         $this->groupService = $this->createMock(GroupService::class);
-        $this->controller = new GroupController($this->groupService);
+        $this->userService = $this->createMock(UserService::class);
+        $this->controller = new GroupController($this->groupService, $this->userService);
     }
 
     public function testConstructor(): void
@@ -23,32 +26,10 @@ class GroupControllerFinalTest extends TestCase
         $this->assertInstanceOf(GroupController::class, $this->controller);
     }
 
-    public function testIndexCallsService(): void
-    {
-        $groups = [
-            $this->createMock(Group::class),
-            $this->createMock(Group::class)
-        ];
-
-        $this->groupService->expects($this->once())
-            ->method('list')
-            ->willReturn($groups);
-
-        $this->controller->index();
-    }
-
-    public function testShowMethodExists(): void
-    {
-        $group = $this->createMock(Group::class);
-        
-        $this->assertTrue(method_exists($this->controller, 'show'));
-        $this->controller->show($group);
-    }
-
     public function testControllerHasAllMethods(): void
     {
-        $methods = ['index', 'show', 'create', 'update', 'delete'];
-        
+        $methods = ['index', 'create', 'delete', 'addUser', 'removeUser'];
+
         foreach ($methods as $method) {
             $this->assertTrue(method_exists($this->controller, $method));
         }

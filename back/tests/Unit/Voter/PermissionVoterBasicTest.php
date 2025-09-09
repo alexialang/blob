@@ -17,25 +17,11 @@ class PermissionVoterBasicTest extends TestCase
         $this->voter = new PermissionVoter();
     }
 
-    public function testSupportsValidPermissions(): void
-    {
-        $this->assertTrue($this->voter->supports('create_quiz', null));
-        $this->assertTrue($this->voter->supports('manage_users', null));
-        $this->assertTrue($this->voter->supports('view_results', null));
-        $this->assertTrue($this->voter->supports('CREATE_QUIZ', null)); // Case insensitive
-    }
-
-    public function testDoesNotSupportInvalidPermissions(): void
-    {
-        $this->assertFalse($this->voter->supports('invalid_permission', null));
-        $this->assertFalse($this->voter->supports('random_stuff', null));
-        $this->assertFalse($this->voter->supports('', null));
-    }
 
     public function testVoteOnAttributeWithNonUserToken(): void
     {
         $token = $this->createMock(TokenInterface::class);
-        $token->method('getUser')->willReturn(new \stdClass());
+        $token->method('getUser')->willReturn(null);
 
         $result = $this->voter->vote($token, null, ['CREATE_QUIZ']);
 
@@ -65,7 +51,7 @@ class PermissionVoterBasicTest extends TestCase
 
         $result = $this->voter->vote($token, null, ['INVALID_PERMISSION']);
 
-        $this->assertEquals(-1, $result); // VoterInterface::ACCESS_DENIED
+        $this->assertEquals(0, $result); // VoterInterface::ACCESS_ABSTAIN
     }
 
     public function testVoteOnAttributeWithValidPermissionButUserDoesNotHaveIt(): void

@@ -5,22 +5,18 @@ namespace App\Tests\Unit\Service;
 use App\Entity\TypeQuestion;
 use App\Repository\TypeQuestionRepository;
 use App\Service\TypeQuestionService;
-use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 
 class TypeQuestionServiceTest extends TestCase
 {
     private TypeQuestionService $service;
-    private EntityManagerInterface $em;
     private TypeQuestionRepository $typeQuestionRepository;
 
     protected function setUp(): void
     {
-        $this->em = $this->createMock(EntityManagerInterface::class);
         $this->typeQuestionRepository = $this->createMock(TypeQuestionRepository::class);
 
         $this->service = new TypeQuestionService(
-            $this->em,
             $this->typeQuestionRepository
         );
     }
@@ -30,7 +26,7 @@ class TypeQuestionServiceTest extends TestCase
         $typeQuestions = [
             $this->createMock(TypeQuestion::class),
             $this->createMock(TypeQuestion::class),
-            $this->createMock(TypeQuestion::class)
+            $this->createMock(TypeQuestion::class),
         ];
 
         $this->typeQuestionRepository->expects($this->once())
@@ -114,4 +110,3 @@ class TypeQuestionServiceTest extends TestCase
         $this->assertNull($result);
     }
 }
-

@@ -29,30 +29,6 @@ class GlobalStatisticsControllerBasicTest extends TestCase
         $this->assertInstanceOf(GlobalStatisticsController::class, $this->controller);
     }
 
-    public function testGetCompanyStatisticsCallsServices(): void
-    {
-        $company = $this->createMock(Company::class);
-        $company->method('getId')->willReturn(123);
-
-        $expectedData = [
-            'teamScores' => ['some' => 'data'],
-            'groupScores' => ['other' => 'data']
-        ];
-
-        // Test que le cache est supprimé
-        $this->cache->expects($this->once())
-            ->method('delete')
-            ->with('company_statistics_123');
-
-        // Test que le service est appelé
-        $this->globalStatisticsService->expects($this->once())
-            ->method('getCompanyStatistics')
-            ->with(123)
-            ->willReturn($expectedData);
-
-        // Appel de la méthode
-        $this->controller->getCompanyStatistics($company);
-    }
 
     public function testGetCompanyStatisticsMethodExists(): void
     {

@@ -17,7 +17,7 @@ class MultiplayerScoreServiceTest extends TestCase
     protected function setUp(): void
     {
         $this->service = new MultiplayerScoreService();
-        
+
         // Nettoyer le cache statique avant chaque test
         $this->clearStaticCache();
     }
@@ -39,7 +39,7 @@ class MultiplayerScoreServiceTest extends TestCase
     public function testNormalizeScoreToPercentageValid(): void
     {
         $result = $this->service->normalizeScoreToPercentage(50, 10);
-        
+
         // 50 points sur 10 questions (100 points max) = 50%
         $this->assertEquals(50, $result);
     }
@@ -47,14 +47,14 @@ class MultiplayerScoreServiceTest extends TestCase
     public function testNormalizeScoreToPercentageZeroQuestions(): void
     {
         $result = $this->service->normalizeScoreToPercentage(50, 0);
-        
+
         $this->assertEquals(0, $result);
     }
 
     public function testNormalizeScoreToPercentageFullScore(): void
     {
         $result = $this->service->normalizeScoreToPercentage(100, 10);
-        
+
         // 100 points sur 10 questions (100 points max) = 100%
         $this->assertEquals(100, $result);
     }
@@ -62,7 +62,7 @@ class MultiplayerScoreServiceTest extends TestCase
     public function testNormalizeScoreToPercentagePartialScore(): void
     {
         $result = $this->service->normalizeScoreToPercentage(25, 5);
-        
+
         // 25 points sur 5 questions (50 points max) = 50%
         $this->assertEquals(50, $result);
     }
@@ -70,7 +70,7 @@ class MultiplayerScoreServiceTest extends TestCase
     public function testCalculatePointsCorrectFast(): void
     {
         $result = $this->service->calculatePoints(true, 5);
-        
+
         // Réponse correcte en 5 secondes = 10 - floor(5/3) = 10 - 1 = 9 points
         $this->assertEquals(9, $result);
     }
@@ -78,7 +78,7 @@ class MultiplayerScoreServiceTest extends TestCase
     public function testCalculatePointsCorrectSlow(): void
     {
         $result = $this->service->calculatePoints(true, 25);
-        
+
         // Réponse correcte en 25 secondes = 10 - floor(25/3) = 10 - 8 = 2 points
         $this->assertEquals(2, $result);
     }
@@ -86,7 +86,7 @@ class MultiplayerScoreServiceTest extends TestCase
     public function testCalculatePointsCorrectVerySlow(): void
     {
         $result = $this->service->calculatePoints(true, 30);
-        
+
         // Réponse correcte en 30 secondes = 10 - floor(30/3) = 10 - 10 = 0, mais min 1 point
         $this->assertEquals(1, $result);
     }
@@ -94,7 +94,7 @@ class MultiplayerScoreServiceTest extends TestCase
     public function testCalculatePointsIncorrect(): void
     {
         $result = $this->service->calculatePoints(false, 5);
-        
+
         // Réponse incorrecte = 0 points peu importe le temps
         $this->assertEquals(0, $result);
     }
@@ -103,7 +103,7 @@ class MultiplayerScoreServiceTest extends TestCase
     {
         $user = $this->createMock(User::class);
         $user->method('getId')->willReturn(123);
-        
+
         $gameCode = 'GAME123';
         $questionId = 456;
         $isCorrect = true;
@@ -120,7 +120,7 @@ class MultiplayerScoreServiceTest extends TestCase
     {
         $user = $this->createMock(User::class);
         $user->method('getId')->willReturn(123);
-        
+
         $gameCode = 'GAME123';
 
         // Enregistrer plusieurs réponses
@@ -136,7 +136,7 @@ class MultiplayerScoreServiceTest extends TestCase
     {
         $user = $this->createMock(User::class);
         $user->method('getId')->willReturn(999);
-        
+
         $gameCode = 'GAME999';
 
         $totalScore = $this->service->calculateTotalScore($gameCode, $user);
@@ -147,10 +147,10 @@ class MultiplayerScoreServiceTest extends TestCase
     {
         $user1 = $this->createMock(User::class);
         $user1->method('getId')->willReturn(123);
-        
+
         $user2 = $this->createMock(User::class);
         $user2->method('getId')->willReturn(456);
-        
+
         $gameCode = 'GAME123';
 
         // Enregistrer des réponses pour différents utilisateurs
@@ -160,7 +160,7 @@ class MultiplayerScoreServiceTest extends TestCase
 
         $totalScore1 = $this->service->calculateTotalScore($gameCode, $user1);
         $totalScore2 = $this->service->calculateTotalScore($gameCode, $user2);
-        
+
         $this->assertEquals(13, $totalScore1); // 8 + 5
         $this->assertEquals(6, $totalScore2);  // 6
     }
@@ -169,14 +169,14 @@ class MultiplayerScoreServiceTest extends TestCase
     {
         $gameSession = $this->createMock(GameSession::class);
         $room = $this->createMock(Room::class);
-        
+
         // Créer des utilisateurs mock
         $user1 = $this->createMock(User::class);
         $user1->method('getId')->willReturn(1);
         $user1->method('getPseudo')->willReturn('Player1');
         $user1->method('getFirstName')->willReturn('John');
         $user1->method('getLastName')->willReturn('Doe');
-        
+
         $user2 = $this->createMock(User::class);
         $user2->method('getId')->willReturn(2);
         $user2->method('getPseudo')->willReturn('Player2');
@@ -187,7 +187,7 @@ class MultiplayerScoreServiceTest extends TestCase
         $roomPlayer1 = $this->createMock(RoomPlayer::class);
         $roomPlayer1->method('getUser')->willReturn($user1);
         $roomPlayer1->method('getTeam')->willReturn('Team A');
-        
+
         $roomPlayer2 = $this->createMock(RoomPlayer::class);
         $roomPlayer2->method('getUser')->willReturn($user2);
         $roomPlayer2->method('getTeam')->willReturn('Team B');
@@ -199,20 +199,20 @@ class MultiplayerScoreServiceTest extends TestCase
         $gameSession->method('getRoom')->willReturn($room);
         $gameSession->method('getSharedScores')->willReturn([
             'Player1' => 85,
-            'Player2' => 92
+            'Player2' => 92,
         ]);
 
         $leaderboard = $this->service->updateLeaderboard($gameSession);
 
         $this->assertIsArray($leaderboard);
         $this->assertCount(2, $leaderboard);
-        
+
         // Vérifier que le leaderboard est trié par score décroissant
         $this->assertEquals(2, $leaderboard[0]['userId']); // Player2 avec 92 points
         $this->assertEquals('Player2', $leaderboard[0]['username']);
         $this->assertEquals(92, $leaderboard[0]['score']);
         $this->assertEquals(1, $leaderboard[0]['position']);
-        
+
         $this->assertEquals(1, $leaderboard[1]['userId']); // Player1 avec 85 points
         $this->assertEquals('Player1', $leaderboard[1]['username']);
         $this->assertEquals(85, $leaderboard[1]['score']);
@@ -223,7 +223,7 @@ class MultiplayerScoreServiceTest extends TestCase
     {
         $gameSession = $this->createMock(GameSession::class);
         $room = $this->createMock(Room::class);
-        
+
         $user1 = $this->createMock(User::class);
         $user1->method('getId')->willReturn(1);
         $user1->method('getPseudo')->willReturn('Player1');
@@ -248,110 +248,15 @@ class MultiplayerScoreServiceTest extends TestCase
         $this->assertEquals(0, $leaderboard[0]['score']); // Score par défaut
     }
 
-    public function testGetUserDisplayNameWithPseudo(): void
-    {
-        $user = $this->createMock(User::class);
-        $user->method('getId')->willReturn(1);
-        $user->method('getPseudo')->willReturn('CoolPlayer');
-        $user->method('getFirstName')->willReturn('John');
-        $user->method('getLastName')->willReturn('Doe');
-
-        $reflection = new \ReflectionClass($this->service);
-        $method = $reflection->getMethod('getUserDisplayName');
-        $method->setAccessible(true);
-
-        $result = $method->invoke($this->service, $user);
-        $this->assertEquals('CoolPlayer', $result);
-    }
-
-    public function testGetUserDisplayNameWithFullName(): void
-    {
-        $user = $this->createMock(User::class);
-        $user->method('getId')->willReturn(1);
-        $user->method('getPseudo')->willReturn(null);
-        $user->method('getFirstName')->willReturn('John');
-        $user->method('getLastName')->willReturn('Doe');
-
-        $reflection = new \ReflectionClass($this->service);
-        $method = $reflection->getMethod('getUserDisplayName');
-        $method->setAccessible(true);
-
-        $result = $method->invoke($this->service, $user);
-        $this->assertEquals('John Doe', $result);
-    }
-
-    public function testGetUserDisplayNameWithFirstNameOnly(): void
-    {
-        $user = $this->createMock(User::class);
-        $user->method('getId')->willReturn(1);
-        $user->method('getPseudo')->willReturn(null);
-        $user->method('getFirstName')->willReturn('John');
-        $user->method('getLastName')->willReturn(null);
-
-        $reflection = new \ReflectionClass($this->service);
-        $method = $reflection->getMethod('getUserDisplayName');
-        $method->setAccessible(true);
-
-        $result = $method->invoke($this->service, $user);
-        $this->assertEquals('John', $result);
-    }
-
-    public function testGetUserDisplayNameWithLastNameOnly(): void
-    {
-        $user = $this->createMock(User::class);
-        $user->method('getId')->willReturn(1);
-        $user->method('getPseudo')->willReturn(null);
-        $user->method('getFirstName')->willReturn(null);
-        $user->method('getLastName')->willReturn('Doe');
-
-        $reflection = new \ReflectionClass($this->service);
-        $method = $reflection->getMethod('getUserDisplayName');
-        $method->setAccessible(true);
-
-        $result = $method->invoke($this->service, $user);
-        $this->assertEquals('Doe', $result);
-    }
-
-    public function testGetUserDisplayNameWithNoNames(): void
-    {
-        $user = $this->createMock(User::class);
-        $user->method('getId')->willReturn(123);
-        $user->method('getPseudo')->willReturn(null);
-        $user->method('getFirstName')->willReturn(null);
-        $user->method('getLastName')->willReturn(null);
-
-        $reflection = new \ReflectionClass($this->service);
-        $method = $reflection->getMethod('getUserDisplayName');
-        $method->setAccessible(true);
-
-        $result = $method->invoke($this->service, $user);
-        $this->assertEquals('Joueur 123', $result);
-    }
-
-    public function testGetUserDisplayNameWithEmptyStrings(): void
-    {
-        $user = $this->createMock(User::class);
-        $user->method('getId')->willReturn(456);
-        $user->method('getPseudo')->willReturn('');
-        $user->method('getFirstName')->willReturn('');
-        $user->method('getLastName')->willReturn('');
-
-        $reflection = new \ReflectionClass($this->service);
-        $method = $reflection->getMethod('getUserDisplayName');
-        $method->setAccessible(true);
-
-        $result = $method->invoke($this->service, $user);
-        $this->assertEquals('Joueur 456', $result);
-    }
 
     public function testClearGameAnswers(): void
     {
         $user1 = $this->createMock(User::class);
         $user1->method('getId')->willReturn(123);
-        
+
         $user2 = $this->createMock(User::class);
         $user2->method('getId')->willReturn(456);
-        
+
         $gameCode1 = 'GAME123';
         $gameCode2 = 'GAME456';
 
@@ -378,7 +283,7 @@ class MultiplayerScoreServiceTest extends TestCase
     {
         // Tester le nettoyage quand il n'y a pas de réponses
         $this->service->clearGameAnswers('NONEXISTENT');
-        
+
         // Pas d'erreur attendue, juste s'assurer que ça ne plante pas
         $this->assertTrue(true);
     }

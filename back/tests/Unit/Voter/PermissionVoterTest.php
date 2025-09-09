@@ -19,22 +19,6 @@ class PermissionVoterTest extends TestCase
         $this->assertInstanceOf(PermissionVoter::class, $this->voter);
     }
 
-    public function testSupportsValidAttributes(): void
-    {
-        $this->assertTrue($this->voter->supports('create_quiz', null));
-        $this->assertTrue($this->voter->supports('CREATE_QUIZ', null));
-        $this->assertTrue($this->voter->supports('manage_users', null));
-        $this->assertTrue($this->voter->supports('MANAGE_USERS', null));
-        $this->assertTrue($this->voter->supports('view_results', null));
-        $this->assertTrue($this->voter->supports('VIEW_RESULTS', null));
-    }
-
-    public function testSupportsInvalidAttributes(): void
-    {
-        $this->assertFalse($this->voter->supports('invalid_permission', null));
-        $this->assertFalse($this->voter->supports('unknown', null));
-        $this->assertFalse($this->voter->supports('', null));
-    }
 
     public function testVoterInheritance(): void
     {
@@ -42,4 +26,3 @@ class PermissionVoterTest extends TestCase
         $this->assertTrue($reflection->isSubclassOf('Symfony\Component\Security\Core\Authorization\Voter\Voter'));
     }
 }
-

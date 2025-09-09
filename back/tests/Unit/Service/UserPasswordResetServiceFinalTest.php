@@ -2,12 +2,12 @@
 
 namespace App\Tests\Unit\Service;
 
-use App\Entity\User;
 use App\Repository\UserRepository;
 use App\Service\UserPasswordResetService;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class UserPasswordResetServiceFinalTest extends TestCase
@@ -16,6 +16,7 @@ class UserPasswordResetServiceFinalTest extends TestCase
     private EntityManagerInterface $entityManager;
     private UserRepository $userRepository;
     private MailerInterface $mailer;
+    private MessageBusInterface $bus;
     private UserPasswordHasherInterface $passwordHasher;
 
     protected function setUp(): void
@@ -23,13 +24,17 @@ class UserPasswordResetServiceFinalTest extends TestCase
         $this->entityManager = $this->createMock(EntityManagerInterface::class);
         $this->userRepository = $this->createMock(UserRepository::class);
         $this->mailer = $this->createMock(MailerInterface::class);
+        $this->bus = $this->createMock(MessageBusInterface::class);
         $this->passwordHasher = $this->createMock(UserPasswordHasherInterface::class);
 
         $this->service = new UserPasswordResetService(
             $this->entityManager,
             $this->userRepository,
             $this->mailer,
-            $this->passwordHasher
+            $this->bus,
+            $this->passwordHasher,
+            'http://localhost',
+            'test@example.com'
         );
     }
 

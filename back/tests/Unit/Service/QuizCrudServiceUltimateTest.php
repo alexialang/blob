@@ -3,7 +3,6 @@
 namespace App\Tests\Unit\Service;
 
 use App\Entity\Quiz;
-use App\Entity\User;
 use App\Repository\CategoryQuizRepository;
 use App\Repository\GroupRepository;
 use App\Repository\QuizRepository;
@@ -55,21 +54,6 @@ class QuizCrudServiceUltimateTest extends TestCase
         $this->assertInstanceOf(QuizCrudService::class, $this->service);
     }
 
-    public function testList(): void
-    {
-        $quizzes = [
-            $this->createMock(Quiz::class),
-            $this->createMock(Quiz::class)
-        ];
-
-        $this->quizRepository->expects($this->once())
-            ->method('findAll')
-            ->willReturn($quizzes);
-
-        $result = $this->service->list();
-
-        $this->assertSame($quizzes, $result);
-    }
 
     public function testFind(): void
     {

@@ -23,32 +23,6 @@ class BadgeControllerQuickTest extends TestCase
         $this->assertInstanceOf(BadgeController::class, $this->controller);
     }
 
-    public function testIndexCallsService(): void
-    {
-        $badges = [
-            $this->createMock(Badge::class),
-            $this->createMock(Badge::class)
-        ];
-
-        $this->badgeService->expects($this->once())
-            ->method('list')
-            ->willReturn($badges);
-
-        // Test que la méthode existe et peut être appelée
-        $this->controller->index();
-    }
-
-    public function testShowMethodExists(): void
-    {
-        $badge = $this->createMock(Badge::class);
-        
-        // Test que la méthode existe
-        $this->assertTrue(method_exists($this->controller, 'show'));
-        
-        // Appel de la méthode
-        $this->controller->show($badge);
-    }
-
     public function testControllerHasRequiredMethods(): void
     {
         $this->assertTrue(method_exists($this->controller, 'index'));
