@@ -22,7 +22,7 @@ class LeaderboardServiceBasicTest extends TestCase
         $this->userAnswerRepository = $this->createMock(UserAnswerRepository::class);
         $this->userRepository = $this->createMock(UserRepository::class);
         $this->userService = $this->createMock(UserService::class);
-        
+
         $this->service = new LeaderboardService(
             $this->userAnswerRepository,
             $this->userRepository,
@@ -39,7 +39,7 @@ class LeaderboardServiceBasicTest extends TestCase
     {
         $quiz = $this->createMock(Quiz::class);
         $quiz->method('getId')->willReturn(123);
-        
+
         $user = $this->createMock(User::class);
         $user->method('getId')->willReturn(456);
 

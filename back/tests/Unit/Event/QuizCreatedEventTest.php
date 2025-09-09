@@ -18,12 +18,11 @@ class QuizCreatedEventTest extends TestCase
     {
         $quiz = $this->createMock(Quiz::class);
         $user = $this->createMock(User::class);
-        
+
         $event = new QuizCreatedEvent($quiz, $user);
-        
+
         $this->assertSame($quiz, $event->getQuiz());
         $this->assertSame($user, $event->getUser());
         $this->assertInstanceOf('Symfony\Contracts\EventDispatcher\Event', $event);
     }
 }
-

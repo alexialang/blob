@@ -20,11 +20,11 @@ use Symfony\Component\Validator\Exception\ValidationFailedException;
 class QuizController extends AbstractSecureController
 {
     public function __construct(
-        private QuizRatingService $quizRatingService,
-        private QuizSearchService $quizSearchService,
-        private QuizCrudService $quizCrudService,
-        private LeaderboardService $leaderboardService,
-        private LoggerInterface $logger,
+        private readonly QuizRatingService $quizRatingService,
+        private readonly QuizSearchService $quizSearchService,
+        private readonly QuizCrudService $quizCrudService,
+        private readonly LeaderboardService $leaderboardService,
+        private readonly LoggerInterface $logger,
     ) {
     }
 
@@ -103,7 +103,7 @@ class QuizController extends AbstractSecureController
             $quiz = $this->quizCrudService->createWithQuestions($data, $user);
 
             return $this->json($quiz, 201, [], ['groups' => ['quiz:read']]);
-        } catch (\JsonException $e) {
+        } catch (\JsonException) {
             return $this->json(['error' => 'Invalid JSON'], 400);
         } catch (ValidationFailedException $e) {
             $errorMessages = [];
@@ -230,13 +230,13 @@ class QuizController extends AbstractSecureController
                 'data_keys' => array_keys($data),
             ]);
 
-            if (isset($data['title']) && empty(trim($data['title']))) {
+            if (isset($data['title']) && empty(trim((string) $data['title']))) {
                 $this->logger->warning('DEBUG: Title is empty');
 
                 return $this->json(['error' => 'Le titre ne peut pas être vide'], 400);
             }
 
-            if (isset($data['description']) && empty(trim($data['description']))) {
+            if (isset($data['description']) && empty(trim((string) $data['description']))) {
                 $this->logger->warning('DEBUG: Description is empty');
 
                 return $this->json(['error' => 'La description ne peut pas être vide'], 400);

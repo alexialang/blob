@@ -32,13 +32,13 @@ class MultiplayerGameService
     private static array $gameAnswers = [];
 
     public function __construct(
-        private EntityManagerInterface $entityManager,
-        private HubInterface $mercureHub,
-        private RoomRepository $roomRepository,
-        private GameSessionRepository $gameSessionRepository,
-        private MultiplayerTimingService $timingService,
-        private MultiplayerScoreService $scoreService,
-        private MultiplayerValidationService $validationService,
+        private readonly EntityManagerInterface $entityManager,
+        private readonly HubInterface $mercureHub,
+        private readonly RoomRepository $roomRepository,
+        private readonly GameSessionRepository $gameSessionRepository,
+        private readonly MultiplayerTimingService $timingService,
+        private readonly MultiplayerScoreService $scoreService,
+        private readonly MultiplayerValidationService $validationService,
     ) {
     }
 
@@ -442,7 +442,7 @@ class MultiplayerGameService
     {
         $qb = $this->entityManager->createQueryBuilder();
         $qb->select('gs')
-           ->from('App\Entity\GameSession', 'gs')
+           ->from(GameSession::class, 'gs')
            ->where('gs.gameCode = :gameCode')
            ->setParameter('gameCode', $gameCode);
 
@@ -558,7 +558,7 @@ class MultiplayerGameService
             } else {
                 $totalScore = 0;
                 foreach (self::$gameAnswers as $key => $answer) {
-                    if (0 === strpos($key, 'game_'.$gameCode.'_user_'.$userId)) {
+                    if (str_starts_with((string) $key, 'game_'.$gameCode.'_user_'.$userId)) {
                         $totalScore += $answer['points'];
                     }
                 }
@@ -578,13 +578,11 @@ class MultiplayerGameService
                 'title' => $room->getQuiz()->getTitle(),
                 'questionCount' => $room->getQuiz()->getQuestionCount(),
             ],
-            'players' => array_map(function ($player) {
-                return [
-                    'id' => $player->getUser()->getId(),
-                    'username' => $this->getUserDisplayName($player->getUser()),
-                    'team' => $player->getTeam(),
-                ];
-            }, $room->getPlayers()->toArray()),
+            'players' => array_map(fn ($player) => [
+                'id' => $player->getUser()->getId(),
+                'username' => $this->getUserDisplayName($player->getUser()),
+                'team' => $player->getTeam(),
+            ], $room->getPlayers()->toArray()),
             'isTeamMode' => $room->isTeamMode(),
             'status' => $gameSession->getStatus(),
             'currentQuestionIndex' => $gameSession->getCurrentQuestionIndex(),
@@ -607,7 +605,7 @@ class MultiplayerGameService
             );
 
             $this->mercureHub->publish($update);
-        } catch (\Exception $e) {
+        } catch (\Exception) {
         }
     }
 
@@ -634,14 +632,12 @@ class MultiplayerGameService
                 'id' => $question->getId(),
                 'question' => $question->getQuestion(),
                 'type_question' => $question->getTypeQuestion()->getName(),
-                'answers' => array_map(function ($answer) {
-                    return [
-                        'id' => $answer->getId(),
-                        'answer' => $answer->getAnswer(),
-                        'pair_id' => $answer->getPairId(),
-                        'order_correct' => $answer->getOrderCorrect(),
-                    ];
-                }, $question->getAnswers()->toArray()),
+                'answers' => array_map(fn ($answer) => [
+                    'id' => $answer->getId(),
+                    'answer' => $answer->getAnswer(),
+                    'pair_id' => $answer->getPairId(),
+                    'order_correct' => $answer->getOrderCorrect(),
+                ], $question->getAnswers()->toArray()),
             ],
             'timeLeft' => 30,
             'questionStartTime' => $gameSession->getCurrentQuestionStartedAt()->getTimestamp(),
@@ -743,14 +739,12 @@ class MultiplayerGameService
                 'id' => $question->getId(),
                 'question' => $question->getQuestion(),
                 'type_question' => $question->getTypeQuestion()->getName(),
-                'answers' => array_map(function ($answer) {
-                    return [
-                        'id' => $answer->getId(),
-                        'answer' => $answer->getAnswer(),
-                        'pair_id' => $answer->getPairId(),
-                        'order_correct' => $answer->getOrderCorrect(),
-                    ];
-                }, $question->getAnswers()->toArray()),
+                'answers' => array_map(fn ($answer) => [
+                    'id' => $answer->getId(),
+                    'answer' => $answer->getAnswer(),
+                    'pair_id' => $answer->getPairId(),
+                    'order_correct' => $answer->getOrderCorrect(),
+                ], $question->getAnswers()->toArray()),
             ],
             'timeLeft' => 30,
             'timestamp' => time(),
@@ -778,9 +772,7 @@ class MultiplayerGameService
             }
 
             $room = $gameSession->getRoom();
-            $isPlayer = $room->getPlayers()->exists(function ($key, $player) use ($user) {
-                return $player->getUser()->getId() === $user->getId();
-            });
+            $isPlayer = $room->getPlayers()->exists(fn ($key, $player) => $player->getUser()->getId() === $user->getId());
 
             if (!$isPlayer) {
                 throw new PlayerNotInRoomException('unknown');
@@ -907,8 +899,8 @@ class MultiplayerGameService
 
         $answeredUserIds = [];
         foreach (self::$submittedAnswers as $key => $value) {
-            if (0 === strpos($key, 'game_'.$gameCode.'_user_') && false !== strpos($key, '_question_'.$currentQuestion->getId())) {
-                $parts = explode('_', $key);
+            if (str_starts_with((string) $key, 'game_'.$gameCode.'_user_') && str_contains((string) $key, '_question_'.$currentQuestion->getId())) {
+                $parts = explode('_', (string) $key);
                 $userId = $parts[3] ?? null;
                 if ($userId) {
                     $answeredUserIds[] = (int) $userId;

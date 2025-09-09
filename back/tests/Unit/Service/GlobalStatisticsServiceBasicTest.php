@@ -21,12 +21,12 @@ class GlobalStatisticsServiceBasicTest extends TestCase
     {
         $teamScores = [
             ['quiz_id' => 1, 'team' => 'Team A', 'score' => 85],
-            ['quiz_id' => 2, 'team' => 'Team B', 'score' => 92]
+            ['quiz_id' => 2, 'team' => 'Team B', 'score' => 92],
         ];
 
         $groupScores = [
             ['quiz_id' => 1, 'group' => 'Group 1', 'score' => 78],
-            ['quiz_id' => 2, 'group' => 'Group 2', 'score' => 89]
+            ['quiz_id' => 2, 'group' => 'Group 2', 'score' => 89],
         ];
 
         $this->repository->expects($this->once())
@@ -50,11 +50,11 @@ class GlobalStatisticsServiceBasicTest extends TestCase
     {
         $companyId = 123;
         $teamScores = [
-            ['quiz_id' => 1, 'team' => 'Company Team A', 'score' => 90]
+            ['quiz_id' => 1, 'team' => 'Company Team A', 'score' => 90],
         ];
 
         $groupScores = [
-            ['quiz_id' => 1, 'group' => 'Company Group 1', 'score' => 85]
+            ['quiz_id' => 1, 'group' => 'Company Group 1', 'score' => 85],
         ];
 
         $this->repository->expects($this->once())

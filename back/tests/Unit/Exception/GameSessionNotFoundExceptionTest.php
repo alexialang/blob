@@ -11,11 +11,10 @@ class GameSessionNotFoundExceptionTest extends TestCase
     {
         $gameCode = 'GAME789';
         $exception = new GameSessionNotFoundException($gameCode);
-        
+
         $this->assertInstanceOf(\Exception::class, $exception);
         $this->assertEquals("Jeu avec le code '$gameCode' non trouvé", $exception->getMessage());
         $this->assertEquals(404, $exception->getCode());
         $this->assertNull($exception->getPrevious());
     }
 }
-

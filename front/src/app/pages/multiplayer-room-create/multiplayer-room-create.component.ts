@@ -6,7 +6,6 @@ import { MultiplayerService } from '../../services/multiplayer.service';
 import { QuizManagementService } from '../../services/quiz-management.service';
 import { CompanyService } from '../../services/company.service';
 import { UserService } from '../../services/user.service';
-import { AnalyticsService } from '../../services/analytics.service';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
@@ -45,7 +44,6 @@ export class MultiplayerRoomCreateComponent implements OnInit {
     private quizService: QuizManagementService,
     private companyService: CompanyService,
     private userService: UserService,
-    private analytics: AnalyticsService
   ) {}
 
   ngOnInit(): void {
@@ -139,7 +137,6 @@ export class MultiplayerRoomCreateComponent implements OnInit {
       this.roomName || undefined
     ).subscribe({
       next: (room) => {
-        this.analytics.trackMultiplayerRoomCreate();
 
         this.multiplayerService.setCurrentRoom(room);
 

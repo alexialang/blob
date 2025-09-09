@@ -13,7 +13,7 @@ class CompanyControllerNewTest extends TestCase
     {
         $companyService = $this->createMock(CompanyService::class);
         $userService = $this->createMock(UserService::class);
-        
+
         $controller = new CompanyController($companyService, $userService);
         $this->assertInstanceOf(CompanyController::class, $controller);
     }
@@ -22,7 +22,7 @@ class CompanyControllerNewTest extends TestCase
     {
         $companyService = $this->createMock(CompanyService::class);
         $userService = $this->createMock(UserService::class);
-        
+
         $controller = new CompanyController($companyService, $userService);
         $this->assertTrue(method_exists($controller, 'list'));
         $this->assertTrue(method_exists($controller, 'show'));

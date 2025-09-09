@@ -9,8 +9,8 @@ use App\Service\BadgeService;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Validator\ConstraintViolationListInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class BadgeServiceTest extends TestCase
 {
@@ -33,12 +33,12 @@ class BadgeServiceTest extends TestCase
     }
 
     // ===== Tests pour list() =====
-    
+
     public function testList(): void
     {
         $badges = [
             $this->createMock(Badge::class),
-            $this->createMock(Badge::class)
+            $this->createMock(Badge::class),
         ];
 
         $this->badgeRepository->expects($this->once())
@@ -64,7 +64,7 @@ class BadgeServiceTest extends TestCase
     }
 
     // ===== Tests pour find() =====
-    
+
     public function testFind(): void
     {
         $badge = $this->createMock(Badge::class);
@@ -92,7 +92,7 @@ class BadgeServiceTest extends TestCase
     }
 
     // ===== Tests pour delete() =====
-    
+
     public function testDeleteSuccess(): void
     {
         $badge = $this->createMock(Badge::class);
@@ -156,7 +156,7 @@ class BadgeServiceTest extends TestCase
     }
 
     // ===== Tests pour awardBadge() =====
-    
+
     public function testAwardBadgeSuccess(): void
     {
         $user = $this->createMock(User::class);
@@ -275,7 +275,7 @@ class BadgeServiceTest extends TestCase
     }
 
     // ===== Tests pour initializeBadges() =====
-    
+
     public function testInitializeBadgesSuccess(): void
     {
         // Mock validation for badge data

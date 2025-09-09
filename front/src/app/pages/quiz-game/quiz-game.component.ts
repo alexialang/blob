@@ -20,7 +20,6 @@ import { SlideButtonComponent } from '../../components/slide-button/slide-button
 import { BackButtonComponent } from '../../components/back-button/back-button.component';
 import { TuiIcon } from '@taiga-ui/core';
 import { AlertService } from '../../services/alert.service';
-import { AnalyticsService } from '../../services/analytics.service';
 
 
 @Component({
@@ -96,12 +95,10 @@ export class QuizGameComponent implements OnInit, OnDestroy {
         private quizGameService: QuizGameService,
         private quizResultsService: QuizResultsService,
         private alertService: AlertService,
-        private analytics: AnalyticsService
     ) { }
 
     ngOnInit(): void {
         const quizId = +this.route.snapshot.params['id'];
-        this.analytics.trackQuizView();
 
         this.loadQuiz(quizId);
     }
@@ -272,7 +269,6 @@ export class QuizGameComponent implements OnInit, OnDestroy {
     private finishQuiz(): void {
         const correctAnswers = Math.floor(this.currentScore / 10);
         this.totalScore = this.totalQuestions > 0 ? Math.round((correctAnswers / this.totalQuestions) * 100) : 0;
-        this.analytics.trackQuizComplete(this.quizData.id.toString(), this.totalScore);
 
         this.quizCompleted = true;
         this.loadPlayerRanking();

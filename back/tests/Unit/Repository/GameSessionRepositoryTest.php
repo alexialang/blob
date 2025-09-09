@@ -2,10 +2,7 @@
 
 namespace App\Tests\Unit\Repository;
 
-use App\Entity\GameSession;
 use App\Repository\GameSessionRepository;
-use Doctrine\ORM\AbstractQuery;
-use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 use PHPUnit\Framework\TestCase;
 
@@ -15,17 +12,16 @@ class GameSessionRepositoryTest extends TestCase
     {
         $managerRegistry = $this->createMock(ManagerRegistry::class);
         $repository = new GameSessionRepository($managerRegistry);
-        
+
         $this->assertInstanceOf(GameSessionRepository::class, $repository);
     }
-    
+
     public function testEntityClass(): void
     {
         $managerRegistry = $this->createMock(ManagerRegistry::class);
         $repository = new GameSessionRepository($managerRegistry);
-        
+
         $reflection = new \ReflectionClass($repository);
         $this->assertTrue($reflection->isSubclassOf('Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository'));
     }
 }
-

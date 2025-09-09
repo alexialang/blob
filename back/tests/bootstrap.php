@@ -17,4 +17,3 @@ if (file_exists(dirname(__DIR__).'/.env.test.local')) {
 if ($_SERVER['APP_DEBUG']) {
     umask(0000);
 }
-

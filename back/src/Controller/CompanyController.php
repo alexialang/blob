@@ -17,8 +17,8 @@ use Symfony\Component\Validator\Exception\ValidationFailedException;
 class CompanyController extends AbstractSecureController
 {
     public function __construct(
-        private CompanyService $companyService,
-        private UserService $userService,
+        private readonly CompanyService $companyService,
+        private readonly UserService $userService,
     ) {
     }
 
@@ -146,14 +146,14 @@ class CompanyController extends AbstractSecureController
         try {
             $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
 
-            if (!isset($data['name']) || empty(trim($data['name']))) {
+            if (!isset($data['name']) || empty(trim((string) $data['name']))) {
                 return $this->json([
                     'success' => false,
                     'message' => 'Le nom de l\'entreprise est obligatoire',
                 ], 400);
             }
 
-            if (strlen(trim($data['name'])) < 2) {
+            if (strlen(trim((string) $data['name'])) < 2) {
                 return $this->json([
                     'success' => false,
                     'message' => 'Le nom de l\'entreprise doit contenir au moins 2 caractères',
@@ -167,7 +167,7 @@ class CompanyController extends AbstractSecureController
                 'message' => 'Entreprise créée avec succès',
                 'data' => $company,
             ], 201, [], ['groups' => ['company:create']]);
-        } catch (\JsonException $e) {
+        } catch (\JsonException) {
             return $this->json([
                 'success' => false,
                 'message' => 'Format JSON invalide',
@@ -352,7 +352,7 @@ class CompanyController extends AbstractSecureController
                 'message' => 'Utilisateur assigné avec succès',
                 'data' => $result,
             ]);
-        } catch (\JsonException $e) {
+        } catch (\JsonException) {
             return $this->json([
                 'success' => false,
                 'message' => 'Format JSON invalide',

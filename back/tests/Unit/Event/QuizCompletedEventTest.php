@@ -18,9 +18,9 @@ class QuizCompletedEventTest extends TestCase
     {
         $userAnswer = $this->createMock(UserAnswer::class);
         $user = $this->createMock(User::class);
-        
+
         $event = new QuizCompletedEvent($userAnswer, $user);
-        
+
         $this->assertSame($userAnswer, $event->getUserAnswer());
         $this->assertSame($user, $event->getUser());
         $this->assertInstanceOf('Symfony\Contracts\EventDispatcher\Event', $event);
@@ -31,9 +31,9 @@ class QuizCompletedEventTest extends TestCase
         $userAnswer = $this->createMock(UserAnswer::class);
         $user = $this->createMock(User::class);
         $userAnswer->method('getTotalScore')->willReturn(85);
-        
+
         $event = new QuizCompletedEvent($userAnswer, $user);
-        
+
         $this->assertEquals(85, $event->getScore());
     }
 
@@ -42,10 +42,9 @@ class QuizCompletedEventTest extends TestCase
         $userAnswer = $this->createMock(UserAnswer::class);
         $user = $this->createMock(User::class);
         $userAnswer->method('getTotalScore')->willReturn(null);
-        
+
         $event = new QuizCompletedEvent($userAnswer, $user);
-        
+
         $this->assertNull($event->getScore());
     }
 }
-

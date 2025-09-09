@@ -13,23 +13,8 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 class UserAnswerService
 {
-    private EntityManagerInterface $em;
-    private UserAnswerRepository $userAnswerRepository;
-    private QuizRatingService $quizRatingService;
-    private UserService $userService;
-    private QuizCrudService $quizCrudService;
-    private EventDispatcherInterface $eventDispatcher;
-    private ValidatorInterface $validator;
-
-    public function __construct(EntityManagerInterface $em, UserAnswerRepository $userAnswerRepository, QuizRatingService $quizRatingService, UserService $userService, QuizCrudService $quizCrudService, EventDispatcherInterface $eventDispatcher, ValidatorInterface $validator)
+    public function __construct(private readonly EntityManagerInterface $em, private readonly UserAnswerRepository $userAnswerRepository, private readonly QuizRatingService $quizRatingService, private readonly UserService $userService, private readonly QuizCrudService $quizCrudService, private readonly EventDispatcherInterface $eventDispatcher, private readonly ValidatorInterface $validator)
     {
-        $this->em = $em;
-        $this->userAnswerRepository = $userAnswerRepository;
-        $this->quizRatingService = $quizRatingService;
-        $this->userService = $userService;
-        $this->quizCrudService = $quizCrudService;
-        $this->eventDispatcher = $eventDispatcher;
-        $this->validator = $validator;
     }
 
     public function list(): array

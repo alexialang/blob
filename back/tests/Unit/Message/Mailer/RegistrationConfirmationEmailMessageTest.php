@@ -12,16 +12,15 @@ class RegistrationConfirmationEmailMessageTest extends TestCase
         $email = 'test@example.com';
         $firstName = 'Jane';
         $confirmationToken = 'xyz789';
-        
+
         $message = new RegistrationConfirmationEmailMessage($email, $firstName, $confirmationToken);
-        
+
         $this->assertEquals($email, $message->email);
         $this->assertEquals($firstName, $message->firstName);
         $this->assertEquals($confirmationToken, $message->confirmationToken);
-        
+
         $this->assertEquals($email, $message->getEmail());
         $this->assertEquals($firstName, $message->getFirstName());
         $this->assertEquals($confirmationToken, $message->getConfirmationToken());
     }
 }
-

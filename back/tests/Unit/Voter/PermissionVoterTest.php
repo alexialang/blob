@@ -19,7 +19,6 @@ class PermissionVoterTest extends TestCase
         $this->assertInstanceOf(PermissionVoter::class, $this->voter);
     }
 
-
     public function testVoterInheritance(): void
     {
         $reflection = new \ReflectionClass($this->voter);

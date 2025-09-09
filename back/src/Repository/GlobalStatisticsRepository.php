@@ -31,7 +31,7 @@ class GlobalStatisticsRepository extends ServiceEntityRepository
                     AVG(ua.total_score) as averageScore,
                     COUNT(DISTINCT ua.user) as participants
                 ')
-                ->leftJoin('App\Entity\UserAnswer', 'ua', 'WITH', 'q.id = ua.quiz')
+                ->leftJoin(\App\Entity\UserAnswer::class, 'ua', 'WITH', 'q.id = ua.quiz')
                 ->leftJoin('ua.user', 'u')
                 ->where('u.isActive = true')
                 ->andWhere('u.deletedAt IS NULL')
@@ -54,7 +54,7 @@ class GlobalStatisticsRepository extends ServiceEntityRepository
             }
 
             return $teamScores;
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             // Erreur dans getTeamScoresByQuiz: " . $e->getMessage()
             return [];
         }
@@ -78,7 +78,7 @@ class GlobalStatisticsRepository extends ServiceEntityRepository
                     AVG(ua.total_score) as averageScore,
                     COUNT(DISTINCT ua.user) as participants
                 ')
-                ->leftJoin('App\Entity\UserAnswer', 'ua', 'WITH', 'q.id = ua.quiz')
+                ->leftJoin(\App\Entity\UserAnswer::class, 'ua', 'WITH', 'q.id = ua.quiz')
                 ->leftJoin('ua.user', 'u')
                 ->where('u.isActive = true')
                 ->andWhere('u.deletedAt IS NULL')
@@ -123,9 +123,9 @@ class GlobalStatisticsRepository extends ServiceEntityRepository
                     AVG(ua.total_score) as averageScore,
                     COUNT(DISTINCT ua.user) as participants
                 ')
-                ->from('App\Entity\Group', 'g')
+                ->from(\App\Entity\Group::class, 'g')
                 ->innerJoin('g.users', 'u')
-                ->innerJoin('App\Entity\UserAnswer', 'ua', 'WITH', 'ua.user = u.id')
+                ->innerJoin(\App\Entity\UserAnswer::class, 'ua', 'WITH', 'ua.user = u.id')
                 ->innerJoin('ua.quiz', 'q')
                 ->where('u.isActive = true')
                 ->andWhere('u.deletedAt IS NULL')
@@ -152,7 +152,7 @@ class GlobalStatisticsRepository extends ServiceEntityRepository
             }
 
             return $groupScores;
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             return [];
         }
     }
@@ -169,9 +169,9 @@ class GlobalStatisticsRepository extends ServiceEntityRepository
                     AVG(ua.total_score) as averageScore,
                     COUNT(DISTINCT ua.user) as participants
                 ')
-                ->from('App\Entity\Group', 'g')
+                ->from(\App\Entity\Group::class, 'g')
                 ->innerJoin('g.users', 'u')
-                ->innerJoin('App\Entity\UserAnswer', 'ua', 'WITH', 'ua.user = u.id')
+                ->innerJoin(\App\Entity\UserAnswer::class, 'ua', 'WITH', 'ua.user = u.id')
                 ->innerJoin('ua.quiz', 'q')
                 ->where('u.isActive = true')
                 ->andWhere('u.deletedAt IS NULL')
@@ -200,7 +200,7 @@ class GlobalStatisticsRepository extends ServiceEntityRepository
             }
 
             return $groupScores;
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             return [];
         }
     }

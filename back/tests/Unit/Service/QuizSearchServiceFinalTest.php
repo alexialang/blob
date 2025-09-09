@@ -21,7 +21,7 @@ class QuizSearchServiceFinalTest extends TestCase
         $this->quizRepository = $this->createMock(QuizRepository::class);
         $this->logger = $this->createMock(LoggerInterface::class);
         $this->serializer = $this->createMock(SerializerInterface::class);
-        
+
         $this->service = new QuizSearchService(
             $this->quizRepository,
             $this->logger,

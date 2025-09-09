@@ -2,7 +2,6 @@
 
 namespace App\Tests\Unit\Repository;
 
-use App\Entity\RoomPlayer;
 use App\Repository\RoomPlayerRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use PHPUnit\Framework\TestCase;
@@ -13,17 +12,16 @@ class RoomPlayerRepositoryTest extends TestCase
     {
         $managerRegistry = $this->createMock(ManagerRegistry::class);
         $repository = new RoomPlayerRepository($managerRegistry);
-        
+
         $this->assertInstanceOf(RoomPlayerRepository::class, $repository);
     }
-    
+
     public function testEntityClass(): void
     {
         $managerRegistry = $this->createMock(ManagerRegistry::class);
         $repository = new RoomPlayerRepository($managerRegistry);
-        
+
         $reflection = new \ReflectionClass($repository);
         $this->assertTrue($reflection->isSubclassOf('Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository'));
     }
 }
-

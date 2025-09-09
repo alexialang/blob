@@ -1,0 +1,102 @@
+version: '3.8'
+
+services:
+  # Service pour les tests backend
+  backend-test:
+    build:
+      context: back
+      dockerfile: Dockerfile
+      args:
+        APP_ENV: test
+    container_name: blob_backend_test
+    environment:
+      - APP_ENV=test
+      - DATABASE_URL=mysql://test_user:test_password@db_test:3306/test_db?serverVersion=11.8.1-MariaDB&charset=utf8mb4
+    depends_on:
+      db_test:
+        condition: service_healthy
+    volumes:
+      - ./back:/srv/app
+    command: |
+      bash -c "
+        php bin/console doctrine:database:create --if-not-exists --env=test &&
+        php bin/console doctrine:migrations:migrate --no-interaction --env=test &&
+        php bin/console doctrine:fixtures:load --no-interaction --env=test &&
+        php bin/phpunit --coverage-clover=coverage.xml
+      "
+    networks:
+      - test_network
+
+  # Service pour les tests frontend
+  frontend-test:
+    build:
+      context: front
+      dockerfile: Dockerfile
+      target: dev
+    container_name: blob_frontend_test
+    volumes:
+      - ./front:/app
+    command: |
+      bash -c "
+        npm ci &&
+        npm run lint &&
+        npm run test:ci &&
+        npm run build
+      "
+    networks:
+      - test_network
+
+  # Base de données pour les tests
+  db_test:
+    image: mariadb:11.8.1-rc
+    container_name: blob_db_test
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: test_db
+      MYSQL_USER: test_user
+      MYSQL_PASSWORD: test_password
+    command: --max_allowed_packet=32505856 --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 10s
+      retries: 10
+      interval: 10s
+      start_period: 30s
+    networks:
+      - test_network
+
+  # Service de sécurité pour scan Trivy
+  security-scan:
+    image: aquasec/trivy:latest
+    container_name: blob_security_scan
+    volumes:
+      - .:/workspace
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: |
+      sh -c "
+        trivy fs --format sarif --output /workspace/trivy-results.sarif /workspace &&
+        trivy image --format table aquasec/trivy:latest
+      "
+    networks:
+      - test_network
+
+  # Service pour tests de performance
+  performance-test:
+    image: grafana/k6:latest
+    container_name: blob_performance_test
+    volumes:
+      - ./performance-tests:/scripts
+    command: run /scripts/load-test.js
+    depends_on:
+      - backend-test
+      - frontend-test
+    networks:
+      - test_network
+
+networks:
+  test_network:
+    driver: bridge
+
+volumes:
+  test_db_data:
+

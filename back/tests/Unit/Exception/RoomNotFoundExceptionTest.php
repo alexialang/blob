@@ -11,11 +11,10 @@ class RoomNotFoundExceptionTest extends TestCase
     {
         $roomCode = 'ABC123';
         $exception = new RoomNotFoundException($roomCode);
-        
+
         $this->assertInstanceOf(\Exception::class, $exception);
         $this->assertEquals("Salon '$roomCode' non trouvé", $exception->getMessage());
         $this->assertEquals(404, $exception->getCode());
         $this->assertNull($exception->getPrevious());
     }
 }
-

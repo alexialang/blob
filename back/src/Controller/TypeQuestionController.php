@@ -20,13 +20,11 @@ class TypeQuestionController extends AbstractController
     #[Route('/list', name: 'type_question_list', methods: ['GET'])]
     public function list(): JsonResponse
     {
-        $typeQuestions = array_map(function ($enum) {
-            return [
-                'id' => $enum->value,
-                'name' => $enum->getName(),
-                'key' => $enum->value,
-            ];
-        }, TypeQuestionName::cases());
+        $typeQuestions = array_map(fn ($enum) => [
+            'id' => $enum->value,
+            'name' => $enum->getName(),
+            'key' => $enum->value,
+        ], TypeQuestionName::cases());
 
         return $this->json($typeQuestions);
     }

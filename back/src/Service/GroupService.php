@@ -13,17 +13,8 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class GroupService
 {
-    private EntityManagerInterface $em;
-    private GroupRepository $groupRepository;
-    private CompanyService $companyService;
-    private ValidatorInterface $validator;
-
-    public function __construct(EntityManagerInterface $em, GroupRepository $groupRepository, CompanyService $companyService, ValidatorInterface $validator)
+    public function __construct(private readonly EntityManagerInterface $em, private readonly GroupRepository $groupRepository, private readonly CompanyService $companyService, private readonly ValidatorInterface $validator)
     {
-        $this->em = $em;
-        $this->groupRepository = $groupRepository;
-        $this->companyService = $companyService;
-        $this->validator = $validator;
     }
 
     public function list(): array

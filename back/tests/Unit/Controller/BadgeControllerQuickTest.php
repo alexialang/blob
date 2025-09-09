@@ -3,7 +3,6 @@
 namespace App\Tests\Unit\Controller;
 
 use App\Controller\BadgeController;
-use App\Entity\Badge;
 use App\Service\BadgeService;
 use PHPUnit\Framework\TestCase;
 

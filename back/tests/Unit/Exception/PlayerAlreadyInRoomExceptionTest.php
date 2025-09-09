@@ -11,11 +11,10 @@ class PlayerAlreadyInRoomExceptionTest extends TestCase
     {
         $roomCode = 'ROOM456';
         $exception = new PlayerAlreadyInRoomException($roomCode);
-        
+
         $this->assertInstanceOf(\Exception::class, $exception);
         $this->assertEquals("Vous êtes déjà dans le salon '$roomCode'", $exception->getMessage());
         $this->assertEquals(409, $exception->getCode());
         $this->assertNull($exception->getPrevious());
     }
 }
-

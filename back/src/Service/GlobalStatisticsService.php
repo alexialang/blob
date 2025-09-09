@@ -7,7 +7,7 @@ use App\Repository\GlobalStatisticsRepository;
 class GlobalStatisticsService
 {
     public function __construct(
-        private GlobalStatisticsRepository $globalStatisticsRepository,
+        private readonly GlobalStatisticsRepository $globalStatisticsRepository,
     ) {
     }
 

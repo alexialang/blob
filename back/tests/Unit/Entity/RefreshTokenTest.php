@@ -44,8 +44,7 @@ class RefreshTokenTest extends TestCase
     {
         $refreshToken = 'test_refresh_token';
         $this->refreshToken->setRefreshToken($refreshToken);
-        
+
         $this->assertEquals($refreshToken, (string) $this->refreshToken);
     }
 }
-

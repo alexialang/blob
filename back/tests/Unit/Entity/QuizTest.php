@@ -6,10 +6,8 @@ use App\Entity\CategoryQuiz;
 use App\Entity\Company;
 use App\Entity\Question;
 use App\Entity\Quiz;
-use App\Entity\QuizRating;
 use App\Entity\User;
 use App\Entity\UserAnswer;
-use App\Enum\Difficulty;
 use App\Enum\Status;
 use Doctrine\Common\Collections\ArrayCollection;
 use PHPUnit\Framework\TestCase;
@@ -49,7 +47,7 @@ class QuizTest extends TestCase
     {
         $this->quiz->setIsPublic(true);
         $this->assertTrue($this->quiz->isPublic());
-        
+
         $this->quiz->setIsPublic(false);
         $this->assertFalse($this->quiz->isPublic());
     }
@@ -125,13 +123,13 @@ class QuizTest extends TestCase
     public function testAddQuestion(): void
     {
         $question = $this->createMock(Question::class);
-        
+
         $question->expects($this->once())
             ->method('setQuiz')
             ->with($this->quiz);
-        
+
         $result = $this->quiz->addQuestion($question);
-        
+
         $this->assertSame($this->quiz, $result);
         $this->assertTrue($this->quiz->getQuestions()->contains($question));
     }
@@ -139,19 +137,19 @@ class QuizTest extends TestCase
     public function testRemoveQuestion(): void
     {
         $question = $this->createMock(Question::class);
-        
+
         // Configurer les mocks pour add et remove
         $question->expects($this->exactly(2))
             ->method('setQuiz')
             ->withConsecutive([$this->quiz], [null]);
-        
+
         $question->expects($this->once())
             ->method('getQuiz')
             ->willReturn($this->quiz);
-        
+
         $this->quiz->addQuestion($question);
         $result = $this->quiz->removeQuestion($question);
-        
+
         $this->assertSame($this->quiz, $result);
         $this->assertFalse($this->quiz->getQuestions()->contains($question));
     }
@@ -168,13 +166,13 @@ class QuizTest extends TestCase
     public function testAddUserAnswer(): void
     {
         $userAnswer = $this->createMock(UserAnswer::class);
-        
+
         $userAnswer->expects($this->once())
             ->method('setQuiz')
             ->with($this->quiz);
-        
+
         $result = $this->quiz->addUserAnswer($userAnswer);
-        
+
         $this->assertSame($this->quiz, $result);
         $this->assertTrue($this->quiz->getUserAnswers()->contains($userAnswer));
     }
@@ -182,19 +180,19 @@ class QuizTest extends TestCase
     public function testRemoveUserAnswer(): void
     {
         $userAnswer = $this->createMock(UserAnswer::class);
-        
+
         // Configurer les mocks pour add et remove
         $userAnswer->expects($this->exactly(2))
             ->method('setQuiz')
             ->withConsecutive([$this->quiz], [null]);
-        
+
         $userAnswer->expects($this->once())
             ->method('getQuiz')
             ->willReturn($this->quiz);
-        
+
         $this->quiz->addUserAnswer($userAnswer);
         $result = $this->quiz->removeUserAnswer($userAnswer);
-        
+
         $this->assertSame($this->quiz, $result);
         $this->assertFalse($this->quiz->getUserAnswers()->contains($userAnswer));
     }
@@ -211,9 +209,9 @@ class QuizTest extends TestCase
     public function testAddGroup(): void
     {
         $group = $this->createMock(\App\Entity\Group::class);
-        
+
         $result = $this->quiz->addGroup($group);
-        
+
         $this->assertSame($this->quiz, $result);
         $this->assertTrue($this->quiz->getGroups()->contains($group));
     }
@@ -221,13 +219,13 @@ class QuizTest extends TestCase
     public function testRemoveGroup(): void
     {
         $group = $this->createMock(\App\Entity\Group::class);
-        
+
         // Ajouter d'abord le groupe
         $this->quiz->addGroup($group);
-        
+
         // Maintenant le supprimer
         $result = $this->quiz->removeGroup($group);
-        
+
         $this->assertSame($this->quiz, $result);
         $this->assertFalse($this->quiz->getGroups()->contains($group));
     }
@@ -258,17 +256,17 @@ class QuizTest extends TestCase
     {
         // Test sans questions
         $this->assertEquals(0, $this->quiz->getQuestionCount());
-        
+
         // Ajouter quelques questions mockées
         $question1 = $this->createMock(Question::class);
         $question2 = $this->createMock(Question::class);
-        
+
         $question1->method('setQuiz');
         $question2->method('setQuiz');
-        
+
         $this->quiz->addQuestion($question1);
         $this->quiz->addQuestion($question2);
-        
+
         $this->assertEquals(2, $this->quiz->getQuestionCount());
     }
 }

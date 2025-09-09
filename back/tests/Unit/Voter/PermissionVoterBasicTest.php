@@ -17,7 +17,6 @@ class PermissionVoterBasicTest extends TestCase
         $this->voter = new PermissionVoter();
     }
 
-
     public function testVoteOnAttributeWithNonUserToken(): void
     {
         $token = $this->createMock(TokenInterface::class);

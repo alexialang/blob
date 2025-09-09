@@ -2,9 +2,9 @@
 
 namespace App\Tests\Unit\Entity;
 
-use App\Entity\User;
-use App\Entity\Quiz;
 use App\Entity\CategoryQuiz;
+use App\Entity\Quiz;
+use App\Entity\User;
 use PHPUnit\Framework\TestCase;
 
 class SimpleEntityTest extends TestCase
@@ -27,4 +27,3 @@ class SimpleEntityTest extends TestCase
         $this->assertInstanceOf(CategoryQuiz::class, $category);
     }
 }
-

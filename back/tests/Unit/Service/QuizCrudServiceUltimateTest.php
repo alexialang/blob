@@ -54,7 +54,6 @@ class QuizCrudServiceUltimateTest extends TestCase
         $this->assertInstanceOf(QuizCrudService::class, $this->service);
     }
 
-
     public function testFind(): void
     {
         $quiz = $this->createMock(Quiz::class);

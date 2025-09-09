@@ -31,12 +31,12 @@ class QuizSearchServiceTest extends TestCase
     }
 
     // ===== Tests pour list() =====
-    
+
     public function testListForManagement(): void
     {
         $quizzes = [
             $this->createMock(Quiz::class),
-            $this->createMock(Quiz::class)
+            $this->createMock(Quiz::class),
         ];
 
         $this->quizRepository->expects($this->once())
@@ -53,7 +53,7 @@ class QuizSearchServiceTest extends TestCase
     public function testListPublishedOnly(): void
     {
         $quizzes = [
-            $this->createMock(Quiz::class)
+            $this->createMock(Quiz::class),
         ];
 
         $this->quizRepository->expects($this->once())
@@ -83,13 +83,13 @@ class QuizSearchServiceTest extends TestCase
     }
 
     // ===== Tests complets pour getQuizzesForCompanyManagement() =====
-    
+
     public function testGetQuizzesForCompanyManagementSuccess(): void
     {
         $user = $this->createMock(User::class);
         $quizzes = [
             $this->createMock(Quiz::class),
-            $this->createMock(Quiz::class)
+            $this->createMock(Quiz::class),
         ];
 
         $repositoryResult = [
@@ -98,8 +98,8 @@ class QuizSearchServiceTest extends TestCase
                 'total' => 2,
                 'page' => 1,
                 'limit' => 20,
-                'totalPages' => 1
-            ]
+                'totalPages' => 1,
+            ],
         ];
 
         $this->quizRepository->expects($this->once())
@@ -125,7 +125,7 @@ class QuizSearchServiceTest extends TestCase
     {
         $user = $this->createMock(User::class);
         $quizzes = [
-            $this->createMock(Quiz::class)
+            $this->createMock(Quiz::class),
         ];
 
         $repositoryResult = [
@@ -134,8 +134,8 @@ class QuizSearchServiceTest extends TestCase
                 'total' => 1,
                 'page' => 2,
                 'limit' => 10,
-                'totalPages' => 1
-            ]
+                'totalPages' => 1,
+            ],
         ];
 
         $this->quizRepository->expects($this->once())
@@ -178,13 +178,13 @@ class QuizSearchServiceTest extends TestCase
     }
 
     // ===== Tests pour getPrivateQuizzesForUser() =====
-    
+
     public function testGetPrivateQuizzesForUser(): void
     {
         $user = $this->createMock(User::class);
         $quizzes = [
             $this->createMock(Quiz::class),
-            $this->createMock(Quiz::class)
+            $this->createMock(Quiz::class),
         ];
 
         $this->quizRepository->expects($this->once())
@@ -225,12 +225,12 @@ class QuizSearchServiceTest extends TestCase
     }
 
     // Tests getMyQuizzes() complets
-    
+
     public function testGetMyQuizzes(): void
     {
         $user = $this->createMock(User::class);
         $quizzes = [
-            $this->createMock(Quiz::class)
+            $this->createMock(Quiz::class),
         ];
 
         $this->quizRepository->expects($this->once())
@@ -271,12 +271,12 @@ class QuizSearchServiceTest extends TestCase
     }
 
     // ===== Tests pour getMostPopularQuizzes() =====
-    
+
     public function testGetMostPopularQuizzes(): void
     {
         $quizzes = [
             $this->createMock(Quiz::class),
-            $this->createMock(Quiz::class)
+            $this->createMock(Quiz::class),
         ];
 
         $this->quizRepository->expects($this->once())
@@ -293,7 +293,7 @@ class QuizSearchServiceTest extends TestCase
     public function testGetMostPopularQuizzesCustomLimit(): void
     {
         $quizzes = [
-            $this->createMock(Quiz::class)
+            $this->createMock(Quiz::class),
         ];
 
         $this->quizRepository->expects($this->once())
@@ -308,13 +308,13 @@ class QuizSearchServiceTest extends TestCase
     }
 
     // ===== Tests pour getMostRecentQuizzes() =====
-    
+
     public function testGetMostRecentQuizzes(): void
     {
         $quizzes = [
             $this->createMock(Quiz::class),
             $this->createMock(Quiz::class),
-            $this->createMock(Quiz::class)
+            $this->createMock(Quiz::class),
         ];
 
         $this->quizRepository->expects($this->once())
@@ -331,7 +331,7 @@ class QuizSearchServiceTest extends TestCase
     public function testGetMostRecentQuizzesCustomLimit(): void
     {
         $quizzes = [
-            $this->createMock(Quiz::class)
+            $this->createMock(Quiz::class),
         ];
 
         $this->quizRepository->expects($this->once())
@@ -357,5 +357,4 @@ class QuizSearchServiceTest extends TestCase
         $this->assertSame([], $result);
         $this->assertCount(0, $result);
     }
-
 }

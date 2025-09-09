@@ -22,7 +22,7 @@ class CategoryQuizServiceBasicTest extends TestCase
     {
         $categories = [
             $this->createMock(CategoryQuiz::class),
-            $this->createMock(CategoryQuiz::class)
+            $this->createMock(CategoryQuiz::class),
         ];
 
         $this->repository->expects($this->once())

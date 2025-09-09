@@ -13,7 +13,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class CategoryQuizController extends AbstractController
 {
     public function __construct(
-        private CategoryQuizService $categoryQuizService,
+        private readonly CategoryQuizService $categoryQuizService,
     ) {
     }
 

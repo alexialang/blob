@@ -13,14 +13,13 @@ class RegistrationConfirmationEmailHandlerTest extends TestCase
     {
         $userService = $this->createMock(UserService::class);
         $message = new RegistrationConfirmationEmailMessage('test@example.com', 'Jane', 'confirm123');
-        
+
         $userService
             ->expects($this->once())
             ->method('sendEmail')
             ->with('test@example.com', 'Jane', 'confirm123');
-        
+
         $handler = new RegistrationConfirmationEmailHandler($userService);
         $handler($message);
     }
 }
-

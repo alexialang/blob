@@ -31,7 +31,7 @@ class LeaderboardServiceTest extends TestCase
     }
 
     // ===== Tests pour getQuizLeaderboard() =====
-    
+
     public function testGetQuizLeaderboardWithCurrentUser(): void
     {
         $quiz = $this->createMock(Quiz::class);
@@ -47,7 +47,7 @@ class LeaderboardServiceTest extends TestCase
                 'firstName' => 'John',
                 'lastName' => 'Doe',
                 'company' => 'Tech Corp',
-                'score' => 95
+                'score' => 95,
             ],
             [
                 'userId' => 456, // Current user
@@ -55,7 +55,7 @@ class LeaderboardServiceTest extends TestCase
                 'firstName' => 'Jane',
                 'lastName' => 'Smith',
                 'company' => 'Dev Inc',
-                'score' => 87
+                'score' => 87,
             ],
             [
                 'userId' => 321,
@@ -63,8 +63,8 @@ class LeaderboardServiceTest extends TestCase
                 'firstName' => 'Bob',
                 'lastName' => 'Wilson',
                 'company' => null,
-                'score' => 75
-            ]
+                'score' => 75,
+            ],
         ];
 
         $this->userAnswerRepository->expects($this->once())
@@ -124,8 +124,8 @@ class LeaderboardServiceTest extends TestCase
                 'firstName' => 'John',
                 'lastName' => 'Doe',
                 'company' => 'Tech Corp',
-                'score' => 95
-            ]
+                'score' => 95,
+            ],
         ];
 
         $this->userAnswerRepository->expects($this->once())
@@ -164,8 +164,8 @@ class LeaderboardServiceTest extends TestCase
                 'firstName' => '',
                 'lastName' => '',
                 'company' => 'Tech Corp',
-                'score' => 95
-            ]
+                'score' => 95,
+            ],
         ];
 
         $this->userAnswerRepository->expects($this->once())
@@ -194,14 +194,14 @@ class LeaderboardServiceTest extends TestCase
 
         // Créer 15 résultats
         $results = [];
-        for ($i = 1; $i <= 15; $i++) {
+        for ($i = 1; $i <= 15; ++$i) {
             $results[] = [
                 'userId' => $i,
                 'name' => "User $i",
                 'firstName' => "First $i",
                 'lastName' => "Last $i",
                 'company' => "Company $i",
-                'score' => 100 - $i
+                'score' => 100 - $i,
             ];
         }
 
@@ -251,7 +251,7 @@ class LeaderboardServiceTest extends TestCase
     }
 
     // ===== Tests pour getGeneralLeaderboard() =====
-    
+
     public function testGetGeneralLeaderboardWithCurrentUser(): void
     {
         $currentUser = $this->createMock(User::class);
@@ -281,7 +281,7 @@ class LeaderboardServiceTest extends TestCase
                 'totalQuizzesCompleted' => 10,
                 'totalAttempts' => 12,
                 'badgesEarned' => 5,
-                'memberSince' => '2023-01-01'
+                'memberSince' => '2023-01-01',
             ]);
 
         $result = $this->service->getGeneralLeaderboard(10, $currentUser);
@@ -328,7 +328,7 @@ class LeaderboardServiceTest extends TestCase
                 'totalQuizzesCompleted' => 10,
                 'totalAttempts' => 12,
                 'badgesEarned' => 5,
-                'memberSince' => '2023-01-01'
+                'memberSince' => '2023-01-01',
             ]);
 
         $result = $this->service->getGeneralLeaderboard(10, null);

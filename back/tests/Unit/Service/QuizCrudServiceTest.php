@@ -97,14 +97,14 @@ class QuizCrudServiceTest extends TestCase
         $quiz = $this->createMock(Quiz::class);
         $userAnswers = new ArrayCollection();
         $questions = new ArrayCollection();
-        
+
         $quiz->method('getUserAnswers')->willReturn($userAnswers);
         $quiz->method('getQuestions')->willReturn($questions);
 
         // Mock repository pour les ratings
         $ratingRepository = $this->createMock(\App\Repository\QuizRatingRepository::class);
         $ratingRepository->method('findBy')->willReturn([]);
-        
+
         $this->em->method('getRepository')
             ->with(QuizRating::class)
             ->willReturn($ratingRepository);
@@ -130,13 +130,13 @@ class QuizCrudServiceTest extends TestCase
         $quiz = $this->createMock(Quiz::class);
         $userAnswers = new ArrayCollection();
         $questions = new ArrayCollection();
-        
+
         $quiz->method('getUserAnswers')->willReturn($userAnswers);
         $quiz->method('getQuestions')->willReturn($questions);
 
         $ratingRepository = $this->createMock(\App\Repository\QuizRatingRepository::class);
         $ratingRepository->method('findBy')->willReturn([]);
-        
+
         $this->em->method('getRepository')
             ->with(QuizRating::class)
             ->willReturn($ratingRepository);
@@ -165,7 +165,7 @@ class QuizCrudServiceTest extends TestCase
     {
         $quiz = $this->createMock(Quiz::class);
         $user = $this->createMock(User::class);
-        
+
         $quiz->method('getId')->willReturn(123);
 
         $this->quizRepository->expects($this->once())
@@ -183,10 +183,10 @@ class QuizCrudServiceTest extends TestCase
     {
         $quiz = $this->createMock(Quiz::class);
         $user = $this->createMock(User::class);
-        
+
         $data = [
             'title' => 'Updated Quiz',
-            'description' => 'Updated Description with enough characters'
+            'description' => 'Updated Description with enough characters',
         ];
 
         // Mock validation
@@ -215,11 +215,11 @@ class QuizCrudServiceTest extends TestCase
         $quiz = $this->createMock(Quiz::class);
         $user = $this->createMock(User::class);
         $category = $this->createMock(CategoryQuiz::class);
-        
+
         $data = [
             'title' => 'Updated Quiz Title',
             'description' => 'Updated Description with enough characters',
-            'category' => 2
+            'category' => 2,
         ];
 
         // Mock validation
@@ -259,7 +259,7 @@ class QuizCrudServiceTest extends TestCase
         $data = [
             'title' => '',
             'description' => '',
-            'questions' => []
+            'questions' => [],
         ]; // Invalid data
 
         $violations = new ConstraintViolationList();
@@ -277,13 +277,13 @@ class QuizCrudServiceTest extends TestCase
     public function testCreateWithQuestionsMinimal(): void
     {
         $user = $this->createMock(User::class);
-        
+
         $data = [
             'title' => 'Test Quiz',
             'description' => 'Test Description with enough characters',
             'status' => 'draft',
             'isPublic' => true,
-            'questions' => []
+            'questions' => [],
         ];
 
         // Mock validation - permettre plusieurs appels
@@ -324,7 +324,7 @@ class QuizCrudServiceTest extends TestCase
             'title' => 'Valid Title',
             'description' => 'Valid description with enough characters',
             'status' => 'draft',
-            'isPublic' => true
+            'isPublic' => true,
         ];
 
         $this->validator->method('validate')
@@ -345,7 +345,7 @@ class QuizCrudServiceTest extends TestCase
             'title' => '',
             'description' => '',
             'status' => '',
-            'isPublic' => 'invalid'
+            'isPublic' => 'invalid',
         ];
 
         $violations = new ConstraintViolationList();
@@ -360,17 +360,17 @@ class QuizCrudServiceTest extends TestCase
     }
 
     // ===== Tests supplémentaires qui fonctionnent =====
-    
+
     public function testCreateWithQuestionsException(): void
     {
         $user = $this->createMock(User::class);
-        
+
         $data = [
             'title' => 'Test Quiz',
             'description' => 'Test Description with enough characters',
             'status' => 'draft',
             'isPublic' => true,
-            'questions' => []
+            'questions' => [],
         ];
 
         // Mock validation
@@ -397,7 +397,7 @@ class QuizCrudServiceTest extends TestCase
     }
 
     // ===== Tests des méthodes privées qui fonctionnent =====
-    
+
     public function testValidateQuestionDataPrivateMethod(): void
     {
         $reflection = new \ReflectionClass($this->service);
@@ -410,8 +410,8 @@ class QuizCrudServiceTest extends TestCase
             'type_question' => 1,
             'answers' => [
                 ['answer' => 'Answer 1', 'is_correct' => true],
-                ['answer' => 'Answer 2', 'is_correct' => false]
-            ]
+                ['answer' => 'Answer 2', 'is_correct' => false],
+            ],
         ];
 
         $this->validator->method('validate')
@@ -430,7 +430,7 @@ class QuizCrudServiceTest extends TestCase
 
         $validAnswerData = [
             'answer' => 'Valid answer text',
-            'is_correct' => true
+            'is_correct' => true,
         ];
 
         $this->validator->method('validate')
@@ -442,19 +442,19 @@ class QuizCrudServiceTest extends TestCase
     }
 
     // ===== Tests complets pour createWithQuestions =====
-    
+
     public function testCreateWithQuestionsWithCategoryId(): void
     {
         $user = $this->createMock(User::class);
         $category = $this->createMock(CategoryQuiz::class);
-        
+
         $data = [
             'title' => 'Test Quiz',
             'description' => 'Test Description with enough characters',
             'status' => 'draft',
             'isPublic' => true,
             'category_id' => 1,
-            'questions' => []
+            'questions' => [],
         ];
 
         // Mock validation
@@ -495,14 +495,14 @@ class QuizCrudServiceTest extends TestCase
         $user = $this->createMock(User::class);
         $company = $this->createMock(\App\Entity\Company::class);
         $group = $this->createMock(\App\Entity\Group::class);
-        
+
         $data = [
             'title' => 'Test Quiz',
             'description' => 'Test Description with enough characters',
             'status' => 'draft',
             'isPublic' => false, // Private quiz
             'groups' => [1, 2],
-            'questions' => []
+            'questions' => [],
         ];
 
         // Mock user and company
@@ -546,14 +546,14 @@ class QuizCrudServiceTest extends TestCase
     {
         $user = $this->createMock(User::class);
         $company = $this->createMock(\App\Entity\Company::class);
-        
+
         $data = [
             'title' => 'Test Quiz',
             'description' => 'Test Description with enough characters',
             'status' => 'draft',
             'isPublic' => false,
             'groups' => ['invalid', -1, 0], // Invalid group IDs
-            'questions' => []
+            'questions' => [],
         ];
 
         // Mock user and company
@@ -591,18 +591,18 @@ class QuizCrudServiceTest extends TestCase
     }
 
     // ===== Tests complets pour updateWithQuestions =====
-    
+
     public function testUpdateWithQuestionsSimpleFields(): void
     {
         $quiz = $this->createMock(Quiz::class);
         $user = $this->createMock(User::class);
         $category = $this->createMock(CategoryQuiz::class);
-        
+
         $data = [
             'title' => 'Updated Quiz Title',
             'description' => 'Updated Description with enough characters',
             'isPublic' => false,
-            'category' => 2
+            'category' => 2,
         ];
 
         // Mock validation
@@ -640,7 +640,7 @@ class QuizCrudServiceTest extends TestCase
     }
 
     // ===== Tests des méthodes privées supplémentaires =====
-    
+
     // Test createQuestion supprimé temporairement - problème de mock
 
     public function testCreateAnswerPrivateMethod(): void
@@ -650,10 +650,10 @@ class QuizCrudServiceTest extends TestCase
         $method->setAccessible(true);
 
         $question = $this->createMock(Question::class);
-        
+
         $answerData = [
             'answer' => 'Test answer',
-            'is_correct' => true
+            'is_correct' => true,
         ];
 
         // Mock validation
@@ -670,12 +670,12 @@ class QuizCrudServiceTest extends TestCase
     }
 
     // ===== Tests pour getQuizForEdit avec erreurs =====
-    
+
     public function testGetQuizForEditNotFound(): void
     {
         $quiz = $this->createMock(Quiz::class);
         $user = $this->createMock(User::class);
-        
+
         $quiz->method('getId')->willReturn(123);
 
         $this->quizRepository->expects($this->once())
@@ -693,7 +693,7 @@ class QuizCrudServiceTest extends TestCase
     {
         $quiz = $this->createMock(Quiz::class);
         $user = $this->createMock(User::class);
-        
+
         $quiz->method('getId')->willReturn(123);
 
         $this->quizRepository->expects($this->once())
@@ -711,12 +711,12 @@ class QuizCrudServiceTest extends TestCase
     }
 
     // ===== Tests pour createWithQuestions avec questions =====
-    
+
     public function testCreateWithQuestionsWithActualQuestions(): void
     {
         $user = $this->createMock(User::class);
         $typeQuestion = $this->createMock(TypeQuestion::class);
-        
+
         $data = [
             'title' => 'Test Quiz',
             'description' => 'Test Description with enough characters',
@@ -729,10 +729,10 @@ class QuizCrudServiceTest extends TestCase
                     'type_question' => 1,
                     'answers' => [
                         ['answer' => 'Answer 1', 'is_correct' => true],
-                        ['answer' => 'Answer 2', 'is_correct' => false]
-                    ]
-                ]
-            ]
+                        ['answer' => 'Answer 2', 'is_correct' => false],
+                    ],
+                ],
+            ],
         ];
 
         // Mock validation
@@ -768,7 +768,7 @@ class QuizCrudServiceTest extends TestCase
     }
 
     // ===== Tests pour les cas de validation d'erreur =====
-    
+
     public function testValidateQuizDataWithQuestionsError(): void
     {
         $reflection = new \ReflectionClass($this->service);
@@ -783,20 +783,22 @@ class QuizCrudServiceTest extends TestCase
             'questions' => [
                 [
                     'question' => '', // Invalid - empty
-                    'answers' => [] // Invalid - empty
-                ]
-            ]
+                    'answers' => [], // Invalid - empty
+                ],
+            ],
         ];
 
         // Mock validation pour les données principales (OK)
         $this->validator->method('validate')
-            ->willReturnCallback(function($data, $constraints) {
+            ->willReturnCallback(function ($data, $constraints) {
                 if (is_array($data) && isset($data['question']) && empty($data['question'])) {
                     // Retourner des violations pour les questions invalides
                     $violations = new ConstraintViolationList();
                     $violations->add($this->createMock(\Symfony\Component\Validator\ConstraintViolationInterface::class));
+
                     return $violations;
                 }
+
                 return new ConstraintViolationList(); // Pas de violations pour les autres
             });
 
@@ -806,33 +808,33 @@ class QuizCrudServiceTest extends TestCase
     }
 
     // ===== Test pour delete avec UserAnswers et Questions =====
-    
+
     public function testDeleteWithUserAnswersAndQuestions(): void
     {
         $quiz = $this->createMock(Quiz::class);
-        
+
         // Mock UserAnswers
-        $userAnswer1 = $this->createMock(\App\Entity\UserAnswer::class);
-        $userAnswer2 = $this->createMock(\App\Entity\UserAnswer::class);
+        $userAnswer1 = $this->createMock(UserAnswer::class);
+        $userAnswer2 = $this->createMock(UserAnswer::class);
         $userAnswers = new ArrayCollection([$userAnswer1, $userAnswer2]);
-        
+
         // Mock Questions with Answers
-        $answer1 = $this->createMock(\App\Entity\Answer::class);
-        $answer2 = $this->createMock(\App\Entity\Answer::class);
+        $answer1 = $this->createMock(Answer::class);
+        $answer2 = $this->createMock(Answer::class);
         $answers = new ArrayCollection([$answer1, $answer2]);
-        
-        $question1 = $this->createMock(\App\Entity\Question::class);
+
+        $question1 = $this->createMock(Question::class);
         $question1->method('getAnswers')->willReturn($answers);
-        
+
         $questions = new ArrayCollection([$question1]);
-        
+
         $quiz->method('getUserAnswers')->willReturn($userAnswers);
         $quiz->method('getQuestions')->willReturn($questions);
 
         // Mock repository pour les ratings
         $ratingRepository = $this->createMock(\App\Repository\QuizRatingRepository::class);
         $ratingRepository->method('findBy')->willReturn([]);
-        
+
         $this->em->method('getRepository')
             ->with(QuizRating::class)
             ->willReturn($ratingRepository);
@@ -854,7 +856,7 @@ class QuizCrudServiceTest extends TestCase
     }
 
     // ===== Tests pour getTypeQuestionFromData =====
-    
+
     public function testGetTypeQuestionFromDataWithTypeQuestionId(): void
     {
         $reflection = new \ReflectionClass($this->service);
@@ -863,7 +865,7 @@ class QuizCrudServiceTest extends TestCase
 
         $typeQuestion = $this->createMock(TypeQuestion::class);
         $questionData = [
-            'type_question_id' => 1
+            'type_question_id' => 1,
         ];
 
         $this->typeQuestionRepository->expects($this->once())
@@ -884,7 +886,7 @@ class QuizCrudServiceTest extends TestCase
 
         $typeQuestion = $this->createMock(TypeQuestion::class);
         $questionData = [
-            'type_question' => 'QCM'
+            'type_question' => 'QCM',
         ];
 
         // Mock findOrCreateTypeQuestion
@@ -942,7 +944,7 @@ class QuizCrudServiceTest extends TestCase
     }
 
     // ===== Tests pour findOrCreateTypeQuestion =====
-    
+
     public function testFindOrCreateTypeQuestionExists(): void
     {
         $reflection = new \ReflectionClass($this->service);
@@ -981,7 +983,7 @@ class QuizCrudServiceTest extends TestCase
     }
 
     // ===== Tests pour createAnswer avec tous les champs =====
-    
+
     public function testCreateAnswerWithAllFields(): void
     {
         $reflection = new \ReflectionClass($this->service);
@@ -989,13 +991,13 @@ class QuizCrudServiceTest extends TestCase
         $method->setAccessible(true);
 
         $question = $this->createMock(Question::class);
-        
+
         $answerData = [
             'answer' => 'Test answer',
             'is_correct' => true,
             'order_correct' => 'A',
             'pair_id' => 'pair1',
-            'is_intrus' => false
+            'is_intrus' => false,
         ];
 
         // Mock validation
@@ -1018,9 +1020,9 @@ class QuizCrudServiceTest extends TestCase
         $method->setAccessible(true);
 
         $question = $this->createMock(Question::class);
-        
+
         $answerData = [
-            'answer' => 'Test answer'
+            'answer' => 'Test answer',
             // Pas de is_correct, order_correct, pair_id, is_intrus
         ];
 
@@ -1038,7 +1040,7 @@ class QuizCrudServiceTest extends TestCase
     }
 
     // ===== Tests pour createQuestion avec difficulty =====
-    
+
     public function testCreateQuestionWithDifficulty(): void
     {
         $reflection = new \ReflectionClass($this->service);
@@ -1047,14 +1049,14 @@ class QuizCrudServiceTest extends TestCase
 
         $quiz = $this->createMock(Quiz::class);
         $typeQuestion = $this->createMock(TypeQuestion::class);
-        
+
         $questionData = [
             'question' => 'Test question?',
             'difficulty' => 'easy',
             'type_question' => 1,
             'answers' => [
-                ['answer' => 'Answer 1', 'is_correct' => true]
-            ]
+                ['answer' => 'Answer 1', 'is_correct' => true],
+            ],
         ];
 
         // Mock validation
@@ -1082,13 +1084,13 @@ class QuizCrudServiceTest extends TestCase
     }
 
     // ===== Tests pour updateWithQuestions avec questions =====
-    
+
     public function testUpdateWithQuestionsWithQuestions(): void
     {
         $quiz = $this->createMock(Quiz::class);
         $user = $this->createMock(User::class);
         $typeQuestion = $this->createMock(TypeQuestion::class);
-        
+
         $data = [
             'title' => 'Updated Quiz Title',
             'description' => 'Updated Description with enough characters',
@@ -1099,10 +1101,10 @@ class QuizCrudServiceTest extends TestCase
                     'type_question' => 1,
                     'answers' => [
                         ['answer' => 'Updated Answer 1', 'is_correct' => true],
-                        ['answer' => 'Updated Answer 2', 'is_correct' => false]
-                    ]
-                ]
-            ]
+                        ['answer' => 'Updated Answer 2', 'is_correct' => false],
+                    ],
+                ],
+            ],
         ];
 
         // Mock validation
@@ -1140,7 +1142,7 @@ class QuizCrudServiceTest extends TestCase
     }
 
     // ===== Tests pour updateQuizQuestions =====
-    
+
     public function testUpdateQuizQuestionsPrivateMethod(): void
     {
         $reflection = new \ReflectionClass($this->service);
@@ -1149,14 +1151,14 @@ class QuizCrudServiceTest extends TestCase
 
         $quiz = $this->createMock(Quiz::class);
         $typeQuestion = $this->createMock(TypeQuestion::class);
-        
+
         // Mock existing questions and answers
         $existingAnswer = $this->createMock(Answer::class);
         $existingAnswers = new ArrayCollection([$existingAnswer]);
-        
+
         $existingQuestion = $this->createMock(Question::class);
         $existingQuestion->method('getAnswers')->willReturn($existingAnswers);
-        
+
         $existingQuestions = new ArrayCollection([$existingQuestion]);
         $quiz->method('getQuestions')->willReturn($existingQuestions);
 
@@ -1166,9 +1168,9 @@ class QuizCrudServiceTest extends TestCase
                 'difficulty' => 'easy',
                 'type_question' => 1,
                 'answers' => [
-                    ['answer' => 'New Answer 1', 'is_correct' => true]
-                ]
-            ]
+                    ['answer' => 'New Answer 1', 'is_correct' => true],
+                ],
+            ],
         ];
 
         // Mock validation
@@ -1196,7 +1198,7 @@ class QuizCrudServiceTest extends TestCase
     }
 
     // ===== Tests pour les cas d'erreur de validation =====
-    
+
     public function testValidateAnswerDataWithError(): void
     {
         $reflection = new \ReflectionClass($this->service);
@@ -1205,7 +1207,7 @@ class QuizCrudServiceTest extends TestCase
 
         $invalidAnswerData = [
             'answer' => '', // Invalid - empty
-            'is_correct' => 'invalid' // Invalid type
+            'is_correct' => 'invalid', // Invalid type
         ];
 
         // Mock validation avec erreurs
@@ -1221,18 +1223,18 @@ class QuizCrudServiceTest extends TestCase
     }
 
     // ===== Tests pour createWithQuestions sans company =====
-    
+
     public function testCreateWithQuestionsWithoutCompany(): void
     {
         $user = $this->createMock(User::class);
-        
+
         $data = [
             'title' => 'Test Quiz',
             'description' => 'Test Description with enough characters',
             'status' => 'draft',
             'isPublic' => false, // Private quiz
             'groups' => [1],
-            'questions' => []
+            'questions' => [],
         ];
 
         // Mock user without company
@@ -1270,21 +1272,21 @@ class QuizCrudServiceTest extends TestCase
     }
 
     // ===== Tests pour createWithQuestions avec group différent company =====
-    
+
     public function testCreateWithQuestionsWithDifferentCompanyGroup(): void
     {
         $user = $this->createMock(User::class);
         $userCompany = $this->createMock(\App\Entity\Company::class);
         $differentCompany = $this->createMock(\App\Entity\Company::class);
         $group = $this->createMock(\App\Entity\Group::class);
-        
+
         $data = [
             'title' => 'Test Quiz',
             'description' => 'Test Description with enough characters',
             'status' => 'draft',
             'isPublic' => false, // Private quiz
             'groups' => [1],
-            'questions' => []
+            'questions' => [],
         ];
 
         // Mock user and companies
@@ -1325,7 +1327,7 @@ class QuizCrudServiceTest extends TestCase
     }
 
     // ===== Tests pour createQuestion sans difficulty =====
-    
+
     public function testCreateQuestionWithoutDifficulty(): void
     {
         $reflection = new \ReflectionClass($this->service);
@@ -1334,14 +1336,14 @@ class QuizCrudServiceTest extends TestCase
 
         $quiz = $this->createMock(Quiz::class);
         $typeQuestion = $this->createMock(TypeQuestion::class);
-        
+
         $questionData = [
             'question' => 'Test question?',
             // Pas de difficulty
             'type_question' => 1,
             'answers' => [
-                ['answer' => 'Answer 1', 'is_correct' => true]
-            ]
+                ['answer' => 'Answer 1', 'is_correct' => true],
+            ],
         ];
 
         // Mock validation
@@ -1365,7 +1367,7 @@ class QuizCrudServiceTest extends TestCase
     }
 
     // ===== Tests pour createAnswer avec champs vides =====
-    
+
     public function testCreateAnswerWithEmptyOptionalFields(): void
     {
         $reflection = new \ReflectionClass($this->service);
@@ -1373,7 +1375,7 @@ class QuizCrudServiceTest extends TestCase
         $method->setAccessible(true);
 
         $question = $this->createMock(Question::class);
-        
+
         $answerData = [
             'answer' => 'Test answer',
             'is_correct' => true,
@@ -1398,12 +1400,12 @@ class QuizCrudServiceTest extends TestCase
     // ===== Tests pour la méthode show() (cas d'erreur seulement) =====
 
     // Tests show() simplifiés pour éviter les problèmes de collections Doctrine
-    
+
     public function testShowWithUserNoAccessAndNotFound(): void
     {
         $quiz = $this->createMock(Quiz::class);
         $user = $this->createMock(User::class);
-        
+
         $quiz->method('getId')->willReturn(123);
 
         $this->quizRepository->expects($this->once())
@@ -1426,7 +1428,7 @@ class QuizCrudServiceTest extends TestCase
     {
         $quiz = $this->createMock(Quiz::class);
         $privateQuiz = $this->createMock(Quiz::class);
-        
+
         $quiz->method('getId')->willReturn(123);
         $privateQuiz->method('isPublic')->willReturn(false);
 
@@ -1442,7 +1444,7 @@ class QuizCrudServiceTest extends TestCase
     }
 
     // ===== Tests pour les cas d'erreur supplémentaires =====
-    
+
     public function testGetTypeQuestionFromDataWithInvalidDifficulty(): void
     {
         $reflection = new \ReflectionClass($this->service);
@@ -1451,14 +1453,14 @@ class QuizCrudServiceTest extends TestCase
 
         $quiz = $this->createMock(Quiz::class);
         $typeQuestion = $this->createMock(TypeQuestion::class);
-        
+
         $questionData = [
             'question' => 'Test question?',
             'difficulty' => 'invalid_difficulty', // Invalid difficulty
             'type_question' => 1,
             'answers' => [
-                ['answer' => 'Answer 1', 'is_correct' => true]
-            ]
+                ['answer' => 'Answer 1', 'is_correct' => true],
+            ],
         ];
 
         // Mock validation
@@ -1482,7 +1484,7 @@ class QuizCrudServiceTest extends TestCase
     }
 
     // ===== Tests pour getTypeQuestionFromData avec type_question_id invalide =====
-    
+
     public function testGetTypeQuestionFromDataWithInvalidTypeQuestionId(): void
     {
         $reflection = new \ReflectionClass($this->service);
@@ -1491,7 +1493,7 @@ class QuizCrudServiceTest extends TestCase
 
         $typeQuestion = $this->createMock(TypeQuestion::class);
         $questionData = [
-            'type_question_id' => 999 // ID qui n'existe pas
+            'type_question_id' => 999, // ID qui n'existe pas
         ];
 
         $this->typeQuestionRepository->expects($this->once())
@@ -1509,5 +1511,4 @@ class QuizCrudServiceTest extends TestCase
 
         $this->assertSame($typeQuestion, $result);
     }
-
 }

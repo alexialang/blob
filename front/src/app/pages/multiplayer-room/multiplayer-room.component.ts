@@ -4,7 +4,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MultiplayerService, GameRoom, GamePlayer } from '../../services/multiplayer.service';
 import { QuizTransitionService } from '../../services/quiz-transition.service';
 import { MercureService } from '../../services/mercure.service';
-import { AnalyticsService } from '../../services/analytics.service';
 import { Subscription } from 'rxjs';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 
@@ -36,13 +35,11 @@ export class MultiplayerRoomComponent implements OnInit, OnDestroy {
     private mercureService: MercureService,
     private elementRef: ElementRef,
     private cdr: ChangeDetectorRef,
-    private analytics: AnalyticsService
   ) {}
 
   ngOnInit(): void {
     const roomId = this.route.snapshot.params['id'];
 
-    this.analytics.trackMultiplayerRoomJoin();
 
     sessionStorage.setItem('currentRoomId', roomId);
 

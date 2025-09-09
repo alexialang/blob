@@ -5,8 +5,6 @@ namespace App\Tests\Unit\Controller;
 use App\Controller\AbstractSecureController;
 use App\Entity\User;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
-use Symfony\Component\Security\Core\Security;
 
 class AbstractSecureControllerTest extends TestCase
 {

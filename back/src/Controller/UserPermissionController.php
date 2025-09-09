@@ -18,9 +18,9 @@ use Symfony\Component\Validator\Exception\ValidationFailedException;
 class UserPermissionController extends AbstractController
 {
     public function __construct(
-        private UserPermissionService $userPermissionService,
-        private UserService $userService,
-        private UserRepository $userRepository,
+        private readonly UserPermissionService $userPermissionService,
+        private readonly UserService $userService,
+        private readonly UserRepository $userRepository,
     ) {
     }
 
@@ -64,7 +64,7 @@ class UserPermissionController extends AbstractController
             $permission = $this->userPermissionService->create($data);
 
             return $this->json($permission, 201, [], ['groups' => ['user_permission:read']]);
-        } catch (\JsonException $e) {
+        } catch (\JsonException) {
             return $this->json(['error' => 'Invalid JSON'], 400);
         } catch (ValidationFailedException $e) {
             $errorMessages = [];
@@ -117,7 +117,7 @@ class UserPermissionController extends AbstractController
             $permission = $this->userPermissionService->update($userPermission, $data);
 
             return $this->json($permission, 200, [], ['groups' => ['user_permission:read']]);
-        } catch (\JsonException $e) {
+        } catch (\JsonException) {
             return $this->json(['error' => 'Invalid JSON'], 400);
         } catch (ValidationFailedException $e) {
             $errorMessages = [];
@@ -202,7 +202,7 @@ class UserPermissionController extends AbstractController
             return $this->json($user, 200, [], [
                 'groups' => ['user:roles_update'],
             ]);
-        } catch (\JsonException $e) {
+        } catch (\JsonException) {
             return $this->json(['error' => 'Invalid JSON'], 400);
         } catch (\Exception $e) {
             return $this->json(['error' => 'An error occurred: '.$e->getMessage()], 500);

@@ -3,7 +3,6 @@
 namespace App\Tests\Unit\Controller;
 
 use App\Controller\GroupController;
-use App\Entity\Group;
 use App\Service\GroupService;
 use App\Service\UserService;
 use PHPUnit\Framework\TestCase;

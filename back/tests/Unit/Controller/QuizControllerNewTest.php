@@ -4,11 +4,11 @@ namespace App\Tests\Unit\Controller;
 
 use App\Controller\QuizController;
 use App\Service\LeaderboardService;
-use Psr\Log\LoggerInterface;
 use App\Service\QuizCrudService;
 use App\Service\QuizRatingService;
 use App\Service\QuizSearchService;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 
 class QuizControllerNewTest extends TestCase
 {

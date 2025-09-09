@@ -9,7 +9,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 class MultiplayerValidationService
 {
     public function __construct(
-        private ValidatorInterface $validator,
+        private readonly ValidatorInterface $validator,
     ) {
     }
 

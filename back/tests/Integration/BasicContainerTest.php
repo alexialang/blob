@@ -11,26 +11,26 @@ class BasicContainerTest extends KernelTestCase
         $kernel = self::bootKernel();
         $this->assertNotNull($kernel);
     }
-    
+
     public function testContainerExists(): void
     {
         self::bootKernel();
         $container = static::getContainer();
         $this->assertNotNull($container);
     }
-    
+
     public function testEnvironmentIsTest(): void
     {
         self::bootKernel();
         $this->assertEquals('test', self::$kernel->getEnvironment());
     }
-    
+
     public function testDebugIsEnabled(): void
     {
         self::bootKernel();
         $this->assertTrue(self::$kernel->isDebug());
     }
-    
+
     public function testProjectDirExists(): void
     {
         self::bootKernel();
@@ -38,7 +38,7 @@ class BasicContainerTest extends KernelTestCase
         $projectDir = $container->getParameter('kernel.project_dir');
         $this->assertDirectoryExists($projectDir);
     }
-    
+
     public function testCacheDirExists(): void
     {
         self::bootKernel();
@@ -46,7 +46,7 @@ class BasicContainerTest extends KernelTestCase
         $cacheDir = $container->getParameter('kernel.cache_dir');
         $this->assertDirectoryExists($cacheDir);
     }
-    
+
     public function testLogDirExists(): void
     {
         self::bootKernel();
@@ -54,23 +54,23 @@ class BasicContainerTest extends KernelTestCase
         $logDir = $container->getParameter('kernel.logs_dir');
         $this->assertDirectoryExists($logDir);
     }
-    
+
     public function testContainerHasBasicServices(): void
     {
         self::bootKernel();
         $container = static::getContainer();
-        
+
         $this->assertTrue($container->has('kernel'));
         $this->assertTrue($container->has('logger'));
     }
-    
+
     public function testBundleConfiguration(): void
     {
         self::bootKernel();
         $bundles = self::$kernel->getBundles();
         $this->assertNotEmpty($bundles);
     }
-    
+
     public function testParameterBagExists(): void
     {
         self::bootKernel();

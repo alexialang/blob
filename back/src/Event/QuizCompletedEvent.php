@@ -11,8 +11,8 @@ class QuizCompletedEvent extends Event
     public const NAME = 'quiz.completed';
 
     public function __construct(
-        private UserAnswer $userAnswer,
-        private User $user,
+        private readonly UserAnswer $userAnswer,
+        private readonly User $user,
     ) {
     }
 

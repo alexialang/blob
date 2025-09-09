@@ -21,8 +21,8 @@ use Symfony\Component\Validator\Exception\ValidationFailedException;
 class GroupController extends AbstractController
 {
     public function __construct(
-        private GroupService $groupService,
-        private UserService $userService,
+        private readonly GroupService $groupService,
+        private readonly UserService $userService,
     ) {
     }
 
@@ -183,7 +183,7 @@ class GroupController extends AbstractController
             $this->groupService->addUserToGroup($group, $user);
 
             return $this->json(['message' => 'User added to group successfully'], 200);
-        } catch (\JsonException $e) {
+        } catch (\JsonException) {
             return $this->json(['error' => 'Invalid JSON'], 400);
         }
     }

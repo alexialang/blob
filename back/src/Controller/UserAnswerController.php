@@ -16,7 +16,7 @@ use Symfony\Component\Validator\Exception\ValidationFailedException;
 class UserAnswerController extends AbstractController
 {
     public function __construct(
-        private UserAnswerService $userAnswerService,
+        private readonly UserAnswerService $userAnswerService,
     ) {
     }
 
@@ -61,7 +61,7 @@ class UserAnswerController extends AbstractController
             $userAnswer = $this->userAnswerService->create($data);
 
             return $this->json($userAnswer, 201, [], ['groups' => ['user_answer:read']]);
-        } catch (\JsonException $e) {
+        } catch (\JsonException) {
             return $this->json(['error' => 'Invalid JSON'], 400);
         } catch (ValidationFailedException $e) {
             $errorMessages = [];
@@ -115,7 +115,7 @@ class UserAnswerController extends AbstractController
             $userAnswer = $this->userAnswerService->update($userAnswer, $data);
 
             return $this->json($userAnswer, 200, [], ['groups' => ['user_answer:read']]);
-        } catch (\JsonException $e) {
+        } catch (\JsonException) {
             return $this->json(['error' => 'Invalid JSON'], 400);
         } catch (ValidationFailedException $e) {
             $errorMessages = [];
@@ -177,7 +177,7 @@ class UserAnswerController extends AbstractController
             $userAnswer = $this->userAnswerService->saveGameResult($data);
 
             return $this->json($userAnswer, 201, [], ['groups' => ['user_answer:read']]);
-        } catch (\JsonException $e) {
+        } catch (\JsonException) {
             return $this->json(['error' => 'Invalid JSON'], 400);
         } catch (ValidationFailedException $e) {
             $errorMessages = [];
@@ -228,7 +228,7 @@ class UserAnswerController extends AbstractController
             $result = $this->userAnswerService->rateQuiz($data);
 
             return $this->json($result, 200, [], ['groups' => ['user_answer:rating']]);
-        } catch (\JsonException $e) {
+        } catch (\JsonException) {
             return $this->json(['error' => 'Invalid JSON'], 400);
         } catch (\Exception $e) {
             return $this->json(['error' => $e->getMessage()], 500);

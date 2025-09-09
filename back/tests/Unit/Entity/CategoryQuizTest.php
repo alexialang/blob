@@ -38,13 +38,13 @@ class CategoryQuizTest extends TestCase
     public function testAddQuiz(): void
     {
         $quiz = $this->createMock(Quiz::class);
-        
+
         $quiz->expects($this->once())
             ->method('setCategory')
             ->with($this->categoryQuiz);
-        
+
         $result = $this->categoryQuiz->addQuiz($quiz);
-        
+
         $this->assertSame($this->categoryQuiz, $result);
         $this->assertTrue($this->categoryQuiz->getQuizs()->contains($quiz));
     }
@@ -52,18 +52,18 @@ class CategoryQuizTest extends TestCase
     public function testRemoveQuiz(): void
     {
         $quiz = $this->createMock(Quiz::class);
-        
+
         $quiz->expects($this->exactly(2))
             ->method('setCategory')
             ->withConsecutive([$this->categoryQuiz], [null]);
-        
+
         $quiz->expects($this->once())
             ->method('getCategory')
             ->willReturn($this->categoryQuiz);
-        
+
         $this->categoryQuiz->addQuiz($quiz);
         $result = $this->categoryQuiz->removeQuiz($quiz);
-        
+
         $this->assertSame($this->categoryQuiz, $result);
         $this->assertFalse($this->categoryQuiz->getQuizs()->contains($quiz));
     }

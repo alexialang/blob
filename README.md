@@ -200,7 +200,7 @@ Le projet suit une approche inspirée de la méthode Agile avec :
 ### Fonctionnalités Avancées Implémentées
 
 - **SSR + SEO** : Pré-rendu Puppeteer des pages publiques pour l'indexation
-- **Google Analytics 4** : Tracking complet (G-95GW7QPNRH) + Google Tag Manager (GTM-PJ9GL9GB)
+- **Analytics Respectueux** : Simple Analytics (RGPD-compliant) + analytics locales anonymisées
 - **Rate Limiting** : Système custom anti-brute force spécifique au login
 - **reCAPTCHA v3** : Score minimum 0.5 pour inscription et reset password
 - **CORS sécurisé** : Configuration Nelmio avec domaines autorisés
@@ -308,19 +308,18 @@ export class SeoService {
 ### Analytics et Monitoring
 
 ```typescript
-// Google Analytics 4 + GTM intégré
-export class AnalyticsService {
-  private gaId = 'G-95GW7QPNRH';
-  private gtmId = 'GTM-PJ9GL9GB';
+// Analytics respectueux de la vie privée
+export class PrivacyAnalyticsService {
+  private respectPrivacy = true;
   
   trackEvent(event: AnalyticsEvent): void {
-    if (typeof window.gtag === 'function') {
-      window.gtag('event', event.action, {
-        event_category: event.category,
-        event_label: event.label,
-        value: event.value
-      });
+    // Simple Analytics (sans cookies)
+    if (typeof window !== 'undefined' && (window as any).sa_event) {
+      (window as any).sa_event(event.name, event.properties);
     }
+    
+    // Analytics locales anonymisées
+    this.trackLocalEvent(event);
   }
   
   // Tracking automatique des routes
@@ -399,7 +398,7 @@ server {
 
 - **Développement Full Stack** : Angular 19 + Symfony 7.2
 - **SEO avancé** : SSR Puppeteer, méta-tags dynamiques, sitemap
-- **Analytics** : Google Analytics 4, GTM, tracking événementiel
+- **Analytics** : Simple Analytics (RGPD), tracking respectueux de la vie privée
 - **Sécurité** : Protection login sur-mesure, reCAPTCHA v3, JWT refresh
 - **Paiements** : Intégration Stripe PaymentLinks, webhooks
 - **Performance** : Optimisation des temps de chargement

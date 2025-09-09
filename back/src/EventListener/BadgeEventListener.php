@@ -10,7 +10,7 @@ use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 class BadgeEventListener
 {
     public function __construct(
-        private BadgeService $badgeService,
+        private readonly BadgeService $badgeService,
     ) {
     }
 

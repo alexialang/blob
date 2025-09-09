@@ -9,18 +9,8 @@ use Symfony\Component\Serializer\SerializerInterface;
 
 class QuizSearchService
 {
-    private QuizRepository $quizRepository;
-    private LoggerInterface $logger;
-    private SerializerInterface $serializer;
-
-    public function __construct(
-        QuizRepository $quizRepository,
-        LoggerInterface $logger,
-        SerializerInterface $serializer,
-    ) {
-        $this->quizRepository = $quizRepository;
-        $this->logger = $logger;
-        $this->serializer = $serializer;
+    public function __construct(private readonly QuizRepository $quizRepository, private readonly LoggerInterface $logger, private readonly SerializerInterface $serializer)
+    {
     }
 
     /**

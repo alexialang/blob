@@ -4,7 +4,6 @@ namespace App\Tests\Unit\Service;
 
 use App\Entity\Company;
 use App\Entity\User;
-use App\Entity\UserPermission;
 use App\Enum\Permission;
 use App\Repository\UserRepository;
 use App\Service\UserService;
@@ -14,8 +13,8 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Validator\ConstraintViolationListInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class UserServiceTest extends TestCase
@@ -42,7 +41,7 @@ class UserServiceTest extends TestCase
         $this->logger = $this->createMock(LoggerInterface::class);
 
         $this->params->method('get')->willReturnMap([
-            ['frontend_url', 'http://localhost:3000']
+            ['frontend_url', 'http://localhost:3000'],
         ]);
 
         $this->service = new UserService(
@@ -60,12 +59,12 @@ class UserServiceTest extends TestCase
     }
 
     // ===== Tests pour list() =====
-    
+
     public function testListWithoutDeleted(): void
     {
         $users = [
             $this->createMock(User::class),
-            $this->createMock(User::class)
+            $this->createMock(User::class),
         ];
 
         $this->userRepository->expects($this->once())
@@ -84,7 +83,7 @@ class UserServiceTest extends TestCase
         $users = [
             $this->createMock(User::class),
             $this->createMock(User::class),
-            $this->createMock(User::class) // Including deleted user
+            $this->createMock(User::class), // Including deleted user
         ];
 
         $this->userRepository->expects($this->once())
@@ -98,7 +97,7 @@ class UserServiceTest extends TestCase
     }
 
     // ===== Tests pour find() =====
-    
+
     public function testFind(): void
     {
         $user = $this->createMock(User::class);
@@ -126,12 +125,12 @@ class UserServiceTest extends TestCase
     }
 
     // ===== Tests pour getUsersWithoutCompany() =====
-    
+
     public function testGetUsersWithoutCompany(): void
     {
         $users = [
             $this->createMock(User::class),
-            $this->createMock(User::class)
+            $this->createMock(User::class),
         ];
 
         $this->userRepository->expects($this->once())
@@ -167,12 +166,12 @@ class UserServiceTest extends TestCase
     }
 
     // ===== Tests pour getUsersFromOtherCompanies() =====
-    
+
     public function testGetUsersFromOtherCompanies(): void
     {
         $users = [
             $this->createMock(User::class),
-            $this->createMock(User::class)
+            $this->createMock(User::class),
         ];
 
         $this->userRepository->expects($this->once())
@@ -191,12 +190,12 @@ class UserServiceTest extends TestCase
     // Il serait mieux testé avec des tests d'intégration
 
     // ===== Tests pour getActiveUsersForMultiplayer() =====
-    
+
     public function testGetActiveUsersForMultiplayer(): void
     {
         $users = [
             $this->createMock(User::class),
-            $this->createMock(User::class)
+            $this->createMock(User::class),
         ];
 
         $this->userRepository->expects($this->once())
@@ -210,7 +209,7 @@ class UserServiceTest extends TestCase
     }
 
     // ===== Tests pour confirmToken() =====
-    
+
     public function testConfirmTokenSuccess(): void
     {
         $user = $this->createMock(User::class);
@@ -278,7 +277,7 @@ class UserServiceTest extends TestCase
     }
 
     // ===== Tests pour create() =====
-    
+
     public function testCreateSuccess(): void
     {
         $data = [
@@ -286,7 +285,7 @@ class UserServiceTest extends TestCase
             'firstName' => 'John',
             'lastName' => 'Doe',
             'password' => 'password123',
-            'is_admin' => false
+            'is_admin' => false,
         ];
 
         // Mock validation
@@ -324,7 +323,7 @@ class UserServiceTest extends TestCase
             'email' => 'existing@example.com',
             'firstName' => 'John',
             'lastName' => 'Doe',
-            'password' => 'password123'
+            'password' => 'password123',
         ];
 
         $existingUser = $this->createMock(User::class);
@@ -356,7 +355,7 @@ class UserServiceTest extends TestCase
             'firstName' => 'Admin',
             'lastName' => 'User',
             'password' => 'password123',
-            'is_admin' => true
+            'is_admin' => true,
         ];
 
         // Mock validation
@@ -394,7 +393,7 @@ class UserServiceTest extends TestCase
             'email' => 'test@example.com',
             'firstName' => 'John',
             'lastName' => 'Doe',
-            'password' => 'password123'
+            'password' => 'password123',
         ];
 
         // Mock validation
@@ -428,7 +427,7 @@ class UserServiceTest extends TestCase
     }
 
     // ===== Tests pour sendEmail() =====
-    
+
     public function testSendEmail(): void
     {
         $email = 'test@example.com';
@@ -444,7 +443,7 @@ class UserServiceTest extends TestCase
     }
 
     // ===== Tests pour verifyCaptcha() =====
-    
+
     public function testVerifyCaptchaSuccess(): void
     {
         $token = 'valid-captcha-token';
@@ -454,7 +453,7 @@ class UserServiceTest extends TestCase
         $response->method('toArray')->willReturn([
             'success' => true,
             'score' => 0.9,
-            'action' => 'register'
+            'action' => 'register',
         ]);
 
         $this->httpClient->expects($this->once())
@@ -475,7 +474,7 @@ class UserServiceTest extends TestCase
         $response = $this->createMock(\Symfony\Contracts\HttpClient\ResponseInterface::class);
         $response->method('toArray')->willReturn([
             'success' => false,
-            'error-codes' => ['invalid-input-response']
+            'error-codes' => ['invalid-input-response'],
         ]);
 
         $this->httpClient->expects($this->once())
@@ -497,7 +496,7 @@ class UserServiceTest extends TestCase
         $response->method('toArray')->willReturn([
             'success' => true,
             'score' => 0.3, // Low score
-            'action' => 'register'
+            'action' => 'register',
         ]);
 
         $this->httpClient->expects($this->once())
@@ -519,7 +518,7 @@ class UserServiceTest extends TestCase
         $response->method('toArray')->willReturn([
             'success' => true,
             'score' => 0.9,
-            'action' => 'login' // Different action
+            'action' => 'login', // Different action
         ]);
 
         $this->httpClient->expects($this->once())
@@ -550,7 +549,7 @@ class UserServiceTest extends TestCase
     }
 
     // ===== Tests pour update() =====
-    
+
     public function testUpdateSuccess(): void
     {
         $user = $this->createMock(User::class);
@@ -560,7 +559,7 @@ class UserServiceTest extends TestCase
             'lastName' => 'UpdatedLast',
             'roles' => ['ROLE_USER'],
             'password' => 'newpassword123',
-            'isActive' => true
+            'isActive' => true,
         ];
 
         // Mock validation
@@ -607,7 +606,7 @@ class UserServiceTest extends TestCase
         $user = $this->createMock(User::class);
         $existingUser = $this->createMock(User::class);
         $data = [
-            'email' => 'existing@example.com'
+            'email' => 'existing@example.com',
         ];
 
         // Mock validation
@@ -637,7 +636,7 @@ class UserServiceTest extends TestCase
     {
         $user = $this->createMock(User::class);
         $data = [
-            'is_admin' => true
+            'is_admin' => true,
         ];
 
         // Mock validation
@@ -665,7 +664,7 @@ class UserServiceTest extends TestCase
     {
         $user = $this->createMock(User::class);
         $data = [
-            'is_admin' => false
+            'is_admin' => false,
         ];
 
         // Mock validation
@@ -693,7 +692,7 @@ class UserServiceTest extends TestCase
     {
         $user = $this->createMock(User::class);
         $data = [
-            'firstName' => 'Updated'
+            'firstName' => 'Updated',
         ];
 
         // Mock validation
@@ -717,7 +716,7 @@ class UserServiceTest extends TestCase
     }
 
     // ===== Tests pour updateProfile() =====
-    
+
     public function testUpdateProfileSuccess(): void
     {
         $user = $this->createMock(User::class);
@@ -726,7 +725,7 @@ class UserServiceTest extends TestCase
             'firstName' => 'NewFirst',
             'lastName' => 'NewLast',
             'avatarShape' => 'circle',
-            'avatarColor' => 'blue'
+            'avatarColor' => 'blue',
         ];
 
         // Mock validation
@@ -757,7 +756,7 @@ class UserServiceTest extends TestCase
     {
         $user = $this->createMock(User::class);
         $data = [
-            'avatarShape' => 'triangle'
+            'avatarShape' => 'triangle',
         ];
 
         // Mock validation
@@ -784,7 +783,7 @@ class UserServiceTest extends TestCase
         $user = $this->createMock(User::class);
         $existingUser = $this->createMock(User::class);
         $data = [
-            'email' => 'existing@example.com'
+            'email' => 'existing@example.com',
         ];
 
         // Mock validation
@@ -811,7 +810,7 @@ class UserServiceTest extends TestCase
     }
 
     // ===== Tests pour anonymizeUser() =====
-    
+
     public function testAnonymizeUserSuccess(): void
     {
         $user = $this->createMock(User::class);
@@ -858,12 +857,12 @@ class UserServiceTest extends TestCase
     }
 
     // ===== Tests pour updateUserRoles() =====
-    
+
     public function testUpdateUserRolesSuccess(): void
     {
         $user = $this->createMock(User::class);
         $data = [
-            'roles' => ['ROLE_USER', 'ROLE_ADMIN']
+            'roles' => ['ROLE_USER', 'ROLE_ADMIN'],
         ];
 
         $user->expects($this->once())->method('setRoles')->with(['ROLE_ADMIN', 'ROLE_USER']);
@@ -878,7 +877,7 @@ class UserServiceTest extends TestCase
     {
         $user = $this->createMock(User::class);
         $data = [
-            'roles' => ['ROLE_USER', 'ROLE_INVALID']
+            'roles' => ['ROLE_USER', 'ROLE_INVALID'],
         ];
 
         $this->expectException(\InvalidArgumentException::class);
@@ -891,7 +890,7 @@ class UserServiceTest extends TestCase
     // car ils dépendent des valeurs exactes de l'enum Permission
 
     // ===== Tests pour getGameHistory() =====
-    
+
     public function testGetGameHistorySuccess(): void
     {
         $user = $this->createMock(User::class);
@@ -922,13 +921,13 @@ class UserServiceTest extends TestCase
 
         $this->assertIsArray($result);
         $this->assertCount(1, $result);
-        
+
         $historyItem = $result[0];
         $this->assertEquals(123, $historyItem['id']);
         $this->assertEquals(85, $historyItem['score']);
         $this->assertEquals('2023-01-15 10:30:00', $historyItem['date']);
         $this->assertEquals($dateAttempt->getTimestamp(), $historyItem['timestamp']);
-        
+
         $this->assertArrayHasKey('quiz', $historyItem);
         $this->assertEquals(456, $historyItem['quiz']['id']);
         $this->assertEquals('Test Quiz', $historyItem['quiz']['title']);
@@ -951,13 +950,13 @@ class UserServiceTest extends TestCase
     }
 
     // ===== Tests pour getUsersByCompany() =====
-    
+
     public function testGetUsersByCompanySuccess(): void
     {
         $company = $this->createMock(Company::class);
         $users = [
             $this->createMock(User::class),
-            $this->createMock(User::class)
+            $this->createMock(User::class),
         ];
 
         $company->method('getId')->willReturn(789);
@@ -974,13 +973,13 @@ class UserServiceTest extends TestCase
     }
 
     // ===== Tests pour listWithStats() (version simplifiée) =====
-    
+
     public function testListWithStatsAsAdmin(): void
     {
         $currentUser = $this->createMock(User::class);
         $users = [
             $this->createMock(User::class),
-            $this->createMock(User::class)
+            $this->createMock(User::class),
         ];
 
         // Mock admin user
@@ -1092,13 +1091,13 @@ class UserServiceTest extends TestCase
     }
 
     // ===== Tests pour listWithStatsAndPagination() =====
-    
+
     public function testListWithStatsAndPaginationAsAdmin(): void
     {
         $currentUser = $this->createMock(User::class);
         $users = [
             $this->createMock(User::class),
-            $this->createMock(User::class)
+            $this->createMock(User::class),
         ];
 
         // Mock admin user
@@ -1119,7 +1118,7 @@ class UserServiceTest extends TestCase
             $user->method('getId')->willReturn($index + 1);
             $user->method('getEmail')->willReturn("user{$index}@example.com");
             $user->method('getFirstName')->willReturn('User');
-            $user->method('getLastName')->willReturn((string)($index + 1));
+            $user->method('getLastName')->willReturn((string) ($index + 1));
             $user->method('isActive')->willReturn(true);
             $user->method('getDateRegistration')->willReturn(new \DateTimeImmutable());
             $user->method('getLastAccess')->willReturn(new \DateTime());
@@ -1133,9 +1132,9 @@ class UserServiceTest extends TestCase
         $this->assertIsArray($result);
         $this->assertArrayHasKey('data', $result);
         $this->assertArrayHasKey('pagination', $result);
-        
+
         $this->assertCount(2, $result['data']);
-        
+
         $pagination = $result['pagination'];
         $this->assertEquals(2, $pagination['page']);
         $this->assertEquals(10, $pagination['limit']);
@@ -1181,9 +1180,9 @@ class UserServiceTest extends TestCase
         $this->assertIsArray($result);
         $this->assertArrayHasKey('data', $result);
         $this->assertArrayHasKey('pagination', $result);
-        
+
         $this->assertCount(1, $result['data']);
-        
+
         $pagination = $result['pagination'];
         $this->assertEquals(1, $pagination['page']);
         $this->assertEquals(20, $pagination['limit']);
@@ -1194,7 +1193,7 @@ class UserServiceTest extends TestCase
     }
 
     // ===== Tests pour validateAndCleanRoles() via réflection =====
-    
+
     public function testValidateAndCleanRolesSuccess(): void
     {
         $reflection = new \ReflectionClass($this->service);
@@ -1242,7 +1241,7 @@ class UserServiceTest extends TestCase
     }
 
     // ===== Tests pour validateUserDataForCreation() via réflection =====
-    
+
     public function testValidateUserDataForCreationSuccess(): void
     {
         $reflection = new \ReflectionClass($this->service);
@@ -1253,7 +1252,7 @@ class UserServiceTest extends TestCase
             'firstName' => 'John',
             'lastName' => 'Doe',
             'email' => 'john.doe@example.com',
-            'password' => 'password123'
+            'password' => 'password123',
         ];
 
         $violations = $this->createMock(ConstraintViolationListInterface::class);
@@ -1278,7 +1277,7 @@ class UserServiceTest extends TestCase
             'firstName' => '', // Invalid empty firstName
             'lastName' => 'Doe',
             'email' => 'invalid-email',
-            'password' => '123' // Too short
+            'password' => '123', // Too short
         ];
 
         $violation = $this->createMock(\Symfony\Component\Validator\ConstraintViolationInterface::class);
@@ -1296,7 +1295,7 @@ class UserServiceTest extends TestCase
     }
 
     // ===== Tests pour validateUserData() via réflection =====
-    
+
     public function testValidateUserDataSuccess(): void
     {
         $reflection = new \ReflectionClass($this->service);
@@ -1306,7 +1305,7 @@ class UserServiceTest extends TestCase
         $data = [
             'firstName' => 'John',
             'lastName' => 'Doe',
-            'email' => 'john.doe@example.com'
+            'email' => 'john.doe@example.com',
         ];
 
         $violations = $this->createMock(ConstraintViolationListInterface::class);
@@ -1329,7 +1328,7 @@ class UserServiceTest extends TestCase
 
         $data = [
             'firstName' => 'A', // Too short
-            'email' => 'invalid-email'
+            'email' => 'invalid-email',
         ];
 
         $violation = $this->createMock(\Symfony\Component\Validator\ConstraintViolationInterface::class);
@@ -1347,7 +1346,7 @@ class UserServiceTest extends TestCase
     }
 
     // ===== Tests pour getAttemptNumber() via réflection =====
-    
+
     public function testGetAttemptNumberSuccess(): void
     {
         $reflection = new \ReflectionClass($this->service);
@@ -1358,7 +1357,7 @@ class UserServiceTest extends TestCase
         $quiz = $this->createMock(\App\Entity\Quiz::class);
         $userAnswer1 = $this->createMock(\App\Entity\UserAnswer::class);
         $userAnswer2 = $this->createMock(\App\Entity\UserAnswer::class);
-        
+
         $attemptDate1 = new \DateTime('2023-01-01 10:00:00');
         $attemptDate2 = new \DateTime('2023-01-02 10:00:00');
         $targetDate = new \DateTime('2023-01-02 10:00:00');
@@ -1369,7 +1368,7 @@ class UserServiceTest extends TestCase
         // Mock user answers
         $userAnswer1->method('getQuiz')->willReturn($quiz);
         $userAnswer1->method('getDateAttempt')->willReturn($attemptDate1);
-        
+
         $userAnswer2->method('getQuiz')->willReturn($quiz);
         $userAnswer2->method('getDateAttempt')->willReturn($attemptDate2);
 
@@ -1404,7 +1403,7 @@ class UserServiceTest extends TestCase
     // et des accès à des propriétés qui peuvent être nulles. Elle nécessite des tests d'intégration.
 
     // ===== Tests additionnels pour améliorer la couverture =====
-    
+
     public function testListEmptyResult(): void
     {
         $this->userRepository->expects($this->once())
@@ -1455,7 +1454,7 @@ class UserServiceTest extends TestCase
             'email' => 'test@example.com',
             'firstName' => str_repeat('A', 50), // Long prénom
             'lastName' => 'Doe',
-            'password' => 'password123'
+            'password' => 'password123',
         ];
 
         $violations = $this->createMock(ConstraintViolationListInterface::class);
@@ -1487,7 +1486,7 @@ class UserServiceTest extends TestCase
         $user = $this->createMock(User::class);
         $data = [
             'firstName' => 'Jean-François',
-            'lastName' => "O'Connor"
+            'lastName' => "O'Connor",
         ];
 
         $violations = $this->createMock(ConstraintViolationListInterface::class);

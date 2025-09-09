@@ -2,7 +2,6 @@
 
 namespace App\Tests\Unit\Service;
 
-use App\Entity\GameSession;
 use App\Entity\Quiz;
 use App\Entity\Room;
 use App\Entity\RoomPlayer;
@@ -12,7 +11,6 @@ use App\Exception\QuizNotFoundException;
 use App\Exception\RoomNotFoundException;
 use App\Repository\GameSessionRepository;
 use App\Repository\QuizRepository;
-use App\Repository\RoomPlayerRepository;
 use App\Repository\RoomRepository;
 use App\Service\MultiplayerGameService;
 use App\Service\MultiplayerScoreService;
@@ -150,7 +148,7 @@ class MultiplayerGameServiceHardcoreTest extends TestCase
         $user = $this->createMock(User::class);
         $user->method('getId')->willReturn(456);
 
-        $quiz = $this->createMock(\App\Entity\Quiz::class);
+        $quiz = $this->createMock(Quiz::class);
         $quiz->method('getId')->willReturn(789);
         $quiz->method('getTitle')->willReturn('Test Quiz');
         $quiz->method('getQuestionCount')->willReturn(5);
@@ -207,7 +205,7 @@ class MultiplayerGameServiceHardcoreTest extends TestCase
         $user = $this->createMock(User::class);
         $user->method('getId')->willReturn(123);
 
-        $player = $this->createMock(\App\Entity\RoomPlayer::class);
+        $player = $this->createMock(RoomPlayer::class);
         $player->method('getUser')->willReturn($user);
         $player->method('isCreator')->willReturn(true);
 
@@ -232,7 +230,7 @@ class MultiplayerGameServiceHardcoreTest extends TestCase
         $questionsCollection = $this->createMock(\Doctrine\Common\Collections\Collection::class);
         $questionsCollection->method('toArray')->willReturn([$question]);
 
-        $quiz = $this->createMock(\App\Entity\Quiz::class);
+        $quiz = $this->createMock(Quiz::class);
         $quiz->method('getId')->willReturn(789);
         $quiz->method('getTitle')->willReturn('Test Quiz');
         $quiz->method('getQuestionCount')->willReturn(5);
@@ -311,12 +309,12 @@ class MultiplayerGameServiceHardcoreTest extends TestCase
         $user = $this->createMock(User::class);
         $user->method('getId')->willReturn(123);
 
-        $player = $this->createMock(\App\Entity\RoomPlayer::class);
+        $player = $this->createMock(RoomPlayer::class);
         $player->method('getUser')->willReturn($user);
         $player->method('isCreator')->willReturn(true);
         $player->method('getTeam')->willReturn(null);
 
-        $quiz = $this->createMock(\App\Entity\Quiz::class);
+        $quiz = $this->createMock(Quiz::class);
         $quiz->method('getId')->willReturn(789);
         $quiz->method('getTitle')->willReturn('Test Quiz');
         $quiz->method('getQuestionCount')->willReturn(5);

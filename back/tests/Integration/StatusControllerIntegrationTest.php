@@ -15,9 +15,9 @@ class StatusControllerIntegrationTest extends KernelTestCase
     {
         $kernel = static::bootKernel();
         $container = $kernel->getContainer();
-        
+
         $this->controller = new StatusController();
-        
+
         // Injecter le container pour que les méthodes json() fonctionnent
         $this->controller->setContainer($container);
     }
@@ -28,11 +28,11 @@ class StatusControllerIntegrationTest extends KernelTestCase
 
         $this->assertInstanceOf(JsonResponse::class, $response);
         $this->assertEquals(200, $response->getStatusCode());
-        
+
         $responseData = json_decode($response->getContent(), true);
         $this->assertIsArray($responseData);
         $this->assertCount(3, $responseData);
-        
+
         // Vérifier que chaque élément a la structure attendue
         foreach ($responseData as $status) {
             $this->assertArrayHasKey('id', $status);
@@ -48,10 +48,10 @@ class StatusControllerIntegrationTest extends KernelTestCase
     {
         $response = $this->controller->list();
         $responseData = json_decode($response->getContent(), true);
-        
+
         $expectedStatuses = [Status::DRAFT, Status::PUBLISHED, Status::ARCHIVED];
         $this->assertCount(count($expectedStatuses), $responseData);
-        
+
         // Vérifier que tous les statuts attendus sont présents
         $responseValues = array_column($responseData, 'value');
         foreach ($expectedStatuses as $expectedStatus) {
@@ -63,7 +63,7 @@ class StatusControllerIntegrationTest extends KernelTestCase
     {
         $response = $this->controller->list();
         $responseData = json_decode($response->getContent(), true);
-        
+
         // Vérifier la structure d'un élément
         if (!empty($responseData)) {
             $firstItem = $responseData[0];
@@ -78,10 +78,10 @@ class StatusControllerIntegrationTest extends KernelTestCase
     {
         $reflection = new \ReflectionClass($this->controller);
         $attributes = $reflection->getAttributes();
-        
+
         $this->assertCount(1, $attributes);
         $this->assertEquals('Symfony\Component\Routing\Annotation\Route', $attributes[0]->getName());
-        
+
         $routeArgs = $attributes[0]->getArguments();
         $this->assertEquals('/api/status', $routeArgs[0]);
     }
@@ -91,10 +91,10 @@ class StatusControllerIntegrationTest extends KernelTestCase
         $reflection = new \ReflectionClass($this->controller);
         $listMethod = $reflection->getMethod('list');
         $attributes = $listMethod->getAttributes();
-        
+
         $this->assertCount(1, $attributes);
         $this->assertEquals('Symfony\Component\Routing\Annotation\Route', $attributes[0]->getName());
-        
+
         $routeArgs = $attributes[0]->getArguments();
         $this->assertEquals('/list', $routeArgs[0]);
         $this->assertEquals('status_list', $routeArgs['name']);
@@ -110,11 +110,11 @@ class StatusControllerIntegrationTest extends KernelTestCase
     {
         $reflection = new \ReflectionClass($this->controller);
         $listMethod = $reflection->getMethod('list');
-        
+
         // Vérifier que la méthode utilise les enums Status
         $response = $this->controller->list();
         $responseData = json_decode($response->getContent(), true);
-        
+
         // Vérifier que le nombre d'éléments correspond au nombre de statuts
         $expectedStatuses = [Status::DRAFT, Status::PUBLISHED, Status::ARCHIVED];
         $this->assertCount(count($expectedStatuses), $responseData);
@@ -124,7 +124,7 @@ class StatusControllerIntegrationTest extends KernelTestCase
     {
         $response = $this->controller->list();
         $responseData = json_decode($response->getContent(), true);
-        
+
         // Vérifier que les statuts spécifiques sont présents
         $statusValues = array_column($responseData, 'value');
         $this->assertContains(Status::DRAFT->value, $statusValues);
@@ -136,7 +136,7 @@ class StatusControllerIntegrationTest extends KernelTestCase
     {
         $response = $this->controller->list();
         $responseData = json_decode($response->getContent(), true);
-        
+
         // Vérifier que les IDs sont séquentiels et commencent à 1
         $ids = array_column($responseData, 'id');
         $this->assertEquals([1, 2, 3], $ids);
@@ -146,7 +146,7 @@ class StatusControllerIntegrationTest extends KernelTestCase
     {
         $response = $this->controller->list();
         $responseData = json_decode($response->getContent(), true);
-        
+
         // Vérifier que les noms correspondent aux enums
         $names = array_column($responseData, 'name');
         $this->assertContains(Status::DRAFT->getName(), $names);

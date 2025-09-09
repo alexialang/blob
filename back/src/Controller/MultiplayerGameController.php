@@ -18,9 +18,9 @@ use Symfony\Component\Validator\Exception\ValidationFailedException;
 class MultiplayerGameController extends AbstractSecureController
 {
     public function __construct(
-        private MultiplayerGameService $multiplayerService,
-        private GroupService $groupService,
-        private UserService $userService,
+        private readonly MultiplayerGameService $multiplayerService,
+        private readonly GroupService $groupService,
+        private readonly UserService $userService,
     ) {
     }
 

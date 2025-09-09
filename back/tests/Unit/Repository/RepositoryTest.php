@@ -23,4 +23,3 @@ class RepositoryTest extends TestCase
         $this->assertInstanceOf(UserAnswerRepository::class, $repository);
     }
 }
-

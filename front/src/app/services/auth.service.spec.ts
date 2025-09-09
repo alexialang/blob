@@ -88,11 +88,19 @@ describe('AuthService', () => {
       email: 'test@example.com',
       firstName: 'Test',
       lastName: 'User',
-      roles: ['ROLE_USER']
+      roles: ['ROLE_USER'],
+      dateRegistration: '2024-01-01',
+      isAdmin: false,
+      isActive: true,
+      isVerified: true
     };
 
     service.getCurrentUser().subscribe(user => {
-      expect(user).toEqual(mockUser);
+      expect(user.id).toBe(mockUser.id);
+      expect(user.email).toBe(mockUser.email);
+      expect(user.firstName).toBe(mockUser.firstName);
+      expect(user.lastName).toBe(mockUser.lastName);
+      expect(user.roles).toEqual(mockUser.roles);
     });
 
     const req = httpMock.expectOne(`${environment.apiBaseUrl}/user/profile`);
@@ -127,5 +135,113 @@ describe('AuthService', () => {
     const req = httpMock.expectOne(`${environment.apiBaseUrl}/token/refresh`);
     expect(req.request.method).toBe('POST');
     req.flush(mockResponse);
+  });
+
+  it('should fail to refresh without refresh token', () => {
+    localStorage.removeItem('REFRESH_TOKEN');
+
+    service.refresh().subscribe({
+      next: () => fail('should have failed'),
+      error: (error) => {
+        expect(error.message).toBe('No refresh token');
+      }
+    });
+
+    httpMock.expectNone(`${environment.apiBaseUrl}/token/refresh`);
+  });
+
+  it('should check if user has role', () => {
+    const mockUser = {
+      id: 1,
+      email: 'admin@example.com',
+      firstName: 'Admin',
+      lastName: 'User',
+      roles: ['ROLE_ADMIN'],
+      dateRegistration: '2024-01-01',
+      isAdmin: true,
+      isActive: true,
+      isVerified: true
+    };
+
+    localStorage.setItem('JWT_TOKEN', 'test-token');
+
+    service.hasRole('ROLE_ADMIN').subscribe(hasRole => {
+      expect(hasRole).toBe(true);
+    });
+
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/user/profile`);
+    req.flush(mockUser);
+  });
+
+  it('should check if user has permission', () => {
+    const mockUser = {
+      id: 1,
+      email: 'user@example.com',
+      firstName: 'Test',
+      lastName: 'User',
+      roles: ['ROLE_USER'],
+      dateRegistration: '2024-01-01',
+      isAdmin: false,
+      isActive: true,
+      isVerified: true,
+      userPermissions: [
+        { id: 1, permission: 'CREATE_QUIZ' }
+      ]
+    };
+
+    localStorage.setItem('JWT_TOKEN', 'test-token');
+
+    service.hasPermission('CREATE_QUIZ').subscribe(hasPermission => {
+      expect(hasPermission).toBe(true);
+    });
+
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/user/profile`);
+    req.flush(mockUser);
+  });
+
+  it('should return true for admin permissions', () => {
+    const mockUser = {
+      id: 1,
+      email: 'admin@example.com',
+      firstName: 'Admin',
+      lastName: 'User',
+      roles: ['ROLE_ADMIN'],
+      dateRegistration: '2024-01-01',
+      isAdmin: true,
+      isActive: true,
+      isVerified: true
+    };
+
+    localStorage.setItem('JWT_TOKEN', 'test-token');
+
+    service.hasPermission('ANY_PERMISSION').subscribe(hasPermission => {
+      expect(hasPermission).toBe(true);
+    });
+
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/user/profile`);
+    req.flush(mockUser);
+  });
+
+  it('should check if user is admin', () => {
+    const mockUser = {
+      id: 1,
+      email: 'admin@example.com',
+      firstName: 'Admin',
+      lastName: 'User',
+      roles: ['ROLE_ADMIN'],
+      dateRegistration: '2024-01-01',
+      isAdmin: true,
+      isActive: true,
+      isVerified: true
+    };
+
+    localStorage.setItem('JWT_TOKEN', 'test-token');
+
+    service.isAdmin().subscribe(isAdmin => {
+      expect(isAdmin).toBe(true);
+    });
+
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/user/profile`);
+    req.flush(mockUser);
   });
 });

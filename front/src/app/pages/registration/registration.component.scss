@@ -85,6 +85,8 @@
         font-size: 1.1rem;
         font-weight: 500;
         box-sizing: border-box;
+        height: 3.5rem;
+        min-height: 3.5rem;
 
         &::placeholder {
           color: rgba(255, 255, 255, 0.7);
@@ -242,7 +244,8 @@
           margin: 0 auto;
           padding: 0.9rem 1.5rem;
           font-size: 0.95rem;
-          min-height: 45px;
+          height: 3.5rem;
+          min-height: 3.5rem;
         }
 
         .password-container {
@@ -294,6 +297,8 @@
           width: 85%;
           padding: 0.8rem 1.2rem;
           font-size: 0.9rem;
+          height: 3.5rem;
+          min-height: 3.5rem;
         }
 
         .password-container {

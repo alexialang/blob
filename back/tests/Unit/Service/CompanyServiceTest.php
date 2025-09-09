@@ -3,9 +3,9 @@
 namespace App\Tests\Unit\Service;
 
 use App\Entity\Company;
-use App\Entity\User;
 use App\Entity\Group;
 use App\Entity\Quiz;
+use App\Entity\User;
 use App\Entity\UserPermission;
 use App\Enum\Permission;
 use App\Repository\CompanyRepository;
@@ -15,8 +15,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Serializer\SerializerInterface;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Validator\ConstraintViolationListInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class CompanyServiceTest extends TestCase
 {
@@ -42,12 +42,12 @@ class CompanyServiceTest extends TestCase
     }
 
     // ===== Tests pour list() =====
-    
+
     public function testList(): void
     {
         $companies = [
             $this->createMock(Company::class),
-            $this->createMock(Company::class)
+            $this->createMock(Company::class),
         ];
 
         $this->companyRepository->expects($this->once())
@@ -73,7 +73,7 @@ class CompanyServiceTest extends TestCase
     }
 
     // ===== Tests pour findByUser() =====
-    
+
     public function testFindByUserWithCompany(): void
     {
         $user = $this->createMock(User::class);
@@ -104,7 +104,7 @@ class CompanyServiceTest extends TestCase
     }
 
     // ===== Tests pour find() =====
-    
+
     public function testFind(): void
     {
         $company = $this->createMock(Company::class);
@@ -132,7 +132,7 @@ class CompanyServiceTest extends TestCase
     }
 
     // ===== Tests pour create() =====
-    
+
     public function testCreateSuccess(): void
     {
         $data = ['name' => 'Test Company'];
@@ -163,7 +163,7 @@ class CompanyServiceTest extends TestCase
     }
 
     // ===== Tests pour update() =====
-    
+
     public function testUpdateSuccess(): void
     {
         $company = $this->createMock(Company::class);
@@ -214,7 +214,7 @@ class CompanyServiceTest extends TestCase
     }
 
     // ===== Tests pour delete() =====
-    
+
     public function testDeleteSuccess(): void
     {
         $company = $this->createMock(Company::class);
@@ -245,7 +245,7 @@ class CompanyServiceTest extends TestCase
     public function testDeleteException(): void
     {
         $company = $this->createMock(Company::class);
-        
+
         $company->method('getUsers')->willReturn(new ArrayCollection([]));
         $company->method('getGroups')->willReturn(new ArrayCollection([]));
         $company->method('getQuizs')->willReturn(new ArrayCollection([]));
@@ -262,12 +262,12 @@ class CompanyServiceTest extends TestCase
     }
 
     // ===== Tests pour exportCompaniesToCsv() =====
-    
+
     public function testExportCompaniesToCsv(): void
     {
         $companies = [
             $this->createMock(Company::class),
-            $this->createMock(Company::class)
+            $this->createMock(Company::class),
         ];
 
         $companies[0]->method('getId')->willReturn(1);
@@ -309,12 +309,12 @@ class CompanyServiceTest extends TestCase
     }
 
     // ===== Tests pour exportCompaniesToJson() =====
-    
+
     public function testExportCompaniesToJson(): void
     {
         $companies = [
             $this->createMock(Company::class),
-            $this->createMock(Company::class)
+            $this->createMock(Company::class),
         ];
 
         $this->companyRepository->expects($this->once())
@@ -339,7 +339,7 @@ class CompanyServiceTest extends TestCase
     }
 
     // ===== Tests pour getCompanyGroups() (version complexe) =====
-    
+
     public function testGetCompanyGroupsComplex(): void
     {
         $company = $this->createMock(Company::class);
@@ -401,7 +401,7 @@ class CompanyServiceTest extends TestCase
     }
 
     // ===== Tests pour importCompaniesFromCsv() =====
-    
+
     public function testImportCompaniesFromCsvSuccess(): void
     {
         // Créer un fichier temporaire réel pour le test
@@ -508,7 +508,7 @@ class CompanyServiceTest extends TestCase
 
         $violation = $this->createMock(\Symfony\Component\Validator\ConstraintViolationInterface::class);
         $violation->method('getMessage')->willReturn('Name is invalid');
-        
+
         $violationsWithError = $this->createMock(ConstraintViolationListInterface::class);
         $violationsWithError->method('count')->willReturn(1);
         $violationsWithError->method('offsetGet')->with(0)->willReturn($violation);
@@ -585,7 +585,7 @@ class CompanyServiceTest extends TestCase
     }
 
     // ===== Tests pour getCompanyStats() =====
-    
+
     public function testGetCompanyStats(): void
     {
         $company = $this->createMock(Company::class);
@@ -602,11 +602,11 @@ class CompanyServiceTest extends TestCase
         $company->method('getId')->willReturn(123);
         $company->method('getName')->willReturn('Test Company');
         $company->method('getDateCreation')->willReturn($creationDate);
-        
+
         $users = new ArrayCollection([$user1, $user2]);
         $groups = new ArrayCollection([$group]);
         $quizs = new ArrayCollection([$quiz]);
-        
+
         $company->method('getUsers')->willReturn($users);
         $company->method('getGroups')->willReturn($groups);
         $company->method('getQuizs')->willReturn($quizs);
@@ -614,7 +614,7 @@ class CompanyServiceTest extends TestCase
         // Mock users
         $user1->method('getLastAccess')->willReturn($recentDate);
         $user1->method('isActive')->willReturn(true);
-        
+
         $user2->method('getLastAccess')->willReturn($oldDate);
         $user2->method('isActive')->willReturn(false);
 
@@ -654,7 +654,7 @@ class CompanyServiceTest extends TestCase
     }
 
     // ===== Tests pour assignUserToCompany() =====
-    
+
     public function testAssignUserToCompanySuccess(): void
     {
         $company = $this->createMock(Company::class);
@@ -675,7 +675,7 @@ class CompanyServiceTest extends TestCase
             ->method('getRepository')
             ->willReturnMap([
                 [User::class, $userRepository],
-                [UserPermission::class, $permissionRepository]
+                [UserPermission::class, $permissionRepository],
             ]);
 
         $userRepository->expects($this->once())
@@ -771,7 +771,7 @@ class CompanyServiceTest extends TestCase
             ->method('getRepository')
             ->willReturnMap([
                 [User::class, $userRepository],
-                [UserPermission::class, $permissionRepository]
+                [UserPermission::class, $permissionRepository],
             ]);
 
         $userRepository->expects($this->once())
@@ -802,5 +802,4 @@ class CompanyServiceTest extends TestCase
         $this->assertSame(123, $result['companyId']);
         $this->assertSame('Test Company', $result['companyName']);
     }
-
 }

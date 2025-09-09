@@ -14,15 +14,8 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class BadgeService
 {
-    private EntityManagerInterface $em;
-    private BadgeRepository $badgeRepository;
-    private ValidatorInterface $validator;
-
-    public function __construct(EntityManagerInterface $em, BadgeRepository $badgeRepository, ValidatorInterface $validator)
+    public function __construct(private readonly EntityManagerInterface $em, private readonly BadgeRepository $badgeRepository, private readonly ValidatorInterface $validator)
     {
-        $this->em = $em;
-        $this->badgeRepository = $badgeRepository;
-        $this->validator = $validator;
     }
 
     public function list(): array

@@ -6,11 +6,8 @@ use App\Repository\TypeQuestionRepository;
 
 class TypeQuestionService
 {
-    private TypeQuestionRepository $typeQuestionRepository;
-
-    public function __construct(TypeQuestionRepository $typeQuestionRepository)
+    public function __construct(private readonly TypeQuestionRepository $typeQuestionRepository)
     {
-        $this->typeQuestionRepository = $typeQuestionRepository;
     }
 
     public function list(): array

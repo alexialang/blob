@@ -24,33 +24,8 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 class QuizCrudService
 {
-    private EntityManagerInterface $em;
-    private QuizRepository $quizRepository;
-    private CategoryQuizRepository $categoryQuizRepository;
-    private TypeQuestionRepository $typeQuestionRepository;
-    private GroupRepository $groupRepository;
-    private ValidatorInterface $validator;
-    private LoggerInterface $logger;
-    private EventDispatcherInterface $eventDispatcher;
-
-    public function __construct(
-        EntityManagerInterface $em,
-        QuizRepository $quizRepository,
-        CategoryQuizRepository $categoryQuizRepository,
-        TypeQuestionRepository $typeQuestionRepository,
-        GroupRepository $groupRepository,
-        ValidatorInterface $validator,
-        LoggerInterface $logger,
-        EventDispatcherInterface $eventDispatcher,
-    ) {
-        $this->em = $em;
-        $this->quizRepository = $quizRepository;
-        $this->categoryQuizRepository = $categoryQuizRepository;
-        $this->typeQuestionRepository = $typeQuestionRepository;
-        $this->groupRepository = $groupRepository;
-        $this->validator = $validator;
-        $this->logger = $logger;
-        $this->eventDispatcher = $eventDispatcher;
+    public function __construct(private readonly EntityManagerInterface $em, private readonly QuizRepository $quizRepository, private readonly CategoryQuizRepository $categoryQuizRepository, private readonly TypeQuestionRepository $typeQuestionRepository, private readonly GroupRepository $groupRepository, private readonly ValidatorInterface $validator, private readonly LoggerInterface $logger, private readonly EventDispatcherInterface $eventDispatcher)
+    {
     }
 
     /**

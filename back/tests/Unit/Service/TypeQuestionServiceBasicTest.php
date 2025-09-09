@@ -23,7 +23,7 @@ class TypeQuestionServiceBasicTest extends TestCase
         $types = [
             $this->createMock(TypeQuestion::class),
             $this->createMock(TypeQuestion::class),
-            $this->createMock(TypeQuestion::class)
+            $this->createMock(TypeQuestion::class),
         ];
 
         $this->repository->expects($this->once())

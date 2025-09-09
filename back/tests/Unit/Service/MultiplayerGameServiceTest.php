@@ -2,16 +2,12 @@
 
 namespace App\Tests\Unit\Service;
 
-use App\Entity\GameSession;
-use App\Entity\Quiz;
-use App\Entity\Room;
-use App\Entity\RoomPlayer;
 use App\Entity\User;
 use App\Repository\GameSessionRepository;
 use App\Repository\RoomRepository;
 use App\Service\MultiplayerGameService;
-use App\Service\MultiplayerTimingService;
 use App\Service\MultiplayerScoreService;
+use App\Service\MultiplayerTimingService;
 use App\Service\MultiplayerValidationService;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
@@ -58,11 +54,11 @@ class MultiplayerGameServiceTest extends TestCase
     {
         $user = $this->createMock(User::class);
         $user->method('getPseudo')->willReturn('TestPseudo');
-        
+
         $reflection = new \ReflectionClass($this->service);
         $method = $reflection->getMethod('getUserDisplayName');
         $method->setAccessible(true);
-        
+
         $result = $method->invoke($this->service, $user);
         $this->assertEquals('TestPseudo', $result);
     }
@@ -73,11 +69,11 @@ class MultiplayerGameServiceTest extends TestCase
         $user->method('getPseudo')->willReturn(null);
         $user->method('getFirstName')->willReturn('John');
         $user->method('getLastName')->willReturn('Doe');
-        
+
         $reflection = new \ReflectionClass($this->service);
         $method = $reflection->getMethod('getUserDisplayName');
         $method->setAccessible(true);
-        
+
         $result = $method->invoke($this->service, $user);
         $this->assertEquals('John Doe', $result);
     }
@@ -89,11 +85,11 @@ class MultiplayerGameServiceTest extends TestCase
         $user->method('getFirstName')->willReturn(null);
         $user->method('getLastName')->willReturn(null);
         $user->method('getId')->willReturn(123);
-        
+
         $reflection = new \ReflectionClass($this->service);
         $method = $reflection->getMethod('getUserDisplayName');
         $method->setAccessible(true);
-        
+
         $result = $method->invoke($this->service, $user);
         $this->assertEquals('Joueur 123', $result);
     }
@@ -104,11 +100,11 @@ class MultiplayerGameServiceTest extends TestCase
         $user->method('getPseudo')->willReturn(null);
         $user->method('getFirstName')->willReturn('John');
         $user->method('getLastName')->willReturn(null);
-        
+
         $reflection = new \ReflectionClass($this->service);
         $method = $reflection->getMethod('getUserDisplayName');
         $method->setAccessible(true);
-        
+
         $result = $method->invoke($this->service, $user);
         $this->assertEquals('John', $result);
     }
@@ -119,11 +115,11 @@ class MultiplayerGameServiceTest extends TestCase
         $user->method('getPseudo')->willReturn(null);
         $user->method('getFirstName')->willReturn(null);
         $user->method('getLastName')->willReturn('Doe');
-        
+
         $reflection = new \ReflectionClass($this->service);
         $method = $reflection->getMethod('getUserDisplayName');
         $method->setAccessible(true);
-        
+
         $result = $method->invoke($this->service, $user);
         $this->assertEquals('Doe', $result);
     }
@@ -131,16 +127,16 @@ class MultiplayerGameServiceTest extends TestCase
     public function testStaticPropertiesInitialization(): void
     {
         $reflection = new \ReflectionClass($this->service);
-        
+
         $this->assertTrue($reflection->hasProperty('submittedAnswers'));
         $this->assertTrue($reflection->hasProperty('gameAnswers'));
-        
+
         $submittedAnswersProperty = $reflection->getProperty('submittedAnswers');
         $submittedAnswersProperty->setAccessible(true);
-        
+
         $gameAnswersProperty = $reflection->getProperty('gameAnswers');
         $gameAnswersProperty->setAccessible(true);
-        
+
         // Properties should be arrays
         $this->assertIsArray($submittedAnswersProperty->getValue());
         $this->assertIsArray($gameAnswersProperty->getValue());
@@ -150,8 +146,8 @@ class MultiplayerGameServiceTest extends TestCase
     {
         $reflection = new \ReflectionClass($this->service);
         $publicMethods = $reflection->getMethods(\ReflectionMethod::IS_PUBLIC);
-        $methodNames = array_map(fn($method) => $method->getName(), $publicMethods);
-        
+        $methodNames = array_map(fn ($method) => $method->getName(), $publicMethods);
+
         // Vérifier que certaines méthodes publiques existent
         $this->assertContains('__construct', $methodNames);
         $this->assertGreaterThan(1, count($publicMethods));
@@ -161,7 +157,7 @@ class MultiplayerGameServiceTest extends TestCase
     {
         $reflection = new \ReflectionClass($this->service);
         $constructor = $reflection->getConstructor();
-        
+
         $this->assertNotNull($constructor);
         $this->assertCount(7, $constructor->getParameters());
     }
@@ -169,7 +165,7 @@ class MultiplayerGameServiceTest extends TestCase
     public function testClassConstants(): void
     {
         $reflection = new \ReflectionClass($this->service);
-        
+
         // Vérifier que des méthodes privées importantes existent
         $this->assertTrue($reflection->hasMethod('getUserDisplayName'));
         $this->assertNotEmpty($reflection->getProperties());
@@ -180,7 +176,7 @@ class MultiplayerGameServiceTest extends TestCase
         $reflection = new \ReflectionClass($this->service);
         $method = $reflection->getMethod('getGameTopic');
         $method->setAccessible(true);
-        
+
         $result = $method->invoke($this->service, 'GAME123');
         $this->assertEquals('game-GAME123', $result);
     }
@@ -190,12 +186,12 @@ class MultiplayerGameServiceTest extends TestCase
         $reflection = new \ReflectionClass($this->service);
         $method = $reflection->getMethod('getGameTopic');
         $method->setAccessible(true);
-        
+
         $testCodes = ['ABC123', 'XYZ789', 'TEST', ''];
-        
+
         foreach ($testCodes as $code) {
             $result = $method->invoke($this->service, $code);
-            $this->assertEquals('game-' . $code, $result);
+            $this->assertEquals('game-'.$code, $result);
         }
     }
 
@@ -203,7 +199,7 @@ class MultiplayerGameServiceTest extends TestCase
     {
         $reflection = new \ReflectionClass($this->service);
         $this->assertTrue($reflection->hasMethod('checkAnswer'));
-        
+
         $method = $reflection->getMethod('checkAnswer');
         $this->assertTrue($method->isPrivate());
     }
@@ -211,16 +207,16 @@ class MultiplayerGameServiceTest extends TestCase
     public function testServiceHasRequiredMethods(): void
     {
         $reflection = new \ReflectionClass($this->service);
-        
+
         $requiredMethods = [
             'createRoom',
-            'joinRoom', 
+            'joinRoom',
             'leaveRoom',
             'startGame',
             'submitAnswer',
-            'getRoomStatus'
+            'getRoomStatus',
         ];
-        
+
         foreach ($requiredMethods as $methodName) {
             $this->assertTrue($reflection->hasMethod($methodName), "Method $methodName should exist");
         }
@@ -231,19 +227,19 @@ class MultiplayerGameServiceTest extends TestCase
         $reflection = new \ReflectionClass($this->service);
         $constructor = $reflection->getConstructor();
         $parameters = $constructor->getParameters();
-        
+
         $expectedParameters = [
             'entityManager',
-            'mercureHub', 
+            'mercureHub',
             'roomRepository',
             'gameSessionRepository',
             'timingService',
             'scoreService',
-            'validationService'
+            'validationService',
         ];
-        
+
         $this->assertCount(7, $parameters);
-        
+
         foreach ($parameters as $index => $param) {
             $this->assertEquals($expectedParameters[$index], $param->getName());
         }
@@ -252,17 +248,17 @@ class MultiplayerGameServiceTest extends TestCase
     public function testStaticArraysManipulation(): void
     {
         $reflection = new \ReflectionClass($this->service);
-        
+
         $submittedAnswersProperty = $reflection->getProperty('submittedAnswers');
         $submittedAnswersProperty->setAccessible(true);
-        
+
         $gameAnswersProperty = $reflection->getProperty('gameAnswers');
         $gameAnswersProperty->setAccessible(true);
-        
+
         // Test setting values
         $submittedAnswersProperty->setValue(['test' => 'value']);
         $gameAnswersProperty->setValue(['game' => 'data']);
-        
+
         $this->assertEquals(['test' => 'value'], $submittedAnswersProperty->getValue());
         $this->assertEquals(['game' => 'data'], $gameAnswersProperty->getValue());
     }

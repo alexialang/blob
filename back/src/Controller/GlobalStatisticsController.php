@@ -15,8 +15,8 @@ use Symfony\Contracts\Cache\CacheInterface;
 class GlobalStatisticsController extends AbstractController
 {
     public function __construct(
-        private GlobalStatisticsService $globalStatisticsService,
-        private CacheInterface $cache,
+        private readonly GlobalStatisticsService $globalStatisticsService,
+        private readonly CacheInterface $cache,
     ) {
     }
 

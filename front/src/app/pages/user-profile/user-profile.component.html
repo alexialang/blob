@@ -252,7 +252,7 @@
               <div class="badge-grid">
                 <div class="badge-card earned" *ngFor="let badge of getUserBadges()">
                   <img [src]="getBadgeImagePath(badge)" alt="{{badge.name}}" class="badge-image"
-                       (error)="onBadgeImageError($event)">
+                       width="48" height="48" (error)="onBadgeImageError($event)">
                   <div class="badge-name">{{ badge.name }}</div>
                 </div>
                 <div *ngIf="getUserBadges().length === 0" class="no-badges text-center text-muted">
@@ -268,7 +268,7 @@
               <div class="badge-grid">
                 <div class="badge-card available" *ngFor="let badge of getAvailableBadges()">
                   <img [src]="getBadgeImagePath(badge)" alt="{{badge.name}}" class="badge-image"
-                       (error)="onBadgeImageError($event)">
+                       width="48" height="48" (error)="onBadgeImageError($event)">
                   <div class="badge-name">{{ badge.name }}</div>
                 </div>
                 <div *ngIf="getAvailableBadges().length === 0" class="no-badges text-center text-muted">

@@ -17,8 +17,8 @@ use Symfony\Component\Validator\Exception\ValidationFailedException;
 class UserController extends AbstractController
 {
     public function __construct(
-        private UserService $userService,
-        private LoggerInterface $logger,
+        private readonly UserService $userService,
+        private readonly LoggerInterface $logger,
     ) {
     }
 
@@ -126,7 +126,7 @@ class UserController extends AbstractController
             return $this->json($user, 200, [], [
                 'groups' => ['user:profile'],
             ]);
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             return $this->json([
                 'error' => 'Erreur lors de la récupération du profil',
             ], 500);
@@ -166,7 +166,7 @@ class UserController extends AbstractController
             return $this->json($user, 200, [], [
                 'groups' => ['user:profile'],
             ]);
-        } catch (\JsonException $e) {
+        } catch (\JsonException) {
             return $this->json(['error' => 'Invalid JSON'], 400);
         } catch (ValidationFailedException $e) {
             $errorMessages = [];
@@ -177,7 +177,7 @@ class UserController extends AbstractController
             return $this->json(['error' => 'Données invalides', 'details' => $errorMessages], 400);
         } catch (\InvalidArgumentException $e) {
             return $this->json(['error' => $e->getMessage()], 400);
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             return $this->json([
                 'error' => 'Erreur lors de la mise à jour du profil',
             ], 500);
@@ -203,7 +203,7 @@ class UserController extends AbstractController
             return $this->json($statistics, 200, [], [
                 'groups' => ['user:statistics'],
             ]);
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             return $this->json([
                 'error' => 'Erreur lors du calcul des statistiques',
             ], 500);
@@ -282,7 +282,7 @@ class UserController extends AbstractController
             return $this->json($user, 200, [], [
                 'groups' => ['user:profile'],
             ]);
-        } catch (\JsonException $e) {
+        } catch (\JsonException) {
             return $this->json(['error' => 'Invalid JSON'], 400);
         } catch (ValidationFailedException $e) {
             $errorMessages = [];
@@ -293,7 +293,7 @@ class UserController extends AbstractController
             return $this->json(['error' => 'Données invalides', 'details' => $errorMessages], 400);
         } catch (\InvalidArgumentException $e) {
             return $this->json(['error' => $e->getMessage()], 400);
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             return $this->json(['error' => 'Erreur lors de la mise à jour'], 500);
         }
     }

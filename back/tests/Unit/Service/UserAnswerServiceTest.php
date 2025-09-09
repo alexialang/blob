@@ -12,8 +12,8 @@ use App\Service\UserAnswerService;
 use App\Service\UserService;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Validator\ConstraintViolationListInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 class UserAnswerServiceTest extends TestCase
@@ -49,12 +49,12 @@ class UserAnswerServiceTest extends TestCase
     }
 
     // ===== Tests pour list() =====
-    
+
     public function testList(): void
     {
         $userAnswers = [
             $this->createMock(UserAnswer::class),
-            $this->createMock(UserAnswer::class)
+            $this->createMock(UserAnswer::class),
         ];
 
         $this->userAnswerRepository->expects($this->once())
@@ -80,7 +80,7 @@ class UserAnswerServiceTest extends TestCase
     }
 
     // ===== Tests pour show() =====
-    
+
     public function testShow(): void
     {
         $userAnswer = $this->createMock(UserAnswer::class);
@@ -91,13 +91,13 @@ class UserAnswerServiceTest extends TestCase
     }
 
     // ===== Tests pour create() =====
-    
+
     public function testCreateSuccess(): void
     {
         $data = [
             'total_score' => 85,
             'user_id' => 123,
-            'quiz_id' => 456
+            'quiz_id' => 456,
         ];
 
         $user = $this->createMock(User::class);
@@ -135,7 +135,7 @@ class UserAnswerServiceTest extends TestCase
         $data = [
             'total_score' => -10, // Invalid score
             'user_id' => 123,
-            'quiz_id' => 456
+            'quiz_id' => 456,
         ];
 
         $violation = $this->createMock(\Symfony\Component\Validator\ConstraintViolationInterface::class);
@@ -153,12 +153,12 @@ class UserAnswerServiceTest extends TestCase
     }
 
     // ===== Tests pour update() =====
-    
+
     public function testUpdateSuccess(): void
     {
         $userAnswer = $this->createMock(UserAnswer::class);
         $data = [
-            'total_score' => 90
+            'total_score' => 90,
         ];
 
         // Mock validation
@@ -181,7 +181,7 @@ class UserAnswerServiceTest extends TestCase
     {
         $userAnswer = $this->createMock(UserAnswer::class);
         $data = [
-            'total_score' => 'invalid' // Invalid type
+            'total_score' => 'invalid', // Invalid type
         ];
 
         $violation = $this->createMock(\Symfony\Component\Validator\ConstraintViolationInterface::class);
@@ -199,7 +199,7 @@ class UserAnswerServiceTest extends TestCase
     }
 
     // ===== Tests pour delete() =====
-    
+
     public function testDelete(): void
     {
         $userAnswer = $this->createMock(UserAnswer::class);
@@ -211,16 +211,16 @@ class UserAnswerServiceTest extends TestCase
     }
 
     // ===== Tests pour saveGameResult() =====
-    
+
     public function testSaveGameResultSuccess(): void
     {
         $user = $this->createMock(User::class);
         $quiz = $this->createMock(Quiz::class);
-        
+
         $data = [
             'user' => $user, // Pass user object directly
             'quiz_id' => 456,
-            'total_score' => 75
+            'total_score' => 75,
         ];
 
         // Mock validation
@@ -247,16 +247,16 @@ class UserAnswerServiceTest extends TestCase
     }
 
     // ===== Tests pour rateQuiz() =====
-    
+
     public function testRateQuizSuccess(): void
     {
         $user = $this->createMock(User::class);
         $quiz = $this->createMock(Quiz::class);
-        
+
         $data = [
             'user' => $user, // Pass user object directly
             'quizId' => 456, // Note: quizId not quiz_id
-            'rating' => 4
+            'rating' => 4,
         ];
 
         // Mock quiz lookup
@@ -279,7 +279,7 @@ class UserAnswerServiceTest extends TestCase
     }
 
     // ===== Tests pour getQuizRating() =====
-    
+
     public function testGetQuizRating(): void
     {
         $quizId = 456;
@@ -305,7 +305,7 @@ class UserAnswerServiceTest extends TestCase
     }
 
     // ===== Tests pour validateUserAnswerData() via réflection =====
-    
+
     public function testValidateUserAnswerDataSuccess(): void
     {
         $reflection = new \ReflectionClass($this->service);
@@ -318,7 +318,7 @@ class UserAnswerServiceTest extends TestCase
             'quiz_id' => 456,
             'question_id' => 789,
             'answer' => 'Test answer',
-            'score' => 10
+            'score' => 10,
         ];
 
         $violations = $this->createMock(ConstraintViolationListInterface::class);
@@ -342,7 +342,7 @@ class UserAnswerServiceTest extends TestCase
         $data = [
             'total_score' => 'invalid', // Invalid type
             'user_id' => null, // Missing required field
-            'quiz_id' => 'invalid' // Invalid type
+            'quiz_id' => 'invalid', // Invalid type
         ];
 
         $violation = $this->createMock(\Symfony\Component\Validator\ConstraintViolationInterface::class);
@@ -360,7 +360,7 @@ class UserAnswerServiceTest extends TestCase
     }
 
     // ===== Tests pour validateGameResultData() via réflection =====
-    
+
     public function testValidateGameResultDataSuccess(): void
     {
         $reflection = new \ReflectionClass($this->service);
@@ -369,7 +369,7 @@ class UserAnswerServiceTest extends TestCase
 
         $data = [
             'total_score' => 75,
-            'extra_field' => 'allowed' // Extra fields are allowed
+            'extra_field' => 'allowed', // Extra fields are allowed
         ];
 
         $violations = $this->createMock(ConstraintViolationListInterface::class);
@@ -391,7 +391,7 @@ class UserAnswerServiceTest extends TestCase
         $method->setAccessible(true);
 
         $data = [
-            'total_score' => null // Missing required field
+            'total_score' => null, // Missing required field
         ];
 
         $violation = $this->createMock(\Symfony\Component\Validator\ConstraintViolationInterface::class);
@@ -409,12 +409,12 @@ class UserAnswerServiceTest extends TestCase
     }
 
     // ===== Tests pour cas d'erreur dans saveGameResult() =====
-    
+
     public function testSaveGameResultMissingData(): void
     {
         $data = [
             'quiz_id' => 456,
-            'total_score' => 75
+            'total_score' => 75,
             // Missing 'user' field
         ];
 
@@ -427,11 +427,11 @@ class UserAnswerServiceTest extends TestCase
     public function testSaveGameResultQuizNotFound(): void
     {
         $user = $this->createMock(User::class);
-        
+
         $data = [
             'user' => $user,
             'quiz_id' => 999, // Non-existent quiz
-            'total_score' => 75
+            'total_score' => 75,
         ];
 
         // Mock validation
@@ -455,12 +455,12 @@ class UserAnswerServiceTest extends TestCase
     }
 
     // ===== Tests pour cas d'erreur dans rateQuiz() =====
-    
+
     public function testRateQuizMissingData(): void
     {
         $data = [
             'quizId' => 456,
-            'rating' => 4
+            'rating' => 4,
             // Missing 'user' field
         ];
 
@@ -473,11 +473,11 @@ class UserAnswerServiceTest extends TestCase
     public function testRateQuizQuizNotFound(): void
     {
         $user = $this->createMock(User::class);
-        
+
         $data = [
             'user' => $user,
             'quizId' => 999, // Non-existent quiz
-            'rating' => 4
+            'rating' => 4,
         ];
 
         // Mock quiz lookup - returns null

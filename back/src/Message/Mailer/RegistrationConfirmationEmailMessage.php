@@ -4,15 +4,8 @@ namespace App\Message\Mailer;
 
 class RegistrationConfirmationEmailMessage
 {
-    public string $email;
-    public string $firstName;
-    public string $confirmationToken;
-
-    public function __construct(string $email, string $firstName, string $confirmationToken)
+    public function __construct(public string $email, public string $firstName, public string $confirmationToken)
     {
-        $this->email = $email;
-        $this->firstName = $firstName;
-        $this->confirmationToken = $confirmationToken;
     }
 
     public function getEmail(): string

@@ -59,7 +59,7 @@ class RoomTest extends TestCase
     {
         $this->room->setIsTeamMode(true);
         $this->assertTrue($this->room->isTeamMode());
-        
+
         $this->room->setIsTeamMode(false);
         $this->assertFalse($this->room->isTeamMode());
     }
@@ -145,13 +145,13 @@ class RoomTest extends TestCase
     public function testAddPlayer(): void
     {
         $player = $this->createMock(RoomPlayer::class);
-        
+
         $player->expects($this->once())
             ->method('setRoom')
             ->with($this->room);
-        
+
         $result = $this->room->addPlayer($player);
-        
+
         $this->assertSame($this->room, $result);
         $this->assertTrue($this->room->getPlayers()->contains($player));
     }
@@ -159,19 +159,19 @@ class RoomTest extends TestCase
     public function testRemovePlayer(): void
     {
         $player = $this->createMock(RoomPlayer::class);
-        
+
         // Configurer les mocks pour add et remove
         $player->expects($this->exactly(2))
             ->method('setRoom')
             ->withConsecutive([$this->room], [null]);
-        
+
         $player->expects($this->once())
             ->method('getRoom')
             ->willReturn($this->room);
-        
+
         $this->room->addPlayer($player);
         $result = $this->room->removePlayer($player);
-        
+
         $this->assertSame($this->room, $result);
         $this->assertFalse($this->room->getPlayers()->contains($player));
     }
@@ -197,17 +197,17 @@ class RoomTest extends TestCase
     {
         // Test sans joueurs
         $this->assertEquals(0, $this->room->getCurrentPlayerCount());
-        
+
         // Ajouter quelques joueurs mockés
         $player1 = $this->createMock(RoomPlayer::class);
         $player2 = $this->createMock(RoomPlayer::class);
-        
+
         $player1->method('setRoom');
         $player2->method('setRoom');
-        
+
         $this->room->addPlayer($player1);
         $this->room->addPlayer($player2);
-        
+
         $this->assertEquals(2, $this->room->getCurrentPlayerCount());
     }
 

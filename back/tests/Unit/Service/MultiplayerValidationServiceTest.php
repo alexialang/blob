@@ -21,14 +21,14 @@ class MultiplayerValidationServiceTest extends TestCase
     }
 
     // ===== Tests pour validateRoomData() =====
-    
+
     public function testValidateRoomDataSuccess(): void
     {
         $data = [
             'quizId' => 1,
             'maxPlayers' => 5,
             'isTeamMode' => true,
-            'roomName' => 'Test Room'
+            'roomName' => 'Test Room',
         ];
 
         $this->validator
@@ -37,7 +37,7 @@ class MultiplayerValidationServiceTest extends TestCase
             ->willReturn(new ConstraintViolationList());
 
         $this->service->validateRoomData($data);
-        
+
         // Si aucune exception n'est levée, le test passe
         $this->assertTrue(true);
     }
@@ -57,7 +57,7 @@ class MultiplayerValidationServiceTest extends TestCase
             'quizId',
             'invalid'
         );
-        
+
         $violations = new ConstraintViolationList([$violation]);
 
         $this->validator
@@ -81,18 +81,18 @@ class MultiplayerValidationServiceTest extends TestCase
             ->willReturn(new ConstraintViolationList());
 
         $this->service->validateRoomData($data);
-        
+
         $this->assertTrue(true);
     }
 
     // ===== Tests pour validateAnswerData() =====
-    
+
     public function testValidateAnswerDataSuccess(): void
     {
         $data = [
             'questionId' => 1,
             'answerId' => 2,
-            'timeSpent' => 15.5
+            'timeSpent' => 15.5,
         ];
 
         $this->validator
@@ -101,7 +101,7 @@ class MultiplayerValidationServiceTest extends TestCase
             ->willReturn(new ConstraintViolationList());
 
         $this->service->validateAnswerData($data);
-        
+
         $this->assertTrue(true);
     }
 
@@ -120,7 +120,7 @@ class MultiplayerValidationServiceTest extends TestCase
             'questionId',
             'invalid'
         );
-        
+
         $violations = new ConstraintViolationList([$violation]);
 
         $this->validator
@@ -145,17 +145,17 @@ class MultiplayerValidationServiceTest extends TestCase
             ->willReturn(new ConstraintViolationList());
 
         $this->service->validateAnswerData($data);
-        
+
         $this->assertTrue(true);
     }
 
     // ===== Tests pour validateJoinRoomData() =====
-    
+
     public function testValidateJoinRoomDataSuccess(): void
     {
         $data = [
             'roomCode' => 'ABC123',
-            'playerName' => 'TestPlayer'
+            'playerName' => 'TestPlayer',
         ];
 
         $this->validator
@@ -164,7 +164,7 @@ class MultiplayerValidationServiceTest extends TestCase
             ->willReturn(new ConstraintViolationList());
 
         $this->service->validateJoinRoomData($data);
-        
+
         $this->assertTrue(true);
     }
 
@@ -183,7 +183,7 @@ class MultiplayerValidationServiceTest extends TestCase
             'roomCode',
             ''
         );
-        
+
         $violations = new ConstraintViolationList([$violation]);
 
         $this->validator
@@ -207,17 +207,17 @@ class MultiplayerValidationServiceTest extends TestCase
             ->willReturn(new ConstraintViolationList());
 
         $this->service->validateJoinRoomData($data);
-        
+
         $this->assertTrue(true);
     }
 
     // ===== Tests pour validateInvitationData() =====
-    
+
     public function testValidateInvitationDataSuccess(): void
     {
         $data = [
             'roomId' => 1,
-            'inviteeEmail' => 'test@example.com'
+            'inviteeEmail' => 'test@example.com',
         ];
 
         $this->validator
@@ -226,7 +226,7 @@ class MultiplayerValidationServiceTest extends TestCase
             ->willReturn(new ConstraintViolationList());
 
         $this->service->validateInvitationData($data);
-        
+
         $this->assertTrue(true);
     }
 
@@ -245,7 +245,7 @@ class MultiplayerValidationServiceTest extends TestCase
             'roomId',
             'invalid'
         );
-        
+
         $violations = new ConstraintViolationList([$violation]);
 
         $this->validator
@@ -261,7 +261,7 @@ class MultiplayerValidationServiceTest extends TestCase
     {
         $data = [
             'roomId' => 1,
-            'inviteeEmail' => 'test@example.com'
+            'inviteeEmail' => 'test@example.com',
         ];
 
         $this->validator
@@ -270,8 +270,7 @@ class MultiplayerValidationServiceTest extends TestCase
             ->willReturn(new ConstraintViolationList());
 
         $this->service->validateInvitationData($data);
-        
+
         $this->assertTrue(true);
     }
 }
-

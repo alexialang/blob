@@ -22,39 +22,20 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class UserService
 {
-    private EntityManagerInterface $em;
-    private UserRepository $userRepository;
-    private UserPasswordHasherInterface $passwordHasher;
-    private MailerInterface $mailer;
-    private HttpClientInterface $httpClient;
-    private string $mailerFrom;
-    private string $frontendUrl;
-    private string $recaptchaSecretKey;
-    private ValidatorInterface $validator;
-    private LoggerInterface $logger;
+    private readonly string $frontendUrl;
 
     public function __construct(
-        #[Autowire('%mailer_from%')] string $mailerFrom,
-        #[Autowire('%recaptcha_secret_key%')] string $recaptchaSecretKey,
-        EntityManagerInterface $em,
-        UserRepository $userRepository,
-        UserPasswordHasherInterface $passwordHasher,
-        MailerInterface $mailer,
-        HttpClientInterface $httpClient,
+        #[Autowire('%mailer_from%')] private readonly string $mailerFrom,
+        #[Autowire('%recaptcha_secret_key%')] private readonly string $recaptchaSecretKey,
+        private readonly EntityManagerInterface $em,
+        private readonly UserRepository $userRepository,
+        private readonly UserPasswordHasherInterface $passwordHasher,
+        private readonly MailerInterface $mailer,
+        private readonly HttpClientInterface $httpClient,
         ParameterBagInterface $params,
-        ValidatorInterface $validator,
-        LoggerInterface $logger,
+        private readonly ValidatorInterface $validator,
+        private readonly LoggerInterface $logger,
     ) {
-        $this->em = $em;
-        $this->userRepository = $userRepository;
-        $this->passwordHasher = $passwordHasher;
-        $this->mailer = $mailer;
-        $this->httpClient = $httpClient;
-        $this->mailerFrom = $mailerFrom;
-        $this->recaptchaSecretKey = $recaptchaSecretKey;
-        $this->validator = $validator;
-        $this->logger = $logger;
-
         $this->frontendUrl = rtrim($params->get('app.frontend_url'), '/');
     }
 
@@ -427,9 +408,7 @@ class UserService
 
         $totalQuizzesCompleted = count($quizScores);
 
-        usort($scoreHistory, function ($a, $b) {
-            return strtotime($b['date']) - strtotime($a['date']);
-        });
+        usort($scoreHistory, fn ($a, $b) => strtotime((string) $b['date']) - strtotime((string) $a['date']));
 
         $categoryAverages = [];
         foreach ($categoryPerformance as $category => $data) {
@@ -469,9 +448,7 @@ class UserService
             }
         }
 
-        usort($attempts, function ($a, $b) {
-            return $a <=> $b;
-        });
+        usort($attempts, fn ($a, $b) => $a <=> $b);
 
         foreach ($attempts as $index => $date) {
             if ($date == $attemptDate) {
@@ -518,7 +495,7 @@ class UserService
                 try {
                     $permissionEnum = Permission::from($permission);
                     $validPermissions[] = $permissionEnum;
-                } catch (\ValueError $e) {
+                } catch (\ValueError) {
                     continue;
                 }
             }

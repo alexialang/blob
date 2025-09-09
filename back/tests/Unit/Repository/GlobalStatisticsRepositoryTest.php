@@ -4,7 +4,6 @@ namespace App\Tests\Unit\Repository;
 
 use App\Repository\GlobalStatisticsRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 use PHPUnit\Framework\TestCase;
 
@@ -56,7 +55,7 @@ class GlobalStatisticsRepositoryTest extends TestCase
     {
         $reflection = new \ReflectionClass($this->repository);
         $constructor = $reflection->getConstructor();
-        
+
         $this->assertNotNull($constructor);
         $parameters = $constructor->getParameters();
         $this->assertCount(1, $parameters);
@@ -72,7 +71,7 @@ class GlobalStatisticsRepositoryTest extends TestCase
     {
         $reflection = new \ReflectionClass($this->repository);
         $parentClass = $reflection->getParentClass();
-        
+
         $this->assertNotNull($parentClass);
         $this->assertEquals('Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository', $parentClass->getName());
     }
@@ -81,7 +80,7 @@ class GlobalStatisticsRepositoryTest extends TestCase
     {
         $reflection = new \ReflectionClass($this->repository);
         $method = $reflection->getMethod('getTeamScoresByQuiz');
-        
+
         $this->assertNotNull($method);
         $parameters = $method->getParameters();
         $this->assertCount(1, $parameters);
@@ -95,7 +94,7 @@ class GlobalStatisticsRepositoryTest extends TestCase
     {
         $reflection = new \ReflectionClass($this->repository);
         $method = $reflection->getMethod('getTeamScoresByQuizForCompany');
-        
+
         $this->assertNotNull($method);
         $parameters = $method->getParameters();
         $this->assertCount(2, $parameters);
@@ -111,7 +110,7 @@ class GlobalStatisticsRepositoryTest extends TestCase
     {
         $reflection = new \ReflectionClass($this->repository);
         $method = $reflection->getMethod('getGroupScoresByQuiz');
-        
+
         $this->assertNotNull($method);
         $parameters = $method->getParameters();
         $this->assertCount(1, $parameters);
@@ -125,7 +124,7 @@ class GlobalStatisticsRepositoryTest extends TestCase
     {
         $reflection = new \ReflectionClass($this->repository);
         $method = $reflection->getMethod('getGroupScoresByQuizForCompany');
-        
+
         $this->assertNotNull($method);
         $parameters = $method->getParameters();
         $this->assertCount(2, $parameters);
@@ -141,14 +140,14 @@ class GlobalStatisticsRepositoryTest extends TestCase
     {
         // Test que les méthodes existent et ont la bonne signature de retour
         $reflection = new \ReflectionClass($this->repository);
-        
+
         $methods = [
             'getTeamScoresByQuiz',
-            'getTeamScoresByQuizForCompany', 
+            'getTeamScoresByQuizForCompany',
             'getGroupScoresByQuiz',
-            'getGroupScoresByQuizForCompany'
+            'getGroupScoresByQuizForCompany',
         ];
-        
+
         foreach ($methods as $methodName) {
             $method = $reflection->getMethod($methodName);
             $this->assertNotNull($method);

@@ -4,7 +4,6 @@ import {ActivatedRoute, Router} from '@angular/router';
 import {MultiplayerGame, MultiplayerService} from '../../services/multiplayer.service';
 import {MercureService} from '../../services/mercure.service';
 import {QuizGameService} from '../../services/quiz-game.service';
-import { AnalyticsService } from '../../services/analytics.service';
 import {Subscription} from 'rxjs';
 import {animate, state, style, transition, trigger} from '@angular/animations';
 import {McqQuestionComponent} from '../../components/question-types/mcq-question/mcq-question.component';
@@ -137,7 +136,6 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
     private multiplayerService: MultiplayerService,
     private mercureService: MercureService,
     private quizGameService: QuizGameService,
-    private analytics: AnalyticsService
   ) {}
 
   ngOnInit(): void {
@@ -1015,7 +1013,6 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
     this.finalLeaderboard = leaderboard;
 
     const normalizedScore = this.totalQuestions === 0 ? 0 : Math.min(Math.round((this.currentScore / (this.totalQuestions * 10)) * 100), 100);
-    this.analytics.trackMultiplayerGameComplete(normalizedScore);
 
     const currentUser = this.getCurrentUsername();
 

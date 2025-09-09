@@ -3,8 +3,8 @@
 namespace App\Tests\Unit\Controller;
 
 use App\Controller\StripeWebhookController;
-use Psr\Log\LoggerInterface;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 
 class StripeWebhookControllerNewTest extends TestCase
 {

@@ -7,11 +7,8 @@ use App\Repository\CategoryQuizRepository;
 
 class CategoryQuizService
 {
-    private CategoryQuizRepository $categoryQuizRepository;
-
-    public function __construct(CategoryQuizRepository $categoryQuizRepository)
+    public function __construct(private readonly CategoryQuizRepository $categoryQuizRepository)
     {
-        $this->categoryQuizRepository = $categoryQuizRepository;
     }
 
     public function list(): array

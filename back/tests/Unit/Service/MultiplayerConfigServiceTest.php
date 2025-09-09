@@ -14,7 +14,7 @@ class MultiplayerConfigServiceTest extends TestCase
     protected function setUp(): void
     {
         $this->parameterBag = $this->createMock(ParameterBagInterface::class);
-        
+
         // Mock all parameter bag calls to return default values
         $this->parameterBag->method('get')->willReturnMap([
             ['app.multiplayer.room.max_players', 8],
@@ -44,7 +44,7 @@ class MultiplayerConfigServiceTest extends TestCase
     }
 
     // ===== Tests pour get() =====
-    
+
     public function testGetExistingKey(): void
     {
         $result = $this->service->get('room.max_players');
@@ -70,11 +70,11 @@ class MultiplayerConfigServiceTest extends TestCase
     }
 
     // ===== Tests pour getAll() =====
-    
+
     public function testGetAll(): void
     {
         $result = $this->service->getAll();
-        
+
         $this->assertIsArray($result);
         $this->assertArrayHasKey('room', $result);
         $this->assertArrayHasKey('game', $result);
@@ -85,11 +85,11 @@ class MultiplayerConfigServiceTest extends TestCase
     }
 
     // ===== Tests pour getRoomConfig() =====
-    
+
     public function testGetRoomConfig(): void
     {
         $result = $this->service->getRoomConfig();
-        
+
         $this->assertIsArray($result);
         $this->assertEquals(8, $result['max_players']);
         $this->assertEquals(2, $result['min_players_to_start']);
@@ -98,11 +98,11 @@ class MultiplayerConfigServiceTest extends TestCase
     }
 
     // ===== Tests pour getGameConfig() =====
-    
+
     public function testGetGameConfig(): void
     {
         $result = $this->service->getGameConfig();
-        
+
         $this->assertIsArray($result);
         $this->assertEquals(30, $result['question_duration']);
         $this->assertEquals(3, $result['feedback_duration']);
@@ -111,11 +111,11 @@ class MultiplayerConfigServiceTest extends TestCase
     }
 
     // ===== Tests pour getSyncConfig() =====
-    
+
     public function testGetSyncConfig(): void
     {
         $result = $this->service->getSyncConfig();
-        
+
         $this->assertIsArray($result);
         $this->assertEquals(2, $result['heartbeat_interval']);
         $this->assertEquals(5, $result['max_sync_delay']);
@@ -124,11 +124,11 @@ class MultiplayerConfigServiceTest extends TestCase
     }
 
     // ===== Tests pour getScoringConfig() =====
-    
+
     public function testGetScoringConfig(): void
     {
         $result = $this->service->getScoringConfig();
-        
+
         $this->assertIsArray($result);
         $this->assertEquals(10, $result['correct_answer_base']);
         $this->assertEquals(5, $result['time_bonus_max']);
@@ -137,11 +137,11 @@ class MultiplayerConfigServiceTest extends TestCase
     }
 
     // ===== Tests pour getSecurityConfig() =====
-    
+
     public function testGetSecurityConfig(): void
     {
         $result = $this->service->getSecurityConfig();
-        
+
         $this->assertIsArray($result);
         $this->assertEquals(1, $result['max_answers_per_question']);
         $this->assertTrue($result['prevent_answer_duplication']);
@@ -151,11 +151,11 @@ class MultiplayerConfigServiceTest extends TestCase
     }
 
     // ===== Tests pour getMercureConfig() =====
-    
+
     public function testGetMercureConfig(): void
     {
         $result = $this->service->getMercureConfig();
-        
+
         $this->assertIsArray($result);
         $this->assertArrayHasKey('hub_url', $result);
         $this->assertArrayHasKey('public_url', $result);
@@ -164,11 +164,11 @@ class MultiplayerConfigServiceTest extends TestCase
     }
 
     // ===== Tests pour getLoggingConfig() =====
-    
+
     public function testGetLoggingConfig(): void
     {
         $result = $this->service->getLoggingConfig();
-        
+
         $this->assertIsArray($result);
         $this->assertArrayHasKey('log_game_events', $result);
         $this->assertArrayHasKey('log_player_actions', $result);
@@ -178,11 +178,11 @@ class MultiplayerConfigServiceTest extends TestCase
     }
 
     // ===== Tests pour getPerformanceConfig() =====
-    
+
     public function testGetPerformanceConfig(): void
     {
         $result = $this->service->getPerformanceConfig();
-        
+
         $this->assertIsArray($result);
         $this->assertArrayHasKey('enable_caching', $result);
         $this->assertArrayHasKey('cache_ttl', $result);
@@ -192,11 +192,11 @@ class MultiplayerConfigServiceTest extends TestCase
     }
 
     // ===== Tests pour getMonitoringConfig() =====
-    
+
     public function testGetMonitoringConfig(): void
     {
         $result = $this->service->getMonitoringConfig();
-        
+
         $this->assertIsArray($result);
         $this->assertArrayHasKey('enable_metrics', $result);
         $this->assertArrayHasKey('collect_game_stats', $result);
@@ -206,7 +206,7 @@ class MultiplayerConfigServiceTest extends TestCase
     }
 
     // ===== Tests pour isEnabled() =====
-    
+
     public function testIsEnabledTrue(): void
     {
         $result = $this->service->isEnabled('security.prevent_answer_duplication');
@@ -220,7 +220,7 @@ class MultiplayerConfigServiceTest extends TestCase
     }
 
     // ===== Tests pour les getters spécifiques =====
-    
+
     public function testGetMercureHubUrl(): void
     {
         $result = $this->service->getMercureHubUrl();

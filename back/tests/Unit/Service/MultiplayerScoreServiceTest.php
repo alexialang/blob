@@ -248,7 +248,6 @@ class MultiplayerScoreServiceTest extends TestCase
         $this->assertEquals(0, $leaderboard[0]['score']); // Score par défaut
     }
 
-
     public function testClearGameAnswers(): void
     {
         $user1 = $this->createMock(User::class);

@@ -228,8 +228,8 @@ class QuizRepository extends ServiceEntityRepository
             ->where('q.id = :quizId')
             ->setParameter('quizId', $quizId)
             ->getQuery()
-            ->setFetchMode('App\Entity\Question', 'answers', ClassMetadata::FETCH_EAGER)
-            ->setFetchMode('App\Entity\Question', 'type_question', ClassMetadata::FETCH_EAGER)
+            ->setFetchMode(\App\Entity\Question::class, 'answers', ClassMetadata::FETCH_EAGER)
+            ->setFetchMode(\App\Entity\Question::class, 'type_question', ClassMetadata::FETCH_EAGER)
             ->getOneOrNullResult();
     }
 

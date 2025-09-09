@@ -25,7 +25,7 @@ class CompanyServiceSimpleTest extends TestCase
         $this->companyRepository = $this->createMock(CompanyRepository::class);
         $this->serializer = $this->createMock(SerializerInterface::class);
         $this->validator = $this->createMock(ValidatorInterface::class);
-        
+
         $this->service = new CompanyService(
             $this->em,
             $this->companyRepository,
@@ -38,7 +38,7 @@ class CompanyServiceSimpleTest extends TestCase
     {
         $companies = [
             $this->createMock(Company::class),
-            $this->createMock(Company::class)
+            $this->createMock(Company::class),
         ];
 
         $this->companyRepository->expects($this->once())

@@ -50,7 +50,7 @@ class CompanyTest extends TestCase
     {
         $user = $this->createMock(User::class);
         $user->method('setCompany');
-        
+
         $result = $this->company->addUser($user);
         $this->assertSame($this->company, $result);
         $this->assertTrue($this->company->getUsers()->contains($user));
@@ -61,10 +61,10 @@ class CompanyTest extends TestCase
         $user = $this->createMock(User::class);
         $user->method('setCompany');
         $user->method('getCompany')->willReturn($this->company);
-        
+
         $this->company->addUser($user);
         $result = $this->company->removeUser($user);
-        
+
         $this->assertSame($this->company, $result);
         $this->assertFalse($this->company->getUsers()->contains($user));
     }
@@ -80,7 +80,7 @@ class CompanyTest extends TestCase
     {
         $group = $this->createMock(Group::class);
         $group->method('setCompany');
-        
+
         $result = $this->company->addGroup($group);
         $this->assertSame($this->company, $result);
         $this->assertTrue($this->company->getGroups()->contains($group));
@@ -91,10 +91,10 @@ class CompanyTest extends TestCase
         $group = $this->createMock(Group::class);
         $group->method('setCompany');
         $group->method('getCompany')->willReturn($this->company);
-        
+
         $this->company->addGroup($group);
         $result = $this->company->removeGroup($group);
-        
+
         $this->assertSame($this->company, $result);
         $this->assertFalse($this->company->getGroups()->contains($group));
     }
@@ -110,7 +110,7 @@ class CompanyTest extends TestCase
     {
         $quiz = $this->createMock(Quiz::class);
         $quiz->method('setCompany');
-        
+
         $result = $this->company->addQuiz($quiz);
         $this->assertSame($this->company, $result);
         $this->assertTrue($this->company->getQuizs()->contains($quiz));
@@ -121,10 +121,10 @@ class CompanyTest extends TestCase
         $quiz = $this->createMock(Quiz::class);
         $quiz->method('setCompany');
         $quiz->method('getCompany')->willReturn($this->company);
-        
+
         $this->company->addQuiz($quiz);
         $result = $this->company->removeQuiz($quiz);
-        
+
         $this->assertSame($this->company, $result);
         $this->assertFalse($this->company->getQuizs()->contains($quiz));
     }
@@ -132,39 +132,39 @@ class CompanyTest extends TestCase
     public function testGetUserCount(): void
     {
         $this->assertEquals(0, $this->company->getUserCount());
-        
+
         $user = $this->createMock(User::class);
         $user->method('setCompany');
         $this->company->addUser($user);
-        
+
         $this->assertEquals(1, $this->company->getUserCount());
     }
 
     public function testGetGroupCount(): void
     {
         $this->assertEquals(0, $this->company->getGroupCount());
-        
+
         $group = $this->createMock(Group::class);
         $group->method('setCompany');
         $this->company->addGroup($group);
-        
+
         $this->assertEquals(1, $this->company->getGroupCount());
     }
 
     public function testGetQuizCount(): void
     {
         $this->assertEquals(0, $this->company->getQuizCount());
-        
+
         $quiz = $this->createMock(Quiz::class);
         $quiz->method('setCompany');
         $this->company->addQuiz($quiz);
-        
+
         $this->assertEquals(1, $this->company->getQuizCount());
     }
 
     public function testGetCreatedAt(): void
     {
         $createdAt = $this->company->getCreatedAt();
-        $this->assertTrue($createdAt === null || is_string($createdAt));
+        $this->assertTrue(null === $createdAt || is_string($createdAt));
     }
 }

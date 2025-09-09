@@ -4,8 +4,8 @@ namespace App\Tests\Unit\Controller;
 
 use App\Controller\UserController;
 use App\Service\UserService;
-use Psr\Log\LoggerInterface;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 
 class UserControllerNewTest extends TestCase
 {

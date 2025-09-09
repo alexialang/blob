@@ -15,7 +15,7 @@ use Symfony\Component\Validator\Exception\ValidationFailedException;
 class DonationController extends AbstractController
 {
     public function __construct(
-        private PaymentService $paymentService,
+        private readonly PaymentService $paymentService,
     ) {
     }
 
@@ -63,7 +63,7 @@ class DonationController extends AbstractController
             return $this->json(['error' => $e->getMessage()], 400);
         } catch (ApiErrorException $e) {
             return $this->json(['error' => 'Erreur de paiement: '.$e->getMessage()], 500);
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             return $this->json(['error' => 'Erreur lors de la création du paiement'], 500);
         }
     }

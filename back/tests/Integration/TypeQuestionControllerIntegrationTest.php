@@ -16,9 +16,9 @@ class TypeQuestionControllerIntegrationTest extends KernelTestCase
     {
         $kernel = static::bootKernel();
         $container = $kernel->getContainer();
-        
+
         $this->controller = new TypeQuestionController();
-        
+
         // Injecter le container pour que les méthodes json() fonctionnent
         $this->controller->setContainer($container);
     }
@@ -29,11 +29,11 @@ class TypeQuestionControllerIntegrationTest extends KernelTestCase
 
         $this->assertInstanceOf(JsonResponse::class, $response);
         $this->assertEquals(200, $response->getStatusCode());
-        
+
         $responseData = json_decode($response->getContent(), true);
         $this->assertIsArray($responseData);
         $this->assertNotEmpty($responseData);
-        
+
         // Vérifier que chaque élément a la structure attendue
         foreach ($responseData as $typeQuestion) {
             $this->assertArrayHasKey('id', $typeQuestion);
@@ -48,10 +48,10 @@ class TypeQuestionControllerIntegrationTest extends KernelTestCase
     {
         $response = $this->controller->list();
         $responseData = json_decode($response->getContent(), true);
-        
+
         $enumCases = TypeQuestionName::cases();
         $this->assertCount(count($enumCases), $responseData);
-        
+
         // Vérifier que tous les cas de l'enum sont présents
         $responseKeys = array_column($responseData, 'key');
         foreach ($enumCases as $enumCase) {
@@ -63,7 +63,7 @@ class TypeQuestionControllerIntegrationTest extends KernelTestCase
     {
         $response = $this->controller->list();
         $responseData = json_decode($response->getContent(), true);
-        
+
         // Vérifier la structure d'un élément
         if (!empty($responseData)) {
             $firstItem = $responseData[0];
@@ -84,7 +84,7 @@ class TypeQuestionControllerIntegrationTest extends KernelTestCase
 
         $this->assertInstanceOf(JsonResponse::class, $response);
         $this->assertEquals(200, $response->getStatusCode());
-        
+
         $responseData = json_decode($response->getContent(), true);
         $this->assertIsArray($responseData);
     }
@@ -99,7 +99,7 @@ class TypeQuestionControllerIntegrationTest extends KernelTestCase
 
         $this->assertInstanceOf(JsonResponse::class, $response);
         $this->assertEquals(200, $response->getStatusCode());
-        
+
         $responseData = json_decode($response->getContent(), true);
         $this->assertIsArray($responseData);
     }
@@ -108,10 +108,10 @@ class TypeQuestionControllerIntegrationTest extends KernelTestCase
     {
         $reflection = new \ReflectionClass($this->controller);
         $attributes = $reflection->getAttributes();
-        
+
         $this->assertCount(1, $attributes);
         $this->assertEquals('Symfony\Component\Routing\Annotation\Route', $attributes[0]->getName());
-        
+
         $routeArgs = $attributes[0]->getArguments();
         $this->assertEquals('/api/type-question', $routeArgs[0]);
     }
@@ -121,10 +121,10 @@ class TypeQuestionControllerIntegrationTest extends KernelTestCase
         $reflection = new \ReflectionClass($this->controller);
         $listMethod = $reflection->getMethod('list');
         $attributes = $listMethod->getAttributes();
-        
+
         $this->assertCount(1, $attributes);
         $this->assertEquals('Symfony\Component\Routing\Annotation\Route', $attributes[0]->getName());
-        
+
         $routeArgs = $attributes[0]->getArguments();
         $this->assertEquals('/list', $routeArgs[0]);
         $this->assertEquals('type_question_list', $routeArgs['name']);
@@ -136,10 +136,10 @@ class TypeQuestionControllerIntegrationTest extends KernelTestCase
         $reflection = new \ReflectionClass($this->controller);
         $showMethod = $reflection->getMethod('show');
         $attributes = $showMethod->getAttributes();
-        
+
         $this->assertCount(1, $attributes);
         $this->assertEquals('Symfony\Component\Routing\Annotation\Route', $attributes[0]->getName());
-        
+
         $routeArgs = $attributes[0]->getArguments();
         $this->assertEquals('/{id}', $routeArgs[0]);
         $this->assertEquals('type_question_show', $routeArgs['name']);
@@ -155,11 +155,11 @@ class TypeQuestionControllerIntegrationTest extends KernelTestCase
     {
         $reflection = new \ReflectionClass($this->controller);
         $listMethod = $reflection->getMethod('list');
-        
+
         // Vérifier que la méthode utilise TypeQuestionName::cases()
         $response = $this->controller->list();
         $responseData = json_decode($response->getContent(), true);
-        
+
         // Vérifier que le nombre d'éléments correspond au nombre de cas de l'enum
         $enumCases = TypeQuestionName::cases();
         $this->assertCount(count($enumCases), $responseData);
@@ -175,7 +175,7 @@ class TypeQuestionControllerIntegrationTest extends KernelTestCase
 
         $this->assertInstanceOf(JsonResponse::class, $response);
         $this->assertEquals(200, $response->getStatusCode());
-        
+
         // Vérifier que la réponse est bien sérialisée avec les groupes
         $responseData = json_decode($response->getContent(), true);
         $this->assertIsArray($responseData);

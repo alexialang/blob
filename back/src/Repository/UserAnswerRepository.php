@@ -97,9 +97,7 @@ class UserAnswerRepository extends ServiceEntityRepository
             }
         }
 
-        usort($leaderboardData, function ($a, $b) {
-            return $b['totalScore'] - $a['totalScore'];
-        });
+        usort($leaderboardData, fn ($a, $b) => $b['totalScore'] - $a['totalScore']);
 
         return array_slice($leaderboardData, 0, $limit);
     }

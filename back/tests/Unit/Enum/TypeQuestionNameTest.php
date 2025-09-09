@@ -17,7 +17,7 @@ class TypeQuestionNameTest extends TestCase
         $this->assertEquals('blind_test', TypeQuestionName::BLIND_TEST->value);
         $this->assertEquals('true_false', TypeQuestionName::TRUE_FALSE->value);
     }
-    
+
     public function testGetNameMethod(): void
     {
         $this->assertEquals('QCM', TypeQuestionName::MCQ->getName());
@@ -28,11 +28,10 @@ class TypeQuestionNameTest extends TestCase
         $this->assertEquals('Blind test', TypeQuestionName::BLIND_TEST->getName());
         $this->assertEquals('Vrai/Faux', TypeQuestionName::TRUE_FALSE->getName());
     }
-    
+
     public function testTypeQuestionNameCasesCount(): void
     {
         $cases = TypeQuestionName::cases();
         $this->assertCount(7, $cases);
     }
 }
-

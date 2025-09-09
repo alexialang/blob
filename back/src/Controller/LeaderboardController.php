@@ -16,8 +16,8 @@ use Symfony\Component\Routing\Annotation\Route;
 class LeaderboardController extends AbstractController
 {
     public function __construct(
-        private LeaderboardService $leaderboardService,
-        private EntityManagerInterface $entityManager,
+        private readonly LeaderboardService $leaderboardService,
+        private readonly EntityManagerInterface $entityManager,
     ) {
     }
 

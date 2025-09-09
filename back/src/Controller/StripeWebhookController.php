@@ -15,9 +15,9 @@ use Symfony\Component\Routing\Annotation\Route;
 class StripeWebhookController extends AbstractController
 {
     public function __construct(
-        private LoggerInterface $logger,
-        private string $stripeSecretKey,
-        private string $stripeWebhookSecret,
+        private readonly LoggerInterface $logger,
+        private readonly string $stripeSecretKey,
+        private readonly string $stripeWebhookSecret,
     ) {
         Stripe::setApiKey($this->stripeSecretKey);
     }
@@ -41,16 +41,11 @@ class StripeWebhookController extends AbstractController
         }
 
         // Gérer les événements de paiement
-        switch ($event->type) {
-            case 'checkout.session.completed':
-                $this->handleCheckoutSessionCompleted($event->data->object);
-                break;
-            case 'payment_intent.succeeded':
-                $this->handlePaymentIntentSucceeded($event->data->object);
-                break;
-            default:
-                $this->logger->info('Unhandled event type', ['type' => $event->type]);
-        }
+        match ($event->type) {
+            'checkout.session.completed' => $this->handleCheckoutSessionCompleted($event->data->object),
+            'payment_intent.succeeded' => $this->handlePaymentIntentSucceeded($event->data->object),
+            default => $this->logger->info('Unhandled event type', ['type' => $event->type]),
+        };
 
         return new Response('OK', 200);
     }

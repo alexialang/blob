@@ -29,9 +29,9 @@ class RoomPlayerTest extends TestCase
     public function testRoom(): void
     {
         $room = $this->createMock(Room::class);
-        
+
         $result = $this->roomPlayer->setRoom($room);
-        
+
         $this->assertSame($this->roomPlayer, $result);
         $this->assertSame($room, $this->roomPlayer->getRoom());
     }
@@ -39,9 +39,9 @@ class RoomPlayerTest extends TestCase
     public function testUser(): void
     {
         $user = $this->createMock(User::class);
-        
+
         $result = $this->roomPlayer->setUser($user);
-        
+
         $this->assertSame($this->roomPlayer, $result);
         $this->assertSame($user, $this->roomPlayer->getUser());
     }
@@ -49,9 +49,9 @@ class RoomPlayerTest extends TestCase
     public function testIsReady(): void
     {
         $this->assertFalse($this->roomPlayer->isReady());
-        
+
         $result = $this->roomPlayer->setIsReady(true);
-        
+
         $this->assertSame($this->roomPlayer, $result);
         $this->assertTrue($this->roomPlayer->isReady());
     }
@@ -59,9 +59,9 @@ class RoomPlayerTest extends TestCase
     public function testIsCreator(): void
     {
         $this->assertFalse($this->roomPlayer->isCreator());
-        
+
         $result = $this->roomPlayer->setIsCreator(true);
-        
+
         $this->assertSame($this->roomPlayer, $result);
         $this->assertTrue($this->roomPlayer->isCreator());
     }
@@ -69,9 +69,9 @@ class RoomPlayerTest extends TestCase
     public function testTeam(): void
     {
         $this->assertNull($this->roomPlayer->getTeam());
-        
+
         $result = $this->roomPlayer->setTeam('Team A');
-        
+
         $this->assertSame($this->roomPlayer, $result);
         $this->assertEquals('Team A', $this->roomPlayer->getTeam());
     }
@@ -79,10 +79,10 @@ class RoomPlayerTest extends TestCase
     public function testJoinedAt(): void
     {
         $this->assertInstanceOf(\DateTimeImmutable::class, $this->roomPlayer->getJoinedAt());
-        
+
         $date = new \DateTimeImmutable('2023-01-01 10:00:00');
         $result = $this->roomPlayer->setJoinedAt($date);
-        
+
         $this->assertSame($this->roomPlayer, $result);
         $this->assertSame($date, $this->roomPlayer->getJoinedAt());
     }
@@ -90,7 +90,7 @@ class RoomPlayerTest extends TestCase
     public function testConstructor(): void
     {
         $roomPlayer = new RoomPlayer();
-        
+
         $this->assertInstanceOf(\DateTimeImmutable::class, $roomPlayer->getJoinedAt());
         $this->assertFalse($roomPlayer->isReady());
         $this->assertFalse($roomPlayer->isCreator());

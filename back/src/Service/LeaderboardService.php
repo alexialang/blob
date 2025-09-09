@@ -10,9 +10,9 @@ use App\Repository\UserRepository;
 class LeaderboardService
 {
     public function __construct(
-        private UserAnswerRepository $userAnswerRepository,
-        private UserRepository $userRepository,
-        private UserService $userService,
+        private readonly UserAnswerRepository $userAnswerRepository,
+        private readonly UserRepository $userRepository,
+        private readonly UserService $userService,
     ) {
     }
 
@@ -33,13 +33,13 @@ class LeaderboardService
             }
 
             $displayName = $result['name'] ?: ($result['firstName'].' '.$result['lastName']);
-            if (!$displayName || '' === trim($displayName)) {
+            if (!$displayName || '' === trim((string) $displayName)) {
                 $displayName = 'Joueur anonyme';
             }
 
             $leaderboard[] = [
                 'rank' => $rank,
-                'name' => trim($displayName),
+                'name' => trim((string) $displayName),
                 'company' => $result['company'] ?: 'Aucune entreprise',
                 'score' => $result['score'],
                 'isCurrentUser' => $isCurrentUser,
@@ -81,7 +81,7 @@ class LeaderboardService
             $avatarColor = null;
 
             if ($user->getAvatar()) {
-                $avatarData = json_decode($user->getAvatar(), true);
+                $avatarData = json_decode((string) $user->getAvatar(), true);
                 $avatarShape = $avatarData['shape'] ?? null;
                 $avatarColor = $avatarData['color'] ?? null;
             }
@@ -106,9 +106,7 @@ class LeaderboardService
             ];
         }
 
-        usort($leaderboard, function ($a, $b) {
-            return $b['totalScore'] - $a['totalScore'];
-        });
+        usort($leaderboard, fn ($a, $b) => $b['totalScore'] - $a['totalScore']);
 
         foreach ($leaderboard as $index => &$userData) {
             $userData['position'] = $index + 1;

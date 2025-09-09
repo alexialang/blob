@@ -79,7 +79,7 @@ class UserTest extends TestCase
     {
         // Par défaut, pas admin
         $this->assertFalse($this->user->isAdmin());
-        
+
         // Avec rôle admin
         $this->user->setRoles(['ROLE_ADMIN']);
         $this->assertTrue($this->user->isAdmin());
@@ -134,9 +134,9 @@ class UserTest extends TestCase
     public function testAddBadge(): void
     {
         $badge = $this->createMock(Badge::class);
-        
+
         $result = $this->user->addBadge($badge);
-        
+
         $this->assertSame($this->user, $result);
         $this->assertTrue($this->user->getBadges()->contains($badge));
     }
@@ -144,26 +144,26 @@ class UserTest extends TestCase
     public function testAddBadgeAlreadyExists(): void
     {
         $badge = $this->createMock(Badge::class);
-        
+
         // Ajouter le badge une première fois
         $this->user->addBadge($badge);
-        
+
         // Essayer de l'ajouter à nouveau
         $this->user->addBadge($badge);
-        
+
         $this->assertCount(1, $this->user->getBadges());
     }
 
     public function testRemoveBadge(): void
     {
         $badge = $this->createMock(Badge::class);
-        
+
         // Ajouter d'abord le badge
         $this->user->addBadge($badge);
-        
+
         // Maintenant le supprimer
         $result = $this->user->removeBadge($badge);
-        
+
         $this->assertSame($this->user, $result);
         $this->assertFalse($this->user->getBadges()->contains($badge));
     }
@@ -180,13 +180,13 @@ class UserTest extends TestCase
     public function testAddQuiz(): void
     {
         $quiz = $this->createMock(Quiz::class);
-        
+
         $quiz->expects($this->once())
             ->method('setUser')
             ->with($this->user);
-        
+
         $result = $this->user->addQuiz($quiz);
-        
+
         $this->assertSame($this->user, $result);
         $this->assertTrue($this->user->getQuizs()->contains($quiz));
     }
@@ -194,20 +194,20 @@ class UserTest extends TestCase
     public function testRemoveQuiz(): void
     {
         $quiz = $this->createMock(Quiz::class);
-        
+
         // Ajouter d'abord le quiz
         $quiz->expects($this->exactly(2))
             ->method('setUser')
             ->withConsecutive([$this->user], [null]);
-        
+
         // Maintenant le supprimer - il faut mocker getUser pour la condition
         $quiz->expects($this->once())
             ->method('getUser')
             ->willReturn($this->user);
-        
+
         $this->user->addQuiz($quiz);
         $result = $this->user->removeQuiz($quiz);
-        
+
         $this->assertSame($this->user, $result);
         $this->assertFalse($this->user->getQuizs()->contains($quiz));
     }
@@ -224,13 +224,13 @@ class UserTest extends TestCase
     public function testAddUserAnswer(): void
     {
         $userAnswer = $this->createMock(UserAnswer::class);
-        
+
         $userAnswer->expects($this->once())
             ->method('setUser')
             ->with($this->user);
-        
+
         $result = $this->user->addUserAnswer($userAnswer);
-        
+
         $this->assertSame($this->user, $result);
         $this->assertTrue($this->user->getUserAnswers()->contains($userAnswer));
     }
@@ -238,19 +238,19 @@ class UserTest extends TestCase
     public function testRemoveUserAnswer(): void
     {
         $userAnswer = $this->createMock(UserAnswer::class);
-        
+
         // Configurer les mocks pour add et remove
         $userAnswer->expects($this->exactly(2))
             ->method('setUser')
             ->withConsecutive([$this->user], [null]);
-        
+
         $userAnswer->expects($this->once())
             ->method('getUser')
             ->willReturn($this->user);
-        
+
         $this->user->addUserAnswer($userAnswer);
         $result = $this->user->removeUserAnswer($userAnswer);
-        
+
         $this->assertSame($this->user, $result);
         $this->assertFalse($this->user->getUserAnswers()->contains($userAnswer));
     }
@@ -267,13 +267,13 @@ class UserTest extends TestCase
     public function testAddUserPermission(): void
     {
         $permission = $this->createMock(UserPermission::class);
-        
+
         $permission->expects($this->once())
             ->method('setUser')
             ->with($this->user);
-        
+
         $result = $this->user->addUserPermission($permission);
-        
+
         $this->assertSame($this->user, $result);
         $this->assertTrue($this->user->getUserPermissions()->contains($permission));
     }
@@ -281,19 +281,19 @@ class UserTest extends TestCase
     public function testRemoveUserPermission(): void
     {
         $permission = $this->createMock(UserPermission::class);
-        
+
         // Configurer les mocks pour add et remove
         $permission->expects($this->exactly(2))
             ->method('setUser')
             ->withConsecutive([$this->user], [null]);
-        
+
         $permission->expects($this->once())
             ->method('getUser')
             ->willReturn($this->user);
-        
+
         $this->user->addUserPermission($permission);
         $result = $this->user->removeUserPermission($permission);
-        
+
         $this->assertSame($this->user, $result);
         $this->assertFalse($this->user->getUserPermissions()->contains($permission));
     }
@@ -310,9 +310,9 @@ class UserTest extends TestCase
     public function testAddGroup(): void
     {
         $group = $this->createMock(Group::class);
-        
+
         $result = $this->user->addGroup($group);
-        
+
         $this->assertSame($this->user, $result);
         $this->assertTrue($this->user->getGroups()->contains($group));
     }
@@ -320,13 +320,13 @@ class UserTest extends TestCase
     public function testRemoveGroup(): void
     {
         $group = $this->createMock(Group::class);
-        
+
         // Ajouter d'abord le groupe
         $this->user->addGroup($group);
-        
+
         // Maintenant le supprimer
         $result = $this->user->removeGroup($group);
-        
+
         $this->assertSame($this->user, $result);
         $this->assertFalse($this->user->getGroups()->contains($group));
     }
@@ -364,7 +364,7 @@ class UserTest extends TestCase
     {
         // Par défaut false
         $this->assertFalse($this->user->isVerified());
-        
+
         $this->user->setIsVerified(true);
         $this->assertTrue($this->user->isVerified());
     }
@@ -373,7 +373,7 @@ class UserTest extends TestCase
     {
         // Par défaut null
         $this->assertNull($this->user->getDeletedAt());
-        
+
         $date = new \DateTimeImmutable();
         $this->user->setDeletedAt($date);
         $this->assertEquals($date, $this->user->getDeletedAt());
@@ -410,10 +410,10 @@ class UserTest extends TestCase
     {
         // Par défaut null (propriété non initialisée)
         // $this->assertNull($this->user->isActive()); // Peut causer une erreur si non initialisée
-        
+
         $this->user->setIsActive(true);
         $this->assertTrue($this->user->isActive());
-        
+
         $this->user->setIsActive(false);
         $this->assertFalse($this->user->isActive());
     }
@@ -429,7 +429,7 @@ class UserTest extends TestCase
     {
         // Sans company
         $this->assertNull($this->user->getCompanyName());
-        
+
         // Avec company
         $company = $this->createMock(Company::class);
         $company->method('getName')->willReturn('Test Company');
@@ -441,7 +441,7 @@ class UserTest extends TestCase
     {
         // Sans company
         $this->assertNull($this->user->getCompanyId());
-        
+
         // Avec company
         $company = $this->createMock(Company::class);
         $company->method('getId')->willReturn(123);
@@ -452,15 +452,15 @@ class UserTest extends TestCase
     public function testHasPermission(): void
     {
         $permission = Permission::CREATE_QUIZ;
-        
+
         // Sans permissions
         $this->assertFalse($this->user->hasPermission($permission));
-        
+
         // Avec permission
         $userPermission = $this->createMock(UserPermission::class);
         $userPermission->method('getPermission')->willReturn($permission);
         $this->user->addUserPermission($userPermission);
-        
+
         $this->assertTrue($this->user->hasPermission($permission));
     }
 }

@@ -2,7 +2,6 @@
 
 namespace App\Tests\Unit\Repository;
 
-use App\Entity\User;
 use App\Repository\UserRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use PHPUnit\Framework\TestCase;
@@ -22,7 +21,6 @@ class UserRepositoryUltimateTest extends TestCase
     {
         $this->assertInstanceOf(UserRepository::class, $this->repository);
     }
-
 
     public function testRepositoryExtendsServiceEntityRepository(): void
     {

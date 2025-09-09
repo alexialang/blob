@@ -17,11 +17,11 @@ class CategoryQuizControllerIntegrationTest extends KernelTestCase
     {
         $kernel = static::bootKernel();
         $container = $kernel->getContainer();
-        
+
         $this->categoryQuizService = $this->createMock(CategoryQuizService::class);
-        
+
         $this->controller = new CategoryQuizController($this->categoryQuizService);
-        
+
         // Injecter le container pour que les méthodes json() fonctionnent
         $this->controller->setContainer($container);
     }
@@ -31,7 +31,7 @@ class CategoryQuizControllerIntegrationTest extends KernelTestCase
         $mockCategories = [
             ['id' => 1, 'name' => 'Géographie', 'description' => 'Quiz de géographie'],
             ['id' => 2, 'name' => 'Histoire', 'description' => 'Quiz d\'histoire'],
-            ['id' => 3, 'name' => 'Sciences', 'description' => 'Quiz de sciences']
+            ['id' => 3, 'name' => 'Sciences', 'description' => 'Quiz de sciences'],
         ];
 
         $this->categoryQuizService->expects($this->once())
@@ -42,7 +42,7 @@ class CategoryQuizControllerIntegrationTest extends KernelTestCase
 
         $this->assertInstanceOf(JsonResponse::class, $response);
         $this->assertEquals(200, $response->getStatusCode());
-        
+
         $responseData = json_decode($response->getContent(), true);
         $this->assertIsArray($responseData);
         $this->assertCount(3, $responseData);
@@ -61,7 +61,7 @@ class CategoryQuizControllerIntegrationTest extends KernelTestCase
 
         $this->assertInstanceOf(JsonResponse::class, $response);
         $this->assertEquals(200, $response->getStatusCode());
-        
+
         $responseData = json_decode($response->getContent(), true);
         $this->assertIsArray($responseData);
         $this->assertEmpty($responseData);
@@ -89,7 +89,7 @@ class CategoryQuizControllerIntegrationTest extends KernelTestCase
 
         $this->assertInstanceOf(JsonResponse::class, $response);
         $this->assertEquals(200, $response->getStatusCode());
-        
+
         $responseData = json_decode($response->getContent(), true);
         $this->assertIsArray($responseData);
     }
@@ -104,7 +104,7 @@ class CategoryQuizControllerIntegrationTest extends KernelTestCase
 
         $this->assertInstanceOf(JsonResponse::class, $response);
         $this->assertEquals(200, $response->getStatusCode());
-        
+
         $responseData = json_decode($response->getContent(), true);
         $this->assertIsArray($responseData);
     }
@@ -119,7 +119,7 @@ class CategoryQuizControllerIntegrationTest extends KernelTestCase
 
         $this->assertInstanceOf(JsonResponse::class, $response);
         $this->assertEquals(200, $response->getStatusCode());
-        
+
         $responseData = json_decode($response->getContent(), true);
         $this->assertIsArray($responseData);
     }
@@ -128,10 +128,10 @@ class CategoryQuizControllerIntegrationTest extends KernelTestCase
     {
         $reflection = new \ReflectionClass($this->controller);
         $attributes = $reflection->getAttributes();
-        
+
         $this->assertCount(1, $attributes);
         $this->assertEquals('Symfony\Component\Routing\Annotation\Route', $attributes[0]->getName());
-        
+
         $routeArgs = $attributes[0]->getArguments();
         $this->assertEquals('/api/category-quiz', $routeArgs[0]);
     }
@@ -141,10 +141,10 @@ class CategoryQuizControllerIntegrationTest extends KernelTestCase
         $reflection = new \ReflectionClass($this->controller);
         $indexMethod = $reflection->getMethod('index');
         $attributes = $indexMethod->getAttributes();
-        
+
         $this->assertCount(1, $attributes);
         $this->assertEquals('Symfony\Component\Routing\Annotation\Route', $attributes[0]->getName());
-        
+
         $routeArgs = $attributes[0]->getArguments();
         $this->assertEquals('', $routeArgs[0]); // Route vide pour l'index
         $this->assertEquals('category_quiz_index', $routeArgs['name']);
@@ -156,10 +156,10 @@ class CategoryQuizControllerIntegrationTest extends KernelTestCase
         $reflection = new \ReflectionClass($this->controller);
         $showMethod = $reflection->getMethod('show');
         $attributes = $showMethod->getAttributes();
-        
+
         $this->assertCount(1, $attributes);
         $this->assertEquals('Symfony\Component\Routing\Annotation\Route', $attributes[0]->getName());
-        
+
         $routeArgs = $attributes[0]->getArguments();
         $this->assertEquals('/{id}', $routeArgs[0]);
         $this->assertEquals('category_quiz_show', $routeArgs['name']);
@@ -176,7 +176,7 @@ class CategoryQuizControllerIntegrationTest extends KernelTestCase
         $reflection = new \ReflectionClass($this->controller);
         $constructor = $reflection->getConstructor();
         $parameters = $constructor->getParameters();
-        
+
         $this->assertCount(1, $parameters);
         $this->assertEquals('categoryQuizService', $parameters[0]->getName());
         $this->assertEquals(CategoryQuizService::class, $parameters[0]->getType()->getName());

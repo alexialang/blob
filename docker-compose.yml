@@ -122,6 +122,7 @@ services:
 
 
 
+
 networks:
   adimeo_local_proxy:
     external: true

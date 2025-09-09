@@ -12,21 +12,8 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class UserPermissionService
 {
-    private EntityManagerInterface $em;
-    private UserPermissionRepository $userPermissionRepository;
-    private UserService $userService;
-    private ValidatorInterface $validator;
-
-    public function __construct(
-        EntityManagerInterface $em,
-        UserPermissionRepository $userPermissionRepository,
-        UserService $userService,
-        ValidatorInterface $validator,
-    ) {
-        $this->em = $em;
-        $this->userPermissionRepository = $userPermissionRepository;
-        $this->userService = $userService;
-        $this->validator = $validator;
+    public function __construct(private readonly EntityManagerInterface $em, private readonly UserPermissionRepository $userPermissionRepository, private readonly UserService $userService, private readonly ValidatorInterface $validator)
+    {
     }
 
     public function list(): array

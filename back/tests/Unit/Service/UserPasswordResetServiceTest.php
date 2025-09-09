@@ -3,15 +3,14 @@
 namespace App\Tests\Unit\Service;
 
 use App\Entity\User;
-use App\Message\Mailer\PasswordResetEmailMessage;
 use App\Repository\UserRepository;
 use App\Service\UserPasswordResetService;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mailer\MailerInterface;
-use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Envelope;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Validator\ConstraintViolationList;
 use Symfony\Component\Validator\Exception\ValidationFailedException;
@@ -294,8 +293,9 @@ class UserPasswordResetServiceTest extends TestCase
             ->method('send')
             ->with($this->callback(function (TemplatedEmail $email) use ($firstName, $token) {
                 $context = $email->getContext();
-                return $email->getTo()[0]->getAddress() === 'test@example.com'
-                    && $email->getSubject() === 'Réinitialisation de votre mot de passe'
+
+                return 'test@example.com' === $email->getTo()[0]->getAddress()
+                    && 'Réinitialisation de votre mot de passe' === $email->getSubject()
                     && $context['firstName'] === $firstName
                     && str_contains($context['resetUrl'], $token);
             }));
@@ -304,7 +304,7 @@ class UserPasswordResetServiceTest extends TestCase
     }
 
     /**
-     * Test des validations de mot de passe
+     * Test des validations de mot de passe.
      */
     public function testPasswordValidationTooShort(): void
     {

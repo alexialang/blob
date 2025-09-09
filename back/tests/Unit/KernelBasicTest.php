@@ -10,7 +10,7 @@ class KernelBasicTest extends TestCase
     public function testKernelCreation(): void
     {
         $kernel = new Kernel('test', true);
-        
+
         $this->assertInstanceOf(Kernel::class, $kernel);
         $this->assertEquals('test', $kernel->getEnvironment());
         $this->assertTrue($kernel->isDebug());
@@ -19,7 +19,7 @@ class KernelBasicTest extends TestCase
     public function testKernelWithProdEnvironment(): void
     {
         $kernel = new Kernel('prod', false);
-        
+
         $this->assertEquals('prod', $kernel->getEnvironment());
         $this->assertFalse($kernel->isDebug());
     }
@@ -28,7 +28,7 @@ class KernelBasicTest extends TestCase
     {
         $kernel = new Kernel('test', true);
         $projectDir = $kernel->getProjectDir();
-        
+
         $this->assertNotEmpty($projectDir);
         $this->assertIsString($projectDir);
     }
@@ -37,7 +37,7 @@ class KernelBasicTest extends TestCase
     {
         $kernel = new Kernel('test', true);
         $logDir = $kernel->getLogDir();
-        
+
         $this->assertNotEmpty($logDir);
         $this->assertIsString($logDir);
     }
@@ -46,7 +46,7 @@ class KernelBasicTest extends TestCase
     {
         $kernel = new Kernel('test', true);
         $cacheDir = $kernel->getCacheDir();
-        
+
         $this->assertNotEmpty($cacheDir);
         $this->assertIsString($cacheDir);
         $this->assertStringContainsString('test', $cacheDir);
@@ -55,14 +55,14 @@ class KernelBasicTest extends TestCase
     public function testKernelCharset(): void
     {
         $kernel = new Kernel('test', true);
-        
+
         $this->assertEquals('UTF-8', $kernel->getCharset());
     }
 
     public function testKernelEnvironmentVariations(): void
     {
         $environments = ['dev', 'test', 'prod'];
-        
+
         foreach ($environments as $env) {
             $kernel = new Kernel($env, true);
             $this->assertEquals($env, $kernel->getEnvironment());
@@ -73,7 +73,7 @@ class KernelBasicTest extends TestCase
     {
         $kernel1 = new Kernel('dev', true);
         $kernel2 = new Kernel('prod', false);
-        
+
         $this->assertTrue($kernel1->isDebug());
         $this->assertFalse($kernel2->isDebug());
     }

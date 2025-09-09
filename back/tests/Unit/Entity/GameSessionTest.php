@@ -18,7 +18,7 @@ class GameSessionTest extends TestCase
     public function testConstructor(): void
     {
         $gameSession = new GameSession();
-        
+
         $this->assertInstanceOf(\DateTimeImmutable::class, $gameSession->getStartedAt());
         $this->assertNotNull($gameSession->getGameCode());
         $this->assertStringStartsWith('game_', $gameSession->getGameCode());
@@ -36,7 +36,7 @@ class GameSessionTest extends TestCase
         $idProperty = $reflection->getProperty('id');
         $idProperty->setAccessible(true);
         $idProperty->setValue($this->gameSession, 123);
-        
+
         $this->assertEquals(123, $this->gameSession->getId());
     }
 
@@ -44,7 +44,7 @@ class GameSessionTest extends TestCase
     {
         $gameCode = 'test_game_123';
         $this->gameSession->setGameCode($gameCode);
-        
+
         $this->assertEquals($gameCode, $this->gameSession->getGameCode());
     }
 
@@ -52,9 +52,9 @@ class GameSessionTest extends TestCase
     {
         $room = $this->createMock(Room::class);
         $this->gameSession->setRoom($room);
-        
+
         $this->assertSame($room, $this->gameSession->getRoom());
-        
+
         $this->gameSession->setRoom(null);
         $this->assertNull($this->gameSession->getRoom());
     }
@@ -63,7 +63,7 @@ class GameSessionTest extends TestCase
     {
         $status = 'finished';
         $this->gameSession->setStatus($status);
-        
+
         $this->assertEquals($status, $this->gameSession->getStatus());
     }
 
@@ -71,7 +71,7 @@ class GameSessionTest extends TestCase
     {
         $index = 5;
         $this->gameSession->setCurrentQuestionIndex($index);
-        
+
         $this->assertEquals($index, $this->gameSession->getCurrentQuestionIndex());
     }
 
@@ -79,7 +79,7 @@ class GameSessionTest extends TestCase
     {
         $startedAt = new \DateTimeImmutable('2023-01-01 10:00:00');
         $this->gameSession->setStartedAt($startedAt);
-        
+
         $this->assertSame($startedAt, $this->gameSession->getStartedAt());
     }
 
@@ -87,9 +87,9 @@ class GameSessionTest extends TestCase
     {
         $finishedAt = new \DateTimeImmutable('2023-01-01 11:00:00');
         $this->gameSession->setFinishedAt($finishedAt);
-        
+
         $this->assertSame($finishedAt, $this->gameSession->getFinishedAt());
-        
+
         $this->gameSession->setFinishedAt(null);
         $this->assertNull($this->gameSession->getFinishedAt());
     }
@@ -98,9 +98,9 @@ class GameSessionTest extends TestCase
     {
         $scores = ['user1' => 100, 'user2' => 85];
         $this->gameSession->setSharedScores($scores);
-        
+
         $this->assertEquals($scores, $this->gameSession->getSharedScores());
-        
+
         $this->gameSession->setSharedScores(null);
         $this->assertNull($this->gameSession->getSharedScores());
     }
@@ -109,7 +109,7 @@ class GameSessionTest extends TestCase
     {
         $startedAt = new \DateTimeImmutable('2023-01-01 10:15:00');
         $this->gameSession->setCurrentQuestionStartedAt($startedAt);
-        
+
         $this->assertSame($startedAt, $this->gameSession->getCurrentQuestionStartedAt());
     }
 
@@ -117,7 +117,7 @@ class GameSessionTest extends TestCase
     {
         $duration = 45;
         $this->gameSession->setCurrentQuestionDuration($duration);
-        
+
         $this->assertEquals($duration, $this->gameSession->getCurrentQuestionDuration());
     }
 }

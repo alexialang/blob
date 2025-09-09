@@ -31,7 +31,7 @@ class AnswerTest extends TestCase
     {
         $this->answer->setIsCorrect(true);
         $this->assertTrue($this->answer->isCorrect());
-        
+
         $this->answer->setIsCorrect(false);
         $this->assertFalse($this->answer->isCorrect());
     }
@@ -72,7 +72,7 @@ class AnswerTest extends TestCase
     {
         $this->answer->setIsIntrus(true);
         $this->assertTrue($this->answer->isIntrus());
-        
+
         $this->answer->setIsIntrus(false);
         $this->assertFalse($this->answer->isIntrus());
     }

@@ -29,9 +29,9 @@ class BadgeTest extends TestCase
     public function testName(): void
     {
         $this->assertNull($this->badge->getName());
-        
+
         $result = $this->badge->setName('Premier Quiz');
-        
+
         $this->assertSame($this->badge, $result);
         $this->assertEquals('Premier Quiz', $this->badge->getName());
     }
@@ -39,9 +39,9 @@ class BadgeTest extends TestCase
     public function testDescription(): void
     {
         $this->assertNull($this->badge->getDescription());
-        
+
         $result = $this->badge->setDescription('Félicitations pour votre premier quiz !');
-        
+
         $this->assertSame($this->badge, $result);
         $this->assertEquals('Félicitations pour votre premier quiz !', $this->badge->getDescription());
     }
@@ -49,9 +49,9 @@ class BadgeTest extends TestCase
     public function testImage(): void
     {
         $this->assertNull($this->badge->getImage());
-        
+
         $result = $this->badge->setImage('badge-first-quiz.png');
-        
+
         $this->assertSame($this->badge, $result);
         $this->assertEquals('badge-first-quiz.png', $this->badge->getImage());
     }
@@ -85,7 +85,7 @@ class BadgeTest extends TestCase
 
         // Ajout initial
         $this->badge->addUser($user);
-        
+
         // Deuxième ajout du même utilisateur
         $result = $this->badge->addUser($user);
 
@@ -96,12 +96,12 @@ class BadgeTest extends TestCase
     public function testRemoveUser(): void
     {
         $user = $this->createMock(User::class);
-        
+
         // Mock pour l'ajout
         $user->expects($this->once())
             ->method('addBadge')
             ->with($this->badge);
-        
+
         // Mock pour la suppression
         $user->expects($this->once())
             ->method('removeBadge')
@@ -131,7 +131,7 @@ class BadgeTest extends TestCase
     public function testConstructor(): void
     {
         $badge = new Badge();
-        
+
         $this->assertInstanceOf(ArrayCollection::class, $badge->getUsers());
         $this->assertCount(0, $badge->getUsers());
         $this->assertNull($badge->getName());

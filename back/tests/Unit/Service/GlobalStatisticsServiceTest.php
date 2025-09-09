@@ -24,12 +24,12 @@ class GlobalStatisticsServiceTest extends TestCase
     {
         $teamScores = [
             ['quiz_id' => 1, 'team_name' => 'Team A', 'score' => 85],
-            ['quiz_id' => 2, 'team_name' => 'Team B', 'score' => 92]
+            ['quiz_id' => 2, 'team_name' => 'Team B', 'score' => 92],
         ];
-        
+
         $groupScores = [
             ['quiz_id' => 1, 'group_name' => 'Group 1', 'score' => 78],
-            ['quiz_id' => 2, 'group_name' => 'Group 2', 'score' => 88]
+            ['quiz_id' => 2, 'group_name' => 'Group 2', 'score' => 88],
         ];
 
         $this->globalStatisticsRepository->expects($this->once())
@@ -73,12 +73,12 @@ class GlobalStatisticsServiceTest extends TestCase
         $companyId = 123;
         $teamScores = [
             ['quiz_id' => 1, 'team_name' => 'Company Team A', 'score' => 90],
-            ['quiz_id' => 2, 'team_name' => 'Company Team B', 'score' => 85]
+            ['quiz_id' => 2, 'team_name' => 'Company Team B', 'score' => 85],
         ];
-        
+
         $groupScores = [
             ['quiz_id' => 1, 'group_name' => 'Company Group 1', 'score' => 82],
-            ['quiz_id' => 2, 'group_name' => 'Company Group 2', 'score' => 87]
+            ['quiz_id' => 2, 'group_name' => 'Company Group 2', 'score' => 87],
         ];
 
         $this->globalStatisticsRepository->expects($this->once())
@@ -165,4 +165,3 @@ class GlobalStatisticsServiceTest extends TestCase
         $this->assertEmpty($result['groupScores']);
     }
 }
-

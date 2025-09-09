@@ -18,7 +18,7 @@ class StatusTest extends TestCase
     {
         $cases = Status::cases();
         $this->assertCount(3, $cases);
-        
+
         $this->assertInstanceOf(Status::class, Status::DRAFT);
         $this->assertInstanceOf(Status::class, Status::PUBLISHED);
         $this->assertInstanceOf(Status::class, Status::ARCHIVED);
@@ -39,4 +39,3 @@ class StatusTest extends TestCase
         $this->assertNull(Status::tryFrom('invalid'));
     }
 }
-

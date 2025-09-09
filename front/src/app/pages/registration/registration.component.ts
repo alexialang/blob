@@ -14,7 +14,6 @@ import { PasswordInputComponent } from '../../components/password-input/password
 import { PasswordStrengthIndicatorComponent } from '../../components/password-strength-indicator/password-strength-indicator.component';
 import { isPlatformBrowser } from '@angular/common';
 import {SeoService} from '../../services/seo.service';
-import { AnalyticsService } from '../../services/analytics.service';
 import { recaptchaConfig } from '../../../environments/recaptcha';
 
 @Component({
@@ -41,7 +40,6 @@ export class RegistrationComponent implements OnInit {
     private readonly auth: AuthService,
     private readonly router: Router,
     private readonly seoService: SeoService,
-    private readonly analytics: AnalyticsService,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {
     this.form = this.fb.group({
@@ -114,7 +112,6 @@ export class RegistrationComponent implements OnInit {
         .register(email, password, firstName, lastName, token)
         .subscribe({
           next: () => {
-            this.analytics.trackRegistration();
             this.router.navigate(['/connexion']);
           },
           error: () => (this.error = 'Inscription impossible')

@@ -12,7 +12,7 @@ use Symfony\Component\HttpKernel\KernelEvents;
 
 class LoginRateLimitListener implements EventSubscriberInterface
 {
-    private string $cacheDir;
+    private readonly string $cacheDir;
     private static array $processedRequests = [];
 
     private const MAX_ATTEMPTS = 5;

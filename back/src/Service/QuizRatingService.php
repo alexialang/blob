@@ -10,13 +10,8 @@ use Doctrine\ORM\EntityManagerInterface;
 
 class QuizRatingService
 {
-    private QuizRatingRepository $quizRatingRepository;
-    private EntityManagerInterface $em;
-
-    public function __construct(QuizRatingRepository $quizRatingRepository, EntityManagerInterface $em)
+    public function __construct(private readonly QuizRatingRepository $quizRatingRepository, private readonly EntityManagerInterface $em)
     {
-        $this->quizRatingRepository = $quizRatingRepository;
-        $this->em = $em;
     }
 
     /**

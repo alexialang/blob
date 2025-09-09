@@ -17,10 +17,10 @@ class BadgeControllerIntegrationTest extends KernelTestCase
     {
         $kernel = static::bootKernel();
         $container = $kernel->getContainer();
-        
+
         $this->badgeService = $this->createMock(BadgeService::class);
         $this->controller = new BadgeController($this->badgeService);
-        
+
         // Injecter le container pour que les méthodes json() fonctionnent
         $this->controller->setContainer($container);
     }
@@ -29,7 +29,7 @@ class BadgeControllerIntegrationTest extends KernelTestCase
     {
         $badges = [
             ['id' => 1, 'name' => 'Premier Quiz', 'description' => 'Complétez votre premier quiz'],
-            ['id' => 2, 'name' => 'Expert', 'description' => 'Complétez 10 quiz']
+            ['id' => 2, 'name' => 'Expert', 'description' => 'Complétez 10 quiz'],
         ];
 
         $this->badgeService->method('list')->willReturn($badges);
@@ -38,7 +38,7 @@ class BadgeControllerIntegrationTest extends KernelTestCase
 
         $this->assertInstanceOf(JsonResponse::class, $response);
         $this->assertEquals(200, $response->getStatusCode());
-        
+
         $responseData = json_decode($response->getContent(), true);
         $this->assertIsArray($responseData);
         $this->assertCount(2, $responseData);
@@ -52,7 +52,7 @@ class BadgeControllerIntegrationTest extends KernelTestCase
 
         $this->assertInstanceOf(JsonResponse::class, $response);
         $this->assertEquals(200, $response->getStatusCode());
-        
+
         $responseData = json_decode($response->getContent(), true);
         $this->assertIsArray($responseData);
         $this->assertEmpty($responseData);
@@ -68,14 +68,14 @@ class BadgeControllerIntegrationTest extends KernelTestCase
 
         $this->assertInstanceOf(JsonResponse::class, $response);
         $this->assertEquals(200, $response->getStatusCode());
-        
+
         $responseData = json_decode($response->getContent(), true);
         $this->assertIsArray($responseData);
     }
 
     public function testInitializeSuccess(): void
     {
-        $this->badgeService->method('initializeBadges')->willReturnCallback(function() {
+        $this->badgeService->method('initializeBadges')->willReturnCallback(function () {
             // Simule l'exécution de la méthode void
         });
 
@@ -83,7 +83,7 @@ class BadgeControllerIntegrationTest extends KernelTestCase
 
         $this->assertInstanceOf(JsonResponse::class, $response);
         $this->assertEquals(200, $response->getStatusCode());
-        
+
         $responseData = json_decode($response->getContent(), true);
         $this->assertIsArray($responseData);
         $this->assertArrayHasKey('message', $responseData);
@@ -99,7 +99,7 @@ class BadgeControllerIntegrationTest extends KernelTestCase
 
         $this->assertInstanceOf(JsonResponse::class, $response);
         $this->assertEquals(500, $response->getStatusCode());
-        
+
         $responseData = json_decode($response->getContent(), true);
         $this->assertIsArray($responseData);
         $this->assertArrayHasKey('error', $responseData);
@@ -110,10 +110,10 @@ class BadgeControllerIntegrationTest extends KernelTestCase
     {
         $reflection = new \ReflectionClass($this->controller);
         $attributes = $reflection->getAttributes();
-        
+
         $this->assertCount(1, $attributes);
         $this->assertEquals('Symfony\Component\Routing\Annotation\Route', $attributes[0]->getName());
-        
+
         $routeArgs = $attributes[0]->getArguments();
         $this->assertEquals('/api/badge', $routeArgs[0]);
     }
@@ -123,10 +123,10 @@ class BadgeControllerIntegrationTest extends KernelTestCase
         $reflection = new \ReflectionClass($this->controller);
         $indexMethod = $reflection->getMethod('index');
         $attributes = $indexMethod->getAttributes();
-        
+
         $this->assertCount(1, $attributes);
         $this->assertEquals('Symfony\Component\Routing\Annotation\Route', $attributes[0]->getName());
-        
+
         $routeArgs = $attributes[0]->getArguments();
         $this->assertEquals('/', $routeArgs[0]);
         $this->assertEquals('badge_index', $routeArgs['name']);
@@ -138,10 +138,10 @@ class BadgeControllerIntegrationTest extends KernelTestCase
         $reflection = new \ReflectionClass($this->controller);
         $showMethod = $reflection->getMethod('show');
         $attributes = $showMethod->getAttributes();
-        
+
         $this->assertCount(1, $attributes);
         $this->assertEquals('Symfony\Component\Routing\Annotation\Route', $attributes[0]->getName());
-        
+
         $routeArgs = $attributes[0]->getArguments();
         $this->assertEquals('/{id}', $routeArgs[0]);
         $this->assertEquals('badge_show', $routeArgs['name']);
@@ -153,18 +153,18 @@ class BadgeControllerIntegrationTest extends KernelTestCase
         $reflection = new \ReflectionClass($this->controller);
         $initializeMethod = $reflection->getMethod('initialize');
         $attributes = $initializeMethod->getAttributes();
-        
+
         $this->assertCount(2, $attributes);
-        
+
         // Vérifier l'attribut Route
         $routeAttribute = null;
         foreach ($attributes as $attribute) {
-            if ($attribute->getName() === 'Symfony\Component\Routing\Annotation\Route') {
+            if ('Symfony\Component\Routing\Annotation\Route' === $attribute->getName()) {
                 $routeAttribute = $attribute;
                 break;
             }
         }
-        
+
         $this->assertNotNull($routeAttribute);
         $routeArgs = $routeAttribute->getArguments();
         $this->assertEquals('/initialize', $routeArgs[0]);
@@ -182,7 +182,7 @@ class BadgeControllerIntegrationTest extends KernelTestCase
         $reflection = new \ReflectionClass($this->controller);
         $constructor = $reflection->getConstructor();
         $parameters = $constructor->getParameters();
-        
+
         $this->assertCount(1, $parameters);
         $this->assertEquals('badgeService', $parameters[0]->getName());
         $this->assertEquals(BadgeService::class, $parameters[0]->getType()->getName());

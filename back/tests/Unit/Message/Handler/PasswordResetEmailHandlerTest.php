@@ -13,14 +13,13 @@ class PasswordResetEmailHandlerTest extends TestCase
     {
         $userPasswordResetService = $this->createMock(UserPasswordResetService::class);
         $message = new PasswordResetEmailMessage('test@example.com', 'John', 'reset123');
-        
+
         $userPasswordResetService
             ->expects($this->once())
             ->method('sendPasswordResetEmail')
             ->with('test@example.com', 'John', 'reset123');
-        
+
         $handler = new PasswordResetEmailHandler($userPasswordResetService);
         $handler($message);
     }
 }
-

@@ -8,7 +8,6 @@ import { UserStatistics } from '../../models/user-statistics.interface';
 import { AlertService } from '../../services/alert.service';
 import { StatisticsChartsComponent } from '../../components/statistics-charts/statistics-charts.component';
 import { AuthService } from '../../services/auth.service';
-import { AnalyticsService } from '../../services/analytics.service';
 
 @Component({
   selector: 'app-user-profile',
@@ -30,7 +29,6 @@ export class UserProfileComponent implements OnInit {
   private alertService = inject(AlertService);
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
-  private analytics = inject(AnalyticsService);
 
   user: User | null = null;
   isLoading = false;
@@ -59,7 +57,6 @@ export class UserProfileComponent implements OnInit {
       return;
     }
 
-    this.analytics.trackProfileView();
 
     this.route.params.subscribe(params => {
       if (params['id']) {

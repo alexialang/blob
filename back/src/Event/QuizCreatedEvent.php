@@ -11,8 +11,8 @@ class QuizCreatedEvent extends Event
     public const NAME = 'quiz.created';
 
     public function __construct(
-        private Quiz $quiz,
-        private User $user,
+        private readonly Quiz $quiz,
+        private readonly User $user,
     ) {
     }
 

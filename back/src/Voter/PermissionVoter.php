@@ -50,7 +50,7 @@ class PermissionVoter extends Voter
             }
 
             return $this->canAccessSubject($authUser, $subject);
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             return false;
         }
     }

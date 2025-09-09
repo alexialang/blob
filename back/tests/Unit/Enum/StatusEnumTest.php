@@ -11,8 +11,8 @@ class StatusEnumTest extends TestCase
     {
         $cases = Status::cases();
         $this->assertCount(3, $cases);
-        
-        $values = array_map(fn($case) => $case->value, $cases);
+
+        $values = array_map(fn ($case) => $case->value, $cases);
         $this->assertContains('draft', $values);
         $this->assertContains('published', $values);
         $this->assertContains('archived', $values);

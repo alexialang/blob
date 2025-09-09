@@ -15,8 +15,8 @@ use Symfony\Component\Validator\Exception\ValidationFailedException;
 class PasswordResetController extends AbstractController
 {
     public function __construct(
-        private UserPasswordResetService $resetService,
-        private UserService $userService,
+        private readonly UserPasswordResetService $resetService,
+        private readonly UserService $userService,
     ) {
     }
 

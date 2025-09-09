@@ -2,7 +2,6 @@
 
 namespace App\Tests\Unit\Repository;
 
-use App\Entity\Company;
 use App\Repository\CompanyRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use PHPUnit\Framework\TestCase;

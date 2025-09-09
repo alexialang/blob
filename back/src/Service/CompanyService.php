@@ -14,21 +14,8 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class CompanyService
 {
-    private EntityManagerInterface $em;
-    private CompanyRepository $companyRepository;
-    private SerializerInterface $serializer;
-    private ValidatorInterface $validator;
-
-    public function __construct(
-        EntityManagerInterface $em,
-        CompanyRepository $companyRepository,
-        SerializerInterface $serializer,
-        ValidatorInterface $validator,
-    ) {
-        $this->em = $em;
-        $this->companyRepository = $companyRepository;
-        $this->serializer = $serializer;
-        $this->validator = $validator;
+    public function __construct(private readonly EntityManagerInterface $em, private readonly CompanyRepository $companyRepository, private readonly SerializerInterface $serializer, private readonly ValidatorInterface $validator)
+    {
     }
 
     public function list(): array
@@ -185,7 +172,7 @@ class CompanyService
 
                 try {
                     $company = new Company();
-                    $company->setName(trim($data[0]));
+                    $company->setName(trim((string) $data[0]));
 
                     $errors = $this->validator->validate($company);
                     if (count($errors) > 0) {
@@ -268,7 +255,7 @@ class CompanyService
                 $userPermission->setUser($user);
                 $userPermission->setPermission($permission);
                 $this->em->persist($userPermission);
-            } catch (\ValueError $e) {
+            } catch (\ValueError) {
                 continue;
             }
         }

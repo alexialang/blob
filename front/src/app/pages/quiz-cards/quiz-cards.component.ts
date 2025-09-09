@@ -10,7 +10,6 @@ import { PaginationComponent } from '../../components/pagination/pagination.comp
 import { forkJoin } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import { AlertService } from '../../services/alert.service';
-import { AnalyticsService } from '../../services/analytics.service';
 
 interface CategoryWithPagination {
   name: string;
@@ -79,7 +78,6 @@ export class QuizCardsComponent implements OnInit, OnDestroy {
     private router: Router,
     private authService: AuthService,
     private alertService: AlertService,
-    private analytics: AnalyticsService
   ) {}
 
   ngOnInit(): void {
@@ -191,7 +189,6 @@ export class QuizCardsComponent implements OnInit, OnDestroy {
   }
 
   startQuiz(quiz: QuizCard): void {
-    this.analytics.trackQuizStart(quiz.id.toString());
 
     if (quiz.playMode === 'solo') {
       this.router.navigate(['/quiz', quiz.id, 'play']);

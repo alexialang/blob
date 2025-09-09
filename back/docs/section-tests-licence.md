@@ -197,3 +197,4 @@ L'ensemble de cette démarche s'appuie sur un plan de tests formalisé de 181 li
 Le plan détaille les environnements de test, les outils utilisés, les métriques de succès et les perspectives d'évolution, constituant ainsi un véritable manuel de référence pour la maintenance et l'extension de la couverture de tests. Cette approche documentaire témoigne d'une démarche professionnelle et facilite la transmission des connaissances pour les futures évolutions du projet.
 
 L'ensemble de cette stratégie de tests constitue un filet de sécurité robuste pour l'application Blob. En combinant tests unitaires exhaustifs, tests d'intégration ciblés et validation des cas limites, cette approche garantit la fiabilité du code en production tout en facilitant la maintenance et l'évolution future de l'application. Avec 918 tests et une couverture de 50,46%, cette implémentation dépasse largement les exigences académiques tout en adoptant les standards professionnels de l'industrie.
+

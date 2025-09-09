@@ -80,13 +80,13 @@ class QuestionTest extends TestCase
     public function testAddAnswer(): void
     {
         $answer = $this->createMock(Answer::class);
-        
+
         $answer->expects($this->once())
             ->method('setQuestion')
             ->with($this->question);
-        
+
         $result = $this->question->addAnswer($answer);
-        
+
         $this->assertSame($this->question, $result);
         $this->assertTrue($this->question->getAnswers()->contains($answer));
     }
@@ -94,18 +94,18 @@ class QuestionTest extends TestCase
     public function testRemoveAnswer(): void
     {
         $answer = $this->createMock(Answer::class);
-        
+
         $answer->expects($this->exactly(2))
             ->method('setQuestion')
             ->withConsecutive([$this->question], [null]);
-        
+
         $answer->expects($this->once())
             ->method('getQuestion')
             ->willReturn($this->question);
-        
+
         $this->question->addAnswer($answer);
         $result = $this->question->removeAnswer($answer);
-        
+
         $this->assertSame($this->question, $result);
         $this->assertFalse($this->question->getAnswers()->contains($answer));
     }

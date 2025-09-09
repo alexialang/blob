@@ -14,16 +14,8 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class PaymentService
 {
-    private string $stripeSecretKey;
-    private ValidatorInterface $validator;
-    private string $frontendUrl;
-
-    public function __construct(string $stripeSecretKey, ValidatorInterface $validator, string $frontendUrl)
+    public function __construct(private readonly string $stripeSecretKey, private readonly ValidatorInterface $validator, private readonly string $frontendUrl)
     {
-        $this->stripeSecretKey = $stripeSecretKey;
-        $this->validator = $validator;
-        $this->frontendUrl = $frontendUrl;
-
         if (empty($this->stripeSecretKey)) {
             throw new \InvalidArgumentException('Clé secrète Stripe non configurée. ');
         }

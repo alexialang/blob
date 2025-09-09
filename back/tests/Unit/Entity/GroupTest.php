@@ -4,7 +4,6 @@ namespace App\Tests\Unit\Entity;
 
 use App\Entity\Company;
 use App\Entity\Group;
-use App\Entity\Quiz;
 use App\Entity\User;
 use Doctrine\Common\Collections\ArrayCollection;
 use PHPUnit\Framework\TestCase;
@@ -66,9 +65,9 @@ class GroupTest extends TestCase
     public function testAddUser(): void
     {
         $user = $this->createMock(User::class);
-        
+
         $result = $this->group->addUser($user);
-        
+
         $this->assertSame($this->group, $result);
         $this->assertTrue($this->group->getUsers()->contains($user));
     }
@@ -76,10 +75,10 @@ class GroupTest extends TestCase
     public function testRemoveUser(): void
     {
         $user = $this->createMock(User::class);
-        
+
         $this->group->addUser($user);
         $result = $this->group->removeUser($user);
-        
+
         $this->assertSame($this->group, $result);
         $this->assertFalse($this->group->getUsers()->contains($user));
     }
@@ -87,10 +86,10 @@ class GroupTest extends TestCase
     public function testGetUserCount(): void
     {
         $this->assertEquals(0, $this->group->getUserCount());
-        
+
         $user = $this->createMock(User::class);
         $this->group->addUser($user);
-        
+
         $this->assertEquals(1, $this->group->getUserCount());
     }
 }

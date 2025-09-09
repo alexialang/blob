@@ -2,17 +2,16 @@
 
 namespace App\Tests\Unit\Service;
 
+use App\Entity\Company;
 use App\Entity\Group;
 use App\Entity\User;
-use App\Entity\Company;
 use App\Repository\GroupRepository;
-use App\Service\GroupService;
 use App\Service\CompanyService;
-use Doctrine\Common\Collections\ArrayCollection;
+use App\Service\GroupService;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Validator\ConstraintViolationListInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class GroupServiceTest extends TestCase
 {
@@ -38,12 +37,12 @@ class GroupServiceTest extends TestCase
     }
 
     // ===== Tests pour list() =====
-    
+
     public function testList(): void
     {
         $groups = [
             $this->createMock(Group::class),
-            $this->createMock(Group::class)
+            $this->createMock(Group::class),
         ];
 
         $this->groupRepository->expects($this->once())
@@ -69,7 +68,7 @@ class GroupServiceTest extends TestCase
     }
 
     // ===== Tests pour getGroupsByUser() =====
-    
+
     public function testGetGroupsByUserWithCompany(): void
     {
         $user = $this->createMock(User::class);
@@ -77,7 +76,7 @@ class GroupServiceTest extends TestCase
         $companyRepository = $this->createMock(\App\Repository\CompanyRepository::class);
         $groups = [
             $this->createMock(Group::class),
-            $this->createMock(Group::class)
+            $this->createMock(Group::class),
         ];
 
         $user->method('getCompanyId')->willReturn(123);
@@ -137,13 +136,13 @@ class GroupServiceTest extends TestCase
     }
 
     // ===== Tests pour getGroupsByCompany() =====
-    
+
     public function testGetGroupsByCompany(): void
     {
         $company = $this->createMock(Company::class);
         $groups = [
             $this->createMock(Group::class),
-            $this->createMock(Group::class)
+            $this->createMock(Group::class),
         ];
 
         $company->method('getId')->willReturn(123);
@@ -160,7 +159,7 @@ class GroupServiceTest extends TestCase
     }
 
     // ===== Tests pour find() =====
-    
+
     public function testFind(): void
     {
         $group = $this->createMock(Group::class);
@@ -188,13 +187,13 @@ class GroupServiceTest extends TestCase
     }
 
     // ===== Tests pour create() =====
-    
+
     public function testCreateSuccess(): void
     {
         $data = [
             'name' => 'Test Group',
             'acces_code' => 'ABC123',
-            'company_id' => 456
+            'company_id' => 456,
         ];
 
         $company = $this->createMock(Company::class);
@@ -229,7 +228,7 @@ class GroupServiceTest extends TestCase
     {
         $data = [
             'name' => '',
-            'acces_code' => 'ABC123'
+            'acces_code' => 'ABC123',
         ];
 
         $violation = $this->createMock(\Symfony\Component\Validator\ConstraintViolationInterface::class);
@@ -250,7 +249,7 @@ class GroupServiceTest extends TestCase
     {
         $data = [
             'name' => 'Test Group',
-            'acces_code' => 'ABC123'
+            'acces_code' => 'ABC123',
         ];
 
         $violations = $this->createMock(ConstraintViolationListInterface::class);
@@ -272,12 +271,12 @@ class GroupServiceTest extends TestCase
     // Cette fonctionnalité serait mieux testée avec des tests d'intégration
 
     // ===== Tests pour createForCompany() =====
-    
+
     public function testCreateForCompanySuccess(): void
     {
         $data = [
             'name' => 'Test Group',
-            'acces_code' => 'ABC123'
+            'acces_code' => 'ABC123',
         ];
 
         $company = $this->createMock(Company::class);
@@ -301,7 +300,7 @@ class GroupServiceTest extends TestCase
     {
         $data = [
             'name' => '',
-            'acces_code' => 'ABC123'
+            'acces_code' => 'ABC123',
         ];
 
         $company = $this->createMock(Company::class);
@@ -324,13 +323,13 @@ class GroupServiceTest extends TestCase
     // Cette fonctionnalité serait mieux testée avec des tests d'intégration
 
     // ===== Tests pour update() =====
-    
+
     public function testUpdateSuccess(): void
     {
         $group = $this->createMock(Group::class);
         $data = [
             'name' => 'Updated Group',
-            'acces_code' => 'XYZ789'
+            'acces_code' => 'XYZ789',
         ];
 
         $violations = $this->createMock(ConstraintViolationListInterface::class);
@@ -355,7 +354,7 @@ class GroupServiceTest extends TestCase
         $group = $this->createMock(Group::class);
         $data = [
             'name' => '',
-            'acces_code' => 'XYZ789'
+            'acces_code' => 'XYZ789',
         ];
 
         $violation = $this->createMock(\Symfony\Component\Validator\ConstraintViolationInterface::class);
@@ -378,7 +377,7 @@ class GroupServiceTest extends TestCase
         $company = $this->createMock(Company::class);
         $data = [
             'name' => 'Updated Group',
-            'company_id' => 456
+            'company_id' => 456,
         ];
 
         $violations = $this->createMock(ConstraintViolationListInterface::class);
@@ -404,7 +403,7 @@ class GroupServiceTest extends TestCase
     }
 
     // ===== Tests pour delete() =====
-    
+
     public function testDelete(): void
     {
         $group = $this->createMock(Group::class);
@@ -416,7 +415,7 @@ class GroupServiceTest extends TestCase
     }
 
     // ===== Tests pour addUserToGroup() =====
-    
+
     public function testAddUserToGroupSuccess(): void
     {
         $group = $this->createMock(Group::class);
@@ -513,7 +512,7 @@ class GroupServiceTest extends TestCase
     }
 
     // ===== Tests pour removeUserFromGroup() =====
-    
+
     public function testRemoveUserFromGroupSuccess(): void
     {
         $group = $this->createMock(Group::class);
@@ -559,7 +558,7 @@ class GroupServiceTest extends TestCase
     }
 
     // ===== Tests pour validateGroupData() via réflection =====
-    
+
     public function testValidateGroupDataSuccess(): void
     {
         $reflection = new \ReflectionClass($this->service);
@@ -571,7 +570,7 @@ class GroupServiceTest extends TestCase
             'description' => 'A valid group description',
             'acces_code' => 'ABC123',
             'company_id' => 456,
-            'member_ids' => [789, 101112]
+            'member_ids' => [789, 101112],
         ];
 
         $violations = $this->createMock(ConstraintViolationListInterface::class);
@@ -594,7 +593,7 @@ class GroupServiceTest extends TestCase
 
         $data = [
             'name' => '', // Invalid empty name
-            'acces_code' => 'ABC123'
+            'acces_code' => 'ABC123',
         ];
 
         $violation = $this->createMock(\Symfony\Component\Validator\ConstraintViolationInterface::class);

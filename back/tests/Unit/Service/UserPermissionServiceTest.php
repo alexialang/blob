@@ -38,12 +38,12 @@ class UserPermissionServiceTest extends TestCase
     }
 
     // ===== Tests pour list() =====
-    
+
     public function testList(): void
     {
         $permissions = [
             $this->createMock(UserPermission::class),
-            $this->createMock(UserPermission::class)
+            $this->createMock(UserPermission::class),
         ];
 
         $this->userPermissionRepository->expects($this->once())
@@ -69,7 +69,7 @@ class UserPermissionServiceTest extends TestCase
     }
 
     // ===== Tests pour find() =====
-    
+
     public function testFind(): void
     {
         $permission = $this->createMock(UserPermission::class);
@@ -97,13 +97,13 @@ class UserPermissionServiceTest extends TestCase
     }
 
     // ===== Tests pour create() =====
-    
+
     public function testCreateSuccess(): void
     {
         $user = $this->createMock(User::class);
         $data = [
             'permission' => 'CREATE_QUIZ',
-            'user_id' => 1
+            'user_id' => 1,
         ];
 
         // Mock validation
@@ -134,7 +134,7 @@ class UserPermissionServiceTest extends TestCase
     {
         $data = [
             'permission' => '', // Invalid - empty
-            'user_id' => 'invalid' // Invalid - not integer
+            'user_id' => 'invalid', // Invalid - not integer
         ];
 
         // Mock validation with errors
@@ -151,15 +151,15 @@ class UserPermissionServiceTest extends TestCase
     }
 
     // ===== Tests pour update() =====
-    
+
     public function testUpdateSuccess(): void
     {
         $userPermission = $this->createMock(UserPermission::class);
         $user = $this->createMock(User::class);
-        
+
         $data = [
             'permission' => 'MANAGE_USERS',
-            'user_id' => 2
+            'user_id' => 2,
         ];
 
         // Mock validation
@@ -193,9 +193,9 @@ class UserPermissionServiceTest extends TestCase
     public function testUpdateOnlyPermission(): void
     {
         $userPermission = $this->createMock(UserPermission::class);
-        
+
         $data = [
-            'permission' => 'VIEW_RESULTS'
+            'permission' => 'VIEW_RESULTS',
             // Pas de user_id
         ];
 
@@ -228,9 +228,9 @@ class UserPermissionServiceTest extends TestCase
     {
         $userPermission = $this->createMock(UserPermission::class);
         $user = $this->createMock(User::class);
-        
+
         $data = [
-            'user_id' => 3
+            'user_id' => 3,
             // Pas de permission
         ];
 
@@ -265,10 +265,10 @@ class UserPermissionServiceTest extends TestCase
     public function testUpdateValidationError(): void
     {
         $userPermission = $this->createMock(UserPermission::class);
-        
+
         $data = [
             'permission' => '', // Invalid
-            'user_id' => 'invalid' // Invalid
+            'user_id' => 'invalid', // Invalid
         ];
 
         // Mock validation with errors
@@ -285,7 +285,7 @@ class UserPermissionServiceTest extends TestCase
     }
 
     // ===== Tests pour delete() =====
-    
+
     public function testDelete(): void
     {
         $userPermission = $this->createMock(UserPermission::class);
@@ -301,7 +301,7 @@ class UserPermissionServiceTest extends TestCase
     }
 
     // ===== Tests pour validateUserPermissionData() via réflection =====
-    
+
     public function testValidateUserPermissionDataSuccess(): void
     {
         $reflection = new \ReflectionClass($this->service);
@@ -310,7 +310,7 @@ class UserPermissionServiceTest extends TestCase
 
         $validData = [
             'permission' => 'CREATE_QUIZ',
-            'user_id' => 1
+            'user_id' => 1,
         ];
 
         $this->validator->expects($this->once())
@@ -330,7 +330,7 @@ class UserPermissionServiceTest extends TestCase
 
         $invalidData = [
             'permission' => '', // Invalid
-            'user_id' => 'invalid' // Invalid
+            'user_id' => 'invalid', // Invalid
         ];
 
         // Mock validation with errors

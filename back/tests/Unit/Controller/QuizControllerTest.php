@@ -3,12 +3,12 @@
 namespace App\Tests\Unit\Controller;
 
 use App\Controller\QuizController;
+use App\Service\LeaderboardService;
+use App\Service\QuizCrudService;
 use App\Service\QuizRatingService;
 use App\Service\QuizSearchService;
-use App\Service\QuizCrudService;
-use App\Service\LeaderboardService;
-use Psr\Log\LoggerInterface;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 
 class QuizControllerTest extends TestCase
 {
@@ -19,7 +19,7 @@ class QuizControllerTest extends TestCase
         $quizCrudService = $this->createMock(QuizCrudService::class);
         $leaderboardService = $this->createMock(LeaderboardService::class);
         $logger = $this->createMock(LoggerInterface::class);
-        
+
         $controller = new QuizController(
             $quizRatingService,
             $quizSearchService,
@@ -37,7 +37,7 @@ class QuizControllerTest extends TestCase
         $quizCrudService = $this->createMock(QuizCrudService::class);
         $leaderboardService = $this->createMock(LeaderboardService::class);
         $logger = $this->createMock(LoggerInterface::class);
-        
+
         $controller = new QuizController(
             $quizRatingService,
             $quizSearchService,
@@ -45,7 +45,7 @@ class QuizControllerTest extends TestCase
             $leaderboardService,
             $logger
         );
-        
+
         $this->assertTrue(method_exists($controller, 'index'));
         $this->assertTrue(method_exists($controller, 'show'));
         $this->assertTrue(method_exists($controller, 'create'));

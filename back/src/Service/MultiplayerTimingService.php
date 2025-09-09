@@ -8,7 +8,7 @@ use Doctrine\ORM\EntityManagerInterface;
 class MultiplayerTimingService
 {
     public function __construct(
-        private EntityManagerInterface $entityManager,
+        private readonly EntityManagerInterface $entityManager,
     ) {
     }
 

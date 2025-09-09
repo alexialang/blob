@@ -3,7 +3,6 @@
 namespace App\Tests\Unit\Controller;
 
 use App\Controller\GlobalStatisticsController;
-use App\Entity\Company;
 use App\Service\GlobalStatisticsService;
 use PHPUnit\Framework\TestCase;
 use Symfony\Contracts\Cache\CacheInterface;
@@ -28,7 +27,6 @@ class GlobalStatisticsControllerBasicTest extends TestCase
     {
         $this->assertInstanceOf(GlobalStatisticsController::class, $this->controller);
     }
-
 
     public function testGetCompanyStatisticsMethodExists(): void
     {

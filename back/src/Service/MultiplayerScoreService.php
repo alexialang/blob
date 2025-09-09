@@ -47,7 +47,7 @@ class MultiplayerScoreService
     {
         $totalScore = 0;
         foreach (self::$gameAnswers as $key => $answerData) {
-            if (0 === strpos($key, 'game_'.$gameCode.'_user_'.$user->getId())) {
+            if (str_starts_with((string) $key, 'game_'.$gameCode.'_user_'.$user->getId())) {
                 $totalScore += $answerData['points'];
             }
         }
@@ -94,7 +94,7 @@ class MultiplayerScoreService
     public function clearGameAnswers(string $gameCode): void
     {
         foreach (self::$gameAnswers as $key => $answer) {
-            if (0 === strpos($key, 'game_'.$gameCode)) {
+            if (str_starts_with((string) $key, 'game_'.$gameCode)) {
                 unset(self::$gameAnswers[$key]);
             }
         }

@@ -3,7 +3,6 @@
 namespace App\Tests\Unit\Controller;
 
 use App\Controller\CategoryQuizController;
-use App\Entity\CategoryQuiz;
 use App\Service\CategoryQuizService;
 use PHPUnit\Framework\TestCase;
 

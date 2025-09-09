@@ -2,6 +2,8 @@
 
 namespace App\Tests\Unit\Service;
 
+use App\Repository\GameSessionRepository;
+use App\Repository\RoomRepository;
 use App\Service\MultiplayerGameService;
 use App\Service\MultiplayerScoreService;
 use App\Service\MultiplayerTimingService;
@@ -9,8 +11,6 @@ use App\Service\MultiplayerValidationService;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Mercure\HubInterface;
-use App\Repository\RoomRepository;
-use App\Repository\GameSessionRepository;
 
 class SimpleServiceTest extends TestCase
 {
@@ -25,7 +25,7 @@ class SimpleServiceTest extends TestCase
         $validation = $this->createMock(MultiplayerValidationService::class);
 
         $service = new MultiplayerGameService($em, $hub, $roomRepo, $gameRepo, $timing, $score, $validation);
-        
+
         $this->assertInstanceOf(MultiplayerGameService::class, $service);
     }
 

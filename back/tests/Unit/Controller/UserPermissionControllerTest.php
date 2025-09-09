@@ -3,9 +3,9 @@
 namespace App\Tests\Unit\Controller;
 
 use App\Controller\UserPermissionController;
+use App\Repository\UserRepository;
 use App\Service\UserPermissionService;
 use App\Service\UserService;
-use App\Repository\UserRepository;
 use PHPUnit\Framework\TestCase;
 
 class UserPermissionControllerTest extends TestCase
