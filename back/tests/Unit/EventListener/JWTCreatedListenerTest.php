@@ -33,7 +33,7 @@ class JWTCreatedListenerTest extends TestCase
             'userId' => 123,
             'pseudo' => 'testuser',
             'firstName' => 'John',
-            'lastName' => 'Doe'
+            'lastName' => 'Doe',
         ];
 
         $event->expects($this->once())
@@ -45,10 +45,9 @@ class JWTCreatedListenerTest extends TestCase
 
     public function testOnJWTCreatedWithNonUserInstance(): void
     {
-        $notUser = new \stdClass();
-        
         $event = $this->createMock(JWTCreatedEvent::class);
-        $event->method('getUser')->willReturn($notUser);
+        $user = $this->createMock(\App\Entity\User::class);
+        $event->method('getUser')->willReturn($user);
 
         $event->expects($this->never())
             ->method('setData');

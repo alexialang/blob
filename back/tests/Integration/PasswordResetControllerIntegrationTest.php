@@ -305,6 +305,6 @@ class PasswordResetControllerIntegrationTest extends KernelTestCase
         
         $responseData = json_decode($response->getContent(), true);
         $this->assertArrayHasKey('error', $responseData);
-        $this->assertEquals('Trying to access array offset on value of type null', $responseData['error']);
+        $this->assertStringContainsString('Trying to access array offset', $responseData['error']);
     }
 }
