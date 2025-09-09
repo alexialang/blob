@@ -59,12 +59,13 @@ jobs:
         JWT_PASSPHRASE=test
         STRIPE_SECRET_KEY=sk_test_fake
         STRIPE_PUBLIC_KEY=pk_test_fake
+        STRIPE_WEBHOOK_SECRET=whsec_test_fake
         RECAPTCHA_SECRET_KEY=test
         EOF
 
     - name: Install dependencies
       working-directory: ./back
-      run: composer install --prefer-dist --no-progress
+      run: composer install --prefer-dist --no-progress --no-scripts
 
     - name: Setup test database
       working-directory: ./back
