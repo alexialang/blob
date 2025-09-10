@@ -15,17 +15,17 @@ describe('RegistrationComponent', () => {
   beforeEach(async () => {
     const mockAuthService = {
       register: jasmine.createSpy('register').and.returnValue(of({})),
-      loginStatus$: of(false)
+      loginStatus$: of(false),
     };
 
     const mockAlertService = {
       showSuccess: jasmine.createSpy('showSuccess'),
-      showError: jasmine.createSpy('showError')
+      showError: jasmine.createSpy('showError'),
     };
 
     const mockSeoService = {
       setTitle: jasmine.createSpy('setTitle'),
-      setDescription: jasmine.createSpy('setDescription')
+      setDescription: jasmine.createSpy('setDescription'),
     };
 
     await TestBed.configureTestingModule({
@@ -33,10 +33,9 @@ describe('RegistrationComponent', () => {
       providers: [
         { provide: AuthService, useValue: mockAuthService },
         { provide: AlertService, useValue: mockAlertService },
-        { provide: SeoService, useValue: mockSeoService }
-      ]
-    })
-    .compileComponents();
+        { provide: SeoService, useValue: mockSeoService },
+      ],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(RegistrationComponent);
     component = fixture.componentInstance;

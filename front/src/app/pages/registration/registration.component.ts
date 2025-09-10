@@ -4,7 +4,7 @@ import {
   FormGroup,
   Validators,
   ReactiveFormsModule,
-  AbstractControl
+  AbstractControl,
 } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
@@ -13,7 +13,7 @@ import { SlideButtonComponent } from '../../components/slide-button/slide-button
 import { PasswordInputComponent } from '../../components/password-input/password-input.component';
 import { PasswordStrengthIndicatorComponent } from '../../components/password-strength-indicator/password-strength-indicator.component';
 import { isPlatformBrowser } from '@angular/common';
-import {SeoService} from '../../services/seo.service';
+import { SeoService } from '../../services/seo.service';
 import { recaptchaConfig } from '../../../environments/recaptcha';
 
 @Component({
@@ -25,10 +25,10 @@ import { recaptchaConfig } from '../../../environments/recaptcha';
     RouterLink,
     SlideButtonComponent,
     PasswordInputComponent,
-    PasswordStrengthIndicatorComponent
+    PasswordStrengthIndicatorComponent,
   ],
   templateUrl: './registration.component.html',
-  styleUrls: ['./registration.component.scss']
+  styleUrls: ['./registration.component.scss'],
 })
 export class RegistrationComponent implements OnInit {
   form: FormGroup;
@@ -42,26 +42,32 @@ export class RegistrationComponent implements OnInit {
     private readonly seoService: SeoService,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {
-    this.form = this.fb.group({
-      firstName: ['', [Validators.required]],
-      lastName:  ['', [Validators.required]],
-      email:     ['', [Validators.required, Validators.email]],
-      password:  ['', [Validators.required, Validators.minLength(8), this.passwordStrengthValidator()]],
-      confirm:   ['', [Validators.required]],
-      tos:       [false, [Validators.requiredTrue]]
-    }, { validators: this.passwordsMatch });
+    this.form = this.fb.group(
+      {
+        firstName: ['', [Validators.required]],
+        lastName: ['', [Validators.required]],
+        email: ['', [Validators.required, Validators.email]],
+        password: [
+          '',
+          [Validators.required, Validators.minLength(8), this.passwordStrengthValidator()],
+        ],
+        confirm: ['', [Validators.required]],
+        tos: [false, [Validators.requiredTrue]],
+      },
+      { validators: this.passwordsMatch }
+    );
   }
-
-
 
   ngOnInit(): void {
     this.seoService.updateSEO({
       title: 'Blob - Inscription',
-      description: 'Rejoignez Blob et commencez à créer, partager et jouer à des quiz interactifs éducatifs.',
+      description:
+        'Rejoignez Blob et commencez à créer, partager et jouer à des quiz interactifs éducatifs.',
       keywords: 'inscription, créer un compte, quiz, éducation, formation',
       ogTitle: 'Inscrivez-vous sur Blob',
-      ogDescription: 'Créez votre compte Blob pour découvrir une nouvelle façon d’apprendre grâce aux quiz interactifs.',
-      ogUrl: '/inscription'
+      ogDescription:
+        'Créez votre compte Blob pour découvrir une nouvelle façon d’apprendre grâce aux quiz interactifs.',
+      ogUrl: '/inscription',
     });
     if (isPlatformBrowser(this.platformId)) {
       this.loadRecaptcha();
@@ -77,13 +83,11 @@ export class RegistrationComponent implements OnInit {
   }
 
   private passwordsMatch(group: FormGroup) {
-    return group.get('password')!.value === group.get('confirm')!.value
-      ? null
-      : { mismatch: true };
+    return group.get('password')!.value === group.get('confirm')!.value ? null : { mismatch: true };
   }
 
   private passwordStrengthValidator() {
-    return (control: AbstractControl): {[key: string]: any} | null => {
+    return (control: AbstractControl): { [key: string]: any } | null => {
       const password = control.value;
       if (!password) return null;
 
@@ -106,26 +110,27 @@ export class RegistrationComponent implements OnInit {
       return;
     }
 
-    this.executeRecaptcha().then(token => {
-      const { firstName, lastName, email, password } = this.form.value;
-      this.auth
-        .register(email, password, firstName, lastName, token)
-        .subscribe({
+    this.executeRecaptcha()
+      .then(token => {
+        const { firstName, lastName, email, password } = this.form.value;
+        this.auth.register(email, password, firstName, lastName, token).subscribe({
           next: () => {
             this.router.navigate(['/connexion']);
           },
-          error: () => (this.error = 'Inscription impossible')
+          error: () => (this.error = 'Inscription impossible'),
         });
-    }).catch(error => {
-      this.error = 'Erreur de vérification reCAPTCHA';
-    });
+      })
+      .catch(error => {
+        this.error = 'Erreur de vérification reCAPTCHA';
+      });
   }
 
   private executeRecaptcha(): Promise<string> {
     return new Promise((resolve, reject) => {
       if ((window as any).grecaptcha && (window as any).grecaptcha.ready) {
         (window as any).grecaptcha.ready(() => {
-          (window as any).grecaptcha.execute(recaptchaConfig.siteKey, { action: recaptchaConfig.actions.register })
+          (window as any).grecaptcha
+            .execute(recaptchaConfig.siteKey, { action: recaptchaConfig.actions.register })
             .then((token: string) => {
               resolve(token);
             })
@@ -139,7 +144,6 @@ export class RegistrationComponent implements OnInit {
     });
   }
 
-
   showError(fieldName: string): boolean {
     const field = this.form.get(fieldName);
     return field ? field.invalid && field.touched : false;
@@ -147,7 +151,10 @@ export class RegistrationComponent implements OnInit {
 
   showPasswordError(): boolean {
     const password = this.form.get('password');
-    return password ? (password.hasError('minlength') || password.hasError('passwordStrength')) && password.touched : false;
+    return password
+      ? (password.hasError('minlength') || password.hasError('passwordStrength')) &&
+          password.touched
+      : false;
   }
 
   showConfirmError(): boolean {

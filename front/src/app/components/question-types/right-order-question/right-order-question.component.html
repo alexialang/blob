@@ -1,13 +1,7 @@
 <div class="right-order-question-container">
   <div class="answers-container">
-    <div
-      class="order-list"
-      cdkDropList
-      (cdkDropListDropped)="drop($event)">
-      <div
-        *ngFor="let answer of orderedAnswers; let i = index"
-        class="order-item"
-        cdkDrag>
+    <div class="order-list" cdkDropList (cdkDropListDropped)="drop($event)">
+      <div *ngFor="let answer of orderedAnswers; let i = index" class="order-item" cdkDrag>
         <div class="order-number">{{ i + 1 }}</div>
         <div class="order-content">
           <span class="order-text">{{ answer.answer }}</span>
@@ -20,16 +14,8 @@
   </div>
 
   <div class="actions-container">
-    <button
-      class="reset-btn"
-      (click)="resetOrder()">
-      Mélanger
-    </button>
+    <button class="reset-btn" (click)="resetOrder()">Mélanger</button>
 
-    <button
-      class="validate-btn"
-      (click)="validateAnswer()">
-      Valider l'ordre
-    </button>
+    <button class="validate-btn" (click)="validateAnswer()">Valider l'ordre</button>
   </div>
 </div>

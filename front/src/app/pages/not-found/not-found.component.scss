@@ -28,14 +28,14 @@
   line-height: 0.9;
   margin-bottom: 2rem;
   font-family: var(--font-display);
-  
+
   .highlight-text {
     color: var(--color-primary);
-    
+
     &:nth-child(2) {
       color: var(--color-accent);
     }
-    
+
     &:nth-child(3) {
       color: var(--color-pink);
     }

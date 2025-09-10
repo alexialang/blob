@@ -21,10 +21,10 @@ import { filter } from 'rxjs/operators';
     GameInvitationToastComponent,
     QuizTransitionComponent,
     AlertComponent,
-    PrivacyConsentComponent
+    PrivacyConsentComponent,
   ],
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
+  styleUrls: ['./app.component.scss'],
 })
 export class AppComponent implements OnInit {
   showNavbar: boolean = true;
@@ -36,18 +36,18 @@ export class AppComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.router.events.pipe(
-      filter(event => event instanceof NavigationEnd)
-    ).subscribe((event: any) => {
-      const route = this.router.routerState.root;
-      let currentRoute = route;
+    this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe((event: any) => {
+        const route = this.router.routerState.root;
+        let currentRoute = route;
 
-      while (currentRoute.children.length > 0) {
-        currentRoute = currentRoute.children[0];
-      }
+        while (currentRoute.children.length > 0) {
+          currentRoute = currentRoute.children[0];
+        }
 
-      const hideNavbar = currentRoute.snapshot.data['hideNavbar'];
-      this.showNavbar = !hideNavbar;
-    });
+        const hideNavbar = currentRoute.snapshot.data['hideNavbar'];
+        this.showNavbar = !hideNavbar;
+      });
   }
 }

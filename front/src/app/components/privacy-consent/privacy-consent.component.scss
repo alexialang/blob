@@ -4,12 +4,12 @@
   bottom: 0;
   left: 0;
   right: 0;
-  background: var(--color-dark, #0B0C1E);
+  background: var(--color-dark, #0b0c1e);
   color: var(--text-inverse, white);
   padding: 1.5rem;
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
   z-index: 1000;
-  border-top: 2px solid var(--color-primary, #257D54);
+  border-top: 2px solid var(--color-primary, #257d54);
 
   .banner-content {
     max-width: 1200px;
@@ -34,7 +34,7 @@
       font-size: 1.1rem;
       font-weight: 600;
       color: var(--text-inverse, white);
-      font-family: var(--font-primary, "Archivo", sans-serif);
+      font-family: var(--font-primary, 'Archivo', sans-serif);
     }
 
     p {
@@ -73,37 +73,37 @@
       transition: all 0.2s ease;
       text-decoration: none;
       font-size: 0.9rem;
-      font-family: var(--font-primary, "Archivo", sans-serif);
+      font-family: var(--font-primary, 'Archivo', sans-serif);
 
       &.btn-primary {
-        background: var(--color-primary, #257D54);
+        background: var(--color-primary, #257d54);
         color: white;
 
         &:hover {
-          background: var(--color-primary-light, #2E9A68);
+          background: var(--color-primary-light, #2e9a68);
           transform: translateY(-1px);
         }
       }
 
       &.btn-secondary {
         background: transparent;
-        color: var(--color-secondary, #91DEDA);
-        border: 1px solid var(--color-secondary, #91DEDA);
+        color: var(--color-secondary, #91deda);
+        border: 1px solid var(--color-secondary, #91deda);
 
         &:hover {
-          background: var(--color-secondary, #91DEDA);
-          color: var(--color-dark, #0B0C1E);
+          background: var(--color-secondary, #91deda);
+          color: var(--color-dark, #0b0c1e);
         }
       }
 
       &.btn-link {
         background: transparent;
-        color: var(--color-accent, #FAA24B);
+        color: var(--color-accent, #faa24b);
         text-decoration: underline;
         padding: 0.75rem 0.5rem;
 
         &:hover {
-          color: var(--color-accent-dark, #D35400);
+          color: var(--color-accent-dark, #d35400);
         }
       }
     }
@@ -123,4 +123,3 @@
     opacity: 1;
   }
 }
-

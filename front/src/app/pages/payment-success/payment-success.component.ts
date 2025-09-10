@@ -8,7 +8,7 @@ import { FormsModule } from '@angular/forms';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './payment-success.component.html',
-  styleUrl: './payment-success.component.scss'
+  styleUrl: './payment-success.component.scss',
 })
 export class PaymentSuccessComponent implements OnInit {
   sessionId: string | null = null;
@@ -25,16 +25,16 @@ export class PaymentSuccessComponent implements OnInit {
   ngOnInit(): void {
     // Récupérer les paramètres de l'URL
     this.sessionId = this.route.snapshot.queryParamMap.get('session_id');
-    
+
     // Récupérer les données depuis les paramètres de l'URL ou le localStorage
     const urlParams = new URLSearchParams(window.location.search);
     const amount = urlParams.get('amount');
     const donorName = urlParams.get('donor_name');
-    
+
     if (amount) {
       this.amount = parseFloat(amount);
     }
-    
+
     if (donorName) {
       this.donorName = donorName;
     }

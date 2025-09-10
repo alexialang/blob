@@ -7,11 +7,15 @@ import { Question, Answer } from '../../../models/quiz.model';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './intruder-question.component.html',
-  styleUrls: ['./intruder-question.component.scss']
+  styleUrls: ['./intruder-question.component.scss'],
 })
 export class IntruderQuestionComponent implements OnInit {
   @Input() question!: Question;
-  @Input() progress: { current: number; total: number; percentage: number } = { current: 0, total: 0, percentage: 0 };
+  @Input() progress: { current: number; total: number; percentage: number } = {
+    current: 0,
+    total: 0,
+    percentage: 0,
+  };
   @Output() answerSelected = new EventEmitter<number>();
   @Output() answerValidated = new EventEmitter<void>();
 
@@ -73,7 +77,7 @@ export class IntruderQuestionComponent implements OnInit {
     const avatars = [
       '/assets/avatars/blob_flower_blue.svg',
       '/assets/avatars/blob_circle.svg',
-      '/assets/avatars/blob_pic_orange.svg'
+      '/assets/avatars/blob_pic_orange.svg',
     ];
     return avatars[index] || avatars[0];
   }

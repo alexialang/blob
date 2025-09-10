@@ -16,7 +16,7 @@ export interface DonationRequest {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class DonationService {
   private apiUrl = `${environment.apiUrl}/api/donations`;
@@ -26,5 +26,4 @@ export class DonationService {
   createPaymentLink(donation: DonationRequest): Observable<PaymentLinkResponse> {
     return this.http.post<PaymentLinkResponse>(`${this.apiUrl}/create-payment-link`, donation);
   }
-
 }

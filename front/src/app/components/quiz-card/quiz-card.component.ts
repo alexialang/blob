@@ -9,7 +9,7 @@ import { AuthService } from '../../services/auth.service';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './quiz-card.component.html',
-  styleUrls: ['./quiz-card.component.scss']
+  styleUrls: ['./quiz-card.component.scss'],
 })
 export class QuizCardComponent implements OnInit {
   @Input() quiz!: QuizCard;
@@ -26,7 +26,7 @@ export class QuizCardComponent implements OnInit {
     { bg: 'var(--color-primary)', text: 'white' },
     { bg: 'var(--color-secondary-dark)', text: 'white' },
     { bg: 'var(--color-accent-dark)', text: 'white' },
-    { bg: 'var(--color-pink-dark)', text: 'white' }
+    { bg: 'var(--color-pink-dark)', text: 'white' },
   ];
 
   constructor(
@@ -40,7 +40,6 @@ export class QuizCardComponent implements OnInit {
   }
 
   private assignBalancedColor() {
-
     const shuffledColors = this.getShuffledColorsForRow(this.rowIndex);
     const colorIndex = this.index % this.colorPalette.length;
     const selectedColor = shuffledColors[colorIndex];

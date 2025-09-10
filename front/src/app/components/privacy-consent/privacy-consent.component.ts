@@ -7,11 +7,11 @@ import { PrivacyAnalyticsService } from '../../services/privacy-analytics.servic
   standalone: true,
   imports: [CommonModule],
   templateUrl: './privacy-consent.component.html',
-  styleUrls: ['./privacy-consent.component.scss']
+  styleUrls: ['./privacy-consent.component.scss'],
 })
 export class PrivacyConsentComponent implements OnInit {
   showConsentBanner = false;
-  
+
   constructor(private analyticsService: PrivacyAnalyticsService) {}
 
   ngOnInit(): void {
@@ -33,16 +33,19 @@ export class PrivacyConsentComponent implements OnInit {
    * Accepte les analytics respectueux de la vie privée
    */
   acceptAnalytics(): void {
-    localStorage.setItem('blob_privacy_consent', JSON.stringify({
-      analytics: true,
-      timestamp: Date.now()
-    }));
+    localStorage.setItem(
+      'blob_privacy_consent',
+      JSON.stringify({
+        analytics: true,
+        timestamp: Date.now(),
+      })
+    );
     this.showConsentBanner = false;
-    
+
     // Activer les analytics et tracker le consentement
     this.analyticsService.enableAnalytics();
     this.analyticsService.trackEvent({
-      name: 'privacy_consent_accepted'
+      name: 'privacy_consent_accepted',
     });
   }
 
@@ -50,12 +53,15 @@ export class PrivacyConsentComponent implements OnInit {
    * Refuse les analytics
    */
   declineAnalytics(): void {
-    localStorage.setItem('blob_privacy_consent', JSON.stringify({
-      analytics: false,
-      timestamp: Date.now()
-    }));
+    localStorage.setItem(
+      'blob_privacy_consent',
+      JSON.stringify({
+        analytics: false,
+        timestamp: Date.now(),
+      })
+    );
     this.showConsentBanner = false;
-    
+
     // Nettoyer toutes les données existantes
     this.analyticsService.clearLocalData();
   }

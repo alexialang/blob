@@ -12,14 +12,16 @@
       [attr.aria-checked]="isSelected(answer.id)"
       [attr.aria-label]="'Option ' + (i + 1) + ': ' + answer.answer"
       tabindex="0"
-      appAccessibility>
+      appAccessibility
+    >
       <div class="answer-shape">
         <img
           [src]="getFlowerShape(i)"
           alt="Forme florale décorative pour l'option de réponse {{ i + 1 }}"
           class="flower-shape flower-{{ i + 1 }}"
           [class.selected]="isSelected(answer.id)"
-          aria-hidden="true">
+          aria-hidden="true"
+        />
         <span class="answer-text">{{ answer.answer }}</span>
       </div>
     </div>
@@ -31,7 +33,8 @@
       [disabled]="!selectedAnswerId"
       (click)="validateAnswer()"
       [attr.aria-label]="selectedAnswerId ? 'Valider la réponse sélectionnée' : 'Sélectionnez une réponse pour valider'"
-      [attr.aria-describedby]="selectedAnswerId ? 'validation-help' : 'validation-help-disabled'">
+      [attr.aria-describedby]="selectedAnswerId ? 'validation-help' : 'validation-help-disabled'"
+    >
       Valider cette réponse
     </button>
     <div id="validation-help" class="sr-only" *ngIf="selectedAnswerId">

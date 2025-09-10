@@ -8,7 +8,7 @@
   }
   .text-primary {
     color: var(--color-primary);
-    font-family: "LCMogiA", serif;
+    font-family: 'LCMogiA', serif;
     font-weight: 200;
     letter-spacing: -0.02em;
   }
@@ -120,9 +120,9 @@
         font-weight: bold;
       }
 
-      input[type="text"],
-      input[type="email"],
-      input[type="password"] {
+      input[type='text'],
+      input[type='email'],
+      input[type='password'] {
         width: 100%;
         padding: 0.9rem 2rem;
         border: 2px solid white;
@@ -154,7 +154,7 @@
           font-size: 1.1rem;
           font-weight: 500;
           box-sizing: border-box;
-          
+
           &::placeholder {
             color: rgba(255, 255, 255, 0.7);
           }
@@ -200,7 +200,9 @@
 
           .strength-fill {
             height: 100%;
-            transition: width 0.3s ease, background-color 0.3s ease;
+            transition:
+              width 0.3s ease,
+              background-color 0.3s ease;
             border-radius: 2px;
           }
         }
@@ -219,7 +221,7 @@
         color: white;
         text-align: left;
 
-        input[type="checkbox"] {
+        input[type='checkbox'] {
           width: auto;
         }
       }
@@ -285,9 +287,9 @@
           margin-top: 3rem;
         }
 
-        input[type="text"],
-        input[type="email"],
-        input[type="password"] {
+        input[type='text'],
+        input[type='email'],
+        input[type='password'] {
           width: 80%;
           margin: 0 auto;
           padding: 0.9rem 1.5rem;
@@ -344,9 +346,9 @@
       padding: 1rem 1rem 2rem;
 
       form {
-        input[type="text"],
-        input[type="email"],
-        input[type="password"] {
+        input[type='text'],
+        input[type='email'],
+        input[type='password'] {
           width: 85%;
           padding: 0.8rem 1.2rem;
           font-size: 0.9rem;
@@ -411,7 +413,7 @@
 
         li a {
           text-decoration: none;
-          color:  var(--color-dark);
+          color: var(--color-dark);
           font-size: 0.9rem;
         }
       }
@@ -426,17 +428,18 @@
       padding-left: 2rem;
 
       h2 {
-        font-family: "LCMogiA", serif;
+        font-family: 'LCMogiA', serif;
         font-size: clamp(4.5rem, 12vw, 9rem);
         letter-spacing: -0.02em;
         line-height: 1;
         margin: 0;
-        color:  var(--color-dark);
+        color: var(--color-dark);
       }
 
       .blob-illu {
         margin-top: 1rem;
-        width: clamp(300px, 45vw, 550px);      }
+        width: clamp(300px, 45vw, 550px);
+      }
     }
 
     footer.footer-nav {

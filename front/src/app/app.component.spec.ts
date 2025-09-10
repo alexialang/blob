@@ -9,7 +9,7 @@ describe('AppComponent', () => {
   beforeEach(async () => {
     const routerSpy = jasmine.createSpyObj('Router', ['navigate'], {
       events: of({}),
-      routerState: { root: { children: [] } }
+      routerState: { root: { children: [] } },
     });
     const authServiceSpy = jasmine.createSpyObj('AuthService', ['loginStatus$', 'isLoggedIn']);
     authServiceSpy.loginStatus$ = of(false);
@@ -18,8 +18,8 @@ describe('AppComponent', () => {
       imports: [AppComponent, HttpClientTestingModule],
       providers: [
         { provide: Router, useValue: routerSpy },
-        { provide: AuthService, useValue: authServiceSpy }
-      ]
+        { provide: AuthService, useValue: authServiceSpy },
+      ],
     }).compileComponents();
   });
 

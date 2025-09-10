@@ -21,7 +21,7 @@ describe('LoginComponent', () => {
     const alertServiceSpy = jasmine.createSpyObj('AlertService', ['error']);
     const seoServiceSpy = jasmine.createSpyObj('SeoService', ['updateSEO']);
     const activatedRouteSpy = jasmine.createSpyObj('ActivatedRoute', [], {
-      snapshot: { paramMap: { get: () => null } }
+      snapshot: { paramMap: { get: () => null } },
     });
 
     await TestBed.configureTestingModule({
@@ -31,16 +31,15 @@ describe('LoginComponent', () => {
         { provide: Router, useValue: routerSpy },
         { provide: AlertService, useValue: alertServiceSpy },
         { provide: SeoService, useValue: seoServiceSpy },
-        { provide: ActivatedRoute, useValue: activatedRouteSpy }
-      ]
-    })
-    .compileComponents();
-    
+        { provide: ActivatedRoute, useValue: activatedRouteSpy },
+      ],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(LoginComponent);
     component = fixture.componentInstance;
     mockAuthService = TestBed.inject(AuthService) as jasmine.SpyObj<AuthService>;
     mockRouter = TestBed.inject(Router) as jasmine.SpyObj<Router>;
-    
+
     // Ne pas appeler detectChanges pour éviter ngOnInit
   });
 
@@ -56,7 +55,7 @@ describe('LoginComponent', () => {
 
   it('should call AuthService.login on form submission', () => {
     mockAuthService.login.and.returnValue(of(void 0));
-    
+
     component.email = 'test@example.com';
     component.password = 'password123';
 
@@ -68,7 +67,7 @@ describe('LoginComponent', () => {
   it('should handle login errors with 401 status', () => {
     const errorResponse = { status: 401, error: { message: 'Invalid credentials' } };
     mockAuthService.login.and.returnValue(throwError(() => errorResponse));
-    
+
     component.email = 'test@example.com';
     component.password = 'wrongpassword';
 
@@ -80,7 +79,7 @@ describe('LoginComponent', () => {
   it('should handle rate limiting errors with 429 status', () => {
     const errorResponse = { status: 429, error: { message: 'Too many attempts' } };
     mockAuthService.login.and.returnValue(throwError(() => errorResponse));
-    
+
     component.email = 'test@example.com';
     component.password = 'password123';
 

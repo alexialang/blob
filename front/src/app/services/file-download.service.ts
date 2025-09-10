@@ -1,11 +1,10 @@
 import { Injectable } from '@angular/core';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class FileDownloadService {
-
-  constructor() { }
+  constructor() {}
 
   /**
    * Télécharge un fichier avec le contenu et le type MIME spécifiés
@@ -52,9 +51,3 @@ export class FileDownloadService {
     this.downloadFile(jsonContent, 'application/json', defaultFilename);
   }
 }
-
-
-
-
-
-

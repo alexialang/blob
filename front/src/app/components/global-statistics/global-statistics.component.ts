@@ -1,4 +1,15 @@
-import { Component, OnInit, AfterViewInit, OnDestroy, ElementRef, ViewChild, OnChanges, SimpleChanges, Input, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  AfterViewInit,
+  OnDestroy,
+  ElementRef,
+  ViewChild,
+  OnChanges,
+  SimpleChanges,
+  Input,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { GlobalStatisticsService } from '../../services/global-statistics.service';
@@ -26,7 +37,7 @@ interface GlobalStats {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './global-statistics.component.html',
-  styleUrls: ['./global-statistics.component.scss']
+  styleUrls: ['./global-statistics.component.scss'],
 })
 export class GlobalStatisticsComponent implements OnInit, AfterViewInit, OnDestroy, OnChanges {
   @ViewChild('statsChart', { static: false }) chartElement!: ElementRef<HTMLCanvasElement>;
@@ -40,7 +51,10 @@ export class GlobalStatisticsComponent implements OnInit, AfterViewInit, OnDestr
   private retryCount = 0;
   quizFilter: string = '';
 
-  constructor(private globalStatsService: GlobalStatisticsService, private cdr: ChangeDetectorRef) {}
+  constructor(
+    private globalStatsService: GlobalStatisticsService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
     this.loadStats();
@@ -133,9 +147,7 @@ export class GlobalStatisticsComponent implements OnInit, AfterViewInit, OnDestr
     }
 
     const filter = this.quizFilter.toLowerCase();
-    return this.stats.teamScores.filter(quiz =>
-      quiz.quizTitle.toLowerCase().includes(filter)
-    );
+    return this.stats.teamScores.filter(quiz => quiz.quizTitle.toLowerCase().includes(filter));
   }
 
   getTotalGroupQuizzes(): number {
@@ -156,7 +168,7 @@ export class GlobalStatisticsComponent implements OnInit, AfterViewInit, OnDestr
       script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
       document.head.appendChild(script);
 
-      return new Promise((resolve) => {
+      return new Promise(resolve => {
         script.onload = () => {
           resolve();
         };
@@ -210,33 +222,35 @@ export class GlobalStatisticsComponent implements OnInit, AfterViewInit, OnDestr
     });
 
     const groupNames = Object.keys(this.stats?.groupScores || {});
-    const groupDatasets = groupNames.map((groupName, groupIndex) => {
-      const groupData = this.stats?.groupScores?.[groupName];
-      if (!groupData) return null;
+    const groupDatasets = groupNames
+      .map((groupName, groupIndex) => {
+        const groupData = this.stats?.groupScores?.[groupName];
+        if (!groupData) return null;
 
-      const scores = unifiedLabels.map(label => {
-        const groupQuiz = groupData.find(q => q.quizTitle === label);
-        if (groupQuiz) {
-          return groupQuiz.averageScore;
-        }
+        const scores = unifiedLabels.map(label => {
+          const groupQuiz = groupData.find(q => q.quizTitle === label);
+          if (groupQuiz) {
+            return groupQuiz.averageScore;
+          }
 
-        return null;
-      });
+          return null;
+        });
 
-      return {
-        label: `Groupe ${groupName}`,
-        data: scores,
-        borderColor: this.getGroupColor(groupIndex),
-        backgroundColor: this.getGroupColor(groupIndex) + '20',
-        tension: 0.4,
-        fill: false,
-        pointRadius: 4,
-        pointHoverRadius: 6,
-        borderWidth: 2,
-        pointHoverBackgroundColor: this.getGroupColor(groupIndex),
-        pointHoverBorderColor: '#fff'
-      };
-    }).filter(dataset => dataset !== null);
+        return {
+          label: `Groupe ${groupName}`,
+          data: scores,
+          borderColor: this.getGroupColor(groupIndex),
+          backgroundColor: this.getGroupColor(groupIndex) + '20',
+          tension: 0.4,
+          fill: false,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          borderWidth: 2,
+          pointHoverBackgroundColor: this.getGroupColor(groupIndex),
+          pointHoverBorderColor: '#fff',
+        };
+      })
+      .filter(dataset => dataset !== null);
 
     try {
       this.chart = new Chart(ctx, {
@@ -253,10 +267,10 @@ export class GlobalStatisticsComponent implements OnInit, AfterViewInit, OnDestr
               tension: 0.4,
               fill: false,
               pointRadius: 6,
-              pointHoverRadius: 8
+              pointHoverRadius: 8,
             },
-            ...groupDatasets
-          ]
+            ...groupDatasets,
+          ],
         },
         options: {
           responsive: true,
@@ -270,24 +284,24 @@ export class GlobalStatisticsComponent implements OnInit, AfterViewInit, OnDestr
               color: '#2c3e50',
               padding: {
                 top: 10,
-                bottom: 20
-              }
+                bottom: 20,
+              },
             },
             legend: {
               position: 'top',
               labels: {
                 usePointStyle: true,
                 padding: 20,
-                font: { size: 14 }
-              }
+                font: { size: 14 },
+              },
             },
             tooltip: {
               callbacks: {
-                label: function(context: any) {
+                label: function (context: any) {
                   return `${context.dataset.label}: ${context.parsed.y}/100`;
-                }
-              }
-            }
+                },
+              },
+            },
           },
           scales: {
             y: {
@@ -297,64 +311,68 @@ export class GlobalStatisticsComponent implements OnInit, AfterViewInit, OnDestr
               title: {
                 display: true,
                 text: 'Score moyen (/100)',
-                font: { size: 14, weight: 'bold' }
+                font: { size: 14, weight: 'bold' },
               },
               ticks: {
                 stepSize: 20,
                 font: { size: 12 },
-                callback: function(value: any) {
+                callback: function (value: any) {
                   if (value < 0) return '';
                   return value + '/100';
-                }
+                },
               },
               grid: {
-                color: 'rgba(0,0,0,0.1)'
-              }
+                color: 'rgba(0,0,0,0.1)',
+              },
             },
             x: {
               title: {
                 display: true,
                 text: 'Quiz',
-                font: { size: 14, weight: 'bold' }
+                font: { size: 14, weight: 'bold' },
               },
               ticks: {
                 font: { size: 12 },
-                maxRotation: 45
+                maxRotation: 45,
               },
               grid: {
-                color: 'rgba(0,0,0,0.1)'
-              }
-            }
+                color: 'rgba(0,0,0,0.1)',
+              },
+            },
           },
           interaction: {
             intersect: false,
-            mode: 'index'
+            mode: 'index',
           },
           elements: {
             point: {
               hoverBackgroundColor: '#fff',
-              hoverBorderColor: '#2c3e50'
-            }
+              hoverBorderColor: '#2c3e50',
+            },
           },
           layout: {
             padding: {
               top: 40,
               right: 40,
               bottom: 120,
-              left: 40
-            }
-          }
-        }
+              left: 40,
+            },
+          },
+        },
       });
-
-    } catch (error) {
-    }
+    } catch (error) {}
   }
 
   private getGroupColor(index: number): string {
     const colors = [
-      '#3498db', '#e74c3c', '#2ecc71', '#f39c12',
-      '#9b59b6', '#1abc9c', '#e67e22', '#34495e'
+      '#3498db',
+      '#e74c3c',
+      '#2ecc71',
+      '#f39c12',
+      '#9b59b6',
+      '#1abc9c',
+      '#e67e22',
+      '#34495e',
     ];
     return colors[index % colors.length];
   }
@@ -365,19 +383,19 @@ export class GlobalStatisticsComponent implements OnInit, AfterViewInit, OnDestr
         next: (data: any) => {
           this.stats = {
             teamScores: data.teamScores || [],
-            groupScores: data.groupScores || {}
+            groupScores: data.groupScores || {},
           };
           this.loading = false;
           this.tryCreateChart();
         },
-        error: (error) => {
+        error: error => {
           this.loading = false;
           this.error = error;
           if (error.status === 401) {
           } else if (error.status === 403) {
           } else if (error.status === 500) {
           }
-        }
+        },
       });
     } else {
       this.globalStatsService.getCompanyStatistics(this.companyId).subscribe({
@@ -388,24 +406,24 @@ export class GlobalStatisticsComponent implements OnInit, AfterViewInit, OnDestr
           // Si groupScores est un tableau (cas des statistiques d'entreprise),
           // on le convertit en objet avec une clé par défaut
           if (Array.isArray(data.groupScores)) {
-            normalizedGroupScores = { 'Entreprise': data.groupScores };
+            normalizedGroupScores = { Entreprise: data.groupScores };
           }
 
           this.stats = {
             teamScores: data.teamScores || [],
-            groupScores: normalizedGroupScores
+            groupScores: normalizedGroupScores,
           };
           this.loading = false;
           this.tryCreateChart();
         },
-        error: (error) => {
+        error: error => {
           this.loading = false;
           this.error = error;
           if (error.status === 401) {
           } else if (error.status === 403) {
           } else if (error.status === 500) {
           }
-        }
+        },
       });
     }
   }

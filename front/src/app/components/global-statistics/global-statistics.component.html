@@ -12,7 +12,12 @@
           class="quiz-filter-input"
         />
       </div>
-      <button class="discrete-action-link" (click)="refreshStats()" [disabled]="loading" title="{{ loading ? 'Actualisation en cours...' : 'Actualiser les statistiques' }}">
+      <button
+        class="discrete-action-link"
+        (click)="refreshStats()"
+        [disabled]="loading"
+        title="{{ loading ? 'Actualisation en cours...' : 'Actualiser les statistiques' }}"
+      >
         <i class="fas fa-sync-alt" [class.fa-spin]="loading"></i>
       </button>
     </div>
@@ -21,23 +26,19 @@
   <div *ngIf="loading" class="loading">Chargement...</div>
 
   <div *ngIf="!loading && !stats && error" class="error-message">
-    <p> Erreur lors du chargement des statistiques</p>
+    <p>Erreur lors du chargement des statistiques</p>
     <p *ngIf="error.status === 401">Veuillez vous reconnecter</p>
     <p *ngIf="error.status === 403">Vous n'avez pas les permissions nécessaires</p>
     <p *ngIf="error.status === 500">Erreur serveur - Veuillez réessayer plus tard</p>
     <button (click)="refreshStats()" class="btn-retry">Réessayer</button>
   </div>
 
-  <div class="chart-container" [style.display]="(!loading && stats && !error) ? 'block' : 'none'">
+  <div class="chart-container" [style.display]="!loading && stats && !error ? 'block' : 'none'">
     <canvas #statsChart id="statsChart"></canvas>
   </div>
 
   <div *ngIf="!loading && stats" class="stats-summary">
-    <div class="summary-item">
-      <strong>Quiz d'équipe :</strong> {{ getFilteredTeamScores().length }} quiz
-    </div>
-    <div class="summary-item">
-      <strong>Quiz de groupes :</strong> {{ getTotalGroupQuizzes() }} quiz
-    </div>
+    <div class="summary-item"><strong>Quiz d'équipe :</strong> {{ getFilteredTeamScores().length }} quiz</div>
+    <div class="summary-item"><strong>Quiz de groupes :</strong> {{ getTotalGroupQuizzes() }} quiz</div>
   </div>
 </div>

@@ -1,5 +1,11 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-import {CommonModule, NgOptimizedImage} from '@angular/common';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+} from '@angular/core';
+import { CommonModule, NgOptimizedImage } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { QuizManagementService } from '../../services/quiz-management.service';
@@ -20,8 +26,8 @@ interface CategoryWithPagination {
   totalItems: number;
 }
 
-type QuizItem   = { type: 'quiz'; data: QuizCard };
-type BlobItem   = { type: 'blob' };
+type QuizItem = { type: 'quiz'; data: QuizCard };
+type BlobItem = { type: 'blob' };
 type DisplayItem = QuizItem | BlobItem;
 
 @Component({
@@ -77,7 +83,7 @@ export class QuizCardsComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     private router: Router,
     private authService: AuthService,
-    private alertService: AlertService,
+    private alertService: AlertService
   ) {}
 
   ngOnInit(): void {
@@ -120,7 +126,7 @@ export class QuizCardsComponent implements OnInit, OnDestroy {
             currentPage: 1,
             itemsPerPage: this.pageSize,
             totalItems: (cat.quizzes ?? []).length,
-            totalPages: Math.ceil((cat.quizzes ?? []).length / this.pageSize)
+            totalPages: Math.ceil((cat.quizzes ?? []).length / this.pageSize),
           })
         );
         this.categories = [...this.originalCategories];
@@ -134,15 +140,15 @@ export class QuizCardsComponent implements OnInit, OnDestroy {
       error: err => {
         this.loading = false;
         this.cdr.markForCheck();
-      }
+      },
     });
   }
 
   private convertToQuizCards(raw: any[]): QuizCard[] {
     return raw.map(q => {
-      const companyName = (q.company?.name ?? q.user?.company?.name) ?? 'Inconnu';
-      const groupName   = q.groups?.[0]?.name ?? null;
-      const isPublic    = q.is_public ?? q.isPublic ?? false;
+      const companyName = q.company?.name ?? q.user?.company?.name ?? 'Inconnu';
+      const groupName = q.groups?.[0]?.name ?? null;
+      const isPublic = q.is_public ?? q.isPublic ?? false;
 
       let categoryName = 'Catégorie inconnue';
       if (q.category) {
@@ -168,7 +174,7 @@ export class QuizCardsComponent implements OnInit, OnDestroy {
         company: companyName,
         groupName,
         category: categoryName,
-        difficulty: (q.difficultyLabel ?? q.difficulty) ?? 'Niveau non renseigné',
+        difficulty: q.difficultyLabel ?? q.difficulty ?? 'Niveau non renseigné',
         rating: rating,
         questionCount: q.questionCount,
         isFlipped: this.flippedCardsCache.get(q.id) ?? false,
@@ -189,7 +195,6 @@ export class QuizCardsComponent implements OnInit, OnDestroy {
   }
 
   startQuiz(quiz: QuizCard): void {
-
     if (quiz.playMode === 'solo') {
       this.router.navigate(['/quiz', quiz.id, 'play']);
     } else if (quiz.playMode === 'team') {
@@ -260,11 +265,7 @@ export class QuizCardsComponent implements OnInit, OnDestroy {
     this.categories.forEach(cat => this.recalculateCategoryBlobs(cat));
   }
 
-  public addRandomBlobsLimited(
-    quizzes: QuizCard[],
-    maxItems: number,
-    key: string
-  ): DisplayItem[] {
+  public addRandomBlobsLimited(quizzes: QuizCard[], maxItems: number, key: string): DisplayItem[] {
     const BLOB_PROBABILITY = 0.25;
     const MIN_QUIZZES_FOR_BLOB = 1;
 
@@ -286,18 +287,19 @@ export class QuizCardsComponent implements OnInit, OnDestroy {
   }
 
   applyFilters(): void {
-    const filt = (arr: QuizCard[]) => arr.filter(q =>
-      (!this.searchTerm ||
-        q.title.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        q.description.toLowerCase().includes(this.searchTerm.toLowerCase())
-      ) &&
-      (!this.selectedCategory || q.category === this.selectedCategory) &&
-      (!this.selectedDifficulty || q.difficulty === this.selectedDifficulty)
-    );
+    const filt = (arr: QuizCard[]) =>
+      arr.filter(
+        q =>
+          (!this.searchTerm ||
+            q.title.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+            q.description.toLowerCase().includes(this.searchTerm.toLowerCase())) &&
+          (!this.selectedCategory || q.category === this.selectedCategory) &&
+          (!this.selectedDifficulty || q.difficulty === this.selectedDifficulty)
+      );
 
     this.popularQuizzes = filt(this.originalPopularQuizzes);
-    this.myQuizzes      = filt(this.originalMyQuizzes);
-    this.recentQuizzes  = filt(this.originalRecentQuizzes);
+    this.myQuizzes = filt(this.originalMyQuizzes);
+    this.recentQuizzes = filt(this.originalRecentQuizzes);
     this.popularCurrentPage = this.myQuizzesCurrentPage = this.recentCurrentPage = 1;
 
     this.categories = this.originalCategories
@@ -305,7 +307,7 @@ export class QuizCardsComponent implements OnInit, OnDestroy {
         ...cat,
         quizzes: filt(cat.quizzes),
         totalItems: filt(cat.quizzes).length,
-        currentPage: 1
+        currentPage: 1,
       }))
       .filter(cat => !this.selectedCategory || cat.name === this.selectedCategory);
 
@@ -318,11 +320,11 @@ export class QuizCardsComponent implements OnInit, OnDestroy {
       ...this.originalPopularQuizzes,
       ...this.originalMyQuizzes,
       ...this.originalRecentQuizzes,
-      ...this.originalCategories.flatMap(cat => cat.quizzes)
+      ...this.originalCategories.flatMap(cat => cat.quizzes),
     ];
 
-    const uniqueQuizzes = allQuizzes.filter((quiz, index, self) =>
-      index === self.findIndex(q => q.id === quiz.id)
+    const uniqueQuizzes = allQuizzes.filter(
+      (quiz, index, self) => index === self.findIndex(q => q.id === quiz.id)
     );
 
     if (uniqueQuizzes.length === 0) return;
@@ -331,7 +333,7 @@ export class QuizCardsComponent implements OnInit, OnDestroy {
     );
 
     forkJoin(ratingRequests).subscribe({
-      next: (ratings) => {
+      next: ratings => {
         ratings.forEach((rating, index) => {
           const quizId = uniqueQuizzes[index].id;
           const displayRating = rating.averageRating || 0;
@@ -353,8 +355,7 @@ export class QuizCardsComponent implements OnInit, OnDestroy {
 
         this.cdr.markForCheck();
       },
-      error: (error) => {
-      }
+      error: error => {},
     });
   }
 

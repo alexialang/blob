@@ -8,7 +8,7 @@ export interface AlertMessage {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AlertService {
   private alertSubject = new Subject<AlertMessage>();
@@ -30,4 +30,3 @@ export class AlertService {
     this.alertSubject.next({ message, type: 'info', duration });
   }
 }
-

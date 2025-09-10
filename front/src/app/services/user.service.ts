@@ -26,9 +26,9 @@ export class UserService {
   }
 
   getUserProfile(): Observable<User> {
-    return this.http.get<User>(`${this.baseUrl}/profile`).pipe(
-      tap(user => this.setCurrentUser(user))
-    );
+    return this.http
+      .get<User>(`${this.baseUrl}/profile`)
+      .pipe(tap(user => this.setCurrentUser(user)));
   }
 
   getUserProfileById(userId: number): Observable<User> {
@@ -44,9 +44,9 @@ export class UserService {
   }
 
   updateUserProfile(userData: Partial<User>): Observable<User> {
-    return this.http.put<User>(`${this.baseUrl}/profile/update`, userData).pipe(
-      tap(user => this.setCurrentUser(user))
-    );
+    return this.http
+      .put<User>(`${this.baseUrl}/profile/update`, userData)
+      .pipe(tap(user => this.setCurrentUser(user)));
   }
 
   getUserStatistics(): Observable<any> {
@@ -60,5 +60,4 @@ export class UserService {
   updateAvatar(avatar: { shape: string; color: string }): Observable<User> {
     return this.updateUserProfile({ avatarShape: avatar.shape, avatarColor: avatar.color });
   }
-
 }

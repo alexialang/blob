@@ -11,17 +11,16 @@
   @media (max-width: 768px) {
     padding: 1rem 2rem;
     min-height: 70px;
-    
+
     .navbar__links {
       justify-content: space-between;
       width: 100%;
-      
+
       .logo-container {
         flex: 1;
       }
     }
   }
-
 
   &__links {
     width: 100%;
@@ -31,10 +30,10 @@
     overflow: visible;
 
     .logo-container {
-    display: flex;
+      display: flex;
       align-items: center;
-  }
-    .links-container{
+    }
+    .links-container {
       width: 70%;
       display: flex;
       align-items: center;
@@ -52,15 +51,13 @@
       }
 
       a {
-        color:var(--color-dark);
+        color: var(--color-dark);
         text-decoration: none;
       }
     }
     .logo {
       width: 170px;
-
     }
-
   }
   .nav-list {
     display: flex;
@@ -72,71 +69,71 @@
     gap: 2rem;
   }
 
-      .nav-item {
-      position: relative;
-      display: flex;
-      align-items: center;
-      height: 100%;
+  .nav-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: 100%;
 
-      .navbar__toggle {
-        display: none;
+    .navbar__toggle {
+      display: none;
+      background: none;
+      border: none;
+      font-size: 2rem;
+      color: var(--color-dark);
+      cursor: pointer;
+
+      @media (max-width: 768px) {
+        display: block;
+        position: absolute;
+        top: 1.5rem;
+        right: 1.5rem;
+        z-index: 1101;
+      }
+    }
+
+    .mobile-menu {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+
+      a {
+        font-size: inherit;
+        text-decoration: none;
+        color: var(--color-dark);
+
+        &:hover {
+          color: var(--color-primary);
+        }
+      }
+
+      .mobile-gestion {
+        margin-top: 2rem;
+        border-top: 1px solid var(--border-light);
+        padding-top: 1rem;
+
+        .mobile-section-title {
+          font-weight: 600;
+          color: #666;
+          font-size: 0.9rem;
+          text-transform: uppercase;
+        }
+
+        a {
+          padding-left: 1rem;
+        }
+      }
+
+      .close-btn {
+        align-self: flex-end;
         background: none;
         border: none;
         font-size: 2rem;
         color: var(--color-dark);
         cursor: pointer;
-
-        @media (max-width: 768px) {
-          display: block;
-          position: absolute;
-          top: 1.5rem;
-          right: 1.5rem;
-          z-index: 1101;
-        }
-      }
-
-      .mobile-menu {
-        display: flex;
-        flex-direction: column;
-        gap: 1.5rem;
-
-        a {
-          font-size: inherit;
-          text-decoration: none;
-          color: var(--color-dark);
-
-          &:hover {
-            color: var(--color-primary);
-          }
-        }
-
-        .mobile-gestion {
-          margin-top: 2rem;
-          border-top: 1px solid var(--border-light);
-          padding-top: 1rem;
-
-          .mobile-section-title {
-            font-weight: 600;
-            color: #666;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-          }
-
-          a {
-            padding-left: 1rem;
-          }
-        }
-
-        .close-btn {
-          align-self: flex-end;
-          background: none;
-          border: none;
-          font-size: 2rem;
-          color: var(--color-dark);
-          cursor: pointer;
-        }
       }
     }
+  }
 
   .nav-item::before {
     content: '';
@@ -145,15 +142,19 @@
     left: 50%;
     width: 0px;
     height: 0px;
-    background-color:var(--color-secondary);
+    background-color: var(--color-secondary);
     border-radius: 50%;
     transform: translate(-50%, -50%);
-    transition: width 0.3s ease, height 0.3s ease;
+    transition:
+      width 0.3s ease,
+      height 0.3s ease;
     z-index: -1;
   }
 
   .nav-item:hover::before {
-    transition: width 0.3s ease, height 0.3s ease;
+    transition:
+      width 0.3s ease,
+      height 0.3s ease;
     width: 60px;
     height: 60px;
   }
@@ -162,7 +163,7 @@
     .profil-container {
       display: none !important;
     }
-    
+
     // S'assurer que tous les éléments de profil sont cachés
     .progress-container,
     .user-avatar-container,
@@ -181,7 +182,7 @@
     padding: 10px 0;
     justify-content: flex-end;
 
-    .progress-container{
+    .progress-container {
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -211,7 +212,7 @@
         position: absolute;
         top: 100%;
         right: 0;
-        background:var(--color-light);
+        background: var(--color-light);
         border-radius: 8px;
         box-shadow: 0 4px 12px var(--color-dark);
         border: 1px solid var(--color-light);
@@ -239,7 +240,7 @@
             align-items: center;
             gap: 0.75rem;
             padding: 0.75rem 1rem;
-            color:var(--color-dark);
+            color: var(--color-dark);
             text-decoration: none;
             transition: background-color 0.2s ease;
 
@@ -256,7 +257,7 @@
       }
     }
   }
-  .progress-bar{
+  .progress-bar {
     color: var(--color-black);
   }
 
@@ -280,7 +281,7 @@
     justify-content: center;
     width: 100px;
     height: 100px;
-    
+
     .user-avatar {
       width: 100px !important;
       height: 100px !important;
@@ -316,9 +317,6 @@
       }
     }
   }
-
-
-
 
   &__toggle {
     display: none;
@@ -414,7 +412,6 @@
     flex-direction: column;
     margin-left: auto;
   }
-
 }
 
 // Profil mobile
@@ -522,7 +519,7 @@
     border-bottom: 1px solid #f0f0f0;
     color: var(--color-dark);
     transition: color 0.2s ease;
-    
+
     &:hover {
       color: #dc3545;
     }
@@ -637,7 +634,6 @@
     }
   }
 }
-
 
 @media (max-width: 768px) {
   .dropdown-menu {

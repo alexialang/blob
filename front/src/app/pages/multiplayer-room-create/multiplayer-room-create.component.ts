@@ -14,7 +14,7 @@ import { takeUntil } from 'rxjs/operators';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './multiplayer-room-create.component.html',
-  styleUrls: ['./multiplayer-room-create.component.scss']
+  styleUrls: ['./multiplayer-room-create.component.scss'],
 })
 export class MultiplayerRoomCreateComponent implements OnInit {
   quizData: any = null;
@@ -43,7 +43,7 @@ export class MultiplayerRoomCreateComponent implements OnInit {
     private multiplayerService: MultiplayerService,
     private quizService: QuizManagementService,
     private companyService: CompanyService,
-    private userService: UserService,
+    private userService: UserService
   ) {}
 
   ngOnInit(): void {
@@ -51,7 +51,6 @@ export class MultiplayerRoomCreateComponent implements OnInit {
     this.loadQuiz(quizId);
     this.loadUserData();
     this.generateRandomColor();
-
   }
   private loadQuiz(quizId: number): void {
     this.quizService.getQuiz(quizId).subscribe({
@@ -62,25 +61,25 @@ export class MultiplayerRoomCreateComponent implements OnInit {
       error: (_error: any) => {
         console.error('Erreur chargement quiz:', _error);
         this.goBack();
-      }
+      },
     });
   }
 
   private loadUserData(): void {
     this.userService.getUserProfile().subscribe({
-      next: (user) => {
+      next: user => {
         this.currentUser = user;
         if (user.companyId) {
           this.loadCompany(user.companyId);
         }
       },
-      error: (error) => {
-      }
+      error: error => {},
     });
   }
 
   private loadCompany(companyId: number): void {
-    this.multiplayerService.getCompanyGroupsForMultiplayer()
+    this.multiplayerService
+      .getCompanyGroupsForMultiplayer()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (groups: any[]) => {
@@ -88,14 +87,14 @@ export class MultiplayerRoomCreateComponent implements OnInit {
         },
         error: (_error: any) => {
           this.availableGroups = [];
-        }
+        },
       });
 
-    this.multiplayerService.getCompanyMembersForMultiplayer()
+    this.multiplayerService
+      .getCompanyMembersForMultiplayer()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response: any) => {
-
           let users: any[] = [];
           if (response && response.success && Array.isArray(response.data)) {
             users = response.data;
@@ -114,14 +113,14 @@ export class MultiplayerRoomCreateComponent implements OnInit {
               this.maxPlayers = Math.min(maxPossiblePlayers, 8);
             }
           } else {
-            console.error('La réponse API n\'est pas un tableau:', users);
+            console.error("La réponse API n'est pas un tableau:", users);
             this.availableUsers = [];
           }
         },
         error: (_error: any) => {
           console.error('Erreur lors du chargement des utilisateurs:', _error);
           this.availableUsers = [];
-        }
+        },
       });
   }
 
@@ -130,25 +129,24 @@ export class MultiplayerRoomCreateComponent implements OnInit {
 
     this.creating = true;
 
-    this.multiplayerService.createRoom(
-      this.quizData.id,
-      this.maxPlayers,
-      this.isTeamMode,
-      this.roomName || undefined
-    ).subscribe({
-      next: (room) => {
+    this.multiplayerService
+      .createRoom(this.quizData.id, this.maxPlayers, this.isTeamMode, this.roomName || undefined)
+      .subscribe({
+        next: room => {
+          this.multiplayerService.setCurrentRoom(room);
 
-        this.multiplayerService.setCurrentRoom(room);
+          this.sendInvitations(room.id);
 
-        this.sendInvitations(room.id);
-
-        this.router.navigate(['/multiplayer/room', room.id]);
-      },
-      error: (error) => {
-        this.creating = false;
-        alert('Erreur lors de la création du salon: ' + (error.error?.error || error.message || 'Erreur inconnue'));
-      }
-    });
+          this.router.navigate(['/multiplayer/room', room.id]);
+        },
+        error: error => {
+          this.creating = false;
+          alert(
+            'Erreur lors de la création du salon: ' +
+              (error.error?.error || error.message || 'Erreur inconnue')
+          );
+        },
+      });
   }
 
   private sendInvitations(roomId: string): void {
@@ -162,7 +160,6 @@ export class MultiplayerRoomCreateComponent implements OnInit {
           .map((user: any) => user.id);
       }
     } else if (this.invitationType === 'users') {
-
       userIdsToInvite = [...this.selectedUserIds];
     }
 
@@ -171,9 +168,9 @@ export class MultiplayerRoomCreateComponent implements OnInit {
         next: () => {
           console.log(`Invitations envoyées à ${userIdsToInvite.length} utilisateur(s)`);
         },
-        error: (error) => {
-          console.error('Erreur lors de l\'envoi des invitations:', error);
-        }
+        error: error => {
+          console.error("Erreur lors de l'envoi des invitations:", error);
+        },
       });
     }
   }
@@ -214,10 +211,8 @@ export class MultiplayerRoomCreateComponent implements OnInit {
           .map((user: any) => user.id);
 
         this.maxPlayers = Math.min(this.selectedUserIds.length + 1, 8);
-
       }
     } else {
-
       this.selectedUserIds = [];
     }
   }
@@ -253,9 +248,7 @@ export class MultiplayerRoomCreateComponent implements OnInit {
     }
   }
   private generateRandomColor(): void {
-    const colors = [
-      '#257D54', '#FAA24B', '#D30D4C',
-    ];
+    const colors = ['#257D54', '#FAA24B', '#D30D4C'];
 
     const index = Math.floor(Math.random() * colors.length);
     this.highlightColor = colors[index];

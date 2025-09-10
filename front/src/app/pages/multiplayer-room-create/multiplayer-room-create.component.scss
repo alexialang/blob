@@ -17,8 +17,7 @@
       color: var(--color-dark);
       font-family: var(--font-display);
     }
-    .quiz-highlight
-    {
+    .quiz-highlight {
       font-family: var(--font-display);
     }
 
@@ -114,7 +113,6 @@
         margin: 0;
         line-height: 1.2;
         letter-spacing: -1px;
-
       }
 
       p {
@@ -207,8 +205,8 @@
     font-weight: 500 !important;
     margin-bottom: 0 !important;
 
-    input[type="radio"],
-    input[type="checkbox"] {
+    input[type='radio'],
+    input[type='checkbox'] {
       display: none;
     }
 
@@ -433,8 +431,12 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 // Responsive

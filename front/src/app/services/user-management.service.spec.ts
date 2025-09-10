@@ -12,7 +12,7 @@ describe('UserManagementService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      providers: [UserManagementService]
+      providers: [UserManagementService],
     });
     service = TestBed.inject(UserManagementService);
     httpMock = TestBed.inject(HttpTestingController);
@@ -37,8 +37,8 @@ describe('UserManagementService', () => {
         dateRegistration: '2024-01-01',
         isAdmin: false,
         isActive: true,
-        isVerified: true
-      }
+        isVerified: true,
+      },
     ];
 
     service.getUsers().subscribe(users => {
@@ -54,15 +54,12 @@ describe('UserManagementService', () => {
     // Mock AuthService pour retourner true pour hasPermission
     const mockAuthService = jasmine.createSpyObj('AuthService', ['hasPermission']);
     mockAuthService.hasPermission.and.returnValue(of(true));
-    
+
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      providers: [
-        UserManagementService,
-        { provide: AuthService, useValue: mockAuthService }
-      ]
+      providers: [UserManagementService, { provide: AuthService, useValue: mockAuthService }],
     });
-    
+
     service = TestBed.inject(UserManagementService);
 
     service.anonymizeUser(1).subscribe(() => {
@@ -77,15 +74,12 @@ describe('UserManagementService', () => {
   it('should update user roles', () => {
     const mockAuthService = jasmine.createSpyObj('AuthService', ['hasPermission']);
     mockAuthService.hasPermission.and.returnValue(of(true));
-    
+
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      providers: [
-        UserManagementService,
-        { provide: AuthService, useValue: mockAuthService }
-      ]
+      providers: [UserManagementService, { provide: AuthService, useValue: mockAuthService }],
     });
-    
+
     service = TestBed.inject(UserManagementService);
 
     const roles = ['ROLE_USER'];
@@ -104,9 +98,9 @@ describe('UserManagementService', () => {
   it('should handle errors gracefully', () => {
     service.getUsers().subscribe({
       next: () => fail('should have failed'),
-      error: (error) => {
+      error: error => {
         expect(error.status).toBe(500);
-      }
+      },
     });
 
     const req = httpMock.expectOne(`${environment.apiBaseUrl}/users`);

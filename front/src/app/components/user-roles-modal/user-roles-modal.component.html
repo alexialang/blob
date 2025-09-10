@@ -12,9 +12,7 @@
     <div class="modal-content">
       <div class="section">
         <h3>Rôles</h3>
-        <p class="section-description">
-          Les rôles définissent le niveau d'accès général de l'utilisateur.
-        </p>
+        <p class="section-description">Les rôles définissent le niveau d'accès général de l'utilisateur.</p>
 
         <div class="roles-list">
           <div
@@ -50,10 +48,7 @@
         </p>
 
         <div class="permissions-grid" [class.disabled]="isPermissionDisabled()">
-          <div
-            *ngFor="let permission of availablePermissions"
-            class="permission-item"
-          >
+          <div *ngFor="let permission of availablePermissions" class="permission-item">
             <label class="permission-label">
               <input
                 type="checkbox"
@@ -90,10 +85,7 @@
 
           <div class="current-permissions">
             <strong>Permissions :</strong>
-            <span
-              *ngFor="let permission of selectedPermissions"
-              class="badge permission-badge"
-            >
+            <span *ngFor="let permission of selectedPermissions" class="badge permission-badge">
               {{ getPermissionLabel(permission) }}
             </span>
             <span *ngIf="selectedPermissions.size === 0" class="no-permissions">Aucune permission</span>
@@ -103,12 +95,8 @@
     </div>
 
     <div class="modal-footer">
-      <button class="btn btn-secondary" (click)="onCancel()">
-        Annuler
-      </button>
-      <button class="btn btn-primary" (click)="onSave()">
-        Enregistrer les modifications
-      </button>
+      <button class="btn btn-secondary" (click)="onCancel()">Annuler</button>
+      <button class="btn btn-primary" (click)="onSave()">Enregistrer les modifications</button>
     </div>
   </div>
 </div>

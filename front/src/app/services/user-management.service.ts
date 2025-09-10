@@ -14,7 +14,12 @@ export class UserManagementService {
     private authService: AuthService
   ) {}
 
-  getUsers(page: number = 1, limit: number = 20, search?: string, sort: string = 'email'): Observable<any> {
+  getUsers(
+    page: number = 1,
+    limit: number = 20,
+    search?: string,
+    sort: string = 'email'
+  ): Observable<any> {
     return this.authService.hasPermission('MANAGE_USERS').pipe(
       map(hasPermission => {
         if (!hasPermission) {
@@ -33,9 +38,7 @@ export class UserManagementService {
   }
 
   getAllUsers(): Observable<any[]> {
-    return this.getUsers(1, 1000).pipe(
-      map(response => response.data || [])
-    );
+    return this.getUsers(1, 1000).pipe(map(response => response.data || []));
   }
   anonymizeUser(id: number): Observable<void> {
     return this.authService.hasPermission('MANAGE_USERS').pipe(
@@ -57,7 +60,7 @@ export class UserManagementService {
         }
         return this.http.put<any>(`${this.baseUrl}/user-permission/user/${userId}`, {
           roles,
-          permissions
+          permissions,
         });
       }),
       switchMap(apiCall => apiCall)

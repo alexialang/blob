@@ -15,20 +15,20 @@ export interface SEOData {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class SeoService {
-
   private defaults: Required<SEOData> = {
     title: 'Blob.',
-    description: 'Découvrez Blob, la plateforme de quiz interactifs pour apprendre en s\'amusant. Créez, partagez et jouez à des quiz personnalisés.',
+    description:
+      "Découvrez Blob, la plateforme de quiz interactifs pour apprendre en s'amusant. Créez, partagez et jouez à des quiz personnalisés.",
     keywords: 'quiz, apprentissage, éducation, jeux, formation, entreprise',
     author: 'Blob',
     robots: 'index, follow',
     ogImage: '/assets/svg/blob_flower.svg',
     ogUrl: '/',
     ogTitle: 'Blob - Plateforme de Quiz Interactifs',
-    ogDescription: 'Découvrez Blob, la plateforme de quiz interactifs pour apprendre en s\'amusant.'
+    ogDescription: "Découvrez Blob, la plateforme de quiz interactifs pour apprendre en s'amusant.",
   };
 
   constructor(

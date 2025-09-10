@@ -35,7 +35,9 @@
       display: flex;
       align-items: center;
       gap: 1rem;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
 
       &:hover {
         transform: translateY(-2px);
@@ -160,7 +162,7 @@
   padding: 20px;
   background: white;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .stats-header {
@@ -199,7 +201,7 @@
 .discrete-action-link {
   background: transparent;
   border: none;
-  color: var(--text-muted, #9CA3AF);
+  color: var(--text-muted, #9ca3af);
   font-size: 0.9rem;
   padding: 0.375rem;
   border-radius: 4px;
@@ -209,14 +211,14 @@
 
   &:hover:not(:disabled) {
     opacity: 1;
-    color: var(--color-primary, #257D54);
+    color: var(--color-primary, #257d54);
     background: rgba(37, 125, 84, 0.1);
   }
 
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
-    color: var(--text-muted, #9CA3AF);
+    color: var(--text-muted, #9ca3af);
   }
 
   i {
@@ -224,7 +226,7 @@
   }
 
   .fa-spin {
-    color: var(--color-primary, #257D54);
+    color: var(--color-primary, #257d54);
   }
 }
 
@@ -348,8 +350,12 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 // Responsive design

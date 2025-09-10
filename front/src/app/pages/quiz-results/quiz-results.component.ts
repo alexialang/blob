@@ -20,7 +20,7 @@ interface QuizResultData {
   standalone: true,
   imports: [CommonModule, SlideButtonComponent, BackButtonComponent],
   templateUrl: './quiz-results.component.html',
-  styleUrls: ['./quiz-results.component.scss']
+  styleUrls: ['./quiz-results.component.scss'],
 })
 export class QuizResultsComponent implements OnInit {
   resultData: QuizResultData | null = null;
@@ -63,17 +63,23 @@ export class QuizResultsComponent implements OnInit {
     if (position >= 11 && position <= 13) return 'ème';
     const lastDigit = position % 10;
     switch (lastDigit) {
-      case 1: return 'er';
-      default: return 'ème';
+      case 1:
+        return 'er';
+      default:
+        return 'ème';
     }
   }
 
   getMedalIcon(position: number): string {
     switch (position) {
-      case 1: return '🥇';
-      case 2: return '🥈';
-      case 3: return '🥉';
-      default: return '';
+      case 1:
+        return '🥇';
+      case 2:
+        return '🥈';
+      case 3:
+        return '🥉';
+      default:
+        return '';
     }
   }
 
@@ -99,7 +105,7 @@ export class QuizResultsComponent implements OnInit {
       navigator.share({
         title: this.resultData.quizTitle,
         text: `J'ai fait ${this.getScorePercentage()}% à ce quiz !`,
-        url: quizUrl
+        url: quizUrl,
       });
     } else {
       navigator.clipboard.writeText(quizUrl);

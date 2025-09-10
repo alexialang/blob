@@ -7,14 +7,12 @@ body {
   margin: 0;
   padding: 0;
 }
-.quiz-page{
+.quiz-page {
   width: 100%;
   align-items: center;
   background-color: var(--color-light) !important;
-
 }
-.quiz-highlight
-{
+.quiz-highlight {
   font-family: var(--font-display);
 }
 
@@ -23,7 +21,6 @@ body {
   max-width: 1400px;
   margin: 0 auto;
   padding: 2rem 1rem;
-
 }
 
 .d-flex {
@@ -115,8 +112,6 @@ body {
   line-height: 1;
   border-radius: 6px 0 0 6px;
   transition: background-color 0.2s ease;
-
-
 }
 
 .custom-dropdown-chevron {
@@ -130,7 +125,6 @@ body {
   justify-content: center;
   border-radius: 0 6px 6px 0;
   transition: background-color 0.2s ease;
-
 
   svg {
     color: #ffffff;
@@ -287,7 +281,6 @@ tui-badge {
     color: #ffffff;
   }
 }
-
 
 .stats-graph-container {
   background-color: #ffffff;
@@ -557,8 +550,12 @@ tui-badge {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .error-container {
@@ -608,7 +605,7 @@ tui-badge {
   background: #ffffff;
   border-radius: 12px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-  
+
   p {
     color: #64748b;
     font-size: 1rem;
@@ -630,8 +627,8 @@ tui-badge {
   border-top: 1px solid #e2e8f0;
 }
 
-button[tuiButton][appearance="action-grayscale"] {
-  background-color:aliceblue;
+button[tuiButton][appearance='action-grayscale'] {
+  background-color: aliceblue;
   color: var(--color-dark);
   border: none;
 

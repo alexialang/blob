@@ -7,11 +7,15 @@ import { Question, Answer } from '../../../models/quiz.model';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './blind-test-question.component.html',
-  styleUrls: ['./blind-test-question.component.scss']
+  styleUrls: ['./blind-test-question.component.scss'],
 })
 export class BlindTestQuestionComponent implements OnInit {
   @Input() question!: Question;
-  @Input() progress: { current: number; total: number; percentage: number } = { current: 0, total: 0, percentage: 0 };
+  @Input() progress: { current: number; total: number; percentage: number } = {
+    current: 0,
+    total: 0,
+    percentage: 0,
+  };
   @Output() answerSelected = new EventEmitter<number>();
   @Output() answerValidated = new EventEmitter<void>();
 

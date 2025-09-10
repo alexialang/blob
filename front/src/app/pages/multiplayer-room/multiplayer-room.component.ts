@@ -17,10 +17,10 @@ import { trigger, state, style, transition, animate } from '@angular/animations'
     trigger('playerSlide', [
       transition(':enter', [
         style({ transform: 'translateY(-20px)', opacity: 0 }),
-        animate('300ms ease-out', style({ transform: 'translateY(0)', opacity: 1 }))
-      ])
-    ])
-  ]
+        animate('300ms ease-out', style({ transform: 'translateY(0)', opacity: 1 })),
+      ]),
+    ]),
+  ],
 })
 export class MultiplayerRoomComponent implements OnInit, OnDestroy {
   currentRoom: GameRoom | null = null;
@@ -34,12 +34,11 @@ export class MultiplayerRoomComponent implements OnInit, OnDestroy {
     private quizTransitionService: QuizTransitionService,
     private mercureService: MercureService,
     private elementRef: ElementRef,
-    private cdr: ChangeDetectorRef,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     const roomId = this.route.snapshot.params['id'];
-
 
     sessionStorage.setItem('currentRoomId', roomId);
 
@@ -48,42 +47,36 @@ export class MultiplayerRoomComponent implements OnInit, OnDestroy {
       this.mercureService.connect();
     }, 100);
 
-    const roomSub = this.multiplayerService.getCurrentRoom().subscribe(
-      room => {
-        if (room === null && this.currentRoom !== null) {
-          return;
-        }
-
-        this.currentRoom = room;
-
-        this.cdr.detectChanges();
-
-        if (room?.status === 'playing' && room.gameId) {
-          this.starting = false;
-          setTimeout(() => {
-            this.router.navigate(['/multiplayer/game', room.gameId]);
-          }, 100);
-        }
+    const roomSub = this.multiplayerService.getCurrentRoom().subscribe(room => {
+      if (room === null && this.currentRoom !== null) {
+        return;
       }
-    );
 
-    const mercureSub = this.mercureService.roomUpdated$.subscribe(
-      roomData => {
-        if (roomData.id === roomId) {
-          this.currentRoom = roomData;
-          this.multiplayerService.setCurrentRoom(roomData);
-        }
-      }
-    );
+      this.currentRoom = room;
 
-    const gameEventSub = this.mercureService.gameEvent$.subscribe(
-      event => {
-        if (event.action === 'navigate_to_game' && event.gameId) {
-          this.starting = false;
-          this.router.navigate(['/multiplayer/game', event.gameId]);
-        }
+      this.cdr.detectChanges();
+
+      if (room?.status === 'playing' && room.gameId) {
+        this.starting = false;
+        setTimeout(() => {
+          this.router.navigate(['/multiplayer/game', room.gameId]);
+        }, 100);
       }
-    );
+    });
+
+    const mercureSub = this.mercureService.roomUpdated$.subscribe(roomData => {
+      if (roomData.id === roomId) {
+        this.currentRoom = roomData;
+        this.multiplayerService.setCurrentRoom(roomData);
+      }
+    });
+
+    const gameEventSub = this.mercureService.gameEvent$.subscribe(event => {
+      if (event.action === 'navigate_to_game' && event.gameId) {
+        this.starting = false;
+        this.router.navigate(['/multiplayer/game', event.gameId]);
+      }
+    });
 
     this.subscriptions.push(roomSub, mercureSub, gameEventSub);
 
@@ -96,7 +89,7 @@ export class MultiplayerRoomComponent implements OnInit, OnDestroy {
     }, 5000);
 
     this.subscriptions.push({
-      unsubscribe: () => clearInterval(reconnectInterval)
+      unsubscribe: () => clearInterval(reconnectInterval),
     } as any);
   }
 
@@ -107,18 +100,17 @@ export class MultiplayerRoomComponent implements OnInit, OnDestroy {
 
   private loadRoom(roomId: string): void {
     this.multiplayerService.getRoomStatus(roomId).subscribe({
-      next: (room) => {
+      next: room => {
         this.multiplayerService.setCurrentRoom(room);
       },
-      error: (error) => {
+      error: error => {
         console.error('Erreur chargement salon:', error);
         this.router.navigate(['/quiz']);
-      }
+      },
     });
   }
 
   async startGame(): Promise<void> {
-
     if (!this.currentRoom || this.starting) {
       return;
     }
@@ -126,14 +118,14 @@ export class MultiplayerRoomComponent implements OnInit, OnDestroy {
     this.starting = true;
 
     this.multiplayerService.startGame(this.currentRoom.id).subscribe({
-      next: (game) => {
+      next: game => {
         this.starting = false;
         this.router.navigate(['/multiplayer/game', game.id]);
       },
-      error: (error) => {
+      error: error => {
         console.error(' Erreur lancement jeu - Détail complet:', error);
         this.starting = false;
-      }
+      },
     });
   }
 
@@ -145,10 +137,10 @@ export class MultiplayerRoomComponent implements OnInit, OnDestroy {
         this.multiplayerService.setCurrentRoom(null);
         this.router.navigate(['/quiz']);
       },
-      error: (error) => {
+      error: error => {
         console.error('Erreur quitter salon:', error);
         this.router.navigate(['/quiz']);
-      }
+      },
     });
   }
 
@@ -179,10 +171,14 @@ export class MultiplayerRoomComponent implements OnInit, OnDestroy {
 
   getStatusText(status: string): string {
     switch (status) {
-      case 'waiting': return 'En attente';
-      case 'playing': return 'En cours';
-      case 'finished': return 'Terminé';
-      default: return status;
+      case 'waiting':
+        return 'En attente';
+      case 'playing':
+        return 'En cours';
+      case 'finished':
+        return 'Terminé';
+      default:
+        return status;
     }
   }
 

@@ -12,12 +12,12 @@ import { environment } from '../../../environments/environment';
 @Component({
   standalone: true,
   imports: [
-    FormsModule, 
-    NgIf, 
-    SlideButtonComponent, 
+    FormsModule,
+    NgIf,
+    SlideButtonComponent,
     BackButtonComponent,
     PasswordInputComponent,
-    PasswordStrengthIndicatorComponent
+    PasswordStrengthIndicatorComponent,
   ],
   selector: 'app-reset-password',
   templateUrl: './reset-password.component.html',
@@ -58,9 +58,10 @@ export class ResetPasswordComponent {
     const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
 
     if (!hasUpperCase || !hasLowerCase || !hasNumbers || !hasSpecialChar) {
-      return { 
-        isValid: false, 
-        message: 'Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un caractère spécial' 
+      return {
+        isValid: false,
+        message:
+          'Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un caractère spécial',
       };
     }
 
@@ -93,27 +94,29 @@ export class ResetPasswordComponent {
 
     this.isLoading = true;
 
-    this.http.post(`${environment.apiBaseUrl}/reset-password/${this.token}`, {
-      password: this.password,
-      confirmPassword: this.confirmPassword
-    }).subscribe({
-      next: (response: any) => {
-        this.isLoading = false;
-        this.success = 'Mot de passe réinitialisé avec succès !';
+    this.http
+      .post(`${environment.apiBaseUrl}/reset-password/${this.token}`, {
+        password: this.password,
+        confirmPassword: this.confirmPassword,
+      })
+      .subscribe({
+        next: (response: any) => {
+          this.isLoading = false;
+          this.success = 'Mot de passe réinitialisé avec succès !';
 
-        setTimeout(() => {
-          this.router.navigate(['/login']);
-        }, 2000);
-      },
-      error: (error) => {
-        this.isLoading = false;
-        if (error.status === 400) {
-          this.error = 'Token invalide ou expiré';
-        } else {
-          this.error = 'Une erreur est survenue. Veuillez réessayer';
-        }
-        console.error('Reset password error:', error);
-      }
-    });
+          setTimeout(() => {
+            this.router.navigate(['/login']);
+          }, 2000);
+        },
+        error: error => {
+          this.isLoading = false;
+          if (error.status === 400) {
+            this.error = 'Token invalide ou expiré';
+          } else {
+            this.error = 'Une erreur est survenue. Veuillez réessayer';
+          }
+          console.error('Reset password error:', error);
+        },
+      });
   }
 }

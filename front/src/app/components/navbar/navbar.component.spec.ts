@@ -16,16 +16,13 @@ describe('NavbarComponent', () => {
       isLoggedIn: jasmine.createSpy('isLoggedIn').and.returnValue(false),
       hasPermission: jasmine.createSpy('hasPermission').and.returnValue(false),
       getCurrentUser: jasmine.createSpy('getCurrentUser').and.returnValue(null),
-      logout: jasmine.createSpy('logout').and.returnValue(of({}))
+      logout: jasmine.createSpy('logout').and.returnValue(of({})),
     };
 
     await TestBed.configureTestingModule({
       imports: [NavbarComponent, HttpClientTestingModule, RouterTestingModule],
-      providers: [
-        { provide: AuthService, useValue: mockAuthService }
-      ]
-    })
-    .compileComponents();
+      providers: [{ provide: AuthService, useValue: mockAuthService }],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(NavbarComponent);
     component = fixture.componentInstance;

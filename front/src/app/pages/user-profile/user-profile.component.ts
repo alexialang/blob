@@ -1,6 +1,12 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import {
+  FormsModule,
+  ReactiveFormsModule,
+  FormBuilder,
+  FormGroup,
+  Validators,
+} from '@angular/forms';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { UserService } from '../../services/user.service';
 import { User, Badge } from '../../models/user.interface';
@@ -12,15 +18,9 @@ import { AuthService } from '../../services/auth.service';
 @Component({
   selector: 'app-user-profile',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    ReactiveFormsModule,
-    RouterLink,
-    StatisticsChartsComponent
-  ],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterLink, StatisticsChartsComponent],
   templateUrl: './user-profile.component.html',
-  styleUrls: ['./user-profile.component.scss']
+  styleUrls: ['./user-profile.component.scss'],
 })
 export class UserProfileComponent implements OnInit {
   private userService = inject(UserService);
@@ -47,7 +47,7 @@ export class UserProfileComponent implements OnInit {
       firstName: ['', [Validators.required]],
       lastName: ['', [Validators.required]],
       email: ['', [Validators.required, Validators.email]],
-      avatar: ['']
+      avatar: [''],
     });
   }
 
@@ -56,7 +56,6 @@ export class UserProfileComponent implements OnInit {
       this.router.navigate(['/connexion']);
       return;
     }
-
 
     this.route.params.subscribe(params => {
       if (params['id']) {
@@ -83,23 +82,23 @@ export class UserProfileComponent implements OnInit {
 
   loadUserProfile() {
     this.userService.getUserProfile().subscribe({
-      next: (user) => {
+      next: user => {
         this.user = user;
         this.profileForm.patchValue({
           firstName: user.firstName || '',
           lastName: user.lastName || '',
           pseudo: user.pseudo || '',
           email: user.email || '',
-          avatar: user.avatar || ''
+          avatar: user.avatar || '',
         });
       },
-      error: (error) => {
+      error: error => {
         if (error.status === 401) {
           // Rediriger vers la connexion si non authentifié
           this.authService.logout();
           this.router.navigate(['/connexion']);
         }
-      }
+      },
     });
   }
 
@@ -112,11 +111,10 @@ export class UserProfileComponent implements OnInit {
           lastName: user.lastName || '',
           pseudo: user.pseudo || '',
           email: user.email || '',
-          avatar: user.avatar || ''
+          avatar: user.avatar || '',
         });
       },
-      error: (_error: any) => {
-      }
+      error: (_error: any) => {},
     });
   }
 
@@ -124,16 +122,21 @@ export class UserProfileComponent implements OnInit {
     this.isLoadingStatistics = true;
     this.userStatistics = null; // Reset des statistiques pendant le chargement
 
-    console.log('Chargement des statistiques - isOwnProfile:', this.isOwnProfile, 'targetUserId:', this.targetUserId);
+    console.log(
+      'Chargement des statistiques - isOwnProfile:',
+      this.isOwnProfile,
+      'targetUserId:',
+      this.targetUserId
+    );
 
     if (this.isOwnProfile) {
       this.userService.getUserStatistics().subscribe({
-        next: (stats) => {
+        next: stats => {
           console.log('Statistiques reçues pour profil personnel:', stats);
           this.userStatistics = stats;
           this.isLoadingStatistics = false;
         },
-        error: (error) => {
+        error: error => {
           console.error('Erreur lors du chargement des statistiques personnelles:', error);
           this.isLoadingStatistics = false;
           if (error.status === 401) {
@@ -142,7 +145,7 @@ export class UserProfileComponent implements OnInit {
           } else {
             this.alertService.error('Erreur lors du chargement des statistiques');
           }
-        }
+        },
       });
     } else if (this.targetUserId) {
       this.userService.getUserStatisticsById(this.targetUserId).subscribe({
@@ -152,10 +155,10 @@ export class UserProfileComponent implements OnInit {
           this.isLoadingStatistics = false;
         },
         error: (_error: any) => {
-          console.error('Erreur lors du chargement des statistiques de l\'utilisateur:', _error);
+          console.error("Erreur lors du chargement des statistiques de l'utilisateur:", _error);
           this.isLoadingStatistics = false;
-          this.alertService.error('Erreur lors du chargement des statistiques de l\'utilisateur');
-        }
+          this.alertService.error("Erreur lors du chargement des statistiques de l'utilisateur");
+        },
       });
     } else {
       console.warn('Impossible de charger les statistiques - conditions non remplies');
@@ -165,11 +168,36 @@ export class UserProfileComponent implements OnInit {
 
   loadAllBadges() {
     this.allBadges = [
-      { id: 1, name: 'Premier Quiz', description: 'Félicitations ! Vous avez créé votre premier quiz.', image: 'badge-first-quiz.svg' },
-      { id: 2, name: 'Quiz Master', description: 'Impressionnant ! Vous avez créé 10 quiz.', image: 'badge-creator.svg' },
-      { id: 3, name: 'Première Victoire', description: 'Bravo ! Vous avez terminé votre premier quiz.', image: 'badge-first-quiz.svg' },
-      { id: 4, name: 'Expert', description: 'Parfait ! Vous avez obtenu un score de 100%.', image: 'badge-expert.svg' },
-      { id: 5, name: 'Joueur Assidu', description: 'Incroyable ! Vous avez joué 50 quiz.', image: 'badge-expert.svg' }
+      {
+        id: 1,
+        name: 'Premier Quiz',
+        description: 'Félicitations ! Vous avez créé votre premier quiz.',
+        image: 'badge-first-quiz.svg',
+      },
+      {
+        id: 2,
+        name: 'Quiz Master',
+        description: 'Impressionnant ! Vous avez créé 10 quiz.',
+        image: 'badge-creator.svg',
+      },
+      {
+        id: 3,
+        name: 'Première Victoire',
+        description: 'Bravo ! Vous avez terminé votre premier quiz.',
+        image: 'badge-first-quiz.svg',
+      },
+      {
+        id: 4,
+        name: 'Expert',
+        description: 'Parfait ! Vous avez obtenu un score de 100%.',
+        image: 'badge-expert.svg',
+      },
+      {
+        id: 5,
+        name: 'Joueur Assidu',
+        description: 'Incroyable ! Vous avez joué 50 quiz.',
+        image: 'badge-expert.svg',
+      },
     ];
   }
 
@@ -181,7 +209,7 @@ export class UserProfileComponent implements OnInit {
         lastName: this.user.lastName || '',
         pseudo: this.user.pseudo || '',
         email: this.user.email || '',
-        avatar: this.user.avatar || ''
+        avatar: this.user.avatar || '',
       });
     }
   }
@@ -191,14 +219,14 @@ export class UserProfileComponent implements OnInit {
       const updateData = this.profileForm.value;
 
       this.userService.updateUserProfile(updateData).subscribe({
-        next: (updatedUser) => {
+        next: updatedUser => {
           this.user = updatedUser;
           this.isEditing = false;
           this.alertService.success('Profil mis à jour avec succès!');
         },
-        error: (error) => {
+        error: error => {
           this.alertService.error('Erreur lors de la mise à jour du profil.');
-        }
+        },
       });
     }
   }
@@ -219,8 +247,8 @@ export class UserProfileComponent implements OnInit {
     const userBadgeNames = userBadges.map((badge: Badge) => badge.name);
     const userBadgeIds = userBadges.map((badge: Badge) => badge.id);
 
-    const availableBadges = this.allBadges.filter((badge: Badge) =>
-      !userBadgeNames.includes(badge.name) && !userBadgeIds.includes(badge.id)
+    const availableBadges = this.allBadges.filter(
+      (badge: Badge) => !userBadgeNames.includes(badge.name) && !userBadgeIds.includes(badge.id)
     );
 
     return availableBadges;
@@ -259,12 +287,12 @@ export class UserProfileComponent implements OnInit {
       return 'assets/badges/' + imagePath;
     }
 
-    const badgeNameMapping: {[key: string]: string} = {
+    const badgeNameMapping: { [key: string]: string } = {
       'Premier Quiz': 'badge-first-quiz.svg',
       'Quiz Master': 'badge-expert.svg',
       'Première Victoire': 'badge-first-quiz.svg',
-      'Créateur': 'badge-creator.svg',
-      'Social': 'badge-social.svg'
+      Créateur: 'badge-creator.svg',
+      Social: 'badge-social.svg',
     };
 
     const defaultImage = badgeNameMapping[badge.name] || 'badge-first-quiz.svg';

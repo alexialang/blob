@@ -10,7 +10,7 @@ describe('CompanyService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      providers: [CompanyService]
+      providers: [CompanyService],
     });
     service = TestBed.inject(CompanyService);
     httpMock = TestBed.inject(HttpTestingController);
@@ -32,8 +32,8 @@ describe('CompanyService', () => {
         address: '123 Test St',
         email: 'test@company.com',
         phone: '123-456-7890',
-        isActive: true
-      }
+        isActive: true,
+      },
     ];
 
     service.getCompanies().subscribe(companies => {
@@ -50,13 +50,13 @@ describe('CompanyService', () => {
       name: 'New Company',
       address: '456 New St',
       email: 'new@company.com',
-      phone: '987-654-3210'
+      phone: '987-654-3210',
     };
 
     const mockResponse = {
       id: 2,
       ...newCompany,
-      isActive: true
+      isActive: true,
     };
 
     service.createCompany(newCompany).subscribe(response => {
@@ -78,7 +78,7 @@ describe('CompanyService', () => {
       groupCount: 3,
       quizCount: 5,
       createdAt: '2024-01-01',
-      lastActivity: '2024-01-15'
+      lastActivity: '2024-01-15',
     };
 
     service.getCompanyStats(1).subscribe(stats => {
@@ -93,7 +93,7 @@ describe('CompanyService', () => {
   it('should get available users for company', () => {
     const mockUsers = [
       { id: 1, email: 'user1@test.com', firstName: 'John', lastName: 'Doe' },
-      { id: 2, email: 'user2@test.com', firstName: 'Jane', lastName: 'Smith' }
+      { id: 2, email: 'user2@test.com', firstName: 'Jane', lastName: 'Smith' },
     ];
 
     service.getAvailableUsers(1).subscribe(users => {
@@ -108,9 +108,9 @@ describe('CompanyService', () => {
   it('should handle errors gracefully', () => {
     service.getCompanies().subscribe({
       next: () => fail('should have failed'),
-      error: (error) => {
+      error: error => {
         expect(error.status).toBe(404);
-      }
+      },
     });
 
     const req = httpMock.expectOne(`${environment.apiBaseUrl}/companies`);

@@ -1,17 +1,16 @@
-
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { UserService } from '../../services/user.service';
 import { User } from '../../models/user.interface';
-import {BackButtonComponent} from '../../components/back-button/back-button.component';
+import { BackButtonComponent } from '../../components/back-button/back-button.component';
 
 @Component({
   selector: 'app-avatar-selection',
   standalone: true,
   imports: [CommonModule, BackButtonComponent],
   templateUrl: './avatar-selection.component.html',
-  styleUrls: ['./avatar-selection.component.scss']
+  styleUrls: ['./avatar-selection.component.scss'],
 })
 export class AvatarSelectionComponent implements OnInit {
   private userService = inject(UserService);
@@ -27,7 +26,6 @@ export class AvatarSelectionComponent implements OnInit {
   selectedColor = this.colors[0];
 
   ngOnInit() {
-
     this.loadUserProfile();
   }
 
@@ -43,7 +41,7 @@ export class AvatarSelectionComponent implements OnInit {
       },
       error: error => {
         this.router.navigate(['/profil']);
-      }
+      },
     });
   }
 
@@ -52,8 +50,7 @@ export class AvatarSelectionComponent implements OnInit {
       (this.selectedShapeIndex - 1 + this.availableShapes.length) % this.availableShapes.length;
   }
   nextShape() {
-    this.selectedShapeIndex =
-      (this.selectedShapeIndex + 1) % this.availableShapes.length;
+    this.selectedShapeIndex = (this.selectedShapeIndex + 1) % this.availableShapes.length;
   }
 
   selectColor(color: string) {
@@ -66,19 +63,21 @@ export class AvatarSelectionComponent implements OnInit {
 
     const selectedShape = this.availableShapes[this.selectedShapeIndex];
 
-    this.userService.updateAvatar({
-      shape: selectedShape,
-      color: this.selectedColor
-    }).subscribe({
-      next: updatedUser => {
-        this.user = updatedUser;
-        this.isLoading = false;
-        this.router.navigate(['/profil']);
-      },
-      error: err => {
-        this.isLoading = false;
-        console.error('Erreur lors de la sauvegarde de l\'avatar:', err);
-      }
-    });
+    this.userService
+      .updateAvatar({
+        shape: selectedShape,
+        color: this.selectedColor,
+      })
+      .subscribe({
+        next: updatedUser => {
+          this.user = updatedUser;
+          this.isLoading = false;
+          this.router.navigate(['/profil']);
+        },
+        error: err => {
+          this.isLoading = false;
+          console.error("Erreur lors de la sauvegarde de l'avatar:", err);
+        },
+      });
   }
 }

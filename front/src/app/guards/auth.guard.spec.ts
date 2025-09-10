@@ -7,9 +7,9 @@ import { authGuard } from './auth.guard';
 describe('authGuard', () => {
   let mockAuthService: jasmine.SpyObj<AuthService>;
   let mockRouter: jasmine.SpyObj<Router>;
-  
-  const executeGuard: CanActivateFn = (...guardParameters) => 
-      TestBed.runInInjectionContext(() => authGuard(...guardParameters));
+
+  const executeGuard: CanActivateFn = (...guardParameters) =>
+    TestBed.runInInjectionContext(() => authGuard(...guardParameters));
 
   beforeEach(() => {
     const authServiceSpy = jasmine.createSpyObj('AuthService', ['isLoggedIn', 'isGuest']);
@@ -18,8 +18,8 @@ describe('authGuard', () => {
     TestBed.configureTestingModule({
       providers: [
         { provide: AuthService, useValue: authServiceSpy },
-        { provide: Router, useValue: routerSpy }
-      ]
+        { provide: Router, useValue: routerSpy },
+      ],
     });
 
     mockAuthService = TestBed.inject(AuthService) as jasmine.SpyObj<AuthService>;

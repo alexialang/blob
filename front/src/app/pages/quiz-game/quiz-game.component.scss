@@ -27,14 +27,17 @@
     .quiz-info {
       gap: 15px;
 
-      .timer, .score {
+      .timer,
+      .score {
         padding: 6px 12px;
 
-        .timer-icon, .score-icon {
+        .timer-icon,
+        .score-icon {
           font-size: 14px;
         }
 
-        .timer-text, .score-text {
+        .timer-text,
+        .score-text {
           font-size: 14px;
         }
       }
@@ -303,7 +306,7 @@
   }
 
   &.incorrect {
-    background:var(--color-pink);
+    background: var(--color-pink);
     animation: incorrectShake 0.6s ease-in-out;
   }
 
@@ -313,8 +316,6 @@
     text-align: center;
     padding: 20px;
   }
-
-
 
   &.dotted-circle {
     width: 190px;
@@ -333,14 +334,13 @@
       background: #333;
       z-index: 1;
       border-radius: 50%;
-
-
     }
   }
 }
 
 @keyframes wave-morph {
-  0%, 100% {
+  0%,
+  100% {
     border-radius: 50% 40% 60% 30%;
   }
   50% {
@@ -376,7 +376,8 @@
 }
 
 @keyframes incorrectShake {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateX(0);
   }
   25% {
@@ -492,7 +493,6 @@
   }
 }
 
-
 @media (max-width: 768px) {
   .quiz-header {
     padding: 16px 20px;
@@ -550,15 +550,19 @@
   text-align: start;
   overflow: hidden;
 
-  &.correct   { background: var(--color-primary); }
-  &.incorrect { background: var(--color-pink); }
+  &.correct {
+    background: var(--color-primary);
+  }
+  &.incorrect {
+    background: var(--color-pink);
+  }
 
   .ff-content {
     margin: auto;
     color: white;
     max-width: 70%;
     animation: pop 0.4s ease-out;
-    h3{
+    h3 {
       color: white;
     }
   }
@@ -569,7 +573,10 @@
     font-weight: 900;
     margin-bottom: 1rem;
   }
-  .ff-score { font-size: 1.5rem; margin-bottom: 2rem; }
+  .ff-score {
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+  }
 
   .ff-correct-list {
     display: flex;
@@ -578,7 +585,7 @@
     justify-content: center;
 
     .ff-answer {
-      background: rgba(255,255,255,0.2);
+      background: rgba(255, 255, 255, 0.2);
       padding: 8px 16px;
       border-radius: 20px;
       font-weight: 600;
@@ -587,7 +594,12 @@
 }
 
 @keyframes pop {
-  from { transform: scale(0.9); opacity: 0; }
-  to   { transform: scale(1);   opacity: 1; }
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
-

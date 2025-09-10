@@ -42,8 +42,12 @@
 }
 
 @keyframes rotate-bg {
-  from   { transform: translate(-50%, -50%) rotate(0deg); }
-  to     { transform: translate(-50%, -50%) rotate(360deg); }
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
 }
 
 .end-content {
@@ -55,16 +59,14 @@
 
 .end-title {
   margin-top: 0.3em;
-  text-align:start ;
+  text-align: start;
   margin-bottom: 32px;
   font-weight: 900;
-
 }
 
 .final-score {
   margin-bottom: 40px;
   color: var(--color-light);
-
 }
 
 .score-circle {
@@ -77,9 +79,8 @@
   color: var(--color-light);
 }
 .score-text {
-  font-size: 32px!important;
+  font-size: 32px !important;
   color: var(--color-light);
-
 }
 
 .score-max {
@@ -97,7 +98,6 @@
     font-family: var(--font-primary), serif;
     color: var(--color-light);
     letter-spacing: 1px;
-
   }
 
   .ranking-position {
@@ -121,7 +121,8 @@
   .position-text {
     font-size: 18px;
     opacity: 0.9;
-    color: var(--color-light);  }
+    color: var(--color-light);
+  }
 
   .leaderboard-btn {
     font-weight: 600;
@@ -138,7 +139,6 @@
       width: 100%;
       height: 100%;
     }
-
   }
 }
 
@@ -152,9 +152,7 @@
     letter-spacing: 1px;
     margin-bottom: 20px;
     font-size: 22px;
-
   }
-
 
   .star-rating {
     display: flex;
@@ -169,7 +167,8 @@
       transition: all 0.3s ease;
       position: relative;
 
-      &.filled, &.hover {
+      &.filled,
+      &.hover {
         color: var(--color-accent);
       }
 
@@ -472,11 +471,10 @@
   right: 30em;
   bottom: 8em;
   color: var(--color-light);
-
 }
-.rating-circle::before{
+.rating-circle::before {
   content: '';
-  position:absolute;
+  position: absolute;
   top: -50%;
   left: -60%;
   width: 100%;
@@ -491,11 +489,11 @@
   transform: translate(50%, 50%) rotate(0deg);
 }
 
-
 @keyframes rotate-little {
-  from   { transform: translate(50%, 50%) rotate(360deg); }
-  to     { transform: translate(50%, 50%) rotate(0deg); }
+  from {
+    transform: translate(50%, 50%) rotate(360deg);
+  }
+  to {
+    transform: translate(50%, 50%) rotate(0deg);
+  }
 }
-
-
-

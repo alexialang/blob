@@ -19,22 +19,17 @@
           <div class="vinyl-hole"></div>
         </div>
         <div class="vinyl-grooves">
-          <div class="groove" *ngFor="let groove of [1,2,3,4,5]"></div>
+          <div class="groove" *ngFor="let groove of [1, 2, 3, 4, 5]"></div>
         </div>
       </div>
 
       <div class="player-controls">
-        <button class="control-btn play-btn"
-                [class.playing]="isPlaying"
-                (click)="togglePlayPause()">
+        <button class="control-btn play-btn" [class.playing]="isPlaying" (click)="togglePlayPause()">
           <span *ngIf="!isPlaying">play</span>
           <span *ngIf="isPlaying">pause</span>
         </button>
 
-        <button class="control-btn stop-btn"
-                (click)="resetPlayback()">
-          Relecture
-        </button>
+        <button class="control-btn stop-btn" (click)="resetPlayback()">Relecture</button>
 
         <div class="time-display">
           <span class="current-time">{{ getFormattedTime() }}</span>
@@ -44,8 +39,7 @@
 
       <div class="audio-progress">
         <div class="progress-track">
-          <div class="progress-bar-audio"
-               [style.width.%]="getProgressPercentage()"></div>
+          <div class="progress-bar-audio" [style.width.%]="getProgressPercentage()"></div>
         </div>
         <div class="time-markers">
           <span class="marker" *ngFor="let mark of [0, 10, 20, 30]">{{ mark }}s</span>
@@ -57,10 +51,12 @@
   <div class="answers-section">
     <h3 class="answers-title">Choisissez votre réponse :</h3>
     <div class="answers-grid">
-      <div *ngFor="let answer of shuffledAnswers; let i = index"
-           class="answer-option"
-           [class.selected]="isSelected(answer.id)"
-           (click)="selectAnswer(answer.id)">
+      <div
+        *ngFor="let answer of shuffledAnswers; let i = index"
+        class="answer-option"
+        [class.selected]="isSelected(answer.id)"
+        (click)="selectAnswer(answer.id)"
+      >
         <div class="answer-letter">{{ getAnswerLetter(i) }}</div>
         <div class="answer-content">
           <span class="answer-text">{{ answer.answer }}</span>
@@ -84,10 +80,6 @@
   </div>
 
   <div class="validation-area">
-    <button class="validate-btn"
-            [disabled]="!selectedAnswerId"
-            (click)="validateAnswer()">
-      Valider ma réponse
-    </button>
+    <button class="validate-btn" [disabled]="!selectedAnswerId" (click)="validateAnswer()">Valider ma réponse</button>
   </div>
 </div>

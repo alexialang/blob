@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './quiz-leaderboard.component.html',
-  styleUrl: './quiz-leaderboard.component.scss'
+  styleUrl: './quiz-leaderboard.component.scss',
 })
 export class QuizLeaderboardComponent {
   @Input() leaderboard: any[] = [];

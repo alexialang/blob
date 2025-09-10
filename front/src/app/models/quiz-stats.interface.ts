@@ -4,4 +4,3 @@ export interface QuizStats {
   averageScore: number;
   uniqueUsers: number;
 }
-

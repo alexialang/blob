@@ -12,7 +12,7 @@ export interface PasswordStrength {
   standalone: true,
   imports: [CommonModule],
   templateUrl: './password-strength-indicator.component.html',
-  styleUrls: ['./password-strength-indicator.component.scss']
+  styleUrls: ['./password-strength-indicator.component.scss'],
 })
 export class PasswordStrengthIndicatorComponent {
   @Input() password: string = '';
@@ -37,12 +37,30 @@ export class PasswordStrengthIndicatorComponent {
     let color = '#ccc';
 
     switch (score) {
-      case 0: case 1: message = 'Très faible'; color = '#ff4444'; break;
-      case 2: message = 'Faible'; color = '#ff8800'; break;
-      case 3: message = 'Moyen'; color = '#ffaa00'; break;
-      case 4: message = 'Bon'; color = '#00aa00'; break;
-      case 5: message = 'Très fort'; color = '#008800'; break;
-      default: message = ''; color = '#ccc';
+      case 0:
+      case 1:
+        message = 'Très faible';
+        color = '#ff4444';
+        break;
+      case 2:
+        message = 'Faible';
+        color = '#ff8800';
+        break;
+      case 3:
+        message = 'Moyen';
+        color = '#ffaa00';
+        break;
+      case 4:
+        message = 'Bon';
+        color = '#00aa00';
+        break;
+      case 5:
+        message = 'Très fort';
+        color = '#008800';
+        break;
+      default:
+        message = '';
+        color = '#ccc';
     }
 
     const result = { score, message, color };

@@ -7,11 +7,15 @@ import { Question } from '../../../models/quiz.model';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './multiple-choice-question.component.html',
-  styleUrls: ['./multiple-choice-question.component.scss']
+  styleUrls: ['./multiple-choice-question.component.scss'],
 })
 export class MultipleChoiceQuestionComponent {
   @Input() question!: Question;
-  @Input() progress: { current: number; total: number; percentage: number } = { current: 0, total: 0, percentage: 0 };
+  @Input() progress: { current: number; total: number; percentage: number } = {
+    current: 0,
+    total: 0,
+    percentage: 0,
+  };
   @Output() answerSelected = new EventEmitter<number[]>();
   @Output() answerValidated = new EventEmitter<void>();
 

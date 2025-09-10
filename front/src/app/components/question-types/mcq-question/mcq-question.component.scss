@@ -160,7 +160,8 @@
 }
 
 @keyframes float-rotate-1 {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0px) rotate(0deg);
   }
   50% {
@@ -169,7 +170,8 @@
 }
 
 @keyframes float-rotate-2 {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0px) rotate(0deg);
   }
   50% {
@@ -178,7 +180,8 @@
 }
 
 @keyframes float-rotate-3 {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0px) rotate(0deg);
   }
   50% {
@@ -187,7 +190,8 @@
 }
 
 @keyframes float-rotate-4 {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0px) rotate(0deg);
   }
   50% {
@@ -248,7 +252,9 @@
         margin-bottom: 70px;
       }
 
-      &:nth-child(1), &:nth-child(2), &:nth-child(3) {
+      &:nth-child(1),
+      &:nth-child(2),
+      &:nth-child(3) {
         .answer-shape {
           width: 320px;
           height: 320px;
@@ -292,7 +298,9 @@
     .answer-option {
       margin-bottom: 0 !important;
 
-      &:nth-child(1), &:nth-child(2), &:nth-child(3) {
+      &:nth-child(1),
+      &:nth-child(2),
+      &:nth-child(3) {
         .answer-shape {
           width: 300px;
           height: 300px;

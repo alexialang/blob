@@ -7,7 +7,7 @@ export interface AnalyticsEvent {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class PrivacyAnalyticsService {
   private isEnabled = environment.analytics.enabled;
@@ -23,7 +23,7 @@ export class PrivacyAnalyticsService {
    */
   private checkConsentAndInitialize(): void {
     if (typeof window === 'undefined') return;
-    
+
     const consent = this.getStoredConsent();
     if (consent?.analytics && this.isEnabled && this.respectPrivacy) {
       this.initializeUmamiAnalytics();
@@ -69,7 +69,7 @@ export class PrivacyAnalyticsService {
     script.setAttribute('data-cache', 'true'); // Cache pour performance
     script.setAttribute('data-auto-track', 'false'); // Désactive le tracking automatique
     script.setAttribute('data-exclude-search', 'true'); // Exclut les paramètres de recherche
-    
+
     document.head.appendChild(script);
 
     console.log('✅ Umami Analytics initialized (privacy-friendly & free)');
@@ -112,7 +112,7 @@ export class PrivacyAnalyticsService {
 
     this.trackLocalEvent({
       name: 'page_view',
-      properties: { url, title }
+      properties: { url, title },
     });
   }
 
@@ -122,13 +122,13 @@ export class PrivacyAnalyticsService {
   private trackLocalEvent(event: AnalyticsEvent): void {
     try {
       const localStats = this.getLocalStats();
-      
+
       // Anonymisation des données
       const anonymizedEvent = {
         name: event.name,
         timestamp: Date.now(),
         // On évite de stocker des données personnelles
-        properties: this.anonymizeProperties(event.properties || {})
+        properties: this.anonymizeProperties(event.properties || {}),
       };
 
       localStats.events = localStats.events || [];
@@ -151,14 +151,14 @@ export class PrivacyAnalyticsService {
    */
   private anonymizeProperties(properties: { [key: string]: any }): { [key: string]: any } {
     const anonymized: { [key: string]: any } = {};
-    
+
     for (const [key, value] of Object.entries(properties)) {
       // Évite de stocker des données sensibles
       if (this.isSafeProperty(key)) {
         anonymized[key] = value;
       }
     }
-    
+
     return anonymized;
   }
 
@@ -203,34 +203,34 @@ export class PrivacyAnalyticsService {
   trackQuizStarted(quizId: number): void {
     this.trackEvent({
       name: 'quiz_started',
-      properties: { quiz_id: quizId }
+      properties: { quiz_id: quizId },
     });
   }
 
   trackQuizCompleted(quizId: number, score: number): void {
     this.trackEvent({
       name: 'quiz_completed',
-      properties: { quiz_id: quizId, score }
+      properties: { quiz_id: quizId, score },
     });
   }
 
   trackUserRegistration(): void {
     this.trackEvent({
-      name: 'user_registration'
+      name: 'user_registration',
     });
   }
 
   trackGameCreated(gameType: string): void {
     this.trackEvent({
       name: 'game_created',
-      properties: { game_type: gameType }
+      properties: { game_type: gameType },
     });
   }
 
   trackFeatureUsed(feature: string): void {
     this.trackEvent({
       name: 'feature_used',
-      properties: { feature }
+      properties: { feature },
     });
   }
 }

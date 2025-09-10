@@ -1,11 +1,5 @@
-import {
-  Component,
-  Input,
-  Output,
-  EventEmitter,
-  ChangeDetectionStrategy,
-} from '@angular/core';
-import { TuiPagination} from '@taiga-ui/kit';
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
+import { TuiPagination } from '@taiga-ui/kit';
 
 @Component({
   selector: 'app-pagination',

@@ -14,13 +14,13 @@ describe('MultiplayerService', () => {
   beforeEach(() => {
     const mercureServiceSpy = jasmine.createSpyObj('MercureService', ['connect'], {
       invitationReceived$: {
-        subscribe: jasmine.createSpy('subscribe')
-      }
+        subscribe: jasmine.createSpy('subscribe'),
+      },
     });
     const ngZoneSpy = jasmine.createSpyObj('NgZone', ['run'], {
       onStable: {
-        subscribe: jasmine.createSpy('subscribe')
-      }
+        subscribe: jasmine.createSpy('subscribe'),
+      },
     });
 
     TestBed.configureTestingModule({
@@ -28,8 +28,8 @@ describe('MultiplayerService', () => {
       providers: [
         MultiplayerService,
         { provide: MercureService, useValue: mercureServiceSpy },
-        { provide: NgZone, useValue: ngZoneSpy }
-      ]
+        { provide: NgZone, useValue: ngZoneSpy },
+      ],
     });
     service = TestBed.inject(MultiplayerService);
     httpMock = TestBed.inject(HttpTestingController);
@@ -55,7 +55,7 @@ describe('MultiplayerService', () => {
       isTeamMode: false,
       status: 'waiting',
       players: [],
-      createdAt: Date.now()
+      createdAt: Date.now(),
     };
 
     service.createRoom(1, 4, false, 'Test Room').subscribe(room => {
@@ -68,7 +68,7 @@ describe('MultiplayerService', () => {
       quizId: 1,
       maxPlayers: 4,
       isTeamMode: false,
-      roomName: 'Test Room'
+      roomName: 'Test Room',
     });
     req.flush(mockRoom);
   });
@@ -84,9 +84,9 @@ describe('MultiplayerService', () => {
       status: 'waiting',
       players: [
         { id: 1, username: 'creator', isReady: true, isCreator: true },
-        { id: 2, username: 'player2', isReady: false, isCreator: false }
+        { id: 2, username: 'player2', isReady: false, isCreator: false },
       ],
-      createdAt: Date.now()
+      createdAt: Date.now(),
     };
 
     service.joinRoom('room123').subscribe(room => {
@@ -107,10 +107,8 @@ describe('MultiplayerService', () => {
       maxPlayers: 4,
       isTeamMode: false,
       status: 'waiting',
-      players: [
-        { id: 1, username: 'creator', isReady: true, isCreator: true }
-      ],
-      createdAt: Date.now()
+      players: [{ id: 1, username: 'creator', isReady: true, isCreator: true }],
+      createdAt: Date.now(),
     };
 
     service.leaveRoom('room123').subscribe(room => {
@@ -133,8 +131,8 @@ describe('MultiplayerService', () => {
         isTeamMode: false,
         status: 'waiting',
         players: [],
-        createdAt: Date.now()
-      }
+        createdAt: Date.now(),
+      },
     ];
 
     service.loadAvailableRooms().subscribe(rooms => {
@@ -150,7 +148,7 @@ describe('MultiplayerService', () => {
     const mockResponse = {
       isCorrect: true,
       points: 10,
-      leaderboard: []
+      leaderboard: [],
     };
 
     service.submitAnswer('game123', 1, { answerId: 1 }, 30).subscribe(response => {
@@ -162,7 +160,7 @@ describe('MultiplayerService', () => {
     expect(req.request.body).toEqual({
       questionId: 1,
       answer: { answerId: 1 },
-      timeSpent: 30
+      timeSpent: 30,
     });
     req.flush(mockResponse);
   });
@@ -179,7 +177,7 @@ describe('MultiplayerService', () => {
       players: [],
       createdAt: Date.now(),
       gameStartedAt: Date.now(),
-      gameId: 'game456'
+      gameId: 'game456',
     };
 
     service.getRoomStatus('room123').subscribe(room => {
@@ -202,9 +200,9 @@ describe('MultiplayerService', () => {
       status: 'waiting',
       players: [
         { id: 1, username: 'creator', isReady: true, isCreator: true },
-        { id: 2, username: 'player2', isReady: false, isCreator: false }
+        { id: 2, username: 'player2', isReady: false, isCreator: false },
       ],
-      createdAt: Date.now()
+      createdAt: Date.now(),
     };
 
     expect(service.isPlayerInRoom(room, 1)).toBe(true);
@@ -222,11 +220,10 @@ describe('MultiplayerService', () => {
       isTeamMode: false,
       status: 'waiting',
       players: [],
-      createdAt: Date.now()
+      createdAt: Date.now(),
     };
 
     expect(service.isRoomCreator(room, 1)).toBe(true);
     expect(service.isRoomCreator(room, 2)).toBe(false);
   });
 });
-

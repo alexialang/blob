@@ -81,16 +81,15 @@ export interface ImportResult {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class CompanyService {
-
   private apiUrl = `${environment.apiBaseUrl}/companies`;
 
   constructor(
     private http: HttpClient,
     private authService: AuthService
-  ) { }
+  ) {}
 
   getCompanies(): Observable<Company[]> {
     return this.authService.hasPermission('MANAGE_USERS').pipe(
@@ -181,7 +180,12 @@ export class CompanyService {
     );
   }
 
-  assignUserToCompany(companyId: number, userId: number, roles: string[], permissions: string[]): Observable<AssignUserResult> {
+  assignUserToCompany(
+    companyId: number,
+    userId: number,
+    roles: string[],
+    permissions: string[]
+  ): Observable<AssignUserResult> {
     return this.authService.hasPermission('MANAGE_USERS').pipe(
       map(hasPermission => {
         if (!hasPermission) {
@@ -190,7 +194,7 @@ export class CompanyService {
         return this.http.post<AssignUserResult>(`${this.apiUrl}/${companyId}/assign-user`, {
           userId,
           roles,
-          permissions
+          permissions,
         });
       }),
       switchMap(apiCall => apiCall)
@@ -233,7 +237,10 @@ export class CompanyService {
     );
   }
 
-  createGroup(companyId: number, groupData: { name: string; description: string; userIds: number[] }): Observable<any> {
+  createGroup(
+    companyId: number,
+    groupData: { name: string; description: string; userIds: number[] }
+  ): Observable<any> {
     return this.authService.hasPermission('MANAGE_USERS').pipe(
       map(hasPermission => {
         if (!hasPermission) {
@@ -243,7 +250,7 @@ export class CompanyService {
           name: groupData.name,
           acces_code: groupData.description,
           company_id: companyId,
-          member_ids: groupData.userIds
+          member_ids: groupData.userIds,
         });
       }),
       switchMap(apiCall => apiCall)
@@ -268,7 +275,9 @@ export class CompanyService {
         if (!hasPermission) {
           throw new Error('Permission MANAGE_USERS requise');
         }
-        return this.http.post<any>(`${environment.apiBaseUrl}/group/${groupId}/add-user`, { user_id: userId });
+        return this.http.post<any>(`${environment.apiBaseUrl}/group/${groupId}/add-user`, {
+          user_id: userId,
+        });
       }),
       switchMap(apiCall => apiCall)
     );
@@ -280,7 +289,9 @@ export class CompanyService {
         if (!hasPermission) {
           throw new Error('Permission MANAGE_USERS requise');
         }
-        return this.http.delete<any>(`${environment.apiBaseUrl}/group/${groupId}/remove-user/${userId}`);
+        return this.http.delete<any>(
+          `${environment.apiBaseUrl}/group/${groupId}/remove-user/${userId}`
+        );
       }),
       switchMap(apiCall => apiCall)
     );

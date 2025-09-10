@@ -14,10 +14,7 @@ describe('AuthService', () => {
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      providers: [
-        AuthService,
-        { provide: Router, useValue: routerSpy }
-      ]
+      providers: [AuthService, { provide: Router, useValue: routerSpy }],
     });
     service = TestBed.inject(AuthService);
     httpMock = TestBed.inject(HttpTestingController);
@@ -36,7 +33,7 @@ describe('AuthService', () => {
   it('should login successfully', () => {
     const mockResponse = {
       token: 'jwt-token',
-      refresh_token: 'refresh-token'
+      refresh_token: 'refresh-token',
     };
 
     service.login('test@example.com', 'password').subscribe(() => {
@@ -48,21 +45,21 @@ describe('AuthService', () => {
     expect(req.request.method).toBe('POST');
     expect(req.request.body).toEqual({
       email: 'test@example.com',
-      password: 'password'
+      password: 'password',
     });
     req.flush(mockResponse);
   });
 
   it('should check if user is logged in', () => {
     expect(service.isLoggedIn()).toBe(false);
-    
+
     localStorage.setItem('JWT_TOKEN', 'test-token');
     expect(service.isLoggedIn()).toBe(true);
   });
 
   it('should check if user is guest', () => {
     expect(service.isGuest()).toBe(false);
-    
+
     localStorage.setItem('GUEST_MODE', 'true');
     expect(service.isGuest()).toBe(true);
   });
@@ -82,7 +79,7 @@ describe('AuthService', () => {
 
   it('should get current user when logged in', () => {
     localStorage.setItem('JWT_TOKEN', 'test-token');
-    
+
     const mockUser = {
       id: 1,
       email: 'test@example.com',
@@ -92,7 +89,7 @@ describe('AuthService', () => {
       dateRegistration: '2024-01-01',
       isAdmin: false,
       isActive: true,
-      isVerified: true
+      isVerified: true,
     };
 
     service.getCurrentUser().subscribe(user => {
@@ -121,10 +118,10 @@ describe('AuthService', () => {
 
   it('should refresh token', () => {
     localStorage.setItem('REFRESH_TOKEN', 'refresh-token');
-    
+
     const mockResponse = {
       token: 'new-jwt-token',
-      refresh_token: 'new-refresh-token'
+      refresh_token: 'new-refresh-token',
     };
 
     service.refresh().subscribe(() => {
@@ -142,9 +139,9 @@ describe('AuthService', () => {
 
     service.refresh().subscribe({
       next: () => fail('should have failed'),
-      error: (error) => {
+      error: error => {
         expect(error.message).toBe('No refresh token');
-      }
+      },
     });
 
     httpMock.expectNone(`${environment.apiBaseUrl}/token/refresh`);
@@ -160,7 +157,7 @@ describe('AuthService', () => {
       dateRegistration: '2024-01-01',
       isAdmin: true,
       isActive: true,
-      isVerified: true
+      isVerified: true,
     };
 
     localStorage.setItem('JWT_TOKEN', 'test-token');
@@ -184,9 +181,7 @@ describe('AuthService', () => {
       isAdmin: false,
       isActive: true,
       isVerified: true,
-      userPermissions: [
-        { id: 1, permission: 'CREATE_QUIZ' }
-      ]
+      userPermissions: [{ id: 1, permission: 'CREATE_QUIZ' }],
     };
 
     localStorage.setItem('JWT_TOKEN', 'test-token');
@@ -209,7 +204,7 @@ describe('AuthService', () => {
       dateRegistration: '2024-01-01',
       isAdmin: true,
       isActive: true,
-      isVerified: true
+      isVerified: true,
     };
 
     localStorage.setItem('JWT_TOKEN', 'test-token');
@@ -232,7 +227,7 @@ describe('AuthService', () => {
       dateRegistration: '2024-01-01',
       isAdmin: true,
       isActive: true,
-      isVerified: true
+      isVerified: true,
     };
 
     localStorage.setItem('JWT_TOKEN', 'test-token');

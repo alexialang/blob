@@ -15,7 +15,7 @@ interface TransitionData {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class QuizTransitionService {
   private _showTransition = new BehaviorSubject<boolean>(false);
@@ -31,13 +31,13 @@ export class QuizTransitionService {
   cardColor$ = this._cardColor.asObservable();
 
   startTransition(quiz: QuizCard, cardElement: HTMLElement, cardColor: string): Promise<void> {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       const rect = cardElement.getBoundingClientRect();
       this._cardPosition.next({
         x: rect.left + rect.width / 2,
         y: rect.top + rect.height / 2,
         width: rect.width,
-        height: rect.height
+        height: rect.height,
       });
 
       this._currentQuiz.next(quiz);
@@ -52,9 +52,6 @@ export class QuizTransitionService {
       }, 8000);
     });
   }
-
-
-
 
   private endTransition(): void {
     this._showTransition.next(false);

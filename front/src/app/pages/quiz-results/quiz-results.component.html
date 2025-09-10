@@ -1,12 +1,10 @@
 <div class="quiz-results-page" *ngIf="!isLoading && resultData">
-
   <div class="results-header">
     <app-back-button></app-back-button>
     <h1 class="page-title">Résultats du Quiz</h1>
   </div>
 
   <div class="results-content">
-
     <div class="score-section">
       <div class="quiz-info">
         <h2 class="quiz-title">{{ resultData.quizTitle }}</h2>
@@ -24,7 +22,10 @@
       <div class="score-details">
         <div class="detail-item">
           <span class="label">Questions correctes</span>
-          <span class="value">{{ Math.floor((resultData.totalScore / 100) * resultData.totalQuestions) }} / {{ resultData.totalQuestions }}</span>
+          <span class="value"
+            >{{ Math.floor((resultData.totalScore / 100) * resultData.totalQuestions) }} /
+            {{ resultData.totalQuestions }}</span
+          >
         </div>
         <div class="detail-item">
           <span class="label">Niveau atteint</span>
@@ -42,9 +43,7 @@
           <span class="rank-suffix">{{ getPositionSuffix(resultData.playerRank) }}</span>
           <span class="rank-total">/ {{ resultData.totalPlayers }}</span>
         </div>
-        <p *ngIf="isGuest" class="guest-notice">
-          Connectez-vous pour sauvegarder votre score !
-        </p>
+        <p *ngIf="isGuest" class="guest-notice">Connectez-vous pour sauvegarder votre score !</p>
       </div>
 
       <div class="top-players" *ngIf="resultData.leaderboard.length > 0">
@@ -71,14 +70,16 @@
           label="Rejouer ce quiz"
           [negative]="false"
           backgroundColor="var(--color-primary)"
-          (buttonClick)="onReplay()">
+          (buttonClick)="onReplay()"
+        >
         </app-slide-button>
 
         <app-slide-button
           label="Partager mon score"
           [negative]="true"
           backgroundColor="var(--color-accent)"
-          (buttonClick)="onShare()">
+          (buttonClick)="onShare()"
+        >
         </app-slide-button>
       </div>
 
@@ -88,12 +89,9 @@
           <span *ngIf="isGuest">Se connecter pour voir le classement</span>
         </button>
 
-        <button class="link-btn" (click)="onBackToQuizzes()">
-          Retour aux quiz
-        </button>
+        <button class="link-btn" (click)="onBackToQuizzes()">Retour aux quiz</button>
       </div>
     </div>
-
   </div>
 </div>
 

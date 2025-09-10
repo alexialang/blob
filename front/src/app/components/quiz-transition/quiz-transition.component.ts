@@ -9,7 +9,7 @@ import { QuizCard } from '../../models/quiz.model';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './quiz-transition.component.html',
-  styleUrls: ['./quiz-transition.component.scss']
+  styleUrls: ['./quiz-transition.component.scss'],
 })
 export class QuizTransitionComponent implements OnInit, OnDestroy {
   showTransition = false;
@@ -17,28 +17,20 @@ export class QuizTransitionComponent implements OnInit, OnDestroy {
   cardPosition: any = null;
   isExiting = false;
   cardColor: string = 'var(--color-primary)';
-  
+
   private subscriptions: Subscription[] = [];
 
   constructor(private quizTransitionService: QuizTransitionService) {}
 
   ngOnInit(): void {
     this.subscriptions.push(
-      this.quizTransitionService.showTransition$.subscribe(
-        show => this.showTransition = show
-      ),
-      this.quizTransitionService.currentQuiz$.subscribe(
-        quiz => this.currentQuiz = quiz
-      ),
+      this.quizTransitionService.showTransition$.subscribe(show => (this.showTransition = show)),
+      this.quizTransitionService.currentQuiz$.subscribe(quiz => (this.currentQuiz = quiz)),
       this.quizTransitionService.cardPosition$.subscribe(
-        position => this.cardPosition = position
+        position => (this.cardPosition = position)
       ),
-      this.quizTransitionService.isExiting$.subscribe(
-        exiting => this.isExiting = exiting
-      ),
-      this.quizTransitionService.cardColor$.subscribe(
-        color => this.cardColor = color
-      )
+      this.quizTransitionService.isExiting$.subscribe(exiting => (this.isExiting = exiting)),
+      this.quizTransitionService.cardColor$.subscribe(color => (this.cardColor = color))
     );
   }
 

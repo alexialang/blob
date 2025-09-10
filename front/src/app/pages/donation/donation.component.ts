@@ -12,7 +12,7 @@ import { SeoService } from '../../services/seo.service';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './donation.component.html',
-  styleUrl: './donation.component.scss'
+  styleUrl: './donation.component.scss',
 })
 export class DonationComponent implements OnInit {
   amount: number = 10;
@@ -27,7 +27,7 @@ export class DonationComponent implements OnInit {
     private donationService: DonationService,
     private router: Router,
     private route: ActivatedRoute,
-    private readonly seoService: SeoService,
+    private readonly seoService: SeoService
   ) {}
 
   ngOnInit() {
@@ -40,11 +40,13 @@ export class DonationComponent implements OnInit {
 
     this.seoService.updateSEO({
       title: 'Blob - Faites un don pour soutenir notre plateforme',
-      description: 'Soutenez Blob et contribuez au développement des quiz interactifs éducatifs. Chaque don nous aide à innover et offrir plus de contenus.',
+      description:
+        'Soutenez Blob et contribuez au développement des quiz interactifs éducatifs. Chaque don nous aide à innover et offrir plus de contenus.',
       keywords: 'faire un don, contribution, financement, soutenir Blob, quiz éducatif, plateforme',
       ogTitle: 'Faites un don à Blob',
-      ogDescription: 'Participez au développement de Blob et aidez-nous à offrir des quiz interactifs innovants pour l\'apprentissage.',
-      ogUrl: '/faire-un-don'
+      ogDescription:
+        "Participez au développement de Blob et aidez-nous à offrir des quiz interactifs innovants pour l'apprentissage.",
+      ogUrl: '/faire-un-don',
     });
   }
   selectAmount(amount: number) {
@@ -57,34 +59,38 @@ export class DonationComponent implements OnInit {
     this.isProcessing = true;
     this.error = '';
 
-    this.donationService.createPaymentLink({
-      amount: this.amount,
-      donor_email: this.donorEmail || undefined,
-      donor_name: this.donorName || undefined
-    }).pipe(
-      catchError((err: any) => {
-        console.error('Erreur lors de la création du lien de paiement:', err);
-
-        if (err.status === 500) {
-          this.error = 'Le service de paiement est temporairement indisponible. Veuillez réessayer plus tard.';
-        } else if (err.status === 400) {
-          this.error = 'Veuillez vérifier les informations saisies.';
-        } else if (err.status === 0 || err.status === 404) {
-          this.error = 'Impossible de contacter le serveur. Vérifiez votre connexion.';
-        } else {
-          this.error = 'Une erreur inattendue s\'est produite. Veuillez réessayer.';
-        }
-
-        return of(null);
-      }),
-      finalize(() => {
-        this.isProcessing = false;
+    this.donationService
+      .createPaymentLink({
+        amount: this.amount,
+        donor_email: this.donorEmail || undefined,
+        donor_name: this.donorName || undefined,
       })
-    ).subscribe(response => {
-      if (response && response.payment_url) {
-        window.location.href = response.payment_url;
-      }
-    });
+      .pipe(
+        catchError((err: any) => {
+          console.error('Erreur lors de la création du lien de paiement:', err);
+
+          if (err.status === 500) {
+            this.error =
+              'Le service de paiement est temporairement indisponible. Veuillez réessayer plus tard.';
+          } else if (err.status === 400) {
+            this.error = 'Veuillez vérifier les informations saisies.';
+          } else if (err.status === 0 || err.status === 404) {
+            this.error = 'Impossible de contacter le serveur. Vérifiez votre connexion.';
+          } else {
+            this.error = "Une erreur inattendue s'est produite. Veuillez réessayer.";
+          }
+
+          return of(null);
+        }),
+        finalize(() => {
+          this.isProcessing = false;
+        })
+      )
+      .subscribe(response => {
+        if (response && response.payment_url) {
+          window.location.href = response.payment_url;
+        }
+      });
   }
 
   goBack() {

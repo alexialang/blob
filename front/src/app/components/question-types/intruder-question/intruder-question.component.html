@@ -1,39 +1,40 @@
-<div class="blob-detective-arena"
-[class.accusation-mode]="selectedAnswerId"
-(mousemove)="onMouseMove($event)">
-
-  <div class="custom-cursor"
-       [class.hover-state]="isHoveringCard"
-       [style.left.px]="cursorPosition.x"
-       [style.top.px]="cursorPosition.y"
-       #customCursor>
+<div class="blob-detective-arena" [class.accusation-mode]="selectedAnswerId" (mousemove)="onMouseMove($event)">
+  <div
+    class="custom-cursor"
+    [class.hover-state]="isHoveringCard"
+    [style.left.px]="cursorPosition.x"
+    [style.top.px]="cursorPosition.y"
+    #customCursor
+  >
     <svg width="64" height="64" viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg">
-      <path d="M32.5,30c2.494-3.129,4-7.654,4-12c0-10.05-8.139-18-18-18c-9.862,0-18,7.95-18,18c0,10.05,8.138,18,18,18c4.193,0,7.953-1.534,11-4l11,12l3-3L32.5,30z M18.5,32c-7.658,0-14-6.196-14-14c0-7.804,6.342-14,14-14c7.658,0,14,6.196,14,14C32.5,25.804,26.158,32,18.5,32z"
-            fill="black"
-            stroke="hsl(220, 80%, 55%)"
-            stroke-width="0.5"/>
+      <path
+        d="M32.5,30c2.494-3.129,4-7.654,4-12c0-10.05-8.139-18-18-18c-9.862,0-18,7.95-18,18c0,10.05,8.138,18,18,18c4.193,0,7.953-1.534,11-4l11,12l3-3L32.5,30z M18.5,32c-7.658,0-14-6.196-14-14c0-7.804,6.342-14,14-14c7.658,0,14,6.196,14,14C32.5,25.804,26.158,32,18.5,32z"
+        fill="black"
+        stroke="hsl(220, 80%, 55%)"
+        stroke-width="0.5"
+      />
     </svg>
   </div>
 
   <div class="investigation-main-centered">
-
     <div class="suspects-grid-centered">
-      <div *ngFor="let answer of shuffledAnswers; let i = index"
-      class="blob-suspect-large"
-      [class.accused]="isSelected(answer.id)"
-      [class.innocent]="!isSelected(answer.id) && selectedAnswerId"
-      [class.under-investigation]="hoveredCard === i"
-      [style.--suspect-index]="i"
-      (click)="investigateSuspect(answer.id, i)"
-      (mouseenter)="startInvestigation(i)"
-      (mouseleave)="stopInvestigation(i)"
-      [attr.tabindex]="0"
-      [attr.aria-label]="'Suspect ' + (i + 1) + ': ' + answer.answer"
-      (keydown.enter)="investigateSuspect(answer.id, i)"
-      (keydown.space)="$event.preventDefault(); investigateSuspect(answer.id, i)">
-
+      <div
+        *ngFor="let answer of shuffledAnswers; let i = index"
+        class="blob-suspect-large"
+        [class.accused]="isSelected(answer.id)"
+        [class.innocent]="!isSelected(answer.id) && selectedAnswerId"
+        [class.under-investigation]="hoveredCard === i"
+        [style.--suspect-index]="i"
+        (click)="investigateSuspect(answer.id, i)"
+        (mouseenter)="startInvestigation(i)"
+        (mouseleave)="stopInvestigation(i)"
+        [attr.tabindex]="0"
+        [attr.aria-label]="'Suspect ' + (i + 1) + ': ' + answer.answer"
+        (keydown.enter)="investigateSuspect(answer.id, i)"
+        (keydown.space)="$event.preventDefault(); investigateSuspect(answer.id, i)"
+      >
         <div class="blob-avatar-left">
-          <img [src]="getAvatarSvg(i)" [alt]="'Avatar ' + (i + 1)" class="avatar-svg-large">
+          <img [src]="getAvatarSvg(i)" [alt]="'Avatar ' + (i + 1)" class="avatar-svg-large" />
         </div>
 
         <div class="blob-container-large">
@@ -58,8 +59,7 @@
   </div>
 
   <div class="validate-button">
-    <button [disabled]="!selectedAnswerId || isAccused"
-            (click)="makeAccusation()">
+    <button [disabled]="!selectedAnswerId || isAccused" (click)="makeAccusation()">
       {{ getValidateText() }}
     </button>
   </div>

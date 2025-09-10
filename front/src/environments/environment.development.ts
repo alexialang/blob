@@ -6,6 +6,6 @@ export const environment = {
     umamiUrl: 'https://cloud.umami.is',
     umamiWebsiteId: 'e0ff5165-f84d-493a-ac33-4e079fb86094',
     enabled: true,
-    respectPrivacy: true
-  }
+    respectPrivacy: true,
+  },
 };

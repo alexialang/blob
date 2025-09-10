@@ -6,4 +6,3 @@ export interface UserStatistics {
   badgesEarned: number;
   memberSince: string;
 }
-

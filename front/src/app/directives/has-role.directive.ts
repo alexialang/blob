@@ -4,7 +4,7 @@ import { Subject, takeUntil } from 'rxjs';
 
 @Directive({
   selector: '[hasRole]',
-  standalone: true
+  standalone: true,
 })
 export class HasRoleDirective implements OnInit, OnDestroy {
   @Input() hasRole!: string;
@@ -20,7 +20,8 @@ export class HasRoleDirective implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.authService.hasRole(this.hasRole)
+    this.authService
+      .hasRole(this.hasRole)
       .pipe(takeUntil(this.destroy$))
       .subscribe(hasRole => {
         if (hasRole && !this.hasView) {

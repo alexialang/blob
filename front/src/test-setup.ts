@@ -10,13 +10,13 @@ export function setupTestBed() {
   const mockActivatedRoute = {
     params: of({}),
     queryParams: of({}),
-    snapshot: { params: {}, queryParams: {} }
+    snapshot: { params: {}, queryParams: {} },
   };
 
   const mockRouter = {
     navigate: jasmine.createSpy('navigate'),
     events: of({}),
-    routerState: { root: { children: [], snapshot: { data: {} } } }
+    routerState: { root: { children: [], snapshot: { data: {} } } },
   };
 
   const mockAuthService = {
@@ -27,25 +27,15 @@ export function setupTestBed() {
     isAdmin: jasmine.createSpy('isAdmin').and.returnValue(false),
     getCurrentUser: jasmine.createSpy('getCurrentUser').and.returnValue(null),
     login: jasmine.createSpy('login').and.returnValue(of({})),
-    logout: jasmine.createSpy('logout').and.returnValue(of({}))
+    logout: jasmine.createSpy('logout').and.returnValue(of({})),
   };
 
   return TestBed.configureTestingModule({
-    imports: [
-      HttpClientTestingModule,
-      RouterTestingModule
-    ],
+    imports: [HttpClientTestingModule, RouterTestingModule],
     providers: [
       { provide: ActivatedRoute, useValue: mockActivatedRoute },
       { provide: Router, useValue: mockRouter },
-      { provide: AuthService, useValue: mockAuthService }
-    ]
+      { provide: AuthService, useValue: mockAuthService },
+    ],
   });
 }
-
-
-
-
-
-
-

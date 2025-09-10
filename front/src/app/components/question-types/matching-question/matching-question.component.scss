@@ -76,7 +76,8 @@
   z-index: 5;
 }
 
-.left-column, .right-column {
+.left-column,
+.right-column {
   h3 {
     font-size: 18px;
     font-weight: 600;
@@ -129,7 +130,8 @@
     position: relative;
   }
 
-  .item-number, .item-letter {
+  .item-number,
+  .item-letter {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -288,7 +290,8 @@
       font-size: 14px;
     }
 
-    .item-number, .item-letter {
+    .item-number,
+    .item-letter {
       width: 25px;
       height: 25px;
       font-size: 12px;
@@ -297,9 +300,15 @@
 }
 
 @keyframes connectionPulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.2); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 .matching-item.connected .connection-point {
@@ -311,7 +320,6 @@
     cursor: crosshair;
   }
 }
-
 
 .sr-only {
   position: absolute;
@@ -326,7 +334,6 @@
 }
 
 .matching-item {
-
   &:focus {
     outline: 3px solid var(--color-secondary);
     outline-offset: 2px;
@@ -347,7 +354,7 @@
     }
   }
 
-  &[aria-disabled="true"] {
+  &[aria-disabled='true'] {
     opacity: 0.6;
     cursor: not-allowed;
   }

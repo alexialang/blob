@@ -6,6 +6,6 @@ export const environment = {
     umamiUrl: 'https://analytics.blob.production.com',
     umamiWebsiteId: 'your-website-id',
     enabled: true,
-    respectPrivacy: true
-  }
+    respectPrivacy: true,
+  },
 };

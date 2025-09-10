@@ -1,4 +1,12 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  OnInit,
+  OnChanges,
+  SimpleChanges,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -20,19 +28,16 @@ export interface UserWithRoles {
 @Component({
   selector: 'app-user-roles-modal',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule
-  ],
+  imports: [CommonModule, FormsModule],
   templateUrl: './user-roles-modal.component.html',
-  styleUrls: ['./user-roles-modal.component.scss']
+  styleUrls: ['./user-roles-modal.component.scss'],
 })
 export class UserRolesModalComponent implements OnInit, OnChanges {
   @Input() user: UserWithRoles | null = null;
   @Input() isOpen = false;
   @Input() availableRoles: UserRole[] = [];
   @Input() availablePermissions: string[] = [];
-  
+
   @Output() closeModal = new EventEmitter<void>();
   @Output() saveChanges = new EventEmitter<{
     userId: number;
@@ -60,13 +65,13 @@ export class UserRolesModalComponent implements OnInit, OnChanges {
   toggleRole(role: string) {
     if (this.selectedRoles.has(role)) {
       this.selectedRoles.delete(role);
-      
+
       if (role === 'ROLE_ADMIN') {
         this.selectedPermissions.clear();
       }
     } else {
       this.selectedRoles.add(role);
-      
+
       if (role === 'ROLE_ADMIN') {
         this.availablePermissions.forEach(perm => this.selectedPermissions.add(perm));
       }
@@ -102,7 +107,7 @@ export class UserRolesModalComponent implements OnInit, OnChanges {
       this.saveChanges.emit({
         userId: this.user.id,
         roles: Array.from(this.selectedRoles),
-        permissions: Array.from(this.selectedPermissions)
+        permissions: Array.from(this.selectedPermissions),
       });
     }
   }
@@ -112,18 +117,18 @@ export class UserRolesModalComponent implements OnInit, OnChanges {
   }
 
   getPermissionLabel(permission: string): string {
-    const labels: {[key: string]: string} = {
-      'CREATE_QUIZ': 'Créer des quiz',
-      'MANAGE_USERS': 'Gérer les utilisateurs',
-      'VIEW_RESULTS': 'Voir les résultats'
+    const labels: { [key: string]: string } = {
+      CREATE_QUIZ: 'Créer des quiz',
+      MANAGE_USERS: 'Gérer les utilisateurs',
+      VIEW_RESULTS: 'Voir les résultats',
     };
     return labels[permission] || permission;
   }
 
   getRoleLabel(role: string): string {
-    const labels: {[key: string]: string} = {
-      'ROLE_ADMIN': 'Administrateur',
-      'ROLE_USER': 'Utilisateur'
+    const labels: { [key: string]: string } = {
+      ROLE_ADMIN: 'Administrateur',
+      ROLE_USER: 'Utilisateur',
     };
     return labels[role] || role;
   }

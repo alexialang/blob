@@ -1,182 +1,168 @@
 <div class="user-page">
+  <div class="container">
+    <h1 class="page-title">
+      Gestion <br />
+      des <span class="user-highlight" [ngStyle]="{ color: highlightColor }"> utilisateurs</span>
+    </h1>
+    >
 
-<div class="container">
-  <h1 class="page-title">Gestion <br /> des <span class="user-highlight" [ngStyle]="{ 'color': highlightColor }"> utilisateurs</span></h1>>
+    <div class="filters-container">
+      <div class="search-row">
+        <select class="form-control page-size-select" [(ngModel)]="pageSize" (ngModelChange)="onPageSizeChange($event)">
+          <option [value]="10">10 par page</option>
+          <option [value]="20">20 par page</option>
+          <option [value]="50">50 par page</option>
+          <option [value]="100">100 par page</option>
+        </select>
 
-  <div class="filters-container">
-    <div class="search-row">
-      <select
-        class="form-control page-size-select"
-        [(ngModel)]="pageSize"
-        (ngModelChange)="onPageSizeChange($event)"
-      >
-        <option [value]="10">10 par page</option>
-        <option [value]="20">20 par page</option>
-        <option [value]="50">50 par page</option>
-        <option [value]="100">100 par page</option>
-      </select>
+        <input
+          type="text"
+          class="form-control search-input"
+          placeholder="Rechercher par nom, email..."
+          [(ngModel)]="searchTerm"
+          (ngModelChange)="onSearchChange($event)"
+        />
+      </div>
+    </div>
 
-      <input
-        type="text"
-        class="form-control search-input"
-        placeholder="Rechercher par nom, email..."
-        [(ngModel)]="searchTerm"
-        (ngModelChange)="onSearchChange($event)"
-      />
+    <div *ngIf="isLoading" class="loading-container">
+      <div class="spinner"></div>
+      <p>Chargement des utilisateurs...</p>
+    </div>
+
+    <div *ngIf="loadError && !isLoading" class="error-container">
+      <p class="error-message">Erreur lors du chargement des utilisateurs</p>
+      <button (click)="loadUsers()" class="retry-button">Réessayer</button>
+    </div>
+
+    <div *ngIf="!isLoading && !loadError && dataReady && rows.length > 0">
+      <div class="table-scroll-wrapper">
+        <table tuiTable [size]="size" class="custom-table table-striped">
+          <thead>
+            <tr>
+              <th tuiTh class="th-checkbox" *ngIf="isAdmin || hasManageUsersPermission">
+                <input type="checkbox" tuiCheckbox [ngModel]="allSelected" (ngModelChange)="toggleAll($event)" />
+              </th>
+              <th tuiTh class="th-user">Utilisateur</th>
+              <th tuiTh class="th-active">Actif</th>
+              <th tuiTh class="th-org">Organisation</th>
+
+              <th tuiTh class="th-rights">Droits</th>
+              <th tuiTh class="th-action">
+                Action
+                <button
+                  *ngIf="isAdmin || hasManageUsersPermission"
+                  tuiButton
+                  appearance="action"
+                  size="xs"
+                  iconStart="@tui.trash"
+                  tuiIconButton
+                  (click)="deleteSelected()"
+                  [disabled]="!hasSelection"
+                  class="btn-delete-all"
+                >
+                  Supprimer ({{ getSelectedCount() }})
+                </button>
+              </th>
+            </tr>
+          </thead>
+          <tbody tuiTbody>
+            <tr *ngFor="let row of rows; trackBy: trackByUserId" class="table-row">
+              <td tuiTd class="td-checkbox" *ngIf="isAdmin || hasManageUsersPermission">
+                <input type="checkbox" tuiCheckbox [(ngModel)]="row.selected" />
+              </td>
+              <td tuiTd class="td-user">
+                <div [tuiCell]="size" class="d-flex align-center gap-2 user-cell">
+                  <tui-avatar [size]="size"></tui-avatar>
+                  <div>
+                    <div tuiTitle>{{ row.name }}</div>
+                    <div tuiSubtitle>{{ row.email }}</div>
+                  </div>
+                </div>
+              </td>
+              <td tuiTd class="td-active">
+                <span class="status-indicator" [class.active]="row.active" [class.inactive]="!row.active"></span>
+                {{ row.active ? 'Oui' : 'Non' }}
+              </td>
+              <td tuiTd class="td-org">
+                {{ row.organization }}<br /><span class="group">{{ row.group }}</span>
+              </td>
+
+              <td tuiTd class="td-rights">
+                <tui-items-with-more [style.gap.rem]="'0.25'">
+                  <ng-container *ngFor="let perm of row.rights">
+                    <tui-badge *tuiItem>{{ perm }}</tui-badge>
+                  </ng-container>
+                </tui-items-with-more>
+              </td>
+              <td tuiTd class="td-action">
+                <div class="d-flex gap-2">
+                  <a
+                    *ngIf="isAdmin || hasViewResultsPermission"
+                    class="link-profile"
+                    (click)="viewUserProfile(row.id)"
+                    style="cursor: pointer"
+                    >Voir le profil</a
+                  >
+                  <button
+                    *ngIf="isAdmin || hasManageUsersPermission"
+                    tuiButton
+                    appearance="flat"
+                    size="xs"
+                    class="btn-roles"
+                    (click)="openRolesModal(row)"
+                    title="Gérer les rôles"
+                  >
+                    <i class="fas fa-user-cog me-1"></i>Gérer les droits
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="rows.length === 0">
+              <td tuiTd colspan="6" class="no-data">Aucun utilisateur trouvé.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Informations de pagination -->
+      <div class="pagination-info" *ngIf="totalItems > 0">
+        <p>Affichage de {{ startItem }} à {{ endItem }} sur {{ totalItems }} utilisateurs</p>
+      </div>
+
+      <!-- Pagination Taiga UI -->
+      <div class="pagination-container" *ngIf="totalPages > 1">
+        <app-pagination
+          [totalItems]="totalItems"
+          [pageSize]="pageSize"
+          [page]="page"
+          [activePadding]="2"
+          (pageChange)="onPageChange($event)"
+        ></app-pagination>
+      </div>
+    </div>
+
+    <div *ngIf="!isLoading && !loadError && dataReady && rows.length === 0" class="no-data-container">
+      <p>Aucun utilisateur trouvé.</p>
     </div>
   </div>
 
-  <div *ngIf="isLoading" class="loading-container">
-    <div class="spinner"></div>
-    <p>Chargement des utilisateurs...</p>
-  </div>
-
-  <div *ngIf="loadError && !isLoading" class="error-container">
-    <p class="error-message">Erreur lors du chargement des utilisateurs</p>
-    <button (click)="loadUsers()" class="retry-button">Réessayer</button>
-  </div>
-
-  <div *ngIf="!isLoading && !loadError && dataReady && rows.length > 0">
-    <div class="table-scroll-wrapper">
-      <table tuiTable [size]="size" class="custom-table table-striped">
-        <thead>
-        <tr>
-          <th tuiTh class="th-checkbox" *ngIf="isAdmin || hasManageUsersPermission">
-            <input
-              type="checkbox"
-              tuiCheckbox
-              [ngModel]="allSelected"
-              (ngModelChange)="toggleAll($event)"
-            />
-          </th>
-          <th tuiTh class="th-user">
-            Utilisateur
-          </th>
-          <th tuiTh class="th-active">
-            Actif
-          </th>
-          <th tuiTh class="th-org">
-            Organisation
-          </th>
-
-          <th tuiTh class="th-rights">Droits</th>
-          <th tuiTh class="th-action">
-            Action
-            <button
-              *ngIf="isAdmin || hasManageUsersPermission"
-              tuiButton
-              appearance="action"
-              size="xs"
-              iconStart="@tui.trash"
-              tuiIconButton
-              (click)="deleteSelected()"
-              [disabled]="!hasSelection"
-              class="btn-delete-all"
-            >Supprimer ({{ getSelectedCount() }})</button>
-          </th>
-        </tr>
-        </thead>
-        <tbody tuiTbody>
-        <tr *ngFor="let row of rows; trackBy: trackByUserId" class="table-row">
-          <td tuiTd class="td-checkbox" *ngIf="isAdmin || hasManageUsersPermission">
-            <input type="checkbox" tuiCheckbox [(ngModel)]="row.selected" />
-          </td>
-          <td tuiTd class="td-user">
-            <div [tuiCell]="size" class="d-flex align-center gap-2 user-cell">
-              <tui-avatar [size]="size"></tui-avatar>
-              <div>
-                <div tuiTitle>{{ row.name }}</div>
-                <div tuiSubtitle>{{ row.email }}</div>
-              </div>
-            </div>
-          </td>
-          <td tuiTd class="td-active">
-              <span
-                class="status-indicator"
-                [class.active]="row.active"
-                [class.inactive]="!row.active"
-              ></span>
-            {{ row.active ? 'Oui' : 'Non' }}
-          </td>
-          <td tuiTd class="td-org">
-            {{ row.organization }}<br /><span class="group">{{ row.group }}</span>
-          </td>
-
-          <td tuiTd class="td-rights">
-            <tui-items-with-more [style.gap.rem]="'0.25'">
-              <ng-container *ngFor="let perm of row.rights">
-                <tui-badge *tuiItem>{{ perm }}</tui-badge>
-              </ng-container>
-            </tui-items-with-more>
-          </td>
-          <td tuiTd class="td-action">
-            <div class="d-flex gap-2">
-              <a
-                *ngIf="isAdmin || hasViewResultsPermission"
-                class="link-profile"
-                (click)="viewUserProfile(row.id)"
-                style="cursor: pointer;"
-              >Voir le profil</a>
-              <button
-                *ngIf="isAdmin || hasManageUsersPermission"
-                tuiButton
-                appearance="flat"
-                size="xs"
-                class="btn-roles"
-                (click)="openRolesModal(row)"
-                title="Gérer les rôles"
-              ><i class="fas fa-user-cog me-1"></i>Gérer les droits</button>
-            </div>
-          </td>
-        </tr>
-        <tr *ngIf="rows.length === 0">
-          <td tuiTd colspan="6" class="no-data">Aucun utilisateur trouvé.</td>
-        </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- Informations de pagination -->
-    <div class="pagination-info" *ngIf="totalItems > 0">
-      <p>Affichage de {{ startItem }} à {{ endItem }} sur {{ totalItems }} utilisateurs</p>
-    </div>
-
-    <!-- Pagination Taiga UI -->
-    <div class="pagination-container" *ngIf="totalPages > 1">
-      <app-pagination
-        [totalItems]="totalItems"
-        [pageSize]="pageSize"
-        [page]="page"
-        [activePadding]="2"
-        (pageChange)="onPageChange($event)"
-      ></app-pagination>
-    </div>
-  </div>
-
-  <div *ngIf="!isLoading && !loadError && dataReady && rows.length === 0" class="no-data-container">
-    <p>Aucun utilisateur trouvé.</p>
-  </div>
-
-</div>
-
-
-<app-user-roles-modal
-  *ngIf="isAdmin"
-  [user]="selectedUserForRoles"
-  [isOpen]="showRolesModal"
-  [availableRoles]="availableRoles"
-  [availablePermissions]="availablePermissions"
-  (closeModal)="closeRolesModal()"
-  (saveChanges)="saveUserRoles($event)"
-></app-user-roles-modal>
-<app-user-roles-modal
-  *hasPermission="'MANAGE_USERS'"
-  [user]="selectedUserForRoles"
-  [isOpen]="showRolesModal"
-  [availableRoles]="availableRoles"
-  [availablePermissions]="availablePermissions"
-  (closeModal)="closeRolesModal()"
-  (saveChanges)="saveUserRoles($event)"
-></app-user-roles-modal>
-
+  <app-user-roles-modal
+    *ngIf="isAdmin"
+    [user]="selectedUserForRoles"
+    [isOpen]="showRolesModal"
+    [availableRoles]="availableRoles"
+    [availablePermissions]="availablePermissions"
+    (closeModal)="closeRolesModal()"
+    (saveChanges)="saveUserRoles($event)"
+  ></app-user-roles-modal>
+  <app-user-roles-modal
+    *hasPermission="'MANAGE_USERS'"
+    [user]="selectedUserForRoles"
+    [isOpen]="showRolesModal"
+    [availableRoles]="availableRoles"
+    [availablePermissions]="availablePermissions"
+    (closeModal)="closeRolesModal()"
+    (saveChanges)="saveUserRoles($event)"
+  ></app-user-roles-modal>
 </div>

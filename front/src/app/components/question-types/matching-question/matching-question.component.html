@@ -11,11 +11,9 @@
   </div>
 
   <div id="matching-instructions" class="sr-only">
-    Instructions pour l'accessibilité :
-    Utilisez Tab pour naviguer entre les éléments.
-    Appuyez sur Entrée pour sélectionner un élément de gauche, puis un élément de droite pour les connecter.
-    Appuyez sur Suppr pour supprimer une connexion.
-    Appuyez sur Échap pour annuler une sélection.
+    Instructions pour l'accessibilité : Utilisez Tab pour naviguer entre les éléments. Appuyez sur Entrée pour
+    sélectionner un élément de gauche, puis un élément de droite pour les connecter. Appuyez sur Suppr pour supprimer
+    une connexion. Appuyez sur Échap pour annuler une sélection.
   </div>
 
   <div class="matching-area" #matchingContainer>
@@ -25,30 +23,34 @@
       <div class="left-column">
         <h3>Éléments à associer</h3>
         <div class="items-list" role="group" aria-label="Éléments à associer">
-          <div *ngFor="let item of leftColumn; let i = index"
-               class="matching-item left-item"
-               [attr.data-id]="item.id"
-               [class.connected]="matches[item.id.toString()]"
-               [class.selected-keyboard]="selectedLeftForKeyboard === item.id.toString()"
-               [class.focused]="focusedElement === item.id.toString()"
-               tabindex="0"
-               role="button"
-               [attr.aria-label]="getAriaLabel(item, 'left', i)"
-               [attr.aria-describedby]="getAriaDescribedBy()"
-               [attr.aria-pressed]="selectedLeftForKeyboard === item.id.toString()"
-               (keydown)="onKeyDown($event, item.id.toString(), 'left')"
-               (focus)="onFocus(item.id.toString())"
-               (blur)="onBlur()">
+          <div
+            *ngFor="let item of leftColumn; let i = index"
+            class="matching-item left-item"
+            [attr.data-id]="item.id"
+            [class.connected]="matches[item.id.toString()]"
+            [class.selected-keyboard]="selectedLeftForKeyboard === item.id.toString()"
+            [class.focused]="focusedElement === item.id.toString()"
+            tabindex="0"
+            role="button"
+            [attr.aria-label]="getAriaLabel(item, 'left', i)"
+            [attr.aria-describedby]="getAriaDescribedBy()"
+            [attr.aria-pressed]="selectedLeftForKeyboard === item.id.toString()"
+            (keydown)="onKeyDown($event, item.id.toString(), 'left')"
+            (focus)="onFocus(item.id.toString())"
+            (blur)="onBlur()"
+          >
             <div class="item-content">
               <span class="item-number" aria-hidden="true">{{ i + 1 }}</span>
               <span class="item-text">{{ item.answer }}</span>
               <div class="connection-point left-point" aria-hidden="true"></div>
             </div>
-            <button *ngIf="matches[item.id.toString()]"
-                    class="remove-connection"
-                    (click)="removeConnection(item.id.toString())"
-                    [attr.aria-label]="'Supprimer la connexion de ' + item.answer"
-                    title="Supprimer cette connexion">
+            <button
+              *ngIf="matches[item.id.toString()]"
+              class="remove-connection"
+              (click)="removeConnection(item.id.toString())"
+              [attr.aria-label]="'Supprimer la connexion de ' + item.answer"
+              title="Supprimer cette connexion"
+            >
               ✕
             </button>
           </div>
@@ -58,20 +60,22 @@
       <div class="right-column">
         <h3>Associations possibles</h3>
         <div class="items-list" role="group" aria-label="Associations possibles">
-          <div *ngFor="let item of rightColumn; let i = index"
-               class="matching-item right-item"
-               [attr.data-id]="item.id"
-               [class.connected]="isRightItemConnected(item.id.toString())"
-               [class.focused]="focusedElement === item.id.toString()"
-               [class.available]="selectedLeftForKeyboard && !isRightItemConnected(item.id.toString())"
-               tabindex="0"
-               role="button"
-               [attr.aria-label]="getAriaLabel(item, 'right', i)"
-               [attr.aria-describedby]="getAriaDescribedBy()"
-               [attr.aria-disabled]="isRightItemConnected(item.id.toString())"
-               (keydown)="onKeyDown($event, item.id.toString(), 'right')"
-               (focus)="onFocus(item.id.toString())"
-               (blur)="onBlur()">
+          <div
+            *ngFor="let item of rightColumn; let i = index"
+            class="matching-item right-item"
+            [attr.data-id]="item.id"
+            [class.connected]="isRightItemConnected(item.id.toString())"
+            [class.focused]="focusedElement === item.id.toString()"
+            [class.available]="selectedLeftForKeyboard && !isRightItemConnected(item.id.toString())"
+            tabindex="0"
+            role="button"
+            [attr.aria-label]="getAriaLabel(item, 'right', i)"
+            [attr.aria-describedby]="getAriaDescribedBy()"
+            [attr.aria-disabled]="isRightItemConnected(item.id.toString())"
+            (keydown)="onKeyDown($event, item.id.toString(), 'right')"
+            (focus)="onFocus(item.id.toString())"
+            (blur)="onBlur()"
+          >
             <div class="item-content">
               <div class="connection-point right-point" aria-hidden="true"></div>
               <span class="item-letter" aria-hidden="true">{{ getItemLetter(i) }}</span>
@@ -99,10 +103,14 @@
     <div class="progress-indicator" aria-live="polite">
       {{ getMatchesCount() }} / {{ leftColumn.length }} associations complétées
     </div>
-    <button class="validate-btn"
-            [disabled]="!canValidate()"
-            (click)="validateAnswer()"
-            [attr.aria-label]="canValidate() ? 'Valider les associations' : 'Complétez toutes les associations avant de valider'">
+    <button
+      class="validate-btn"
+      [disabled]="!canValidate()"
+      (click)="validateAnswer()"
+      [attr.aria-label]="
+        canValidate() ? 'Valider les associations' : 'Complétez toutes les associations avant de valider'
+      "
+    >
       Valider les associations
     </button>
   </div>

@@ -16,20 +16,20 @@ describe('Permission Guards', () => {
     TestBed.configureTestingModule({
       providers: [
         { provide: AuthService, useValue: authServiceSpy },
-        { provide: Router, useValue: routerSpy }
-      ]
+        { provide: Router, useValue: routerSpy },
+      ],
     });
 
     mockAuthService = TestBed.inject(AuthService) as jasmine.SpyObj<AuthService>;
     mockRouter = TestBed.inject(Router) as jasmine.SpyObj<Router>;
-    
+
     // Mock isLoggedIn par défaut
     mockAuthService.isLoggedIn.and.returnValue(true);
   });
 
   describe('createQuizGuard', () => {
-    const executeGuard: CanActivateFn = (...guardParameters) => 
-        TestBed.runInInjectionContext(() => createQuizGuard(...guardParameters));
+    const executeGuard: CanActivateFn = (...guardParameters) =>
+      TestBed.runInInjectionContext(() => createQuizGuard(...guardParameters));
 
     it('should allow access when user has CREATE_QUIZ permission', () => {
       mockAuthService.hasPermission.and.returnValue(of(true));
@@ -37,7 +37,7 @@ describe('Permission Guards', () => {
       let result: any;
       const guardResult = executeGuard({} as any, {} as any);
       if (typeof guardResult === 'object' && 'subscribe' in guardResult) {
-        guardResult.subscribe(res => result = res);
+        guardResult.subscribe(res => (result = res));
       } else {
         result = guardResult;
       }
@@ -51,7 +51,7 @@ describe('Permission Guards', () => {
       let result: any;
       const guardResult = executeGuard({} as any, {} as any);
       if (typeof guardResult === 'object' && 'subscribe' in guardResult) {
-        guardResult.subscribe(res => result = res);
+        guardResult.subscribe(res => (result = res));
       } else {
         result = guardResult;
       }
@@ -62,8 +62,8 @@ describe('Permission Guards', () => {
   });
 
   describe('manageUsersGuard', () => {
-    const executeGuard: CanActivateFn = (...guardParameters) => 
-        TestBed.runInInjectionContext(() => manageUsersGuard(...guardParameters));
+    const executeGuard: CanActivateFn = (...guardParameters) =>
+      TestBed.runInInjectionContext(() => manageUsersGuard(...guardParameters));
 
     it('should allow access when user has MANAGE_USERS permission', () => {
       mockAuthService.hasPermission.and.returnValue(of(true));
@@ -71,7 +71,7 @@ describe('Permission Guards', () => {
       let result: any;
       const guardResult = executeGuard({} as any, {} as any);
       if (typeof guardResult === 'object' && 'subscribe' in guardResult) {
-        guardResult.subscribe(res => result = res);
+        guardResult.subscribe(res => (result = res));
       } else {
         result = guardResult;
       }
@@ -81,8 +81,8 @@ describe('Permission Guards', () => {
   });
 
   describe('viewResultsGuard', () => {
-    const executeGuard: CanActivateFn = (...guardParameters) => 
-        TestBed.runInInjectionContext(() => viewResultsGuard(...guardParameters));
+    const executeGuard: CanActivateFn = (...guardParameters) =>
+      TestBed.runInInjectionContext(() => viewResultsGuard(...guardParameters));
 
     it('should allow access when user has VIEW_RESULTS permission', () => {
       mockAuthService.hasPermission.and.returnValue(of(true));
@@ -90,7 +90,7 @@ describe('Permission Guards', () => {
       let result: any;
       const guardResult = executeGuard({} as any, {} as any);
       if (typeof guardResult === 'object' && 'subscribe' in guardResult) {
-        guardResult.subscribe(res => result = res);
+        guardResult.subscribe(res => (result = res));
       } else {
         result = guardResult;
       }

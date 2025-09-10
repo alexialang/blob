@@ -31,10 +31,9 @@ export interface QuizLeaderboard {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class QuizResultsService {
-
   constructor(
     private http: HttpClient,
     private authService: AuthService
@@ -42,14 +41,13 @@ export class QuizResultsService {
 
   saveQuizResult(result: QuizResult): Observable<any> {
     if (this.authService.isGuest()) {
-
       sessionStorage.setItem('guest-quiz-score', result.score.toString());
       return of({ success: true, saved: false, score: result.score });
     }
 
     return this.http.post(`${environment.apiBaseUrl}/user-answer/game-result`, {
       quiz_id: result.quizId,
-      total_score: result.score
+      total_score: result.score,
     });
   }
 
@@ -61,20 +59,18 @@ export class QuizResultsService {
     if (this.authService.isGuest()) {
       return this.getGuestLeaderboardWithRealData(quizId);
     }
-    
+
     return this.http.get<QuizLeaderboard>(`${environment.apiBaseUrl}/leaderboard/quiz/${quizId}`);
   }
 
   private getGuestLeaderboardWithRealData(quizId: number): Observable<QuizLeaderboard> {
     const savedScore = sessionStorage.getItem('guest-quiz-score');
     const guestScore = savedScore ? parseInt(savedScore) : 0;
-    
-
 
     return this.getPublicQuizLeaderboard(quizId).pipe(
       map((publicData: any) => {
         const realLeaderboard = publicData.leaderboard || [];
-        
+
         let guestRank = realLeaderboard.length + 1;
         for (let i = 0; i < realLeaderboard.length; i++) {
           if (guestScore > realLeaderboard[i].score) {
@@ -89,7 +85,7 @@ export class QuizResultsService {
           name: 'Vous (Visiteur)',
           company: 'Non connecté',
           score: guestScore,
-          isCurrentUser: true
+          isCurrentUser: true,
         });
 
         finalLeaderboard.forEach((player, index) => {
@@ -97,7 +93,7 @@ export class QuizResultsService {
         });
 
         const displayLeaderboard = finalLeaderboard.slice(0, 5);
-        
+
         if (guestRank > 5) {
           const guestEntry = finalLeaderboard.find(player => player.isCurrentUser);
           if (guestEntry) {
@@ -109,9 +105,8 @@ export class QuizResultsService {
           leaderboard: displayLeaderboard,
           currentUserRank: guestRank,
           totalPlayers: finalLeaderboard.length,
-          currentUserScore: guestScore
+          currentUserScore: guestScore,
         };
-        
 
         return leaderboardData;
       })

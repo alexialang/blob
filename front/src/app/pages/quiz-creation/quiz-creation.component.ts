@@ -7,7 +7,7 @@ import {
   Validators,
   ReactiveFormsModule,
   FormsModule,
-  AbstractControl
+  AbstractControl,
 } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { QuizManagementService } from '../../services/quiz-management.service';
@@ -44,7 +44,7 @@ interface Difficulty {
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './quiz-creation.component.html',
-  styleUrls: ['./quiz-creation.component.scss']
+  styleUrls: ['./quiz-creation.component.scss'],
 })
 export class QuizCreationComponent implements OnInit {
   quizForm!: FormGroup;
@@ -56,7 +56,7 @@ export class QuizCreationComponent implements OnInit {
   difficulties: Difficulty[] = [
     { value: 'easy', label: 'Facile' },
     { value: 'medium', label: 'Moyen' },
-    { value: 'hard', label: 'Difficile' }
+    { value: 'hard', label: 'Difficile' },
   ];
   isSubmitting = false;
   isEditMode = false;
@@ -72,7 +72,7 @@ export class QuizCreationComponent implements OnInit {
     private readonly fb: FormBuilder,
     private readonly router: Router,
     private readonly route: ActivatedRoute,
-    private readonly quizService: QuizManagementService,
+    private readonly quizService: QuizManagementService
   ) {}
 
   @HostListener('document:click', ['$event'])
@@ -106,9 +106,7 @@ export class QuizCreationComponent implements OnInit {
   }
 
   private generateRandomColor(): void {
-    const colors = [
-      '#257D54', '#FAA24B', '#D30D4C',
-    ];
+    const colors = ['#257D54', '#FAA24B', '#D30D4C'];
 
     const index = Math.floor(Math.random() * colors.length);
     this.highlightColor = colors[index];
@@ -122,7 +120,7 @@ export class QuizCreationComponent implements OnInit {
       is_public: [true, Validators.required],
       category: [null, Validators.required],
       groups: [[]],
-      questions: this.fb.array([])
+      questions: this.fb.array([]),
     });
 
     setTimeout(() => this.addQuestion(), 0);
@@ -138,7 +136,7 @@ export class QuizCreationComponent implements OnInit {
       question: ['', [Validators.required, Validators.minLength(5)]],
       type_question: [null, Validators.required],
       difficulty: ['easy', Validators.required],
-      answers: this.fb.array([])
+      answers: this.fb.array([]),
     });
 
     this.questions.push(questionForm);
@@ -170,7 +168,7 @@ export class QuizCreationComponent implements OnInit {
       is_correct: [false],
       order_correct: [''],
       pair_id: [''],
-      is_intrus: [false]
+      is_intrus: [false],
     });
 
     answers.push(answerForm);
@@ -241,7 +239,9 @@ export class QuizCreationComponent implements OnInit {
 
   private initializeMatchingPairs(questionIndex: number): void {
     const answers = this.getAnswers(questionIndex);
-    const alreadyPaired = answers.controls.some((control: AbstractControl) => !!control.get('pair_id')?.value);
+    const alreadyPaired = answers.controls.some(
+      (control: AbstractControl) => !!control.get('pair_id')?.value
+    );
     if (alreadyPaired) return;
 
     for (let i = 0; i < answers.length; i++) {
@@ -261,7 +261,7 @@ export class QuizCreationComponent implements OnInit {
       is_correct: [true],
       order_correct: [null],
       pair_id: [null],
-      is_intrus: [false]
+      is_intrus: [false],
     });
     answers.push(trueAnswer);
 
@@ -270,7 +270,7 @@ export class QuizCreationComponent implements OnInit {
       is_correct: [false],
       order_correct: [null],
       pair_id: [null],
-      is_intrus: [false]
+      is_intrus: [false],
     });
     answers.push(falseAnswer);
   }
@@ -296,13 +296,13 @@ export class QuizCreationComponent implements OnInit {
 
   private getMinAnswersForType(questionType: string): number {
     const MIN_ANSWERS_CONFIG = {
-      'MCQ': 3,
-      'multiple_choice': 3,
-      'right_order': 3,
-      'matching': 4,
-      'find_the_intruder': 3,
-      'blind_test': 1,
-      'true_false': 2
+      MCQ: 3,
+      multiple_choice: 3,
+      right_order: 3,
+      matching: 4,
+      find_the_intruder: 3,
+      blind_test: 1,
+      true_false: 2,
     } as const;
 
     return MIN_ANSWERS_CONFIG[questionType as keyof typeof MIN_ANSWERS_CONFIG] || 2;
@@ -310,12 +310,12 @@ export class QuizCreationComponent implements OnInit {
 
   private getMaxAnswersForType(questionType: string): number {
     const MAX_ANSWERS_CONFIG = {
-      'MCQ': 6,
-      'multiple_choice': 6,
-      'right_order': 8,
-      'matching': 10,
-      'find_the_intruder': 3,
-      'blind_test': 1
+      MCQ: 6,
+      multiple_choice: 6,
+      right_order: 8,
+      matching: 10,
+      find_the_intruder: 3,
+      blind_test: 1,
     } as const;
 
     return MAX_ANSWERS_CONFIG[questionType as keyof typeof MAX_ANSWERS_CONFIG] || 8;
@@ -323,12 +323,12 @@ export class QuizCreationComponent implements OnInit {
 
   getQuestionTypeLabel(type: string): string {
     const TYPE_LABELS = {
-      'MCQ': 'QCM',
-      'multiple_choice': 'Choix multiple',
-      'right_order': 'Remise dans le bon ordre',
-      'matching': 'Association d\'éléments',
-      'find_the_intruder': 'Intrus',
-      'blind_test': 'Blind Test'
+      MCQ: 'QCM',
+      multiple_choice: 'Choix multiple',
+      right_order: 'Remise dans le bon ordre',
+      matching: "Association d'éléments",
+      find_the_intruder: 'Intrus',
+      blind_test: 'Blind Test',
     } as const;
 
     return TYPE_LABELS[type as keyof typeof TYPE_LABELS] || type;
@@ -350,7 +350,9 @@ export class QuizCreationComponent implements OnInit {
   }
 
   getAnswerControlByPairId(questionIndex: number, pairId: string): any {
-    return this.getAnswers(questionIndex).controls.find(ctrl => ctrl.get('pair_id')?.value === pairId)?.get('answer');
+    return this.getAnswers(questionIndex)
+      .controls.find(ctrl => ctrl.get('pair_id')?.value === pairId)
+      ?.get('answer');
   }
 
   filterCategories(): void {
@@ -398,8 +400,6 @@ export class QuizCreationComponent implements OnInit {
     });
   }
 
-
-
   cancel(): void {
     this.router.navigate(['/quiz-management']);
   }
@@ -412,7 +412,7 @@ export class QuizCreationComponent implements OnInit {
         status: res.status,
         is_public: res.isPublic,
         category: res.category?.id || null,
-        groups: res.groups.map((g: any) => g.id)
+        groups: res.groups.map((g: any) => g.id),
       });
 
       if (res.category) {
@@ -440,7 +440,7 @@ export class QuizCreationComponent implements OnInit {
           question: [q.question || '', [Validators.required, Validators.minLength(5)]],
           type_question: [questionTypeKey, Validators.required],
           difficulty: [q.difficulty || 'easy', Validators.required],
-          answers: this.fb.array([])
+          answers: this.fb.array([]),
         });
 
         questionsArray.push(questionForm);
@@ -453,7 +453,7 @@ export class QuizCreationComponent implements OnInit {
               is_correct: [ans.is_correct || false],
               order_correct: [ans.order_correct ?? ''],
               pair_id: [ans.pair_id || ''],
-              is_intrus: [ans.is_intrus || false]
+              is_intrus: [ans.is_intrus || false],
             });
             (questionForm.get('answers') as FormArray).push(answerForm);
           });
@@ -480,9 +480,9 @@ export class QuizCreationComponent implements OnInit {
         difficulty: q.difficulty,
         answers: q.answers.map((a: any) => ({
           ...a,
-          order_correct: a.order_correct || null
-        }))
-      }))
+          order_correct: a.order_correct || null,
+        })),
+      })),
     };
 
     delete payload.is_public;
@@ -502,11 +502,9 @@ export class QuizCreationComponent implements OnInit {
       },
       error: () => {
         this.isSubmitting = false;
-      }
+      },
     });
   }
-
-
 
   addMatchingPair(questionIndex: number): void {
     const answers = this.getAnswers(questionIndex);
@@ -518,7 +516,7 @@ export class QuizCreationComponent implements OnInit {
       is_correct: [false],
       order_correct: [''],
       pair_id: [`left_${nextPairNumber}`],
-      is_intrus: [false]
+      is_intrus: [false],
     });
 
     const rightAnswerForm = this.fb.group({
@@ -526,7 +524,7 @@ export class QuizCreationComponent implements OnInit {
       is_correct: [false],
       order_correct: [''],
       pair_id: [`right_${nextPairNumber}`],
-      is_intrus: [false]
+      is_intrus: [false],
     });
 
     answers.push(leftAnswerForm);
@@ -535,12 +533,12 @@ export class QuizCreationComponent implements OnInit {
 
   getAnswerPlaceholder(questionType: string, answerIndex: number): string {
     const PLACEHOLDER_GENERATORS = {
-      'MCQ': (index: number) => `Option ${index + 1}`,
-      'multiple_choice': (index: number) => `Choix ${index + 1}`,
-      'right_order': (index: number) => `Élément ${index + 1} à ordonner`,
-      'find_the_intruder': (index: number) => `Élément ${index + 1}`,
-      'blind_test': () => 'Réponse du blind test',
-      'matching': () => 'Élément à associer'
+      MCQ: (index: number) => `Option ${index + 1}`,
+      multiple_choice: (index: number) => `Choix ${index + 1}`,
+      right_order: (index: number) => `Élément ${index + 1} à ordonner`,
+      find_the_intruder: (index: number) => `Élément ${index + 1}`,
+      blind_test: () => 'Réponse du blind test',
+      matching: () => 'Élément à associer',
     } as const;
 
     const generator = PLACEHOLDER_GENERATORS[questionType as keyof typeof PLACEHOLDER_GENERATORS];
@@ -568,9 +566,9 @@ export class QuizCreationComponent implements OnInit {
     console.log('DEBUG getTypeQuestionId:', {
       typeKey,
       typeQuestions: this.typeQuestions,
-      found: this.typeQuestions.find(t => t.key === typeKey)
+      found: this.typeQuestions.find(t => t.key === typeKey),
     });
-    
+
     const typeQuestion = this.typeQuestions.find(t => t.key === typeKey);
     return typeQuestion ? typeQuestion.id : 0;
   }

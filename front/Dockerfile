@@ -25,6 +25,11 @@ COPY package.json package-lock.json ./
 RUN npm ci
 
 COPY . .
+
+# Analyse statique
+RUN npm run quality:lint
+
+# Build de production
 RUN npm run build
 
 # Run Nginx for prod

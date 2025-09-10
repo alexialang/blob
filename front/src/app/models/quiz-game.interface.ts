@@ -25,7 +25,13 @@ export interface QuizAnswer {
   isIntrus?: boolean;
 }
 
-export type QuestionType = 'QCM' | 'Vrai/Faux' | 'Choix multiple' | 'Associations' | 'Ordre' | 'Intrus';
+export type QuestionType =
+  | 'QCM'
+  | 'Vrai/Faux'
+  | 'Choix multiple'
+  | 'Associations'
+  | 'Ordre'
+  | 'Intrus';
 
 export interface GameState {
   currentQuestionIndex: number;

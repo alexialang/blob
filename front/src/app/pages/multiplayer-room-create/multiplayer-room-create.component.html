@@ -1,7 +1,7 @@
 <div class="page-container">
   <div class="page-header">
     <div class="page-title">
-      <h1>Créer <span class="quiz-highlight" [ngStyle]="{ 'color': highlightColor }"> une partie</span></h1>
+      <h1>Créer <span class="quiz-highlight" [ngStyle]="{ color: highlightColor }"> une partie</span></h1>
 
       <p>Invitez vos collègues et amis pour un quiz multijoueur</p>
     </div>
@@ -18,8 +18,8 @@
         <div class="quiz-preview">
           <div class="quiz-icon">🎯</div>
           <div class="quiz-details">
-            <h3>{{quizData.title}}</h3>
-            <p>{{quizData.questions?.length || 0}} questions</p>
+            <h3>{{ quizData.title }}</h3>
+            <p>{{ quizData.questions?.length || 0 }} questions</p>
           </div>
         </div>
       </div>
@@ -36,20 +36,14 @@
               class="form-input"
               [(ngModel)]="roomName"
               name="roomName"
-              placeholder="Salon de {{getCurrentUsername()}}"
+              placeholder="Salon de {{ getCurrentUsername() }}"
               maxlength="50"
             />
           </div>
 
           <div class="form-group">
             <label for="maxPlayers">Nombre maximum de joueurs</label>
-            <select
-              id="maxPlayers"
-              class="form-select"
-              [(ngModel)]="maxPlayers"
-              name="maxPlayers"
-              required
-            >
+            <select id="maxPlayers" class="form-select" [(ngModel)]="maxPlayers" name="maxPlayers" required>
               <option value="2">2 joueurs</option>
               <option value="3">3 joueurs</option>
               <option value="4" selected>4 joueurs</option>
@@ -60,17 +54,11 @@
 
           <div class="form-group">
             <label class="checkbox-label">
-              <input
-                type="checkbox"
-                [(ngModel)]="isTeamMode"
-                name="isTeamMode"
-              />
+              <input type="checkbox" [(ngModel)]="isTeamMode" name="isTeamMode" />
               <span class="checkmark"></span>
               Mode équipe (2 équipes)
             </label>
-            <small class="help-text">
-              Les joueurs seront répartis en 2 équipes qui s'affrontent
-            </small>
+            <small class="help-text"> Les joueurs seront répartis en 2 équipes qui s'affrontent </small>
           </div>
         </div>
 
@@ -115,13 +103,13 @@
             >
               <option value="">-- Sélectionner un groupe --</option>
               <option *ngFor="let group of availableGroups" [value]="group.id">
-                {{group.name}} ({{group.users?.length || 0}} membres)
+                {{ group.name }} ({{ group.users?.length || 0 }} membres)
               </option>
             </select>
           </div>
 
           <div class="form-group" *ngIf="invitationType === 'users'">
-            <label>Choisir des utilisateurs ({{getSelectedUsersCount()}}/{{maxPlayers}})</label>
+            <label>Choisir des utilisateurs ({{ getSelectedUsersCount() }}/{{ maxPlayers }})</label>
 
             <div class="users-list" *ngIf="availableUsers && availableUsers.length > 0; else noUsersMessage">
               <div
@@ -131,10 +119,12 @@
                 [class.disabled]="!isUserSelected(user.id) && selectedUserIds.length >= maxPlayers - 1"
                 (click)="onUserToggle(user.id)"
               >
-                <div class="user-avatar">{{user.firstName?.charAt(0) || 'U'}}{{user.lastName?.charAt(0) || ''}}</div>
+                <div class="user-avatar">
+                  {{ user.firstName?.charAt(0) || 'U' }}{{ user.lastName?.charAt(0) || '' }}
+                </div>
                 <div class="user-info">
-                  <span class="user-name">{{user.firstName}} {{user.lastName}}</span>
-                  <span class="user-email">{{user.email}}</span>
+                  <span class="user-name">{{ user.firstName }} {{ user.lastName }}</span>
+                  <span class="user-email">{{ user.email }}</span>
                 </div>
                 <div class="user-checkbox">
                   <span *ngIf="isUserSelected(user.id)">✓</span>
@@ -143,7 +133,7 @@
             </div>
 
             <ng-template #noUsersMessage>
-              <div class="no-users-message" style="text-align: center; padding: 20px; color: #666;">
+              <div class="no-users-message" style="text-align: center; padding: 20px; color: #666">
                 <p>Aucun utilisateur disponible dans votre entreprise.</p>
                 <p>Vérifiez que vous avez bien des collègues dans votre entreprise.</p>
               </div>
@@ -152,18 +142,8 @@
         </div>
 
         <div class="form-actions">
-          <button
-            type="button"
-            class="btn btn-secondary"
-            (click)="goBack()"
-          >
-            Annuler
-          </button>
-          <button
-            type="submit"
-            class="btn btn-primary"
-            [disabled]="!roomForm.valid || creating || !canCreateRoom()"
-          >
+          <button type="button" class="btn btn-secondary" (click)="goBack()">Annuler</button>
+          <button type="submit" class="btn btn-primary" [disabled]="!roomForm.valid || creating || !canCreateRoom()">
             <span *ngIf="creating">Création...</span>
             <span *ngIf="!creating">Créer le salon</span>
           </button>

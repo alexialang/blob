@@ -13,13 +13,19 @@
 
   <input
     type="text"
-    class="form-control "
+    class="form-control"
     placeholder="Mot-clé"
     [(ngModel)]="filters['keyword']"
     (ngModelChange)="onFilterChange('keyword', filters['keyword'])"
   />
 
-  <button class="filter-button" tuiButton appearance="primary" size="s" (click)="onFilterChange('keyword', filters['keyword'])">
+  <button
+    class="filter-button"
+    tuiButton
+    appearance="primary"
+    size="s"
+    (click)="onFilterChange('keyword', filters['keyword'])"
+  >
     Rechercher
   </button>
 </div>

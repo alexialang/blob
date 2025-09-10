@@ -19,9 +19,11 @@
   </div>
 
   <div class="choices-container">
-    <div class="choice-card true-card"
-         [class.selected]="isSelected(getTrueAnswer()?.id || 0)"
-         (click)="selectAnswer(getTrueAnswer()?.id || 0, true)">
+    <div
+      class="choice-card true-card"
+      [class.selected]="isSelected(getTrueAnswer()?.id || 0)"
+      (click)="selectAnswer(getTrueAnswer()?.id || 0, true)"
+    >
       <div class="choice-header">
         <div class="choice-icon true-icon">✓</div>
         <h3 class="choice-title">VRAI</h3>
@@ -38,9 +40,11 @@
       <span class="vs-text">VS</span>
     </div>
 
-    <div class="choice-card false-card"
-         [class.selected]="isSelected(getFalseAnswer()?.id || 0)"
-         (click)="selectAnswer(getFalseAnswer()?.id || 0, false)">
+    <div
+      class="choice-card false-card"
+      [class.selected]="isSelected(getFalseAnswer()?.id || 0)"
+      (click)="selectAnswer(getFalseAnswer()?.id || 0, false)"
+    >
       <div class="choice-header">
         <div class="choice-icon false-icon">✗</div>
         <h3 class="choice-title">FAUX</h3>
@@ -55,9 +59,7 @@
   </div>
 
   <div class="validation-area">
-    <button class="validate-btn"
-            [disabled]="!selectedAnswerId"
-            (click)="validateAnswer()">
+    <button class="validate-btn" [disabled]="!selectedAnswerId" (click)="validateAnswer()">
       <span class="btn-icon">🎯</span>
       Confirmer ma réponse
     </button>

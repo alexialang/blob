@@ -35,14 +35,17 @@ body {
   font-family: var(--font-display);
 }
 
-h2, h3, h4, h5, h6 {
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: Arial, Helvetica, sans-serif;
   letter-spacing: 0px;
 }
 
-
 .section-title {
-  font-family: Arial, Helvetica, sans-serif ;
+  font-family: Arial, Helvetica, sans-serif;
   letter-spacing: 0px;
 }
 
@@ -220,7 +223,7 @@ h2, h3, h4, h5, h6 {
     font-size: 0.95rem;
     transition: all 0.3s ease;
     cursor: pointer;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -228,7 +231,7 @@ h2, h3, h4, h5, h6 {
 
     &:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
     }
 
     &:active {
@@ -285,7 +288,6 @@ h2, h3, h4, h5, h6 {
     }
   }
 }
-
 
 tui-tabs {
   margin-bottom: 1.5rem;
@@ -349,7 +351,7 @@ tui-tabs {
 
   &.expanded {
     background: var(--color-primary);
-    
+
     .chevron {
       border-left-color: white;
       transform: rotate(90deg);
@@ -544,7 +546,6 @@ tui-tabs {
   }
 }
 
-
 .table-scroll-wrapper {
   overflow-x: auto;
   width: 100%;
@@ -623,7 +624,6 @@ tui-tabs {
     margin: 0;
   }
 }
-
 
 .groups-container {
   display: flex;
@@ -717,7 +717,6 @@ tui-tabs {
   }
 }
 
-
 tui-badge {
   background-color: var(--color-light);
   color: var(--color-dark);
@@ -734,7 +733,7 @@ tui-badge {
   }
 }
 
-button[tuiButton][appearance="action-grayscale"] {
+button[tuiButton][appearance='action-grayscale'] {
   background-color: aliceblue;
   color: var(--color-dark);
   border: none;
@@ -744,7 +743,6 @@ button[tuiButton][appearance="action-grayscale"] {
     color: #ffffff;
   }
 }
-
 
 .modal-overlay {
   position: fixed;
@@ -813,7 +811,7 @@ button[tuiButton][appearance="action-grayscale"] {
         margin: 0;
         font-family: Arial, Helvetica, sans-serif;
 
-        input[type="checkbox"] {
+        input[type='checkbox'] {
           margin: 0;
         }
       }
@@ -1218,7 +1216,8 @@ button[tuiButton][appearance="action-grayscale"] {
 }
 
 // Noms d'utilisateurs cliquables
-.user-name-link, .member-name-link {
+.user-name-link,
+.member-name-link {
   background: none;
   border: none;
   color: var(--color-primary);

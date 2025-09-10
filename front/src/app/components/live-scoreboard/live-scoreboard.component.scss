@@ -151,9 +151,9 @@
     animation: rank-indicator 1s ease-out;
 
     &.rank-up {
-      color: #4CAF50;
+      color: #4caf50;
       background: rgba(76, 175, 80, 0.1);
-      border: 2px solid #4CAF50;
+      border: 2px solid #4caf50;
     }
 
     &.rank-down {
@@ -216,7 +216,7 @@
       font-size: 12px;
 
       &.online {
-        color: #4CAF50;
+        color: #4caf50;
         animation: pulse 2s infinite;
       }
 
@@ -266,7 +266,7 @@
     animation: bounceIn 0.6s ease-out;
 
     &.correct {
-      background: #4CAF50;
+      background: #4caf50;
       color: white;
     }
 
@@ -326,7 +326,8 @@
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -335,11 +336,16 @@
 }
 
 @keyframes winner-glow {
-  0%, 100% {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 0 0 0 rgba(255, 215, 0, 0.7);
+  0%,
+  100% {
+    box-shadow:
+      0 4px 12px rgba(0, 0, 0, 0.15),
+      0 0 0 rgba(255, 215, 0, 0.7);
   }
   50% {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 0 0 15px rgba(255, 215, 0, 0.8);
+    box-shadow:
+      0 4px 12px rgba(0, 0, 0, 0.15),
+      0 0 15px rgba(255, 215, 0, 0.8);
   }
 }
 

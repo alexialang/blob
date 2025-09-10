@@ -4,6 +4,6 @@ export const recaptchaConfig = {
     register: 'register',
     login: 'login',
     passwordReset: 'password_reset',
-    contact: 'contact'
-  }
+    contact: 'contact',
+  },
 };

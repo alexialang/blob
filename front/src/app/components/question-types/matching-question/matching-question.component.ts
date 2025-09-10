@@ -1,4 +1,13 @@
-import { Component, Input, Output, EventEmitter, OnInit, ElementRef, ViewChild, AfterViewInit } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  OnInit,
+  ElementRef,
+  ViewChild,
+  AfterViewInit,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Question, Answer } from '../../../models/quiz.model';
 
@@ -19,11 +28,15 @@ interface Connection {
   standalone: true,
   imports: [CommonModule],
   templateUrl: './matching-question.component.html',
-  styleUrls: ['./matching-question.component.scss']
+  styleUrls: ['./matching-question.component.scss'],
 })
 export class MatchingQuestionComponent implements OnInit, AfterViewInit {
   @Input() question!: Question;
-  @Input() progress: { current: number; total: number; percentage: number } = { current: 0, total: 0, percentage: 0 };
+  @Input() progress: { current: number; total: number; percentage: number } = {
+    current: 0,
+    total: 0,
+    percentage: 0,
+  };
   @Output() answerSelected = new EventEmitter<{ [key: string]: string }>();
   @Output() answerValidated = new EventEmitter<void>();
 
@@ -68,9 +81,9 @@ export class MatchingQuestionComponent implements OnInit, AfterViewInit {
   setupEventListeners(): void {
     const canvas = this.canvasRef.nativeElement;
 
-    canvas.addEventListener('mousedown', (e) => this.startDrawing(e));
-    canvas.addEventListener('mousemove', (e) => this.draw(e));
-    canvas.addEventListener('mouseup', (e) => this.stopDrawing(e));
+    canvas.addEventListener('mousedown', e => this.startDrawing(e));
+    canvas.addEventListener('mousemove', e => this.draw(e));
+    canvas.addEventListener('mouseup', e => this.stopDrawing(e));
   }
 
   private setupTouchOptimization(): void {
@@ -80,29 +93,41 @@ export class MatchingQuestionComponent implements OnInit, AfterViewInit {
 
     let lastTouchTime = 0;
 
-    canvas.addEventListener('touchstart', (e) => {
-      e.preventDefault();
-      const now = Date.now();
-      if (now - lastTouchTime < 50) return;
-      lastTouchTime = now;
+    canvas.addEventListener(
+      'touchstart',
+      e => {
+        e.preventDefault();
+        const now = Date.now();
+        if (now - lastTouchTime < 50) return;
+        lastTouchTime = now;
 
-      const touch = e.touches[0];
-      this.startDrawing(touch);
-    }, { passive: false });
+        const touch = e.touches[0];
+        this.startDrawing(touch);
+      },
+      { passive: false }
+    );
 
-    canvas.addEventListener('touchmove', (e) => {
-      e.preventDefault();
-      if (e.touches.length === 1) {
-        this.draw(e.touches[0]);
-      }
-    }, { passive: false });
+    canvas.addEventListener(
+      'touchmove',
+      e => {
+        e.preventDefault();
+        if (e.touches.length === 1) {
+          this.draw(e.touches[0]);
+        }
+      },
+      { passive: false }
+    );
 
-    canvas.addEventListener('touchend', (e) => {
-      e.preventDefault();
-      if (e.changedTouches.length === 1) {
-        this.stopDrawing(e.changedTouches[0]);
-      }
-    }, { passive: false });
+    canvas.addEventListener(
+      'touchend',
+      e => {
+        e.preventDefault();
+        if (e.changedTouches.length === 1) {
+          this.stopDrawing(e.changedTouches[0]);
+        }
+      },
+      { passive: false }
+    );
   }
 
   setupMatchingColumns(): void {
@@ -134,7 +159,7 @@ export class MatchingQuestionComponent implements OnInit, AfterViewInit {
     const rect = canvas.getBoundingClientRect();
     return {
       x: event.clientX - rect.left,
-      y: event.clientY - rect.top
+      y: event.clientY - rect.top,
     };
   }
 
@@ -194,7 +219,10 @@ export class MatchingQuestionComponent implements OnInit, AfterViewInit {
     return null;
   }
 
-  createConnection(start: { id: string; side: 'left' | 'right' }, end: { id: string; side: 'left' | 'right' }): void {
+  createConnection(
+    start: { id: string; side: 'left' | 'right' },
+    end: { id: string; side: 'left' | 'right' }
+  ): void {
     const leftId = start.side === 'left' ? start.id : end.id;
     const rightId = start.side === 'right' ? start.id : end.id;
 
@@ -209,7 +237,7 @@ export class MatchingQuestionComponent implements OnInit, AfterViewInit {
         leftId,
         rightId,
         leftPos,
-        rightPos
+        rightPos,
       });
 
       this.matches[leftId] = rightId;
@@ -218,8 +246,8 @@ export class MatchingQuestionComponent implements OnInit, AfterViewInit {
   }
 
   removeExistingConnection(elementId: string): void {
-    this.connections = this.connections.filter(conn =>
-      conn.leftId !== elementId && conn.rightId !== elementId
+    this.connections = this.connections.filter(
+      conn => conn.leftId !== elementId && conn.rightId !== elementId
     );
 
     Object.keys(this.matches).forEach(leftId => {
@@ -244,7 +272,7 @@ export class MatchingQuestionComponent implements OnInit, AfterViewInit {
 
     return {
       x: (side === 'left' ? rect.right : rect.left) - canvasRect.left,
-      y: rect.top + rect.height / 2 - canvasRect.top
+      y: rect.top + rect.height / 2 - canvasRect.top,
     };
   }
 
@@ -279,7 +307,12 @@ export class MatchingQuestionComponent implements OnInit, AfterViewInit {
     this.ctx.globalAlpha = 1;
   }
 
-  drawConnection(start: Position, end: Position, color: string = '#257D54', width: number = 3): void {
+  drawConnection(
+    start: Position,
+    end: Position,
+    color: string = '#257D54',
+    width: number = 3
+  ): void {
     this.ctx.strokeStyle = color;
     this.ctx.lineWidth = width;
 
@@ -290,9 +323,12 @@ export class MatchingQuestionComponent implements OnInit, AfterViewInit {
     const controlPoint2 = { x: end.x - 50, y: end.y };
 
     this.ctx.bezierCurveTo(
-      controlPoint1.x, controlPoint1.y,
-      controlPoint2.x, controlPoint2.y,
-      end.x, end.y
+      controlPoint1.x,
+      controlPoint1.y,
+      controlPoint2.x,
+      controlPoint2.y,
+      end.x,
+      end.y
     );
 
     this.ctx.stroke();
@@ -406,7 +442,7 @@ export class MatchingQuestionComponent implements OnInit, AfterViewInit {
         leftId,
         rightId,
         leftPos,
-        rightPos
+        rightPos,
       });
 
       this.matches[leftId] = rightId;

@@ -4,7 +4,7 @@ import { Subject, takeUntil } from 'rxjs';
 
 @Directive({
   selector: '[hasAnyPermission]',
-  standalone: true
+  standalone: true,
 })
 export class HasAnyPermissionDirective implements OnInit, OnDestroy {
   @Input() hasAnyPermission!: string[];
@@ -20,7 +20,8 @@ export class HasAnyPermissionDirective implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.authService.hasAnyPermission(this.hasAnyPermission)
+    this.authService
+      .hasAnyPermission(this.hasAnyPermission)
       .pipe(takeUntil(this.destroy$))
       .subscribe(hasAnyPermission => {
         if (hasAnyPermission && !this.hasView) {
@@ -43,5 +44,3 @@ export class HasAnyPermissionDirective implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 }
-
-

@@ -14,10 +14,7 @@ describe('QuizGameService', () => {
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      providers: [
-        QuizGameService,
-        { provide: AuthService, useValue: authServiceSpy }
-      ]
+      providers: [QuizGameService, { provide: AuthService, useValue: authServiceSpy }],
     });
     service = TestBed.inject(QuizGameService);
     httpMock = TestBed.inject(HttpTestingController);
@@ -42,9 +39,9 @@ describe('QuizGameService', () => {
           id: 1,
           question: 'Test question',
           type_question: 'mcq',
-          answers: []
-        }
-      ]
+          answers: [],
+        },
+      ],
     };
 
     service.loadQuiz(1).subscribe(quiz => {
@@ -58,11 +55,11 @@ describe('QuizGameService', () => {
 
   it('should save game result for authenticated user', () => {
     mockAuthService.isGuest.and.returnValue(false);
-    
+
     const mockResponse = {
       success: true,
       saved: true,
-      score: 85
+      score: 85,
     };
 
     service.saveGameResult(1, 85).subscribe(response => {
@@ -73,19 +70,19 @@ describe('QuizGameService', () => {
     expect(req.request.method).toBe('POST');
     expect(req.request.body).toEqual({
       quiz_id: 1,
-      total_score: 85
+      total_score: 85,
     });
     req.flush(mockResponse);
   });
 
   it('should save game result for guest user', () => {
     mockAuthService.isGuest.and.returnValue(true);
-    
+
     service.saveGameResult(1, 75).subscribe(response => {
       expect(response).toEqual({
         success: true,
         saved: false,
-        score: 75
+        score: 75,
       });
     });
 
@@ -96,9 +93,9 @@ describe('QuizGameService', () => {
   it('should handle errors gracefully', () => {
     service.loadQuiz(999).subscribe({
       next: () => fail('should have failed'),
-      error: (error) => {
+      error: error => {
         expect(error.status).toBe(404);
-      }
+      },
     });
 
     const req = httpMock.expectOne(`${environment.apiBaseUrl}/quiz/999`);
@@ -110,9 +107,9 @@ describe('QuizGameService', () => {
 
     service.saveGameResult(1, 85).subscribe({
       next: () => fail('should have failed'),
-      error: (error) => {
+      error: error => {
         expect(error.status).toBe(500);
-      }
+      },
     });
 
     const req = httpMock.expectOne(`${environment.apiBaseUrl}/user-answer/game-result`);
@@ -131,8 +128,8 @@ describe('QuizGameService', () => {
           type_question: 'multiple_choice',
           answers: [
             { id: 1, answer: 'Answer 1', is_correct: true },
-            { id: 2, answer: 'Answer 2', is_correct: false }
-          ]
+            { id: 2, answer: 'Answer 2', is_correct: false },
+          ],
         },
         {
           id: 2,
@@ -140,10 +137,10 @@ describe('QuizGameService', () => {
           type_question: 'true_false',
           answers: [
             { id: 3, answer: 'True', is_correct: false },
-            { id: 4, answer: 'False', is_correct: true }
-          ]
-        }
-      ]
+            { id: 4, answer: 'False', is_correct: true },
+          ],
+        },
+      ],
     };
 
     service.loadQuiz(2).subscribe(quiz => {
@@ -158,14 +155,14 @@ describe('QuizGameService', () => {
 
   it('should save different score values for authenticated users', () => {
     mockAuthService.isGuest.and.returnValue(false);
-    
+
     const testCases = [0, 50, 100];
-    
+
     testCases.forEach((score, index) => {
       const mockResponse = {
         success: true,
         saved: true,
-        score: score
+        score: score,
       };
 
       service.saveGameResult(index + 1, score).subscribe(response => {
@@ -181,9 +178,9 @@ describe('QuizGameService', () => {
 
   it('should handle guest mode with different scores', () => {
     mockAuthService.isGuest.and.returnValue(true);
-    
+
     const scores = [25, 75, 100];
-    
+
     scores.forEach(score => {
       service.saveGameResult(1, score).subscribe(response => {
         expect(response.score).toBe(score);
