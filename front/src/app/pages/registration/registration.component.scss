@@ -10,6 +10,7 @@
     color: var(--color-primary);
     font-family: "LCMogiA", serif;
     font-weight: 200;
+    letter-spacing: -0.02em;
   }
 
   @media (max-width: 768px) {
@@ -51,6 +52,12 @@
             opacity: 0.7;
           }
         }
+      }
+
+      .mobile-blobs {
+        width: 150px;
+        height: auto;
+        margin-top: 1rem;
       }
     }
 
@@ -421,7 +428,7 @@
       h2 {
         font-family: "LCMogiA", serif;
         font-size: clamp(4.5rem, 12vw, 9rem);
-
+        letter-spacing: -0.02em;
         line-height: 1;
         margin: 0;
         color:  var(--color-dark);

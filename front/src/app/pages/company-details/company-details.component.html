@@ -22,17 +22,9 @@
     </div>
 
     <div class="actions mb-4">
-      <button class="btn-modern btn-secondary" (click)="refreshCompanyData()">
-        <i class="fas fa-sync-alt"></i>
-        Actualiser
-      </button>
-      <button *hasPermission="'MANAGE_USERS'" class="btn-modern btn-primary" (click)="editCompany()">
+      <button *hasPermission="'MANAGE_USERS'" class="action-btn-unified primary" (click)="editCompany()">
         <i class="fas fa-edit"></i>
-        Modifier
-      </button>
-      <button *hasPermission="'MANAGE_USERS'" class="btn-modern btn-danger" (click)="deleteCompany()">
-        <i class="fas fa-trash"></i>
-        Supprimer
+        <span>Modifier l'entreprise</span>
       </button>
     </div>
 
@@ -58,12 +50,14 @@
     <ng-container *ngIf="activeTabIndex === 0">
           <div class="section-header">
       <div class="section-title-container">
-        <h3 class="section-title">Groupes de l'entreprise</h3>
+        <h3 class="section-title">
+          Groupes de l'entreprise 
+          <button *hasPermission="'MANAGE_USERS'" class="discrete-add-link" (click)="showCreateGroupModalAction()" title="Créer un nouveau groupe">
+            <i class="fas fa-plus"></i>
+          </button>
+        </h3>
         <span class="groups-count">{{ company.groups?.length || 0 }} groupe(s)</span>
       </div>
-      <button *hasPermission="'MANAGE_USERS'" tuiButton size="s" appearance="primary" (click)="showCreateGroupModalAction()" class="create-group-btn">
-        <i class="icon-plus"></i> Créer un groupe
-      </button>
     </div>
 
       <ng-container *ngIf="company.groups?.length; else noGroupsTpl">
@@ -78,12 +72,12 @@
                 <span class="group-members-count">{{ g.users?.length || 0 }} membre(s)</span>
               </div>
             </div>
-            <div class="group-actions" (click)="$event.stopPropagation()">
-              <button *hasPermission="'MANAGE_USERS'" tuiButton size="s" appearance="outline" (click)="addMemberToGroup(g.id)" class="add-member-btn">
-                <i class="icon-user-plus"></i> Ajouter
+            <div class="group-actions" (click)="$event.stopPropagation()" *hasPermission="'MANAGE_USERS'">
+              <button class="discrete-action-link" (click)="addMemberToGroup(g.id)" [attr.aria-label]="'Ajouter un membre au groupe ' + g.name" title="Ajouter un membre">
+                <i class="fas fa-user-plus"></i>
               </button>
-              <button *hasPermission="'MANAGE_USERS'" tuiButton size="s" appearance="secondary" (click)="deleteGroup(g.id)" class="delete-group-btn">
-                <i class="icon-trash"></i> Supprimer
+              <button class="discrete-action-link danger" (click)="deleteGroup(g.id)" [attr.aria-label]="'Supprimer le groupe ' + g.name" title="Supprimer le groupe">
+                <i class="fas fa-trash"></i>
               </button>
             </div>
           </div>
@@ -96,8 +90,9 @@
             <div *ngIf="!g.users?.length" class="no-members">
               <i class="icon-users"></i>
               <p>Aucun membre dans ce groupe</p>
-              <button *hasPermission="'MANAGE_USERS'" tuiButton size="s" appearance="primary" (click)="addMemberToGroup(g.id)">
-                Ajouter le premier membre
+              <button *hasPermission="'MANAGE_USERS'" class="action-btn-unified primary small" (click)="addMemberToGroup(g.id)">
+                <i class="fas fa-plus"></i>
+                <span>Ajouter le premier membre</span>
               </button>
             </div>
 
@@ -108,7 +103,9 @@
                     {{ (m.firstName?.charAt(0) || '') + (m.lastName?.charAt(0) || '') }}
                   </div>
                   <div class="member-details">
-                    <h5 class="member-name">{{ m.firstName }} {{ m.lastName }}</h5>
+                    <button class="member-name-link" (click)="viewUserProfile(m.id)" [attr.aria-label]="'Voir le profil de ' + m.firstName + ' ' + m.lastName">
+                      {{ m.firstName }} {{ m.lastName }}
+                    </button>
                     <p class="member-email">{{ m.email }}</p>
                     <span class="member-status" [class.active]="m.isActive" [class.inactive]="!m.isActive">
                       {{ m.isActive ? 'Actif' : 'Inactif' }}
@@ -116,8 +113,8 @@
                   </div>
                 </div>
                 <div class="member-actions">
-                  <button *hasPermission="'MANAGE_USERS'" tuiButton size="xs" appearance="flat" (click)="removeUserFromGroup(g.id, m.id)" class="remove-btn">
-                    <i class="icon-x"></i>
+                  <button *hasPermission="'MANAGE_USERS'" class="member-remove-btn" (click)="removeUserFromGroup(g.id, m.id)" title="Retirer du groupe" [attr.aria-label]="'Retirer ' + m.firstName + ' ' + m.lastName + ' du groupe'">
+                    <i class="fas fa-times"></i>
                   </button>
                 </div>
               </div>
@@ -133,8 +130,9 @@
           <h2 class="section-title">Collaborateurs</h2>
           <span class="collaborators-count">{{ company.users?.length || 0 }} collaborateur(s)</span>
         </div>
-        <button *hasPermission="'MANAGE_USERS'" tuiButton size="s" appearance="primary" (click)="showAddMemberModalAction()" class="add-member-btn">
-          <i class="icon-plus"></i> Ajouter un membre
+        <button *hasPermission="'MANAGE_USERS'" class="action-btn-unified primary small" (click)="showAddMemberModalAction()">
+          <i class="fas fa-user-plus"></i>
+          <span>Ajouter</span>
         </button>
       </div>
       <div class="filters-container">
@@ -178,9 +176,6 @@
                   {{ sortDirection === 'asc' ? '↑' : '↓' }}
                 </span>
             </th>
-            <th tuiTh>Groupes</th>
-            <th tuiTh>Statistiques</th>
-            <th tuiTh>Droits</th>
             <th tuiTh>Actions</th>
           </tr>
           </thead>
@@ -188,7 +183,9 @@
           <tr *ngFor="let c of pagedCollaborators">
             <td tuiTd>
               <div class="user-info">
-                <span class="user-name">{{ c.name }}</span>
+                <button class="user-name-link" (click)="viewUserProfile(c.id)" [attr.aria-label]="'Voir le profil de ' + c.name">
+                  {{ c.name }}
+                </button>
               </div>
             </td>
             <td tuiTd>
@@ -200,34 +197,11 @@
               </span>
             </td>
             <td tuiTd>
-              <div class="groups-container">
-                <span *ngFor="let group of c.groups.slice(0, 2)" class="group-badge">
-                  {{ group }}
-                </span>
-                <span *ngIf="c.groups.length > 2" class="group-badge group-badge-more">
-                  +{{ c.groups.length - 2 }}
-                </span>
-              </div>
-            </td>
-            <td tuiTd>
-              <button tuiButton appearance="action-grayscale" size="s" class="stats-button">
-                {{ getCollaboratorStats(c.id) }} <span>Voir plus</span>
-              </button>
-            </td>
-            <td tuiTd>
-              <div class="rights-container">
-                <span *ngFor="let right of c.rights.slice(0, 2)" class="right-badge">
-                  {{ right }}
-                </span>
-                <span *ngIf="c.rights.length > 2" class="right-badge right-badge-more">
-                  +{{ c.rights.length - 2 }}
-                </span>
-              </div>
-            </td>
-            <td tuiTd>
-              <div class="action-buttons">
-                <button tuiButton size="xs" appearance="outline" class="view-btn">Voir</button>
-                <button *hasPermission="'MANAGE_USERS'" tuiButton size="xs" appearance="secondary" (click)="deleteCollaborator(c.id)" class="delete-btn">Supprimer</button>
+              <div class="action-buttons-clean">
+                <button *hasPermission="'MANAGE_USERS'" class="action-btn-clean remove" (click)="deleteCollaborator(c.id)" title="Retirer de l'entreprise" [attr.aria-label]="'Retirer ' + c.name + ' de l\'entreprise'">
+                  <i class="fas fa-user-minus"></i>
+                  <span>Retirer</span>
+                </button>
               </div>
             </td>
           </tr>

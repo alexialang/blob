@@ -8,30 +8,21 @@
 
     <div class="quiz-info">
       <div class="timer" [class.warning]="timeLeft <= 10">
-        <span class="timer-icon">⏱️</span>
+        <tui-icon icon="@tui.clock" class="timer-icon"></tui-icon>
         <span class="timer-text">{{ timeLeft }}s</span>
       </div>
       <div class="score">
-        <span class="score-icon">🏆</span>
+        <tui-icon icon="@tui.star" class="score-icon"></tui-icon>
         <span class="score-text">{{ getCurrentNormalizedScore() }}/100</span>
       </div>
     </div>
 
-    <div class="user-info">
-      <span class="username">Jeanne Dufour</span>
-      <div class="user-level">
-        <span class="level-badge">LV 2</span>
-        <div class="user-avatar">
-          <span>JD</span>
-        </div>
+    <div class="user-info" *ngIf="currentUser">
+      <span class="username">{{ currentUser.name }}</span>
+      <div class="user-avatar">
+        <div *ngIf="currentUser.avatarSvg" [innerHTML]="currentUser.avatarSvg"></div>
+        <span *ngIf="!currentUser.avatarSvg">{{ getUserInitials(currentUser.name) }}</span>
       </div>
-    </div>
-  </div>
-
-
-  <div *ngIf="!quizCompleted" class="progress-container">
-    <div class="progress-bar">
-      <div class="progress-fill" [style.width.%]="getProgressPercentage()"></div>
     </div>
   </div>
 
@@ -39,8 +30,6 @@
   <div *ngIf="currentQuestion && !showFeedback" class="question-container">
     <div class="question-number">Question {{ currentQuestionIndex }} / {{ totalQuestions }}</div>
     <h1 class="question-text">{{ currentQuestion.question }}</h1>
-
-
   </div>
 
 

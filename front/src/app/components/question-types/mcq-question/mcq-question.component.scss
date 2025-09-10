@@ -4,7 +4,7 @@
   min-height: 100vh;
   background: var(--color-light);
   padding: 20px;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 .question-instruction {
@@ -36,6 +36,11 @@
   .answer-option {
     cursor: pointer;
     transition: all 0.3s ease;
+
+    &.grayed-out {
+      opacity: 0.4;
+      filter: grayscale(50%);
+    }
 
     &:nth-child(1) {
       margin-bottom: 120px;
@@ -269,8 +274,12 @@
 @media (max-width: 768px) {
   .mcq-question-container {
     min-height: 100vh;
+    height: auto;
     overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
     padding: 10px;
+    position: relative;
   }
 
   .answers-container {
@@ -315,7 +324,7 @@
 
   .validation-container {
     position: fixed;
-    bottom: 1rem;
+    bottom: 2.5rem;
     right: 1rem;
     z-index: 10;
 

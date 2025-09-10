@@ -165,7 +165,7 @@
 
 .stats-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   margin-bottom: 20px;
 }
@@ -195,24 +195,36 @@
   font-size: 14px;
 }
 
-.btn-refresh {
-  background-color: #3498db;
-  color: white;
+// Styles pour le bouton actualiser discret
+.discrete-action-link {
+  background: transparent;
   border: none;
-  padding: 8px 16px;
+  color: var(--text-muted, #9CA3AF);
+  font-size: 0.9rem;
+  padding: 0.375rem;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 14px;
-  transition: background-color 0.3s;
+  transition: all 0.2s ease;
+  opacity: 0.7;
 
   &:hover:not(:disabled) {
-    background-color: #2980b9;
+    opacity: 1;
+    color: var(--color-primary, #257D54);
+    background: rgba(37, 125, 84, 0.1);
   }
 
   &:disabled {
-    background-color: #bdc3c7;
+    opacity: 0.5;
     cursor: not-allowed;
-    opacity: 0.7;
+    color: var(--text-muted, #9CA3AF);
+  }
+
+  i {
+    font-size: 0.875rem;
+  }
+
+  .fa-spin {
+    color: var(--color-primary, #257D54);
   }
 }
 

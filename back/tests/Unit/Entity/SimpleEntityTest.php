@@ -27,6 +27,3 @@ class SimpleEntityTest extends TestCase
         $this->assertInstanceOf(CategoryQuiz::class, $category);
     }
 }
-
-
-

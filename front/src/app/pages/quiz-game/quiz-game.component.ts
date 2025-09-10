@@ -98,6 +98,7 @@ export class QuizGameComponent implements OnInit, OnDestroy {
     userAvatarSvg$: Observable<SafeHtml> = of('');
     isGuest$: Observable<boolean> = of(true);
     userAvatarShape$: Observable<string> = of('circle');
+    currentUser: { name: string; avatar?: string; avatarSvg?: SafeHtml } | null = null;
     userAvatarColor$: Observable<string> = of('#257D54');
     randomColor: string = '#0B0C1E';
 
@@ -117,6 +118,7 @@ export class QuizGameComponent implements OnInit, OnDestroy {
 
         this.generateRandomColor();
         this.loadUserData();
+        this.loadCurrentUser();
         this.loadQuiz(quizId);
     }
 
@@ -583,4 +585,49 @@ export class QuizGameComponent implements OnInit, OnDestroy {
             this.alertService.error('Erreur lors de la copie du lien');
         });
     }
+
+    loadCurrentUser(): void {
+        if (this.authService.isGuest()) {
+            // Mode invité : on ne met rien
+            this.currentUser = null;
+            return;
+        }
+
+        this.authService.getCurrentUser().subscribe({
+            next: (user) => {
+                if (user) {
+                    // Afficher le pseudo en priorité
+                    const displayName = user.pseudo || user.firstName || user.email || 'Utilisateur';
+                    
+                    this.currentUser = {
+                        name: displayName,
+                        avatar: user.avatar
+                    };
+
+                    // Charger l'avatar SVG comme dans la navbar
+                    if (user.avatarShape) {
+                        const headPath = this.getHeadAvatarFromShape(user.avatarShape);
+                        this.loadAvatarSvg(headPath, user.avatarColor || '#257D54').subscribe(svgHtml => {
+                            if (this.currentUser) {
+                                this.currentUser.avatarSvg = svgHtml;
+                            }
+                        });
+                    }
+                }
+            },
+            error: () => {
+                this.currentUser = null;
+            }
+        });
+    }
+
+    getUserInitials(name: string): string {
+        if (!name) return 'U';
+        const names = name.trim().split(' ');
+        if (names.length >= 2) {
+            return (names[0][0] + names[names.length - 1][0]).toUpperCase();
+        }
+        return name.substring(0, 2).toUpperCase();
+    }
+
 }

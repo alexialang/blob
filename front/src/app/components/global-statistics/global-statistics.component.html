@@ -1,6 +1,5 @@
 <div class="stats-container">
   <div class="stats-header">
-    <h3>Statistiques Globales</h3>
     <div class="header-controls">
       <div class="filter-controls">
         <label for="quizFilter">Filtrer par nom :</label>
@@ -13,8 +12,8 @@
           class="quiz-filter-input"
         />
       </div>
-      <button class="btn-refresh" (click)="refreshStats()" [disabled]="loading">
-        🔄 {{ loading ? 'Actualisation...' : 'Actualiser' }}
+      <button class="discrete-action-link" (click)="refreshStats()" [disabled]="loading" title="{{ loading ? 'Actualisation en cours...' : 'Actualiser les statistiques' }}">
+        <i class="fas fa-sync-alt" [class.fa-spin]="loading"></i>
       </button>
     </div>
   </div>

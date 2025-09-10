@@ -23,6 +23,3 @@ class EnumTest extends TestCase
         $this->assertContains(Status::ARCHIVED, $cases);
     }
 }
-
-
-

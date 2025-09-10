@@ -3,7 +3,7 @@ import {
   OnInit,
   OnDestroy,
   ViewChild,
-  ChangeDetectorRef
+  ChangeDetectorRef,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -482,6 +482,15 @@ export class CompanyDetailsComponent implements OnInit, OnDestroy {
   deleteCompany(): void {
 
   }
+
+
+  /**
+   * Navigate to user profile
+   */
+  viewUserProfile(userId: number): void {
+    this.router.navigate(['/user-profile', userId]);
+  }
+
 
   // Nouvelles méthodes pour ajouter un membre à un groupe
   getAvailableMembersForGroup(groupId: number): any[] {

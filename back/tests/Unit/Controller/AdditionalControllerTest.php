@@ -27,6 +27,3 @@ class AdditionalControllerTest extends TestCase
         $this->assertInstanceOf(Status::class, Status::ARCHIVED);
     }
 }
-
-
-

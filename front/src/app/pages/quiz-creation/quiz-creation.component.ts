@@ -476,7 +476,7 @@ export class QuizCreationComponent implements OnInit {
       isPublic: formValue.is_public,
       questions: formValue.questions.map((q: any) => ({
         question: q.question,
-        type_question: q.type_question,
+        type_question: this.getTypeQuestionId(q.type_question),
         difficulty: q.difficulty,
         answers: q.answers.map((a: any) => ({
           ...a,
@@ -559,5 +559,19 @@ export class QuizCreationComponent implements OnInit {
     const answers = this.getAnswers(questionIndex);
     const minAnswers = this.getMinAnswersForType(questionType);
     return answers.length > minAnswers;
+  }
+
+  /**
+   * Convertit la clé du type de question en ID numérique
+   */
+  private getTypeQuestionId(typeKey: string): number {
+    console.log('DEBUG getTypeQuestionId:', {
+      typeKey,
+      typeQuestions: this.typeQuestions,
+      found: this.typeQuestions.find(t => t.key === typeKey)
+    });
+    
+    const typeQuestion = this.typeQuestions.find(t => t.key === typeKey);
+    return typeQuestion ? typeQuestion.id : 0;
   }
 }

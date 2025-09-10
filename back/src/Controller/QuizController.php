@@ -95,6 +95,8 @@ class QuizController extends AbstractSecureController
         try {
             $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
 
+            $this->logger->info('DEBUG QUIZ CREATE v2 - Données reçues', ['data' => $data]);
+
             $user = $this->getCurrentUser();
             if (!$user) {
                 return $this->json(['error' => 'User not authenticated'], 401);
@@ -103,7 +105,9 @@ class QuizController extends AbstractSecureController
             $quiz = $this->quizCrudService->createWithQuestions($data, $user);
 
             return $this->json($quiz, 201, [], ['groups' => ['quiz:read']]);
-        } catch (\JsonException) {
+        } catch (\JsonException $e) {
+            $this->logger->error('DEBUG QUIZ CREATE v2 - JSON Error', ['error' => $e->getMessage()]);
+
             return $this->json(['error' => 'Invalid JSON'], 400);
         } catch (ValidationFailedException $e) {
             $errorMessages = [];
@@ -111,7 +115,13 @@ class QuizController extends AbstractSecureController
                 $errorMessages[] = $violation->getMessage();
             }
 
+            $this->logger->error('DEBUG QUIZ CREATE v2 - Validation Error', ['errors' => $errorMessages]);
+
             return $this->json(['error' => 'Données invalides', 'details' => $errorMessages], 400);
+        } catch (\Exception $e) {
+            $this->logger->error('DEBUG QUIZ CREATE v2 - Exception', ['error' => $e->getMessage()]);
+
+            return $this->json(['error' => 'Erreur: '.$e->getMessage()], 500);
         }
     }
 

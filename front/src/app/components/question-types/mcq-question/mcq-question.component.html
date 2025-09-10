@@ -4,6 +4,7 @@
       *ngFor="let answer of question.answers; let i = index"
       class="answer-option"
       [class.selected]="isSelected(answer.id)"
+      [class.grayed-out]="selectedAnswerId && !isSelected(answer.id)"
       (click)="selectAnswer(answer.id)"
       (keydown.enter)="selectAnswer(answer.id)"
       (keydown.space)="selectAnswer(answer.id)"

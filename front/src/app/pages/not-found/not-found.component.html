@@ -1,75 +1,22 @@
-<div class="not-found-container">
-  <div class="not-found-content">
-    <!-- Illustration SVG -->
-    <div class="illustration">
-      <svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <!-- Blob principal -->
-        <path d="M40 60C40 40 60 20 100 20C140 20 160 40 160 60C160 80 140 100 100 100C60 100 40 80 40 60Z" fill="var(--color-primary)" opacity="0.2"/>
-        <!-- Blob secondaire -->
-        <path d="M60 120C60 100 80 80 120 80C160 80 180 100 180 120C180 140 160 160 120 160C80 160 60 140 60 120Z" fill="var(--color-secondary)" opacity="0.2"/>
-        <!-- Icône 404 stylisée -->
-        <text x="100" y="110" text-anchor="middle" font-size="48" font-weight="bold" fill="var(--color-primary)">404</text>
-        <text x="100" y="130" text-anchor="middle" font-size="16" fill="var(--text-secondary)">Page introuvable</text>
-      </svg>
-    </div>
-
-    <!-- Message principal -->
-    <h1 class="title">Oups ! Page introuvable</h1>
-    <p class="description">
-      La page que vous recherchez n'existe pas ou a été déplacée. 
-      Ne vous inquiétez pas, nous avons plein d'autres choses intéressantes à découvrir !
-    </p>
-
-    <!-- Actions -->
-    <div class="actions">
-      <button routerLink="/" class="btn btn-primary">
-        <i class="fas fa-home"></i>
-        Retour à l'accueil
-      </button>
+<div class="not-found-page">
+  <div class="container">
+    <div class="error-content">
+      <div class="error-number">
+        <span class="highlight-text">4</span><span class="highlight-text">0</span><span class="highlight-text">4</span>
+      </div>
       
-      <button routerLink="/quiz-cards" class="btn btn-secondary">
-        <i class="fas fa-gamepad"></i>
-        Découvrir des quiz
-      </button>
+      <h1 class="error-title">Page introuvable</h1>
       
-      <button (click)="goBack()" class="btn btn-outline">
-        <i class="fas fa-arrow-left"></i>
-        Retour en arrière
-      </button>
-    </div>
-
-    <!-- Liens utiles -->
-    <div class="useful-links">
-      <h3>Liens utiles</h3>
-      <div class="links-grid">
-        <a routerLink="/about" class="link-item">
-          <i class="fas fa-info-circle"></i>
-          À propos
-        </a>
-        <a routerLink="/leaderboard" class="link-item">
-          <i class="fas fa-trophy"></i>
-          Classement
-        </a>
-        <a routerLink="/donation" class="link-item">
-          <i class="fas fa-heart"></i>
-          Soutenir
-        </a>
-        <a routerLink="/legal-notices" class="link-item">
-          <i class="fas fa-gavel"></i>
-          Mentions légales
+      <p class="error-description">
+        La page que vous recherchez n'existe pas ou a été déplacée.
+      </p>
+      
+      <div class="error-actions">
+        <a href="/" class="btn-home">
+          <i class="fas fa-home"></i>
+          <span>Retour à l'accueil</span>
         </a>
       </div>
     </div>
-
-    <!-- Message d'aide -->
-    <div class="help-section">
-      <p class="help-text">
-        <i class="fas fa-lightbulb"></i>
-        <strong>Conseil :</strong> Vérifiez l'URL ou utilisez la barre de navigation pour explorer le site.
-      </p>
-    </div>
   </div>
 </div>
-
-
-
