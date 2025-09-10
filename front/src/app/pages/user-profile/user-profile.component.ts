@@ -115,7 +115,7 @@ export class UserProfileComponent implements OnInit {
           avatar: user.avatar || ''
         });
       },
-      error: (error: any) => {
+      error: (_error: any) => {
       }
     });
   }
@@ -151,8 +151,8 @@ export class UserProfileComponent implements OnInit {
           this.userStatistics = stats;
           this.isLoadingStatistics = false;
         },
-        error: (error: any) => {
-          console.error('Erreur lors du chargement des statistiques de l\'utilisateur:', error);
+        error: (_error: any) => {
+          console.error('Erreur lors du chargement des statistiques de l\'utilisateur:', _error);
           this.isLoadingStatistics = false;
           this.alertService.error('Erreur lors du chargement des statistiques de l\'utilisateur');
         }

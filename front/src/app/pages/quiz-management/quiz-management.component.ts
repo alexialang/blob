@@ -358,8 +358,8 @@ export class QuizManagementComponent implements OnInit, OnDestroy {
           this.fileDownloadService.downloadJson(exportData, filename);
           this.alerts.open('Export JSON complet réussi !', { appearance: 'success' }).subscribe();
         },
-        error: (error: any) => {
-          console.error('Erreur export JSON:', error);
+        error: (_error: any) => {
+          console.error('Erreur export JSON:', _error);
           this.alerts.open('Erreur lors de l\'export JSON', { appearance: 'error' }).subscribe();
         }
       });

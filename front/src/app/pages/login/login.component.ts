@@ -51,13 +51,13 @@ export class LoginComponent {
       next: (result) => {
         window.location.href = '/quiz';
       },
-      error: (err: HttpErrorResponse) => {
+      error: (_err: HttpErrorResponse) => {
 
-        if (err.status === 429) {
-          const message = err.error?.message || 'Trop de tentatives de connexion. Réessayez dans 15 minutes.';
+        if (_err.status === 429) {
+          const message = _err.error?.message || 'Trop de tentatives de connexion. Réessayez dans 15 minutes.';
           this.error = message;
           this.alertService.error(message, 8000);
-        } else if (err.status === 401) {
+        } else if (_err.status === 401) {
           this.error = 'Identifiants invalides ou compte non vérifié';
         } else {
           this.error = 'Une erreur est survenue. Veuillez réessayer.';

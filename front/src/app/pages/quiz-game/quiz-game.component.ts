@@ -3,7 +3,11 @@ import {CommonModule, NgOptimizedImage} from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { QuizGameService } from '../../services/quiz-game.service';
 import { QuizResultsService } from '../../services/quiz-results.service';
-import { interval, Subscription } from 'rxjs';
+import { AuthService } from '../../services/auth.service';
+import { interval, Subscription, Observable, of, combineLatest } from 'rxjs';
+import { map, catchError, switchMap } from 'rxjs/operators';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { HttpClient } from '@angular/common/http';
 import { trigger, style, animate, transition } from '@angular/animations';
 
 import { McqQuestionComponent } from '../../components/question-types/mcq-question/mcq-question.component';
@@ -89,18 +93,173 @@ export class QuizGameComponent implements OnInit, OnDestroy {
     private feedbackTimeout?: ReturnType<typeof setTimeout>;
     isLoadingLeaderboard = false;
 
+    // Données utilisateur
+    userName$: Observable<string> = of('');
+    userAvatarSvg$: Observable<SafeHtml> = of('');
+    isGuest$: Observable<boolean> = of(true);
+    userAvatarShape$: Observable<string> = of('circle');
+    userAvatarColor$: Observable<string> = of('#257D54');
+    randomColor: string = '#0B0C1E';
+
     constructor(
         private route: ActivatedRoute,
         private router: Router,
         private quizGameService: QuizGameService,
         private quizResultsService: QuizResultsService,
         private alertService: AlertService,
+        private authService: AuthService,
+        private sanitizer: DomSanitizer,
+        private http: HttpClient,
     ) { }
 
     ngOnInit(): void {
         const quizId = +this.route.snapshot.params['id'];
 
+        this.generateRandomColor();
+        this.loadUserData();
         this.loadQuiz(quizId);
+    }
+
+    generateRandomColor() {
+        const colors = ['var(--color-primary)', 'var(--color-secondary)', 'var(--color-accent)', 'var(--color-pink)'];
+        this.randomColor = colors[Math.floor(Math.random() * colors.length)];
+    }
+
+    // Fonction pour convertir un avatar corps entier en tête d'avatar
+    private getHeadAvatarFromFullAvatar(fullAvatarPath: string): string {
+        if (!fullAvatarPath) {
+            return 'assets/avatars/head_guest.svg';
+        }
+
+        const fileName = fullAvatarPath.split('/').pop() || '';
+        
+        const avatarMapping: { [key: string]: string } = {
+            'blob_circle.svg': 'circle_head.svg',
+            'blob_flower.svg': 'flower_head.svg',
+            'blob_flower_blue.svg': 'flower_head.svg',
+            'blob_pic.svg': 'pic_head.svg',
+            'blob_pic_orange.svg': 'pic_head.svg',
+            'blob_wave.svg': 'wave_head.svg'
+        };
+
+        const shapeMapping: { [key: string]: string } = {
+            'blob_flower': 'flower_head.svg',
+            'blob_circle': 'circle_head.svg', 
+            'blob_pic': 'pic_head.svg',
+            'blob_wave': 'wave_head.svg'
+        };
+
+        let headAvatar = avatarMapping[fileName];
+        
+        if (!headAvatar) {
+            const shapeName = fileName.replace('.svg', '');
+            headAvatar = shapeMapping[shapeName];
+        }
+
+        if (headAvatar) {
+            return `assets/avatars/${headAvatar}`;
+        }
+
+        return 'assets/avatars/head_guest.svg';
+    }
+
+    // Fonction pour convertir directement une forme en tête d'avatar
+    private getHeadAvatarFromShape(shape: string): string {
+        if (!shape) {
+            return 'assets/avatars/head_guest.svg';
+        }
+
+        const shapeToHeadMapping: { [key: string]: string } = {
+            'blob_flower': 'flower_head.svg',
+            'blob_circle': 'circle_head.svg', 
+            'blob_pic': 'pic_head.svg',
+            'blob_wave': 'wave_head.svg'
+        };
+
+        const headAvatar = shapeToHeadMapping[shape];
+        if (headAvatar) {
+            return `assets/avatars/${headAvatar}`;
+        }
+
+        return 'assets/avatars/head_guest.svg';
+    }
+
+    // Fonction pour charger et personnaliser le SVG avec la couleur
+    private loadAvatarSvg(avatarPath: string, color: string): Observable<SafeHtml> {
+        return this.http.get(avatarPath, { responseType: 'text' }).pipe(
+            map(svgContent => {
+                let coloredSvg = svgContent.replace(/#257D54/g, color);
+                
+                if (avatarPath.includes('head_guest.svg')) {
+                    coloredSvg = coloredSvg.replace(/#0B0C1E/g, color);
+                }
+                
+                coloredSvg = coloredSvg.replace(
+                    /<svg([^>]*)>/,
+                    '<svg$1 style="width: 100px !important; height: 100px !important;">'
+                );
+                
+                return this.sanitizer.bypassSecurityTrustHtml(coloredSvg);
+            }),
+            catchError(error => {
+                console.error('Error loading SVG:', error);
+                return of(this.sanitizer.bypassSecurityTrustHtml(''));
+            })
+        );
+    }
+
+    loadUserData() {
+        this.isGuest$ = of(this.authService.isGuest());
+
+        if (this.authService.isLoggedIn()) {
+            this.userName$ = this.authService.getCurrentUser().pipe(
+                map(user => {
+                    return user.pseudo || user.firstName || user.email || 'Utilisateur';
+                }),
+                catchError(() => of('Utilisateur'))
+            );
+
+            this.userAvatarShape$ = this.authService.getCurrentUser().pipe(
+                map(user => user.avatarShape || 'circle'),
+                catchError(() => of('circle'))
+            );
+
+            this.userAvatarColor$ = this.authService.getCurrentUser().pipe(
+                map(user => user.avatarColor || '#257D54'),
+                catchError(() => of('#257D54'))
+            );
+
+            // Combine avatar shape et couleur pour créer le SVG coloré
+            this.userAvatarSvg$ = combineLatest([
+                this.authService.getCurrentUser().pipe(
+                    map(user => {
+                        if (user.avatarShape) {
+                            return this.getHeadAvatarFromShape(user.avatarShape);
+                        }
+                        return 'assets/avatars/head_guest.svg';
+                    })
+                ),
+                this.userAvatarColor$
+            ]).pipe(
+                switchMap(([avatarPath, color]) => {
+                    return this.loadAvatarSvg(avatarPath, color);
+                }),
+                catchError((error) => {
+                    console.error('Error in userAvatarSvg$:', error);
+                    return of(this.sanitizer.bypassSecurityTrustHtml(''));
+                })
+            );
+        } else if (this.authService.isGuest()) {
+            this.userName$ = of('Mode invité');
+            this.userAvatarShape$ = of('circle');
+            this.userAvatarColor$ = of('#257D54');
+            this.userAvatarSvg$ = this.loadAvatarSvg('assets/avatars/head_guest.svg', '#257D54');
+        } else {
+            this.userName$ = of('Utilisateur');
+            this.userAvatarShape$ = of('circle');
+            this.userAvatarColor$ = of('#257D54');
+            this.userAvatarSvg$ = this.loadAvatarSvg('assets/avatars/head_guest.svg', '#257D54');
+        }
     }
 
     ngOnDestroy(): void {
@@ -200,13 +359,14 @@ export class QuizGameComponent implements OnInit, OnDestroy {
                 ok = !!this.selectedAnswer?.is_correct;
                 break;
 
-            case 'multiple_choice':
+            case 'multiple_choice': {
                 const correct = this.currentQuestion.answers.filter(a => a.is_correct);
                 ok = correct.length === this.selectedAnswers.length &&
                     correct.every(c => this.selectedAnswers.some(s => s.id === c.id));
                 break;
+            }
 
-            case 'right_order':
+            case 'right_order': {
                 const correctOrder = [...this.currentQuestion.answers]
                     .sort((a, b) => (a.order_correct ?? 0) - (b.order_correct ?? 0))
                     .map(a => a.id);
@@ -214,6 +374,7 @@ export class QuizGameComponent implements OnInit, OnDestroy {
                 ok = correctOrder.length === chosenOrder.length &&
                     correctOrder.every((id, i) => id === chosenOrder[i]);
                 break;
+            }
 
             case 'matching':
                 ok = (this.selectedAnswers as any[]).every(p => {

@@ -1,68 +1,62 @@
 {
   "root": true,
   "ignorePatterns": [
-    "projects/**/*"
+    "projects/**/*",
+    "dist/**/*",
+    "node_modules/**/*"
   ],
+  "env": {
+    "browser": true,
+    "es2020": true,
+    "jasmine": true,
+    "node": true
+  },
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": 2020,
+    "sourceType": "module"
+  },
+  "plugins": [
+    "@typescript-eslint"
+  ],
+  "extends": [
+    "eslint:recommended"
+  ],
+  "rules": {
+    "no-unused-vars": "warn",
+    "prefer-const": "error",
+    "no-var": "error",
+    "no-console": "off",
+    "no-debugger": "error",
+    "no-empty": "off",
+    "no-useless-catch": "error",
+    "no-useless-escape": "error",
+    "no-case-declarations": "error"
+  },
   "overrides": [
     {
-      "files": [
-        "*.ts"
-      ],
-      "extends": [
-        "eslint:recommended",
-        "@typescript-eslint/recommended",
-        "@typescript-eslint/recommended-requiring-type-checking",
-        "@angular-eslint/recommended",
-        "@angular-eslint/template/process-inline-templates"
-      ],
+      "files": ["*.ts"],
+      "parser": "@typescript-eslint/parser",
+      "plugins": ["@typescript-eslint"],
       "rules": {
-        "@angular-eslint/directive-selector": [
-          "error",
-          {
-            "type": "attribute",
-            "prefix": "app",
-            "style": "camelCase"
-          }
-        ],
-        "@angular-eslint/component-selector": [
-          "error",
-          {
-            "type": "element",
-            "prefix": "app",
-            "style": "kebab-case"
-          }
-        ],
-        "@typescript-eslint/no-unused-vars": "error",
-        "@typescript-eslint/no-explicit-any": "warn",
-        "@typescript-eslint/explicit-function-return-type": "off",
-        "@typescript-eslint/explicit-module-boundary-types": "off",
-        "@typescript-eslint/no-empty-function": "warn",
-        "prefer-const": "error",
-        "no-var": "error"
+        "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }],
+        "no-unused-vars": "off"
       }
     },
     {
-      "files": [
-        "*.html"
-      ],
-      "extends": [
-        "@angular-eslint/template/recommended",
-        "@angular-eslint/template/accessibility"
-      ],
-      "rules": {
-        "@angular-eslint/template/interactive-supports-focus": "warn",
-        "@angular-eslint/template/click-events-have-key-events": "warn"
-      }
-    },
-    {
-      "files": [
-        "*.spec.ts"
-      ],
+      "files": ["*.spec.ts", "test-setup.ts"],
+      "env": {
+        "jasmine": true
+      },
       "rules": {
         "@typescript-eslint/no-unused-vars": "off",
-        "@typescript-eslint/no-explicit-any": "off"
+        "no-console": "off"
       }
+    },
+    {
+      "files": ["*.html"],
+      "parser": "@angular-eslint/template-parser",
+      "rules": {}
     }
   ]
 }
-

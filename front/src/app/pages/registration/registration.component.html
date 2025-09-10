@@ -1,4 +1,21 @@
 <div class="registration-page">
+  <!-- Logo et mentions légales pour mobile uniquement -->
+  <div class="mobile-header">
+    <img
+      src="./assets/svg/logo_orange.svg"
+      alt="Blob Logo"
+      class="mobile-logo" />
+    <div class="mobile-legal-links">
+      <a href="/mentions-legales">Mentions Légales</a>
+      <a href="/a-propos">À propos</a>
+      <a href="#">Faire un Don</a>
+    </div>
+    <img
+      src="./assets/svg/three_blob3.svg"
+      alt="Blob Trees"
+      class="mobile-blobs" />
+  </div>
+
   <div class="registration-left">
     <form [formGroup]="form" (ngSubmit)="onSubmit()">
       <h1>S'inscrire</h1>
@@ -85,6 +102,11 @@
         src="./assets/svg/logo_orange.svg"
         alt="Blob Logo"
         class="logo" />
+      <div class="legal-links">
+        <a href="/mentions-legales">Mentions Légales</a>
+        <a href="/a-propos">À propos</a>
+        <a href="#">Faire un Don</a>
+      </div>
       <ul class="header-nav">
         <li><a href="/mentions-legales">Mentions Légales</a></li>
         <li><a href="/a-propos">À propos</a></li>

@@ -151,8 +151,8 @@ export class CompanyManagementComponent implements OnInit, OnDestroy {
           this.fileDownloadService.downloadCsv(csvContent, filename);
           this.alerts.open('Export CSV réussi !', { appearance: 'success' }).subscribe();
         },
-        error: (error: any) => {
-          console.error('Erreur export CSV:', error);
+        error: (_error: any) => {
+          console.error('Erreur export CSV:', _error);
           this.alerts.open('Erreur lors de l\'export CSV', { appearance: 'error' }).subscribe();
         }
       });
@@ -167,8 +167,8 @@ export class CompanyManagementComponent implements OnInit, OnDestroy {
           this.fileDownloadService.downloadJson(result.data, filename);
           this.alerts.open('Export JSON réussi !', { appearance: 'success' }).subscribe();
         },
-        error: (error: any) => {
-          console.error('Erreur export JSON:', error);
+        error: (_error: any) => {
+          console.error('Erreur export JSON:', _error);
           this.alerts.open('Erreur lors de l\'export JSON', { appearance: 'error' }).subscribe();
         }
       });
@@ -218,8 +218,8 @@ export class CompanyManagementComponent implements OnInit, OnDestroy {
         this.showImportModal = false;
         this.selectedFile = null;
       },
-      error: (error: any) => {
-        console.error('Erreur import CSV:', error);
+      error: (_error: any) => {
+        console.error('Erreur import CSV:', _error);
         this.alerts.open('Erreur lors de l\'import CSV', { appearance: 'error' }).subscribe();
       }
     });
@@ -251,7 +251,7 @@ export class CompanyManagementComponent implements OnInit, OnDestroy {
 
           this.applyFilters();
         },
-        error: (error: any) => {
+        error: (_error: any) => {
           this.loadError = true;
           this.cdr.markForCheck();
         }

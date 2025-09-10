@@ -201,7 +201,7 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
 
   private handleGameEvent(event: any): void {
     switch (event.action) {
-      case 'new_question':
+      case 'new_question': {
         console.log(` ÉVÉNEMENT new_question REÇU:`, {
           eventQuestionIndex: event.questionIndex,
           currentQuestionIndex: this.currentQuestionIndex,
@@ -255,6 +255,7 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
         this.isTransitioning = false;
         this.feedbackActive = false;
         break;
+      }
       case 'answer_submitted':
         this.onPlayerAnswered(event.username);
         break;
@@ -938,8 +939,8 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
         next: (result: any) => {
           console.log(` Serveur confirmé transition question: `, result);
         },
-        error: (error: any) => {
-          console.error(' Erreur serveur transition question:', error);
+        error: (_error: any) => {
+          console.error(' Erreur serveur transition question:', _error);
           this.proceedToNextQuestionLocal();
           this.isTransitioning = false;
         }
@@ -1379,8 +1380,8 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
       this.multiplayerService.submitPlayerScores(this.currentGame.id, playerScores).subscribe({
         next: (result: any) => {
         },
-        error: (error: any) => {
-          console.error(` Erreur partage score pour ${this.currentUser.username}:`, error);
+        error: (_error: any) => {
+          console.error(` Erreur partage score pour ${this.currentUser.username}:`, _error);
         }
       });
     }

@@ -46,9 +46,11 @@
               <li role="none" *hasPermission="'MANAGE_USERS'"><a routerLink="/gestion-utilisateur" (click)="showGestionDropdown = false" role="menuitem" aria-label="Gérer les utilisateurs de la plateforme">Utilisateurs</a></li>
               <li role="none" *ngIf="isAdmin$ | async"><a routerLink="/gestion-entreprise" (click)="showGestionDropdown = false" role="menuitem" aria-label="Gérer les entreprises partenaires">Entreprises</a></li>
               <li role="none" *hasPermission="'CREATE_QUIZ'"><a routerLink="/gestion-quiz" (click)="showGestionDropdown = false" role="menuitem" aria-label="Gérer les quiz de la plateforme">Quiz</a></li>
-              <li role="none" *ngIf="(userCompanyId$ | async)">
-                <a [routerLink]="'/company/' + (userCompanyId$ | async)" (click)="showGestionDropdown = false" role="menuitem" aria-label="Voir les détails de mon entreprise" *hasPermission="'VIEW_RESULTS'">Mon Entreprise</a>
-              </li>
+              <ng-container *ngIf="(userCompanyId$ | async)">
+                <li role="none" *hasPermission="'VIEW_RESULTS'">
+                  <a [routerLink]="'/company/' + (userCompanyId$ | async)" (click)="showGestionDropdown = false" role="menuitem" aria-label="Voir les détails de mon entreprise">Mon Entreprise</a>
+                </li>
+              </ng-container>
             </ul>
           </li>
         </ul>
@@ -95,25 +97,66 @@
       type="button"
       class="navbar__toggle"
       (click)="toggle()"
-      aria-label="Ouvrir le menu de navigation mobile"
-      aria-expanded="false"
+      [attr.aria-label]="isMobileMenuOpen ? 'Fermer le menu de navigation mobile' : 'Ouvrir le menu de navigation mobile'"
+      [attr.aria-expanded]="isMobileMenuOpen"
       aria-controls="mobile-menu"
+      [class.active]="isMobileMenuOpen"
     >
-      <span aria-hidden="true">☰</span> Menu
+      <span class="burger-icon" [class.active]="isMobileMenuOpen">
+        <span class="burger-line"></span>
+        <span class="burger-line"></span>
+        <span class="burger-line"></span>
+      </span>
     </button>
   </nav>
 </header>
 
 <div class="mobile-drawer" *ngIf="open()" id="mobile-menu" role="navigation" aria-label="Menu mobile">
+  <div class="mobile-overlay" (click)="close()"></div>
   <nav class="mobile-menu">
-    <div class="mobile-gestion" *ngIf="!(isGuest$ | async)">
-      <p class="mobile-section-title" id="mobile-gestion-title">Gestion</p>
-      <a routerLink="/gestion-utilisateur" (click)="close()" *hasPermission="'MANAGE_USERS'" aria-labelledby="mobile-gestion-title">Utilisateurs</a>
-      <a routerLink="/gestion-entreprise" (click)="close()" *ngIf="isAdmin$ | async" aria-labelledby="mobile-gestion-title">Entreprises</a>
-      <a routerLink="/gestion-quiz" (click)="close()" *hasPermission="'CREATE_QUIZ'" aria-labelledby="mobile-gestion-title">Quiz</a>
-      <ng-container *ngIf="(userCompanyId$ | async)">
-        <a [routerLink]="'/company/' + (userCompanyId$ | async)" (click)="close()" *hasPermission="'VIEW_RESULTS'" aria-labelledby="mobile-gestion-title">Mon Entreprise</a>
+    <!-- Bouton de fermeture -->
+    <button type="button" class="mobile-close" (click)="close()" aria-label="Fermer le menu">
+      <span class="close-icon">×</span>
+    </button>
+
+    <!-- Profil utilisateur en haut -->
+    <div class="mobile-profile">
+      <div class="mobile-avatar" [innerHTML]="userAvatarSvg$ | async"></div>
+      <div class="mobile-user-info">
+        <p class="mobile-username">{{ userName$ | async }}</p>
+        <div class="mobile-progress">
+          <div class="mobile-progress-bar" [style.width.%]="65"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation principale -->
+    <div class="mobile-nav-section">
+      <h3 class="mobile-section-title">Navigation</h3>
+      <a routerLink="/quiz" (click)="close()" class="mobile-nav-link">Quiz</a>
+      <a routerLink="/classement" (click)="close()" class="mobile-nav-link" *ngIf="!(isGuest$ | async)">Classement</a>
+      <ng-container *ngIf="!(isGuest$ | async)">
+        <a routerLink="/creation-quiz" (click)="close()" class="mobile-nav-link" *hasPermission="'CREATE_QUIZ'">Créer un quiz</a>
       </ng-container>
+    </div>
+
+    <!-- Section Gestion -->
+    <div class="mobile-nav-section" *ngIf="!(isGuest$ | async)">
+      <h3 class="mobile-section-title">Gestion</h3>
+      <a routerLink="/gestion-utilisateur" (click)="close()" class="mobile-nav-link" *hasPermission="'MANAGE_USERS'">Utilisateurs</a>
+      <a routerLink="/gestion-entreprise" (click)="close()" class="mobile-nav-link" *ngIf="isAdmin$ | async">Entreprises</a>
+      <a routerLink="/gestion-quiz" (click)="close()" class="mobile-nav-link" *hasPermission="'CREATE_QUIZ'">Quiz</a>
+      <ng-container *ngIf="(userCompanyId$ | async)">
+        <a [routerLink]="'/company/' + (userCompanyId$ | async)" (click)="close()" class="mobile-nav-link" *hasPermission="'VIEW_RESULTS'">Mon Entreprise</a>
+      </ng-container>
+    </div>
+
+    <!-- Actions du profil -->
+    <div class="mobile-nav-section mobile-profile-actions">
+      <h3 class="mobile-section-title">Profil</h3>
+      <a routerLink="/profil" (click)="close()" class="mobile-nav-link" *ngIf="!(isGuest$ | async)">Voir le profil</a>
+      <a routerLink="/connexion" (click)="close()" class="mobile-nav-link" *ngIf="isGuest$ | async">Se connecter</a>
+      <button type="button" (click)="logout(); close()" class="mobile-nav-link mobile-logout" *ngIf="!(isGuest$ | async)">Se déconnecter</button>
     </div>
   </nav>
 </div>

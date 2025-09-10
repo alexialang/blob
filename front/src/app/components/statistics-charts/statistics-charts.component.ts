@@ -1,7 +1,7 @@
 import { Component, Input, OnInit, OnDestroy, ElementRef, ViewChild, AfterViewInit, OnChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-declare var Chart: any;
+declare const Chart: any;
 
 @Component({
   selector: 'app-statistics-charts',

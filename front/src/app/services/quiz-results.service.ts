@@ -96,7 +96,7 @@ export class QuizResultsService {
           player.rank = index + 1;
         });
 
-        let displayLeaderboard = finalLeaderboard.slice(0, 5);
+        const displayLeaderboard = finalLeaderboard.slice(0, 5);
         
         if (guestRank > 5) {
           const guestEntry = finalLeaderboard.find(player => player.isCurrentUser);

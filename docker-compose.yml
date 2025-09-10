@@ -51,7 +51,7 @@ services:
   bdd:
     ports:
       - "3319:3306"
-    image: mariadb:11.8.1-rc
+    image: mariadb:11.8
     restart: always
     container_name: blob_bdd
     command: --max_allowed_packet=32505856 --default-authentication-plugin=mysql_native_password

@@ -189,7 +189,7 @@ export class MercureService {
 
   private getCurrentGameId(): string | null {
     const path = window.location.pathname;
-    const gameMatch = path.match(/\/multiplayer\/game\/([^\/]+)/);
+    const gameMatch = path.match(/\/multiplayer\/game\/([^/]+)/);
     if (gameMatch) {
       let gameId = gameMatch[1];
       if (gameId.startsWith('game_')) {
@@ -203,7 +203,7 @@ export class MercureService {
 
   private getCurrentRoomId(): string | null {
     const path = window.location.pathname;
-    const roomMatch = path.match(/\/multiplayer\/room\/([^\/]+)/);
+    const roomMatch = path.match(/\/multiplayer\/room\/([^/]+)/);
     if (roomMatch) {
       return roomMatch[1];
     }

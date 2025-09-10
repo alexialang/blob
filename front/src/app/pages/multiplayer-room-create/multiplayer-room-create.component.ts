@@ -59,8 +59,8 @@ export class MultiplayerRoomCreateComponent implements OnInit {
         this.quizData = quiz;
         this.loading = false;
       },
-      error: (error: any) => {
-        console.error('Erreur chargement quiz:', error);
+      error: (_error: any) => {
+        console.error('Erreur chargement quiz:', _error);
         this.goBack();
       }
     });
@@ -86,7 +86,7 @@ export class MultiplayerRoomCreateComponent implements OnInit {
         next: (groups: any[]) => {
           this.availableGroups = Array.isArray(groups) ? groups : [];
         },
-        error: (error: any) => {
+        error: (_error: any) => {
           this.availableGroups = [];
         }
       });
@@ -118,8 +118,8 @@ export class MultiplayerRoomCreateComponent implements OnInit {
             this.availableUsers = [];
           }
         },
-        error: (error: any) => {
-          console.error('Erreur lors du chargement des utilisateurs:', error);
+        error: (_error: any) => {
+          console.error('Erreur lors du chargement des utilisateurs:', _error);
           this.availableUsers = [];
         }
       });
