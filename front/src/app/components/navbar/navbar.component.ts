@@ -60,8 +60,7 @@ export class NavbarComponent implements OnInit {
     console.error('Image failed to load:', event.target.src);
   }
 
-  onImageLoad(event: any) {
-  }
+  onImageLoad(event: any) {}
 
   // Fonction pour convertir un avatar corps entier en tête d'avatar
   private getHeadAvatarFromFullAvatar(fullAvatarPath: string): string {

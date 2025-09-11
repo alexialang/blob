@@ -134,7 +134,7 @@ export class AuthService {
         pseudo: 'Invité',
         avatar: './assets/avatars/blob_circle.svg',
         avatarShape: 'circle',
-        roles: ['ROLE_GUEST'],
+        roles: [], // Pas de ROLE_GUEST, cohérent avec le backend Symfony
         userPermissions: [],
         dateRegistration: new Date().toISOString(),
         isAdmin: false,

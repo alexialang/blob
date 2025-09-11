@@ -1,6 +1,6 @@
 .payment-success-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--color-light);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -13,7 +13,7 @@
   padding: 40px;
   max-width: 600px;
   width: 100%;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   text-align: center;
   animation: slideUp 0.6s ease-out;
 }
@@ -55,14 +55,16 @@
 }
 
 .success-header h1 {
-  color: #2c3e50;
+  color: var(--color-dark);
   font-size: 2.5rem;
   margin-bottom: 15px;
   font-weight: 700;
+  font-family: var(--font-primary), serif;
+  letter-spacing: 0;
 }
 
 .success-message {
-  color: #7f8c8d;
+  color: #666;
   font-size: 1.1rem;
   line-height: 1.6;
 }
@@ -75,7 +77,7 @@
   width: 50px;
   height: 50px;
   border: 4px solid #f3f3f3;
-  border-top: 4px solid #4caf50;
+  border-top: 4px solid var(--color-pink);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto 20px;
@@ -94,57 +96,15 @@
   text-align: left;
 }
 
-.donation-info {
-  background: #f8f9fa;
-  border-radius: 12px;
-  padding: 25px;
-  margin-bottom: 25px;
-}
-
-.donation-info h2 {
-  color: #2c3e50;
-  font-size: 1.5rem;
-  margin-bottom: 20px;
-  text-align: center;
-}
-
-.info-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid #e9ecef;
-}
-
-.info-item:last-child {
-  border-bottom: none;
-}
-
-.label {
-  font-weight: 600;
-  color: #495057;
-}
-
-.value {
-  color: #2c3e50;
-  font-weight: 500;
-}
-
-.session-id {
-  font-family: monospace;
-  font-size: 0.9rem;
-  background: #e9ecef;
-  padding: 4px 8px;
-  border-radius: 4px;
-}
 
 .impact-message {
-  background: linear-gradient(135deg, #4caf50, #45a049);
-  color: white;
+  background: linear-gradient(135deg, #e8f5e8 0%, #f0f8ff 100%);
+  color: var(--color-dark);
   padding: 25px;
-  border-radius: 12px;
+  border-radius: 10px;
   margin-bottom: 30px;
   text-align: center;
+  border: 2px solid var(--color-pink);
 }
 
 .impact-message h3 {
@@ -178,36 +138,46 @@
 }
 
 .btn-primary {
-  background: #4caf50;
+  background: var(--color-pink);
   color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
 }
 
 .btn-primary:hover {
-  background: #45a049;
+  background: var(--color-pink);
+  opacity: 0.9;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .btn-secondary {
   background: transparent;
-  color: #4caf50;
-  border: 2px solid #4caf50;
+  color: var(--color-pink);
+  border: 2px solid var(--color-pink);
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
 }
 
 .btn-secondary:hover {
-  background: #4caf50;
+  background: var(--color-pink);
   color: white;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .error-message {
-  background: #f8d7da;
-  color: #721c24;
+  background-color: #fee;
+  color: #c33;
   padding: 15px;
-  border-radius: 8px;
+  border-radius: 10px;
   margin-bottom: 20px;
-  border: 1px solid #f5c6cb;
+  text-align: center;
 }
 
 .auto-redirect {

@@ -182,10 +182,11 @@ export class QuizManagementComponent implements OnInit, OnDestroy {
             const createdDaysAgo = Math.floor(Math.random() * 180) + 1;
             const questionsCount = quiz.questionCount || Math.floor(Math.random() * 15) + 5;
 
-            const createdBy = quiz.user 
-              ? `${quiz.user.firstName || ''} ${quiz.user.lastName || ''}`.trim() || quiz.user.email || 'Utilisateur inconnu'
+            const createdBy = quiz.user
+              ? `${quiz.user.firstName || ''} ${quiz.user.lastName || ''}`.trim() ||
+                quiz.user.email ||
+                'Utilisateur inconnu'
               : 'Créateur inconnu';
-
 
             return {
               id: quiz.id,

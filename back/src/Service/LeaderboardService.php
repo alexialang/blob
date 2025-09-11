@@ -55,7 +55,7 @@ class LeaderboardService
         // Juste retourner les résultats de la base de données
         return [
             'leaderboard' => array_slice($leaderboard, 0, 10),
-            'currentUserRank' => $currentUserRank ?: (count($results) + 1),
+            'currentUserRank' => $currentUserRank ?: null, // Ne pas inventer un rang si l'utilisateur n'est pas dans les résultats
             'totalPlayers' => count($results),
             'currentUserScore' => $currentUserId ? $this->getCurrentUserQuizScore($quiz->getId(), $currentUserId) : 0,
         ];

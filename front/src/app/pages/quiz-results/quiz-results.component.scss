@@ -71,19 +71,19 @@
       .main-score {
         margin-bottom: 40px;
 
-          .score-circle {
-            width: 200px;
-            height: 200px;
-            border-radius: 50%;
-            background: var(--color-primary);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto;
-            color: white;
-            position: relative;
-            box-shadow: 0 8px 32px rgba(37, 125, 84, 0.3);
+        .score-circle {
+          width: 200px;
+          height: 200px;
+          border-radius: 50%;
+          background: var(--color-primary);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          margin: 0 auto;
+          color: white;
+          position: relative;
+          box-shadow: 0 8px 32px rgba(37, 125, 84, 0.3);
 
           .score-value {
             font-size: 48px;

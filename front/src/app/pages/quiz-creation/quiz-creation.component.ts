@@ -380,8 +380,7 @@ export class QuizCreationComponent implements OnInit {
       next: res => {
         this.typeQuestions = res;
       },
-      error: error => {
-      },
+      error: error => {},
     });
   }
 
@@ -483,24 +482,24 @@ export class QuizCreationComponent implements OnInit {
 
     // Construire le payload sans utiliser ...formValue pour éviter l'écrasement
     const mappedQuestions = formValue.questions.map((q: any, index: number) => {
-        const typeQuestionId = this.getTypeQuestionId(q.type_question);
-        
-        if (typeQuestionId === 0) {
-          throw new Error(`Type de question invalide: ${q.type_question}`);
-        }
+      const typeQuestionId = this.getTypeQuestionId(q.type_question);
 
-        const questionMapped = {
-          question: q.question,
-          type_question: typeQuestionId, // Utilise l'ID numérique
-          difficulty: q.difficulty,
-          answers: q.answers.map((a: any) => ({
-            ...a,
-            order_correct: a.order_correct || null,
-          })),
-        };
-        
-        return questionMapped;
-      });
+      if (typeQuestionId === 0) {
+        throw new Error(`Type de question invalide: ${q.type_question}`);
+      }
+
+      const questionMapped = {
+        question: q.question,
+        type_question: typeQuestionId, // Utilise l'ID numérique
+        difficulty: q.difficulty,
+        answers: q.answers.map((a: any) => ({
+          ...a,
+          order_correct: a.order_correct || null,
+        })),
+      };
+
+      return questionMapped;
+    });
 
     const payload = {
       title: formValue.title,
@@ -523,7 +522,6 @@ export class QuizCreationComponent implements OnInit {
       );
       return;
     }
-
 
     const action = this.isEditMode
       ? this.quizService.updateQuiz(this.quizId!, payload)
@@ -602,13 +600,11 @@ export class QuizCreationComponent implements OnInit {
    * Convertit la clé du type de question en ID numérique
    */
   private getTypeQuestionId(typeKey: string): number {
-    
     const typeQuestion = this.typeQuestions.find(t => t.key === typeKey);
-    
+
     // Convertir l'ID en nombre si c'est une string
     const rawId = typeQuestion ? typeQuestion.id : 0;
     const result = typeof rawId === 'string' ? parseInt(rawId, 10) : rawId;
-    
 
     if (result === 0 || isNaN(result)) {
       console.error('ATTENTION: Type de question non trouvé ou ID invalide!', {

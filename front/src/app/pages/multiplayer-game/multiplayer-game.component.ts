@@ -288,7 +288,6 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
         this.currentGame = game;
         this.totalPlayers = game.players.length;
 
-
         if (game.status === 'finished') {
           this.showFinalResults(game.leaderboard || []);
           return;
@@ -999,6 +998,12 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
     this.waitingForPlayers = false;
     this.finalLeaderboard = leaderboard;
 
+    // Mettre à jour totalPlayers avec la longueur réelle du leaderboard
+    this.totalPlayers = leaderboard.length;
+
+    // Debug: afficher le leaderboard reçu
+    console.log('Leaderboard reçu du serveur:', leaderboard);
+
     const normalizedScore =
       this.totalQuestions === 0
         ? 0
@@ -1013,7 +1018,8 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
     }
 
     if (currentPlayerStats) {
-      this.playerRank = currentPlayerStats.rank;
+      // Le backend envoie 'position', pas 'rank'
+      this.playerRank = currentPlayerStats.position || currentPlayerStats.rank;
       this.currentScore = currentPlayerStats.score;
     } else {
       this.playerRank = this.totalPlayers;

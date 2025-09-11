@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, tap } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { AuthService } from './auth.service';
 
@@ -56,12 +56,19 @@ export class QuizResultsService {
   }
 
   getQuizLeaderboard(quizId: number): Observable<QuizLeaderboard> {
+    console.log('=== DEBUG GET QUIZ LEADERBOARD ===');
+    console.log('quizId:', quizId);
+    console.log('isGuest():', this.authService.isGuest());
+    
     if (this.authService.isGuest()) {
+      console.log('Mode GUEST - utilisation de getGuestLeaderboardWithRealData');
       return this.getGuestLeaderboardWithRealData(quizId);
     }
 
-    // Utiliser l'endpoint public pour tous les utilisateurs (même connectés)
-    return this.http.get<QuizLeaderboard>(`${environment.apiBaseUrl}/quiz/${quizId}/public-leaderboard`);
+    // Utiliser l'endpoint privé pour les utilisateurs connectés
+    return this.http.get<QuizLeaderboard>(
+      `${environment.apiBaseUrl}/quiz/${quizId}/leaderboard`
+    );
   }
 
   private getGuestLeaderboardWithRealData(quizId: number): Observable<QuizLeaderboard> {
@@ -72,31 +79,33 @@ export class QuizResultsService {
       map((publicData: any) => {
         const realLeaderboard = publicData.leaderboard || [];
 
-        let guestRank = realLeaderboard.length + 1;
-        for (let i = 0; i < realLeaderboard.length; i++) {
-          if (guestScore > realLeaderboard[i].score) {
-            guestRank = i + 1;
-            break;
-          }
-        }
-
+        // Créer le leaderboard final avec le guest inséré au bon endroit
         const finalLeaderboard = [...realLeaderboard];
-        finalLeaderboard.splice(guestRank - 1, 0, {
-          rank: guestRank,
+        
+        // Ajouter le guest au leaderboard
+        finalLeaderboard.push({
+          rank: 0, // Temporaire, sera recalculé
           name: 'Vous (Visiteur)',
           company: 'Non connecté',
           score: guestScore,
           isCurrentUser: true,
         });
 
+        // Trier par score décroissant
+        finalLeaderboard.sort((a, b) => b.score - a.score);
+
+        // Recalculer tous les rangs
         finalLeaderboard.forEach((player, index) => {
           player.rank = index + 1;
         });
 
+        // Trouver le rang du guest
+        const guestEntry = finalLeaderboard.find(player => player.isCurrentUser);
+        const guestRank = guestEntry ? guestEntry.rank : finalLeaderboard.length;
+
         const displayLeaderboard = finalLeaderboard.slice(0, 5);
 
         if (guestRank > 5) {
-          const guestEntry = finalLeaderboard.find(player => player.isCurrentUser);
           if (guestEntry) {
             displayLeaderboard.push(guestEntry);
           }

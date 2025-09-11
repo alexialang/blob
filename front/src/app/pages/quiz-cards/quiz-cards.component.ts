@@ -117,16 +117,16 @@ export class QuizCardsComponent implements OnInit, OnDestroy {
         if (this.isUserLoggedIn) {
           this.originalMyQuizzes = this.convertToQuizCards(data.myQuizzes ?? []);
           this.myQuizzes = [...this.originalMyQuizzes];
-          
+
           this.originalGroupQuizzes = this.convertToQuizCards(data.groupQuizzes ?? []);
           this.groupQuizzes = [...this.originalGroupQuizzes];
-          
+
           // Charger les informations de l'utilisateur connecté
           this.authService.getCurrentUser().subscribe(user => {
             this.currentUser = user;
             this.cdr.markForCheck();
           });
-          
+
           // Si les quiz de l'utilisateur sont vides, utiliser l'API de fallback
           if (this.originalMyQuizzes.length === 0 && this.originalGroupQuizzes.length === 0) {
             this.loadMyQuizzesFromManagement();
@@ -172,13 +172,13 @@ export class QuizCardsComponent implements OnInit, OnDestroy {
         const quizzes = (response as any)?.data || response;
         this.authService.getCurrentUser().subscribe(currentUser => {
           this.currentUser = currentUser;
-          
+
           const myCreatedQuizzes: QuizCard[] = [];
           const myGroupQuizzes: QuizCard[] = [];
-          
+
           quizzes.forEach((quiz: any) => {
             const isMyQuiz = quiz.user?.id === currentUser.id;
-            
+
             if (isMyQuiz) {
               // Quiz créé par l'utilisateur
               if (quiz.isPublic) {
@@ -197,27 +197,27 @@ export class QuizCardsComponent implements OnInit, OnDestroy {
                 const userGroupIds = currentUser.groups?.map((g: any) => g.id) || [];
                 const quizGroupIds = quiz.groups?.map((g: any) => g.id) || [];
                 const hasCommonGroup = userGroupIds.some((id: number) => quizGroupIds.includes(id));
-                
+
                 if (hasCommonGroup) {
                   myGroupQuizzes.push(this.convertSingleQuizToCard(quiz));
                 }
               }
             }
           });
-          
+
           this.originalMyQuizzes = myCreatedQuizzes;
           this.myQuizzes = [...this.originalMyQuizzes];
-          
+
           this.originalGroupQuizzes = myGroupQuizzes;
           this.groupQuizzes = [...this.originalGroupQuizzes];
-          
+
           this.calculateAllBlobs();
           this.cdr.markForCheck();
         });
       },
       error: error => {
         console.error('Erreur lors du chargement des quiz depuis la gestion:', error);
-      }
+      },
     });
   }
 
@@ -234,9 +234,9 @@ export class QuizCardsComponent implements OnInit, OnDestroy {
     let difficultyLabel = 'Inconnue';
     if (quiz.difficulty) {
       const difficultyMap: { [key: string]: string } = {
-        'easy': 'Facile',
-        'medium': 'Moyen',
-        'hard': 'Difficile'
+        easy: 'Facile',
+        medium: 'Moyen',
+        hard: 'Difficile',
       };
       difficultyLabel = difficultyMap[quiz.difficulty] || quiz.difficulty;
     }
@@ -253,7 +253,7 @@ export class QuizCardsComponent implements OnInit, OnDestroy {
       rating: 0,
       questionCount: 0,
       isFlipped: false,
-      playMode: 'solo' as 'solo' | 'team'
+      playMode: 'solo' as 'solo' | 'team',
     };
   }
 

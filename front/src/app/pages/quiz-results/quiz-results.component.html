@@ -41,7 +41,9 @@
           <div class="card-header">
             <h3 *ngIf="!isGuest">Votre Position</h3>
             <h3 *ngIf="isGuest">Position Simulée</h3>
-            <div class="total-count">{{ resultData.totalPlayers }} joueur{{ resultData.totalPlayers > 1 ? 's' : '' }}</div>
+            <div class="total-count">
+              {{ resultData.totalPlayers }} joueur{{ resultData.totalPlayers > 1 ? 's' : '' }}
+            </div>
           </div>
 
           <div class="ranking-content">
@@ -57,7 +59,11 @@
             <div class="top-players" *ngIf="resultData.leaderboard.length > 0">
               <h4>Top 3 de ce quiz</h4>
               <div class="podium-mini">
-                <div class="podium-player" *ngFor="let player of resultData.leaderboard.slice(0, 3); let i = index" [class.current-user]="player.isCurrentUser">
+                <div
+                  class="podium-player"
+                  *ngFor="let player of resultData.leaderboard.slice(0, 3); let i = index"
+                  [class.current-user]="player.isCurrentUser"
+                >
                   <div class="player-position">
                     <span class="medal">{{ getMedalIcon(i + 1) }}</span>
                     <span class="position">{{ i + 1 }}</span>

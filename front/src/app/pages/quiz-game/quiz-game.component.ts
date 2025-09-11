@@ -79,7 +79,7 @@ export class QuizGameComponent implements OnInit, OnDestroy {
   isLoading = false;
   quizCompleted = false;
 
-  playerRank = 1;
+  playerRank: number | null = 1;
   totalPlayers = 1;
   userRating = 0;
   hoverRating = 0;
@@ -494,8 +494,25 @@ export class QuizGameComponent implements OnInit, OnDestroy {
     this.quizResultsService.getQuizLeaderboard(this.quizData.id).subscribe({
       next: data => {
         this.leaderboard = data.leaderboard || [];
-        this.playerRank = data.currentUserRank || 1;
+        // Si currentUserRank est null, l'utilisateur n'a pas encore joué à ce quiz
+        this.playerRank = data.currentUserRank || null;
         this.totalPlayers = data.totalPlayers || 1;
+
+        // Si l'utilisateur n'est pas dans le leaderboard mais qu'il vient de jouer,
+        // on l'ajoute temporairement pour l'affichage
+        if (this.playerRank === null && this.currentScore > 0) {
+          // Calculer le rang selon le score
+          let rank = 1;
+          for (const player of this.leaderboard) {
+            if (this.currentScore < player.score) {
+              rank++;
+            }
+          }
+          
+          this.playerRank = rank;
+          this.totalPlayers = this.totalPlayers + 1;
+        }
+        
         this.isLoadingLeaderboard = false;
       },
       error: error => {

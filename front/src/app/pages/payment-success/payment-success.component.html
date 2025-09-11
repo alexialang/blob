@@ -3,7 +3,7 @@
     <div class="success-header">
       <div class="success-icon">
         <svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="12" cy="12" r="10" fill="#4CAF50" />
+          <circle cx="12" cy="12" r="10" fill="var(--color-pink)" />
           <path d="M9 12l2 2 4-4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
         </svg>
       </div>
@@ -17,22 +17,6 @@
     </div>
 
     <div *ngIf="!isLoading" class="success-details">
-      <div class="donation-info">
-        <h2>Détails du don</h2>
-        <div class="info-item" *ngIf="amount">
-          <span class="label">Montant :</span>
-          <span class="value">{{ amount }}€</span>
-        </div>
-        <div class="info-item" *ngIf="donorName">
-          <span class="label">Donateur :</span>
-          <span class="value">{{ donorName }}</span>
-        </div>
-        <div class="info-item" *ngIf="sessionId">
-          <span class="label">ID de session :</span>
-          <span class="value session-id">{{ sessionId }}</span>
-        </div>
-      </div>
-
       <div class="impact-message">
         <h3>Votre impact</h3>
         <p>

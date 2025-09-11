@@ -152,14 +152,14 @@
         color: var(--color-dark) !important;
       }
 
-      &[data-appearance="primary"] {
+      &[data-appearance='primary'] {
         background: var(--color-primary) !important;
         color: white !important;
         font-weight: 500 !important;
       }
 
       // Override spécifique pour les flèches
-      &[data-appearance="secondary"] {
+      &[data-appearance='secondary'] {
         background: transparent !important;
         color: var(--color-dark) !important;
         border: none !important;

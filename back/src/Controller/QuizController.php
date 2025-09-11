@@ -95,6 +95,7 @@ class QuizController extends AbstractSecureController
         try {
             $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
 
+
             $user = $this->getCurrentUser();
             if (!$user) {
                 return $this->json(['error' => 'User not authenticated'], 401);
@@ -104,6 +105,7 @@ class QuizController extends AbstractSecureController
 
             return $this->json($quiz, 201, [], ['groups' => ['quiz:read']]);
         } catch (\JsonException $e) {
+
             return $this->json(['error' => 'Invalid JSON'], 400);
         } catch (ValidationFailedException $e) {
             $errorMessages = [];
@@ -111,8 +113,10 @@ class QuizController extends AbstractSecureController
                 $errorMessages[] = $violation->getMessage();
             }
 
+
             return $this->json(['error' => 'Données invalides', 'details' => $errorMessages], 400);
         } catch (\Exception $e) {
+
             return $this->json(['error' => 'Erreur: '.$e->getMessage()], 500);
         }
     }
@@ -334,6 +338,19 @@ class QuizController extends AbstractSecureController
         $result = $this->quizRatingService->getAverageRating($quiz);
 
         return $this->json($result, 200, [], ['groups' => ['quiz:rating']]);
+    }
+
+    #[Route('/quiz/{id}/leaderboard', name: 'quiz_leaderboard', methods: ['GET'], requirements: ['id' => '\d+'])]
+    public function getLeaderboard(?Quiz $quiz = null): JsonResponse
+    {
+        if (!$quiz) {
+            return $this->json(['error' => 'Quiz non trouvé'], 404);
+        }
+
+        $user = $this->getCurrentUser();
+        $result = $this->leaderboardService->getQuizLeaderboard($quiz, $user);
+
+        return $this->json($result, 200, [], ['groups' => ['quiz:leaderboard']]);
     }
 
     #[Route('/quiz/{id}/public-leaderboard', name: 'quiz_public_leaderboard', methods: ['GET'], requirements: ['id' => '\d+'])]

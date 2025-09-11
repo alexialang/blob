@@ -5,10 +5,9 @@ import { NavbarComponent } from './components/navbar/navbar.component';
 import { GameInvitationToastComponent } from './components/game-invitation-toast/game-invitation-toast.component';
 import { QuizTransitionComponent } from './components/quiz-transition/quiz-transition.component';
 import { AlertComponent } from './components/alert/alert.component';
-import { PrivacyConsentComponent } from './components/privacy-consent/privacy-consent.component';
 
 import { AuthService } from './services/auth.service';
-// import { PrivacyAnalyticsService } from './services/privacy-analytics.service';
+import { PrivacyAnalyticsService } from './services/privacy-analytics.service';
 import { filter } from 'rxjs/operators';
 
 @Component({
@@ -21,7 +20,6 @@ import { filter } from 'rxjs/operators';
     GameInvitationToastComponent,
     QuizTransitionComponent,
     AlertComponent,
-    PrivacyConsentComponent,
   ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
@@ -31,8 +29,8 @@ export class AppComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private authService: AuthService
-    // private analyticsService: PrivacyAnalyticsService
+    private authService: AuthService,
+    private analyticsService: PrivacyAnalyticsService
   ) {}
 
   ngOnInit() {
@@ -48,6 +46,9 @@ export class AppComponent implements OnInit {
 
         const hideNavbar = currentRoute.snapshot.data['hideNavbar'];
         this.showNavbar = !hideNavbar;
+
+        // Tracking automatique des pages avec Umami
+        this.analyticsService.trackPageView(event.url, document.title);
       });
   }
 }

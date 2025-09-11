@@ -155,7 +155,8 @@
         <div class="ranking-section">
           <h2>Votre classement</h2>
           <div class="ranking-position">
-            <span class="position-badge">#{{ playerRank }}</span>
+            <span class="position-badge" *ngIf="playerRank !== null">#{{ playerRank }}</span>
+            <span class="position-badge" *ngIf="playerRank === null">-</span>
             <span class="position-text">/ sur {{ totalPlayers }} joueurs</span>
           </div>
 
