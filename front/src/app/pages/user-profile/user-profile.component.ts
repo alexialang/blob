@@ -122,12 +122,6 @@ export class UserProfileComponent implements OnInit {
     this.isLoadingStatistics = true;
     this.userStatistics = null; // Reset des statistiques pendant le chargement
 
-      'Chargement des statistiques - isOwnProfile:',
-      this.isOwnProfile,
-      'targetUserId:',
-      this.targetUserId
-    );
-
     if (this.isOwnProfile) {
       this.userService.getUserStatistics().subscribe({
         next: stats => {

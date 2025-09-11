@@ -191,6 +191,7 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
   private handleGameEvent(event: any): void {
     switch (event.action) {
       case 'new_question': {
+        console.log(` ÉVÉNEMENT new_question REÇU:`, {
           eventQuestionIndex: event.questionIndex,
           currentQuestionIndex: this.currentQuestionIndex,
           questionTitle: event.question?.question || 'N/A',
@@ -203,6 +204,7 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
         if (this.securityTimeout) {
           clearTimeout(this.securityTimeout);
           this.securityTimeout = null;
+          console.log(`Timeout sécurité annulé - Serveur a répondu`);
         }
 
         const eventKey = `${event.questionIndex}_${event.questionStartTime}`;
@@ -212,20 +214,24 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
           event.questionIndex === this.lastProcessedQuestionIndex &&
           now - this.questionProcessingCooldown < 2000
         ) {
+          console.log(
             ` ÉVÉNEMENT BLOQUÉ: Question ${event.questionIndex} reçue trop rapidement (${now - this.questionProcessingCooldown}ms)`
           );
           return;
         }
 
         if (this.feedbackActive) {
+          console.log(` ÉVÉNEMENT BLOQUÉ: Feedback en cours`);
           return;
         }
 
         if (event.questionIndex === this.currentQuestionIndex) {
+          console.log(` Question ${event.questionIndex} déjà active, ignorée`);
           return;
         }
 
         if (event.questionIndex > this.currentQuestionIndex + 1) {
+          console.log(
             `️ Saut de question détecté: ${this.currentQuestionIndex} -> ${event.questionIndex}, ignoré pour éviter de sauter des questions`
           );
           return;
@@ -238,6 +244,7 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
           this.questionStartTimestamp = event.questionStartTime * 1000;
           this.questionDuration = event.questionDuration;
           this.timeLeft = event.timeLeft || 30;
+          console.log(
             `Nouvelle question - Début: ${new Date(this.questionStartTimestamp)}, Durée: ${event.questionDuration}s`
           );
         }
@@ -263,8 +270,10 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
         break;
       case 'timer_update':
         this.timeLeft = event.timeLeft;
+        console.log(` TIMER_UPDATE reçu: ${event.timeLeft}s - Event complet:`, event);
         break;
       case 'time_expired':
+        console.log('ÉVÉNEMENT TEMPS_ECOULE reçu du serveur');
         this.handleTimeExpiredFromServer(event.leaderboard);
         break;
       case 'score_update':
@@ -292,6 +301,10 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
           const elapsedTime = Math.floor((currentTime - this.questionStartTimestamp) / 1000);
           this.timeLeft = Math.max(0, game.questionDuration - elapsedTime);
 
+          console.log(`Question démarrée à: ${new Date(this.questionStartTimestamp)}`);
+          console.log(`Durée: ${game.questionDuration}s`);
+          console.log(`Temps écoulé: ${elapsedTime}s`);
+          console.log(`Temps restant calculé: ${this.timeLeft}s`);
 
           if (!game.status || game.status === 'playing') {
             this.startTimer();
@@ -384,6 +397,7 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
   }
 
   private startNewQuestion(questionIndex: number, question: any, timeLeft: number): void {
+    console.log(` startNewQuestion APPELÉ:`, {
       questionIndex: questionIndex,
       currentQuestionIndex: this.currentQuestionIndex,
       timeLeft: timeLeft,
@@ -393,15 +407,18 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
     });
 
     if (this.currentQuestionIndex === questionIndex && this.currentQuestion) {
+      console.log(` Question ${questionIndex} déjà active dans startNewQuestion, ignorée`);
       return;
     }
 
     if (questionIndex > this.currentQuestionIndex + 1) {
+      console.log(
         ` startNewQuestion - Saut de question ${this.currentQuestionIndex} -> ${questionIndex}, ignoré`
       );
       return;
     }
 
+    console.log(
       `startNewQuestion - AVANT: current=${this.currentQuestionIndex}, nouveau=${questionIndex}`
     );
 
@@ -419,12 +436,15 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
     });
 
     if (this.questions && this.questions[questionIndex]) {
+      console.log(
         ` Question trouvée dans this.questions[${questionIndex}] - Appel loadQuestionAtIndex`
       );
       this.loadQuestionAtIndex(questionIndex);
     } else {
+      console.log(` Question NON trouvée dans this.questions - Utilisation des données serveur`);
       const oldIndex = this.currentQuestionIndex;
       this.currentQuestionIndex = questionIndex;
+      console.log(` INDEX CHANGÉ: ${oldIndex} -> ${this.currentQuestionIndex}`);
 
       this.currentQuestion = question;
 
@@ -434,6 +454,7 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
       this.startTimer();
     }
 
+    console.log(` Question ${questionIndex} ACTIVÉE:`, {
       newCurrentIndex: this.currentQuestionIndex,
       titre: question?.question || 'N/A',
       timeLeft: this.timeLeft,
@@ -457,8 +478,10 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
 
   // Gère l'expiration du temps côté client (soumission automatique si pas répondu)
   private handleTimeExpired(): void {
+    console.log(' Timer local - Temps écoulé');
 
     if (!this.hasAnswered) {
+      console.log(" Joueur n'a pas répondu - Traitement comme mauvaise réponse");
 
       this.hasAnswered = true;
       this.waitingForPlayers = false;
@@ -504,8 +527,10 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
         isCorrect: false,
       }));
 
+      console.log(' Timeout - Déclenchement feedback local');
       this.showFeedbackPhase(localLeaderboard);
     } else if (this.hasAnswered) {
+      console.log(' Joueur a déjà répondu - Force timeout');
       if (this.currentGame?.players) {
         this.currentGame.players.forEach(player => {
           if (!this.playersAnswered.includes(player.username)) {
@@ -517,6 +542,7 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
   }
 
   private handleTimeExpiredFromServer(leaderboard: any[]): void {
+    console.log(' Temps écoulé reçu du serveur - Synchronisation avec le serveur');
 
     if (!this.hasAnswered) {
       this.hasAnswered = true;
@@ -602,6 +628,7 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
       }, 1000);
 
       if (this.playersAnswered.length >= this.totalPlayers) {
+        console.log(` Tous les joueurs ont répondu localement`);
 
         const localLeaderboard = this.livePlayers.map(player => ({
           username: player.username,
@@ -620,6 +647,7 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
   }
 
   private showFeedbackPhase(leaderboard: any[]): void {
+    console.log(`📊 showFeedbackPhase APPELÉ:`, {
       currentQuestionIndex: this.currentQuestionIndex,
       feedbackActive: this.feedbackActive,
       isTransitioning: this.isTransitioning,
@@ -628,10 +656,12 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
     });
 
     if (this.feedbackActive) {
+      console.log(` Feedback déjà actif, ignoré`);
       return;
     }
 
     this.feedbackActive = true;
+    console.log(`📊 Phase de feedback DÉMARRÉE`);
     this.stopTimer();
     this.showFeedback = true;
     this.waitingForPlayers = false;
@@ -644,14 +674,17 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
     setTimeout(() => {
       this.showFeedback = false;
       this.feedbackActive = false;
+      console.log(` Fin feedback - Début classement`);
 
       this.showTransitionScreen(leaderboard);
       this.updateLiveScoreboardAfterFeedback();
 
       this.securityTimeout = setTimeout(() => {
         if (!this.gameCompleted && this.currentQuestionIndex < this.totalQuestions - 1) {
+          console.log(` Fin du classement - Question suivante`);
           this.proceedToNextQuestion();
         } else if (this.currentQuestionIndex >= this.totalQuestions - 1) {
+          console.log(` Fin de jeu détectée`);
           this.proceedToNextQuestionLocal();
         }
       }, 6000);
@@ -853,6 +886,7 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
   }
 
   private proceedToNextQuestion(): void {
+    console.log(`proceedToNextQuestion APPELÉ:`, {
       currentQuestionIndex: this.currentQuestionIndex,
       isTransitioning: this.isTransitioning,
       feedbackActive: this.feedbackActive,
@@ -862,11 +896,13 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
     });
 
     if (this.isTransitioning) {
+      console.log(` Transition déjà en cours, ignorée`);
       return;
     }
 
     const now = Date.now();
     if (this.questionProcessingCooldown && now - this.questionProcessingCooldown < 3000) {
+      console.log(
         ` proceedToNextQuestion ignoré - Cooldown actif (${now - this.questionProcessingCooldown}ms)`
       );
       return;
@@ -874,12 +910,14 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
     this.questionProcessingCooldown = now;
 
     this.isTransitioning = true;
+    console.log(
       ` Demande transition question ${this.currentQuestionIndex} -> ${this.currentQuestionIndex + 1}`
     );
 
     if (this.currentGame?.id) {
       this.multiplayerService.triggerNextQuestion(this.currentGame.id).subscribe({
         next: (result: any) => {
+          console.log(` Serveur confirmé transition question: `, result);
         },
         error: (_error: any) => {
           console.error(' Erreur serveur transition question:', _error);
@@ -896,6 +934,7 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
   private proceedToNextQuestionLocal(): void {
     const nextQuestionIndex = this.currentQuestionIndex + 1;
 
+    console.log(
       `proceedToNextQuestionLocal - current: ${this.currentQuestionIndex}, next: ${nextQuestionIndex}, total: ${this.totalQuestions}`
     );
 
@@ -904,10 +943,12 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
       this.questions &&
       this.questions[nextQuestionIndex]
     ) {
+      console.log(` Passage à la question ${nextQuestionIndex}`);
       setTimeout(() => {
         this.startNewQuestion(nextQuestionIndex, this.questions[nextQuestionIndex], 30);
       }, 500);
     } else {
+      console.log(` FIN DE JEU - Plus de questions disponibles`);
       this.stopTimer();
       this.gameCompleted = true;
 
@@ -978,14 +1019,17 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
       this.playerRank = this.totalPlayers;
     }
 
+    console.log(` Position finale: ${this.playerRank}, Score: ${this.currentScore}`);
 
     this.timeLeft = 10;
 
     const finalCountdown = setInterval(() => {
       this.timeLeft--;
+      console.log(` Classement final visible encore ${this.timeLeft}s`);
 
       if (this.timeLeft <= 0) {
         clearInterval(finalCountdown);
+        console.log(` Fin d'affichage du classement final`);
       }
     }, 1000);
   }
@@ -1219,6 +1263,7 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
 
   rateQuiz(rating: number): void {
     this.userRating = rating;
+    console.log('Quiz noté:', rating, '/5 étoiles');
   }
 
   // TrackBy pour les étoiles de notation (optimisation Angular)
@@ -1258,6 +1303,7 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
 
       this.multiplayerService.submitPlayerScores(this.gameId, finalScores).subscribe({
         next: result => {
+          console.log('Scores finaux enregistrés sur le serveur');
         },
         error: error => {
           console.error("Erreur lors de l'enregistrement des scores finaux:", error);
@@ -1267,6 +1313,7 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
 
     this.multiplayerService.endGame(this.gameId).subscribe({
       next: result => {
+        console.log('Partie marquée comme terminée sur le serveur');
         this.gameCompleted = true;
       },
       error: error => {
@@ -1391,6 +1438,7 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
     setTimeout(() => {
       this.showTransition = false;
       this.questionPointsGained = {};
+      console.log(`Classement fini - Prêt pour nouvelle question`);
     }, 6000);
   }
 }

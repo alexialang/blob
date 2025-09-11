@@ -485,12 +485,8 @@ export class QuizCreationComponent implements OnInit {
     const mappedQuestions = formValue.questions.map((q: any, index: number) => {
         const typeQuestionId = this.getTypeQuestionId(q.type_question);
         
-
         if (typeQuestionId === 0) {
-            question: q.question,
-            type_question: q.type_question,
-            typeQuestionId,
-          });
+          throw new Error(`Type de question invalide: ${q.type_question}`);
         }
 
         const questionMapped = {
@@ -539,6 +535,7 @@ export class QuizCreationComponent implements OnInit {
         this.router.navigate(['/quiz']);
       },
       error: error => {
+        console.error('Erreur lors de la création/modification du quiz:', {
           status: error.status,
           message: error.message,
           error: error.error,
