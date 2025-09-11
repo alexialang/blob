@@ -237,12 +237,9 @@ class QuizCrudService
         }
 
         if (isset($data['questions']) && is_array($data['questions'])) {
-            $this->logger->info('DEBUG: Updating questions', ['questions_count' => count($data['questions'])]);
             try {
                 $this->updateQuizQuestions($quiz, $data['questions']);
-                $this->logger->info('DEBUG: Questions updated successfully');
             } catch (\Exception $e) {
-                $this->logger->error('DEBUG: Error updating questions', ['error' => $e->getMessage()]);
                 throw $e;
             }
         }
@@ -268,12 +265,6 @@ class QuizCrudService
             if (!$fullQuiz) {
                 throw new \InvalidArgumentException('Quiz non trouvé');
             }
-
-            $this->logger->info('DEBUG getQuizForEdit', [
-                'quiz_id' => $fullQuiz->getId(),
-                'quiz_title' => $fullQuiz->getTitle(),
-                'questions_count' => $fullQuiz->getQuestions()->count(),
-            ]);
 
             foreach ($fullQuiz->getQuestions() as $question) {
                 $question->getAnswers()->toArray();

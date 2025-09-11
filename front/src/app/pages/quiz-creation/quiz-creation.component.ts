@@ -376,8 +376,12 @@ export class QuizCreationComponent implements OnInit {
   }
 
   loadTypeQuestions(): void {
-    this.quizService.getTypeQuestions().subscribe(res => {
-      this.typeQuestions = res;
+    this.quizService.getTypeQuestions().subscribe({
+      next: res => {
+        this.typeQuestions = res;
+      },
+      error: error => {
+      },
     });
   }
 
@@ -465,42 +469,80 @@ export class QuizCreationComponent implements OnInit {
   }
 
   onSubmit(): void {
-    if (this.quizForm.invalid) return;
+    if (this.quizForm.invalid) {
+      return;
+    }
+
+    if (this.typeQuestions.length === 0) {
+      alert('Erreur: Types de questions non chargés. Veuillez rafraîchir la page.');
+      return;
+    }
 
     this.isSubmitting = true;
     const formValue = this.quizForm.value;
 
+    // Construire le payload sans utiliser ...formValue pour éviter l'écrasement
+    const mappedQuestions = formValue.questions.map((q: any, index: number) => {
+        const typeQuestionId = this.getTypeQuestionId(q.type_question);
+        
+
+        if (typeQuestionId === 0) {
+            question: q.question,
+            type_question: q.type_question,
+            typeQuestionId,
+          });
+        }
+
+        const questionMapped = {
+          question: q.question,
+          type_question: typeQuestionId, // Utilise l'ID numérique
+          difficulty: q.difficulty,
+          answers: q.answers.map((a: any) => ({
+            ...a,
+            order_correct: a.order_correct || null,
+          })),
+        };
+        
+        return questionMapped;
+      });
+
     const payload = {
-      ...formValue,
+      title: formValue.title,
+      description: formValue.description,
+      status: formValue.status,
+      groups: formValue.groups,
       category_id: formValue.category,
       isPublic: formValue.is_public,
-      questions: formValue.questions.map((q: any) => ({
-        question: q.question,
-        type_question: this.getTypeQuestionId(q.type_question),
-        difficulty: q.difficulty,
-        answers: q.answers.map((a: any) => ({
-          ...a,
-          order_correct: a.order_correct || null,
-        })),
-      })),
+      questions: mappedQuestions,
     };
 
-    delete payload.is_public;
-    delete payload.category;
+    // Plus besoin de delete car on construit le payload proprement
+
+    // Vérifier qu'aucune question n'a un type_question à 0
+    const hasInvalidQuestions = payload.questions.some((q: any) => q.type_question === 0);
+    if (hasInvalidQuestions) {
+      this.isSubmitting = false;
+      alert(
+        'Erreur: Une ou plusieurs questions ont un type invalide. Veuillez vérifier et réessayer.'
+      );
+      return;
+    }
+
 
     const action = this.isEditMode
       ? this.quizService.updateQuiz(this.quizId!, payload)
       : this.quizService.createQuiz(payload);
 
     action.subscribe({
-      next: () => {
-        if (!this.isEditMode) {
-        }
-
+      next: response => {
         this.isSubmitting = false;
         this.router.navigate(['/quiz']);
       },
-      error: () => {
+      error: error => {
+          status: error.status,
+          message: error.message,
+          error: error.error,
+        });
         this.isSubmitting = false;
       },
     });
@@ -563,13 +605,23 @@ export class QuizCreationComponent implements OnInit {
    * Convertit la clé du type de question en ID numérique
    */
   private getTypeQuestionId(typeKey: string): number {
-    console.log('DEBUG getTypeQuestionId:', {
-      typeKey,
-      typeQuestions: this.typeQuestions,
-      found: this.typeQuestions.find(t => t.key === typeKey),
-    });
-
+    
     const typeQuestion = this.typeQuestions.find(t => t.key === typeKey);
-    return typeQuestion ? typeQuestion.id : 0;
+    
+    // Convertir l'ID en nombre si c'est une string
+    const rawId = typeQuestion ? typeQuestion.id : 0;
+    const result = typeof rawId === 'string' ? parseInt(rawId, 10) : rawId;
+    
+
+    if (result === 0 || isNaN(result)) {
+      console.error('ATTENTION: Type de question non trouvé ou ID invalide!', {
+        typeKey,
+        rawId,
+        result,
+        availableTypes: this.typeQuestions.map(t => ({ id: t.id, key: t.key, name: t.name })),
+      });
+    }
+
+    return result;
   }
 }

@@ -166,7 +166,6 @@ export class MultiplayerRoomCreateComponent implements OnInit {
     if (userIdsToInvite.length > 0) {
       this.multiplayerService.sendInvitation(roomId, userIdsToInvite).subscribe({
         next: () => {
-          console.log(`Invitations envoyées à ${userIdsToInvite.length} utilisateur(s)`);
         },
         error: error => {
           console.error("Erreur lors de l'envoi des invitations:", error);

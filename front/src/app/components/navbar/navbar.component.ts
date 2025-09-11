@@ -61,7 +61,6 @@ export class NavbarComponent implements OnInit {
   }
 
   onImageLoad(event: any) {
-    console.log('Image loaded successfully:', event.target.src);
   }
 
   // Fonction pour convertir un avatar corps entier en tête d'avatar
@@ -172,16 +171,13 @@ export class NavbarComponent implements OnInit {
 
       this.userAvatar$ = this.authService.getCurrentUser().pipe(
         map(user => {
-          console.log('User data:', user);
           if (user.avatar) {
             // Convertir l'avatar corps entier en tête d'avatar
             const headAvatarPath = this.getHeadAvatarFromFullAvatar(user.avatar);
-            console.log('Full avatar:', user.avatar, '-> Head avatar:', headAvatarPath);
             return this.sanitizer.bypassSecurityTrustUrl(headAvatarPath);
           }
           // Par défaut, utiliser la tête d'invité
           const avatarPath = 'assets/avatars/head_guest.svg';
-          console.log('Generated avatar path:', avatarPath);
           return this.sanitizer.bypassSecurityTrustUrl(avatarPath);
         }),
         catchError(error => {
@@ -204,21 +200,17 @@ export class NavbarComponent implements OnInit {
       this.userAvatarSvg$ = combineLatest([
         this.authService.getCurrentUser().pipe(
           map(user => {
-            console.log('User avatarShape from service:', user.avatarShape);
             if (user.avatarShape) {
               // Convertir directement la forme en tête d'avatar
               const headPath = this.getHeadAvatarFromShape(user.avatarShape);
-              console.log('Generated head avatar path from shape:', headPath);
               return headPath;
             }
-            console.log('No user avatarShape, using guest head');
             return 'assets/avatars/head_guest.svg';
           })
         ),
         this.userAvatarColor$,
       ]).pipe(
         switchMap(([avatarPath, color]) => {
-          console.log('Loading SVG with path:', avatarPath, 'and color:', color);
           return this.loadAvatarSvg(avatarPath, color);
         }),
         catchError(error => {

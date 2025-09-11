@@ -60,7 +60,8 @@ export class QuizResultsService {
       return this.getGuestLeaderboardWithRealData(quizId);
     }
 
-    return this.http.get<QuizLeaderboard>(`${environment.apiBaseUrl}/leaderboard/quiz/${quizId}`);
+    // Utiliser l'endpoint public pour tous les utilisateurs (même connectés)
+    return this.http.get<QuizLeaderboard>(`${environment.apiBaseUrl}/quiz/${quizId}/public-leaderboard`);
   }
 
   private getGuestLeaderboardWithRealData(quizId: number): Observable<QuizLeaderboard> {

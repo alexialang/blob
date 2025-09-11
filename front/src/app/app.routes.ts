@@ -19,7 +19,6 @@ import { LeaderboardComponent } from './pages/leaderboard/leaderboard.component'
 
 export const routes: Routes = [
   { path: 'connexion', component: LoginComponent, data: { hideNavbar: true } },
-
   {
     path: 'inscription',
     component: RegistrationComponent,

@@ -29,7 +29,7 @@ class Quiz
     private ?string $description = null;
 
     #[ORM\Column]
-    #[Groups(['quiz:read', 'quiz:create'])]
+    #[Groups(['quiz:read', 'quiz:create', 'quiz:organized'])]
     private ?bool $isPublic = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
@@ -45,7 +45,7 @@ class Quiz
     private ?Company $company = null;
 
     #[ORM\ManyToOne(inversedBy: 'quizs')]
-    #[Groups(['quiz:read', 'quiz:create'])]
+    #[Groups(['quiz:read', 'quiz:create', 'quiz:organized'])]
     private ?User $user = null;
 
     /**
@@ -53,7 +53,7 @@ class Quiz
      */
     #[ORM\ManyToMany(targetEntity: Group::class)]
     #[ORM\JoinTable(name: 'quiz_group')]
-    #[Groups(['quiz:read', 'quiz:create', 'company:detail'])]
+    #[Groups(['quiz:read', 'quiz:create', 'company:detail', 'quiz:organized'])]
     private Collection $groups;
 
     #[ORM\ManyToOne(inversedBy: 'quizs')]

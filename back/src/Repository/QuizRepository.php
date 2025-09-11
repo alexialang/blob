@@ -240,9 +240,11 @@ class QuizRepository extends ServiceEntityRepository
             ->leftJoin('g.users', 'u')
             ->where('q.isPublic = false')
             ->andWhere('q.status = :status')
-            ->andWhere('u.id = :userId OR q.creator = :userId')
+            ->andWhere('u.id = :userId')  // Quiz accessibles via les groupes de l'utilisateur
             ->setParameter('status', Status::PUBLISHED->value)
             ->setParameter('userId', $user->getId())
+            ->distinct()
+            ->orderBy('q.date_creation', 'DESC')
             ->getQuery()
             ->getResult();
     }

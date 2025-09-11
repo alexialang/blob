@@ -21,6 +21,7 @@ class UserAnswerRepository extends ServiceEntityRepository
             ->join('ua.user', 'u')
             ->leftJoin('u.company', 'c')
             ->where('ua.quiz = :quiz')
+            ->andWhere('ua.total_score >= 0') // Inclure tous les scores (même 0)
             ->setParameter('quiz', $quizId)
             ->groupBy('u.id')
             ->orderBy('score', 'DESC')

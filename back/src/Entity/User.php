@@ -19,7 +19,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['user:read', 'quiz:read', 'quiz:create', 'company:read', 'user:admin_read', 'user:public', 'company:detail', 'user:statistics', 'user:roles_update', 'user:profile'])]
+    #[Groups(['user:read', 'quiz:read', 'quiz:create', 'company:read', 'user:admin_read', 'user:public', 'company:detail', 'user:statistics', 'user:roles_update', 'user:profile', 'quiz:organized'])]
     private int $id;
     #[Groups(['user:read', 'company:read', 'quiz:read', 'quiz:create', 'user:admin_read', 'user:public', 'company:detail', 'user:statistics', 'user:roles_update', 'user:profile'])]
     #[ORM\Column(length: 180)]
@@ -60,14 +60,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: UserPermission::class, mappedBy: 'user')]
     private Collection $userPermissions;
 
-    #[Groups(['user:read', 'user:admin_read'])]
+    #[Groups(['user:read', 'user:admin_read', 'user:profile'])]
     #[ORM\ManyToMany(targetEntity: Group::class, inversedBy: 'users')]
     private Collection $groups;
 
-    #[Groups(['user:read', 'quiz:create', 'user:admin_read', 'user:public', 'company:detail', 'user:admin_list', 'user:profile'])]
+    #[Groups(['user:read', 'quiz:create', 'user:admin_read', 'user:public', 'company:detail', 'user:admin_list', 'user:profile', 'quiz:organized'])]
     #[ORM\Column(length: 70)]
     private ?string $firstName = null;
-    #[Groups(['user:read', 'quiz:create', 'user:admin_read', 'user:public', 'company:detail', 'user:admin_list', 'user:profile'])]
+    #[Groups(['user:read', 'quiz:create', 'user:admin_read', 'user:public', 'company:detail', 'user:admin_list', 'user:profile', 'quiz:organized'])]
     #[ORM\Column(length: 70)]
     private ?string $lastName = null;
 

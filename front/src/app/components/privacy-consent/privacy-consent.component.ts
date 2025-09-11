@@ -26,7 +26,6 @@ export class PrivacyConsentComponent implements OnInit {
     if (!consent) {
       this.showConsentBanner = true;
     }
-    console.log('Privacy consent check:', consent ? 'exists' : 'none found');
   }
 
   /**
@@ -71,6 +70,5 @@ export class PrivacyConsentComponent implements OnInit {
    */
   openPrivacySettings(): void {
     // Cette méthode peut ouvrir une modal détaillée
-    console.log('Opening privacy settings...');
   }
 }

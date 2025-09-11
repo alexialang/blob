@@ -122,7 +122,6 @@ export class UserProfileComponent implements OnInit {
     this.isLoadingStatistics = true;
     this.userStatistics = null; // Reset des statistiques pendant le chargement
 
-    console.log(
       'Chargement des statistiques - isOwnProfile:',
       this.isOwnProfile,
       'targetUserId:',
@@ -132,7 +131,6 @@ export class UserProfileComponent implements OnInit {
     if (this.isOwnProfile) {
       this.userService.getUserStatistics().subscribe({
         next: stats => {
-          console.log('Statistiques reçues pour profil personnel:', stats);
           this.userStatistics = stats;
           this.isLoadingStatistics = false;
         },
@@ -150,7 +148,6 @@ export class UserProfileComponent implements OnInit {
     } else if (this.targetUserId) {
       this.userService.getUserStatisticsById(this.targetUserId).subscribe({
         next: (stats: UserStatistics) => {
-          console.log('Statistiques reçues pour utilisateur:', this.targetUserId, stats);
           this.userStatistics = stats;
           this.isLoadingStatistics = false;
         },

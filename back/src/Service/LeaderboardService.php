@@ -37,6 +37,7 @@ class LeaderboardService
                 $displayName = 'Joueur anonyme';
             }
 
+
             $leaderboard[] = [
                 'rank' => $rank,
                 'name' => trim((string) $displayName),
@@ -46,9 +47,15 @@ class LeaderboardService
             ];
         }
 
+
+
+
+
+        // Si l'utilisateur actuel n'est pas dans les résultats, ne pas l'ajouter artificiellement
+        // Juste retourner les résultats de la base de données
         return [
             'leaderboard' => array_slice($leaderboard, 0, 10),
-            'currentUserRank' => $currentUserRank ?: count($results) + 1,
+            'currentUserRank' => $currentUserRank ?: (count($results) + 1),
             'totalPlayers' => count($results),
             'currentUserScore' => $currentUserId ? $this->getCurrentUserQuizScore($quiz->getId(), $currentUserId) : 0,
         ];
@@ -88,13 +95,16 @@ class LeaderboardService
 
             $leaderboard[] = [
                 'id' => $user->getId(),
+                'rank' => $position,
                 'position' => $position,
+                'name' => $user->getPseudo() ?: ($user->getFirstName().' '.$user->getLastName()),
                 'pseudo' => $user->getPseudo() ?: ($user->getFirstName().' '.$user->getLastName()),
                 'firstName' => $user->getFirstName(),
                 'lastName' => $user->getLastName(),
                 'avatar' => $user->getAvatar() ?: 'default',
                 'avatarShape' => $avatarShape,
                 'avatarColor' => $avatarColor,
+                'score' => $userStats['totalScore'],
                 'totalScore' => $userStats['totalScore'],
                 'averageScore' => $userStats['averageScore'],
                 'quizzesCompleted' => $userStats['totalQuizzesCompleted'],

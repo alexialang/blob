@@ -72,7 +72,6 @@ export class PrivacyAnalyticsService {
 
     document.head.appendChild(script);
 
-    console.log('✅ Umami Analytics initialized (privacy-friendly & free)');
   }
 
   /**
@@ -194,7 +193,6 @@ export class PrivacyAnalyticsService {
    */
   clearLocalData(): void {
     localStorage.removeItem('blob_stats');
-    console.log('Analytics local data cleared');
   }
 
   /**

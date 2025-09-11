@@ -120,8 +120,107 @@
   max-width: 1700px;
   margin: 0 auto;
 
+  // Styles pour la pagination
+  app-pagination {
+    margin-top: 100px !important; // Descend la pagination encore plus
+    margin-bottom: 20px !important;
+  }
+
+  // Override des styles TuiKit pour la pagination
+  ::ng-deep app-pagination {
+    margin-top: 100px !important; // Encore plus d'espace
+    margin-bottom: 20px !important;
+
+    .pagination {
+      margin-top: 100px !important; // Encore plus d'espace
+      margin-bottom: 20px !important;
+    }
+
+    // Override des boutons TuiKit
+    [tuiButton] {
+      background: transparent !important;
+      border: none !important;
+      color: var(--color-dark) !important;
+      font-family: 'Archivo', sans-serif !important;
+      font-size: 14px !important;
+      font-weight: 400 !important;
+      padding: 4px 8px !important;
+      margin: 0 2px !important;
+
+      &:hover {
+        background: rgba(0, 0, 0, 0.05) !important;
+        color: var(--color-dark) !important;
+      }
+
+      &[data-appearance="primary"] {
+        background: var(--color-primary) !important;
+        color: white !important;
+        font-weight: 500 !important;
+      }
+
+      // Override spécifique pour les flèches
+      &[data-appearance="secondary"] {
+        background: transparent !important;
+        color: var(--color-dark) !important;
+        border: none !important;
+
+        &:hover {
+          background: rgba(0, 0, 0, 0.05) !important;
+          color: var(--color-dark) !important;
+        }
+      }
+    }
+
+    // Cibler spécifiquement les icônes de flèches
+    tui-icon {
+      color: var(--color-dark) !important;
+    }
+
+    // Override pour tous les éléments de pagination
+    * {
+      color: var(--color-dark) !important;
+    }
+  }
+
+  // Styles pour le bouton "Créer un nouveau quiz"
+  .btn-create {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0;
+    background: none;
+    color: var(--color-dark);
+    text-decoration: none;
+    border: none;
+    font-weight: 500;
+    font-size: 16px;
+    transition: all 0.2s ease;
+    margin-bottom: 30px;
+    font-family: 'Archivo', sans-serif;
+
+    &:hover {
+      color: var(--color-primary);
+      text-decoration: underline;
+    }
+
+    &:focus {
+      outline: none;
+      text-decoration: underline;
+    }
+
+    i {
+      font-size: 18px;
+    }
+  }
+
   .quiz-section {
     margin-bottom: 80px;
+
+    // Espacement spécifique pour la pagination dans chaque section
+    app-pagination {
+      margin-top: 80px !important;
+      margin-bottom: 20px !important;
+    }
 
     h2 {
       font-size: 42px !important;
@@ -197,6 +296,7 @@
       row-gap: 40px;
       justify-items: start;
       align-items: end;
+      margin-bottom: 60px; // Ajoute de l'espace sous la grille
 
       @media (max-width: 1200px) {
         justify-items: start;

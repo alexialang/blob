@@ -100,6 +100,41 @@
       </app-pagination>
     </section>
 
+    <section class="quiz-section group-quizzes-section" *ngIf="groupQuizzesWithBlobs.length && isUserLoggedIn">
+      <h2>Quiz Privés - {{ getGroupNames().join(', ') || 'Mes Groupes' }} ({{ groupQuizzes.length }})</h2>
+      <div class="cards-grid grid grid-cols-4 gap-4">
+        <ng-container *ngFor="let it of groupQuizzesWithBlobs; let i = index">
+          <app-quiz-card
+            *ngIf="it.type === 'quiz'"
+            [quiz]="it.data"
+            [index]="getCardIndex(i)"
+            [rowIndex]="getCardRowIndex(i)"
+            (quizStart)="startQuiz($event)"
+            (quizFlip)="flipCard($event)"
+            (playModeChange)="togglePlayMode($event)"
+          >
+          </app-quiz-card>
+          <div *ngIf="it.type === 'blob'" class="blob-card">
+            <img
+              src="/assets/svg/blob_flower.svg"
+              alt="Élément décoratif floral pour la mise en page des quiz"
+              width="100"
+              height="100"
+            />
+          </div>
+        </ng-container>
+      </div>
+      <app-pagination
+        *ngIf="groupQuizzes.length > pageSize"
+        [totalItems]="groupQuizzes.length"
+        [pageSize]="pageSize"
+        [page]="groupQuizzesCurrentPage"
+        [activePadding]="2"
+        (pageChange)="onGroupQuizzesPageChange($event)"
+      >
+      </app-pagination>
+    </section>
+
     <section class="quiz-section recent-section">
       <h2>Récemment Ajoutés ({{ recentQuizzes.length }})</h2>
       <div class="cards-grid grid grid-cols-4 gap-4" *ngIf="recentQuizzesWithBlobs.length">
