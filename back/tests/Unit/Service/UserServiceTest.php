@@ -531,6 +531,31 @@ class UserServiceTest extends TestCase
         $this->assertFalse($result);
     }
 
+    public function testVerifyCaptchaV2Success(): void
+    {
+        $token = 'valid-captcha-v2-token';
+        $action = 'register';
+
+        $response = $this->createMock(\Symfony\Contracts\HttpClient\ResponseInterface::class);
+        $response->method('toArray')->willReturn([
+            'success' => true,
+            // Pas de score ni d'action pour reCAPTCHA v2
+        ]);
+
+        $this->httpClient->expects($this->once())
+            ->method('request')
+            ->with('POST', 'https://www.google.com/recaptcha/api/siteverify')
+            ->willReturn($response);
+
+        $this->logger->expects($this->once())
+            ->method('info')
+            ->with('reCAPTCHA v2 validé', ['action' => 'register']);
+
+        $result = $this->service->verifyCaptcha($token, $action);
+
+        $this->assertTrue($result);
+    }
+
     public function testVerifyCaptchaException(): void
     {
         $token = 'valid-token';

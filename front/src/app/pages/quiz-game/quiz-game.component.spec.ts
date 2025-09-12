@@ -1,28 +1,34 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { of } from 'rxjs';
 
-import { LegalNoticesComponent } from './legal-notices.component';
+import { QuizGameComponent } from './quiz-game.component';
 
-describe('LegalNoticesComponent', () => {
-  let component: LegalNoticesComponent;
-  let fixture: ComponentFixture<LegalNoticesComponent>;
+describe('QuizGameComponent', () => {
+  let component: QuizGameComponent;
+  let fixture: ComponentFixture<QuizGameComponent>;
 
   beforeEach(async () => {
     const mockActivatedRoute = {
-      params: of({}),
+      params: of({ id: '123' }),
       queryParams: of({}),
       data: of({}),
+      snapshot: {
+        params: { id: '123' },
+        queryParams: {},
+        data: {},
+      },
     };
 
     await TestBed.configureTestingModule({
-      imports: [LegalNoticesComponent],
+      imports: [QuizGameComponent, HttpClientTestingModule],
       providers: [
         { provide: ActivatedRoute, useValue: mockActivatedRoute },
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(LegalNoticesComponent);
+    fixture = TestBed.createComponent(QuizGameComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

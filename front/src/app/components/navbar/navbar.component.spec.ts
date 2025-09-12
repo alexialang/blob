@@ -14,8 +14,9 @@ describe('NavbarComponent', () => {
     const mockAuthService = {
       loginStatus$: of(false),
       isLoggedIn: jasmine.createSpy('isLoggedIn').and.returnValue(false),
+      isGuest: jasmine.createSpy('isGuest').and.returnValue(true),
       hasPermission: jasmine.createSpy('hasPermission').and.returnValue(false),
-      getCurrentUser: jasmine.createSpy('getCurrentUser').and.returnValue(null),
+      getCurrentUser: jasmine.createSpy('getCurrentUser').and.returnValue(of(null)),
       logout: jasmine.createSpy('logout').and.returnValue(of({})),
     };
 

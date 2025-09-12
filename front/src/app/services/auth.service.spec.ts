@@ -110,7 +110,7 @@ describe('AuthService', () => {
 
     service.getCurrentUser().subscribe(user => {
       expect(user.firstName).toBe('Invité');
-      expect(user.roles).toContain('ROLE_GUEST');
+      expect(user.roles).toEqual([]); // L'utilisateur invité n'a pas de rôles
     });
 
     httpMock.expectNone(`${environment.apiBaseUrl}/user/profile`);
@@ -238,5 +238,146 @@ describe('AuthService', () => {
 
     const req = httpMock.expectOne(`${environment.apiBaseUrl}/user/profile`);
     req.flush(mockUser);
+  });
+
+  it('should set guest mode', () => {
+    service.setGuestMode();
+    expect(localStorage.getItem('GUEST_MODE')).toBe('true');
+  });
+
+  it('should clear guest mode', () => {
+    localStorage.setItem('GUEST_MODE', 'true');
+    service.clearGuestMode();
+    expect(localStorage.getItem('GUEST_MODE')).toBeNull();
+  });
+
+  it('should get token', () => {
+    expect(service.getToken()).toBeNull();
+    
+    localStorage.setItem('JWT_TOKEN', 'test-token');
+    expect(service.getToken()).toBe('test-token');
+  });
+
+  it('should handle hasAnyPermission for admin', () => {
+    const mockUser = {
+      id: 1,
+      email: 'admin@example.com',
+      firstName: 'Admin',
+      lastName: 'User',
+      roles: ['ROLE_ADMIN'],
+      dateRegistration: '2024-01-01',
+      isAdmin: true,
+      isActive: true,
+      isVerified: true,
+    };
+
+    localStorage.setItem('JWT_TOKEN', 'test-token');
+
+    service.hasAnyPermission(['CREATE_QUIZ', 'DELETE_QUIZ']).subscribe(hasPermission => {
+      expect(hasPermission).toBe(true);
+    });
+
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/user/profile`);
+    req.flush(mockUser);
+  });
+
+  it('should handle hasAnyPermission for regular user', () => {
+    const mockUser = {
+      id: 1,
+      email: 'user@example.com',
+      firstName: 'Test',
+      lastName: 'User',
+      roles: ['ROLE_USER'],
+      dateRegistration: '2024-01-01',
+      isAdmin: false,
+      isActive: true,
+      isVerified: true,
+      userPermissions: [{ id: 1, permission: 'CREATE_QUIZ' }],
+    };
+
+    localStorage.setItem('JWT_TOKEN', 'test-token');
+
+    service.hasAnyPermission(['CREATE_QUIZ', 'DELETE_QUIZ']).subscribe(hasPermission => {
+      expect(hasPermission).toBe(true); // A au moins CREATE_QUIZ
+    });
+
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/user/profile`);
+    req.flush(mockUser);
+  });
+
+  it('should handle hasAnyPermission for user without permissions', () => {
+    const mockUser = {
+      id: 1,
+      email: 'user@example.com',
+      firstName: 'Test',
+      lastName: 'User',
+      roles: ['ROLE_USER'],
+      dateRegistration: '2024-01-01',
+      isAdmin: false,
+      isActive: true,
+      isVerified: true,
+      userPermissions: [],
+    };
+
+    localStorage.setItem('JWT_TOKEN', 'test-token');
+
+    service.hasAnyPermission(['DELETE_QUIZ', 'MANAGE_USERS']).subscribe(hasPermission => {
+      expect(hasPermission).toBe(false);
+    });
+
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/user/profile`);
+    req.flush(mockUser);
+  });
+
+  it('should register user successfully', () => {
+    const mockResponse = { message: 'User created successfully' };
+    const userData = {
+      email: 'test@example.com',
+      password: 'password123',
+      firstName: 'Test',
+      lastName: 'User',
+      recaptchaToken: 'recaptcha-token'
+    };
+
+    service.register(
+      userData.email,
+      userData.password,
+      userData.firstName,
+      userData.lastName,
+      userData.recaptchaToken
+    ).subscribe(response => {
+      expect(response).toEqual(mockResponse);
+    });
+
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/user-create`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual(userData);
+    req.flush(mockResponse);
+  });
+
+  it('should handle login error', () => {
+    service.login('test@example.com', 'wrong-password').subscribe({
+      next: () => fail('should have failed'),
+      error: error => {
+        expect(error).toBeDefined();
+      }
+    });
+
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/login_check`);
+    req.flush({ error: 'Invalid credentials' }, { status: 401, statusText: 'Unauthorized' });
+  });
+
+  it('should handle refresh token error', () => {
+    localStorage.setItem('REFRESH_TOKEN', 'invalid-refresh-token');
+
+    service.refresh().subscribe({
+      next: () => fail('should have failed'),
+      error: error => {
+        expect(error).toBeDefined();
+      }
+    });
+
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/token/refresh`);
+    req.flush({ error: 'Invalid refresh token' }, { status: 401, statusText: 'Unauthorized' });
   });
 });

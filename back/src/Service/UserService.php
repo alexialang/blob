@@ -555,9 +555,18 @@ class UserService
             $result = $response->toArray();
 
             if (isset($result['success']) && true === $result['success']) {
-                $score = $result['score'] ?? 0.0;
+                $score = $result['score'] ?? null;
                 $actionValid = $result['action'] ?? '';
 
+                // Si score est null, c'est reCAPTCHA v2 (pas de score)
+                if ($score === null) {
+                    $this->logger->info('reCAPTCHA v2 validé', [
+                        'action' => $action,
+                    ]);
+                    return true;
+                }
+
+                // Sinon c'est reCAPTCHA v3, vérifier l'action et le score
                 if ($actionValid !== $action) {
                     $this->logger->warning('Action reCAPTCHA invalide', [
                         'expected' => $action,

@@ -2,18 +2,28 @@ import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { CompanyService } from './company.service';
 import { environment } from '../../environments/environment';
+import { AuthService } from './auth.service';
+import { of } from 'rxjs';
 
 describe('CompanyService', () => {
   let service: CompanyService;
   let httpMock: HttpTestingController;
+  let mockAuthService: jasmine.SpyObj<AuthService>;
 
   beforeEach(() => {
+    const authServiceSpy = jasmine.createSpyObj('AuthService', ['hasPermission']);
+    authServiceSpy.hasPermission.and.returnValue(of(true));
+
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      providers: [CompanyService],
+      providers: [
+        CompanyService,
+        { provide: AuthService, useValue: authServiceSpy },
+      ],
     });
     service = TestBed.inject(CompanyService);
     httpMock = TestBed.inject(HttpTestingController);
+    mockAuthService = TestBed.inject(AuthService) as jasmine.SpyObj<AuthService>;
   });
 
   afterEach(() => {
@@ -85,7 +95,7 @@ describe('CompanyService', () => {
       expect(stats).toEqual(mockStats);
     });
 
-    const req = httpMock.expectOne(`${environment.apiBaseUrl}/company/1/stats`);
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/companies/1/stats`);
     expect(req.request.method).toBe('GET');
     req.flush(mockStats);
   });
@@ -100,7 +110,7 @@ describe('CompanyService', () => {
       expect(users.length).toBe(2);
     });
 
-    const req = httpMock.expectOne(`${environment.apiBaseUrl}/company/users/available`);
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/companies/1/available-users`);
     expect(req.request.method).toBe('GET');
     req.flush(mockUsers);
   });

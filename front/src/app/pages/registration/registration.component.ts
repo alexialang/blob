@@ -34,6 +34,7 @@ export class RegistrationComponent implements OnInit {
   form: FormGroup;
   error?: string;
   recaptchaToken?: string;
+  recaptchaWidgetId?: number;
 
   constructor(
     private readonly fb: FormBuilder,
@@ -75,11 +76,28 @@ export class RegistrationComponent implements OnInit {
   }
 
   private loadRecaptcha(): void {
-    const script = document.createElement('script');
-    script.src = `https://www.google.com/recaptcha/api.js?render=${recaptchaConfig.siteKey}`;
-    script.async = true;
-    script.defer = true;
-    document.head.appendChild(script);
+    // reCAPTCHA est déjà chargé via index.html
+    this.initializeRecaptcha();
+  }
+
+  private initializeRecaptcha(): void {
+    if ((window as any).grecaptcha) {
+      this.recaptchaWidgetId = (window as any).grecaptcha.render('recaptcha-widget', {
+        sitekey: recaptchaConfig.siteKey,
+        callback: (token: string) => {
+          this.recaptchaToken = token;
+        },
+        'expired-callback': () => {
+          this.recaptchaToken = undefined;
+        },
+        'error-callback': () => {
+          this.recaptchaToken = undefined;
+        }
+      });
+    } else {
+      // Attendre que reCAPTCHA soit chargé
+      setTimeout(() => this.initializeRecaptcha(), 100);
+    }
   }
 
   private passwordsMatch(group: FormGroup) {
@@ -110,39 +128,23 @@ export class RegistrationComponent implements OnInit {
       return;
     }
 
-    this.executeRecaptcha()
-      .then(token => {
-        const { firstName, lastName, email, password } = this.form.value;
-        this.auth.register(email, password, firstName, lastName, token).subscribe({
-          next: () => {
-            this.router.navigate(['/connexion']);
-          },
-          error: () => (this.error = 'Inscription impossible'),
-        });
-      })
-      .catch(error => {
-        this.error = 'Erreur de vérification reCAPTCHA';
-      });
-  }
+    if (!this.recaptchaToken) {
+      this.error = 'Veuillez compléter la vérification reCAPTCHA';
+      return;
+    }
 
-  private executeRecaptcha(): Promise<string> {
-    return new Promise((resolve, reject) => {
-      if ((window as any).grecaptcha && (window as any).grecaptcha.ready) {
-        (window as any).grecaptcha.ready(() => {
-          (window as any).grecaptcha
-            .execute(recaptchaConfig.siteKey, { action: recaptchaConfig.actions.register })
-            .then((token: string) => {
-              resolve(token);
-            })
-            .catch((error: any) => {
-              reject(error);
-            });
-        });
-      } else {
-        reject('reCAPTCHA not loaded');
-      }
+    
+    const { firstName, lastName, email, password } = this.form.value;
+    this.auth.register(email, password, firstName, lastName, this.recaptchaToken).subscribe({
+      next: () => {
+        this.router.navigate(['/connexion']);
+      },
+      error: (error) => {
+        this.error = 'Inscription impossible';
+      },
     });
   }
+
 
   showError(fieldName: string): boolean {
     const field = this.form.get(fieldName);

@@ -54,6 +54,10 @@
       </label>
       <div *ngIf="showError('tos')" class="error">Vous devez accepter les conditions</div>
 
+      <div class="recaptcha-container">
+        <div id="recaptcha-widget"></div>
+      </div>
+
       <app-slide-button label="Valider" [negative]="true" backgroundColor="#333" type="submit"> </app-slide-button>
 
       <div *ngIf="error" class="error">{{ error }}</div>

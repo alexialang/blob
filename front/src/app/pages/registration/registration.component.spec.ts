@@ -26,6 +26,7 @@ describe('RegistrationComponent', () => {
     const mockSeoService = {
       setTitle: jasmine.createSpy('setTitle'),
       setDescription: jasmine.createSpy('setDescription'),
+      updateSEO: jasmine.createSpy('updateSEO'),
     };
 
     await TestBed.configureTestingModule({

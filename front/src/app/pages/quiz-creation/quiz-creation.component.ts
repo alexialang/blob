@@ -86,22 +86,25 @@ export class QuizCreationComponent implements OnInit {
   ngOnInit(): void {
     this.generateRandomColor();
     this.quizForm = this.createQuizForm();
-    this.loadTypeQuestions();
-    this.loadCategories();
-    this.loadStatuses();
+    
+    // Charger d'abord les types de questions
+    this.loadTypeQuestions().then(() => {
+      this.loadCategories();
+      this.loadStatuses();
 
-    this.quizForm.get('is_public')?.valueChanges.subscribe(isPublic => {
-      if (isPublic === false) {
-        this.loadGroups();
-      }
-    });
+      this.quizForm.get('is_public')?.valueChanges.subscribe(isPublic => {
+        if (isPublic === false) {
+          this.loadGroups();
+        }
+      });
 
-    this.route.params.subscribe(params => {
-      if (params['id']) {
-        this.isEditMode = true;
-        this.quizId = +params['id'];
-        this.loadQuizForEdit(this.quizId);
-      }
+      this.route.params.subscribe(params => {
+        if (params['id']) {
+          this.isEditMode = true;
+          this.quizId = +params['id'];
+          this.loadQuizForEdit(this.quizId);
+        }
+      });
     });
   }
 
@@ -375,12 +378,18 @@ export class QuizCreationComponent implements OnInit {
     this.categorySearch = '';
   }
 
-  loadTypeQuestions(): void {
-    this.quizService.getTypeQuestions().subscribe({
-      next: res => {
-        this.typeQuestions = res;
-      },
-      error: error => {},
+  loadTypeQuestions(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.quizService.getTypeQuestions().subscribe({
+        next: res => {
+          this.typeQuestions = res;
+          resolve();
+        },
+        error: error => {
+          console.error('Erreur lors du chargement des types de questions:', error);
+          reject(error);
+        },
+      });
     });
   }
 
@@ -432,11 +441,20 @@ export class QuizCreationComponent implements OnInit {
       }
 
       res.questions.forEach((q: any) => {
+        console.log('DEBUG: Question reçue:', q);
+        console.log('DEBUG: Type de question:', q.type_question);
+        console.log('DEBUG: TypeQuestions disponibles:', this.typeQuestions);
+        
         let questionTypeKey = '';
         if (typeof q.type_question === 'object' && q.type_question !== null) {
-          questionTypeKey = q.type_question.key || q.type_question.name || '';
+          // Utiliser le name du backend (ex: "QCM") au lieu de la key
+          questionTypeKey = q.type_question.name || q.type_question.key || '';
+          console.log('DEBUG: Type object, clé trouvée:', questionTypeKey);
         } else if (typeof q.type_question === 'string') {
           questionTypeKey = q.type_question;
+          console.log('DEBUG: Type string, clé:', questionTypeKey);
+        } else {
+          console.log('DEBUG: Type inconnu:', typeof q.type_question, q.type_question);
         }
 
         const questionForm = this.fb.group({
@@ -600,7 +618,9 @@ export class QuizCreationComponent implements OnInit {
    * Convertit la clé du type de question en ID numérique
    */
   private getTypeQuestionId(typeKey: string): number {
-    const typeQuestion = this.typeQuestions.find(t => t.key === typeKey);
+    // Chercher d'abord par name (format backend), puis par key (fallback)
+    const typeQuestion = this.typeQuestions.find(t => t.name === typeKey) || 
+                        this.typeQuestions.find(t => t.key === typeKey);
 
     // Convertir l'ID en nombre si c'est une string
     const rawId = typeQuestion ? typeQuestion.id : 0;

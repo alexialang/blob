@@ -366,7 +366,18 @@ class QuizCrudService
      */
     private function createQuestion(Quiz $quiz, array $questionData): Question
     {
+        $this->logger->info('DEBUG createQuestion', [
+            'questionData' => $questionData,
+            'type_question_value' => $questionData['type_question'] ?? 'NOT_SET',
+            'type_question_type' => gettype($questionData['type_question'] ?? null),
+        ]);
+
         $typeQuestion = $this->getTypeQuestionFromData($questionData);
+
+        $this->logger->info('DEBUG TypeQuestion trouvé', [
+            'typeQuestion_id' => $typeQuestion->getId(),
+            'typeQuestion_name' => $typeQuestion->getName(),
+        ]);
 
         $question = new Question();
         $question->setQuestion($questionData['question']);
@@ -397,6 +408,11 @@ class QuizCrudService
      */
     private function createAnswer(Question $question, array $answerData): Answer
     {
+        $this->logger->info('DEBUG createAnswer', [
+            'answerData' => $answerData,
+            'is_correct' => $answerData['is_correct'] ?? 'NOT_SET',
+        ]);
+
         $answer = new Answer();
         $answer->setAnswer($answerData['answer']);
         $answer->setIsCorrect($answerData['is_correct'] ?? false);
@@ -424,6 +440,15 @@ class QuizCrudService
      */
     private function getTypeQuestionFromData(array $questionData): TypeQuestion
     {
+        // Le frontend envoie type_question avec l'ID numérique
+        if (isset($questionData['type_question']) && is_numeric($questionData['type_question'])) {
+            $typeQuestion = $this->typeQuestionRepository->find($questionData['type_question']);
+            if ($typeQuestion) {
+                return $typeQuestion;
+            }
+        }
+
+        // Fallback pour l'ancien format avec type_question_id
         if (isset($questionData['type_question_id']) && is_numeric($questionData['type_question_id'])) {
             $typeQuestion = $this->typeQuestionRepository->find($questionData['type_question_id']);
             if ($typeQuestion) {
@@ -431,6 +456,7 @@ class QuizCrudService
             }
         }
 
+        // Fallback pour les noms de types
         if (isset($questionData['type_question']) && is_string($questionData['type_question'])) {
             return $this->findOrCreateTypeQuestion($questionData['type_question']);
         }

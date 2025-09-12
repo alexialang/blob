@@ -213,6 +213,12 @@
         }
       }
 
+      .recaptcha-container {
+        display: flex;
+        justify-content: center;
+        margin: 20px 0;
+      }
+
       .tos {
         font-size: 0.8rem;
         display: flex;

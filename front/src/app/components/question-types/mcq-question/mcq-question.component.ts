@@ -38,10 +38,10 @@ export class McqQuestionComponent {
 
   getFlowerShape(index: number): string {
     const shapes = [
-      '/assets/svg/blob_flower_color.png',
-      '/assets/svg/blob_flower color2.png',
-      '/assets/svg/blob_flower_color3.png',
-      '/assets/svg/blob_flower_color4.png',
+      '/assets/svg/blob_flower_color.svg',
+      '/assets/svg/blob_flower_color2.svg',
+      '/assets/svg/blob_flower_color3.svg',
+      '/assets/svg/blob_flower_color1.svg',
     ];
     return shapes[index % shapes.length];
   }

@@ -40,4 +40,14 @@ export class MultipleChoiceQuestionComponent {
   isSelected(answerId: number): boolean {
     return this.selectedAnswerIds.includes(answerId);
   }
+
+  getFlowerShape(index: number): string {
+    const shapes = [
+      '/assets/svg/blob_flower_color.svg',
+      '/assets/svg/blob_flower_color2.svg',
+      '/assets/svg/blob_flower_color3.svg',
+      '/assets/svg/blob_flower_color1.svg',
+    ];
+    return shapes[index % shapes.length];
+  }
 }

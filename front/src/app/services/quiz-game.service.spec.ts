@@ -14,8 +14,12 @@ describe('QuizGameService', () => {
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      providers: [QuizGameService, { provide: AuthService, useValue: authServiceSpy }],
+      providers: [
+        QuizGameService,
+        { provide: AuthService, useValue: authServiceSpy }
+      ],
     });
+
     service = TestBed.inject(QuizGameService);
     httpMock = TestBed.inject(HttpTestingController);
     mockAuthService = TestBed.inject(AuthService) as jasmine.SpyObj<AuthService>;
@@ -23,25 +27,19 @@ describe('QuizGameService', () => {
 
   afterEach(() => {
     httpMock.verify();
+    sessionStorage.clear();
   });
 
   it('should be created', () => {
     expect(service).toBeTruthy();
   });
 
-  it('should load quiz data', () => {
+  it('should load quiz successfully', () => {
     const mockQuiz = {
       id: 1,
       title: 'Test Quiz',
       description: 'Test Description',
-      questions: [
-        {
-          id: 1,
-          question: 'Test question',
-          type_question: 'mcq',
-          answers: [],
-        },
-      ],
+      questions: []
     };
 
     service.loadQuiz(1).subscribe(quiz => {
@@ -55,141 +53,127 @@ describe('QuizGameService', () => {
 
   it('should save game result for authenticated user', () => {
     mockAuthService.isGuest.and.returnValue(false);
+    const mockResponse = { success: true, saved: true, score: 85 };
 
-    const mockResponse = {
-      success: true,
-      saved: true,
-      score: 85,
-    };
-
-    service.saveGameResult(1, 85).subscribe(response => {
-      expect(response).toEqual(mockResponse);
+    service.saveGameResult(1, 85).subscribe(result => {
+      expect(result).toEqual(mockResponse);
     });
 
     const req = httpMock.expectOne(`${environment.apiBaseUrl}/user-answer/game-result`);
     expect(req.request.method).toBe('POST');
     expect(req.request.body).toEqual({
       quiz_id: 1,
-      total_score: 85,
+      total_score: 85
     });
     req.flush(mockResponse);
   });
 
-  it('should save game result for guest user', () => {
+  it('should save game result for guest user in sessionStorage', () => {
     mockAuthService.isGuest.and.returnValue(true);
 
-    service.saveGameResult(1, 75).subscribe(response => {
-      expect(response).toEqual({
-        success: true,
-        saved: false,
-        score: 75,
-      });
+    service.saveGameResult(1, 75).subscribe(result => {
+      expect(result).toEqual({ success: true, saved: false, score: 75 });
     });
 
     expect(sessionStorage.getItem('guest-quiz-score')).toBe('75');
     httpMock.expectNone(`${environment.apiBaseUrl}/user-answer/game-result`);
   });
 
-  it('should handle errors gracefully', () => {
-    service.loadQuiz(999).subscribe({
-      next: () => fail('should have failed'),
-      error: error => {
-        expect(error.status).toBe(404);
-      },
-    });
-
-    const req = httpMock.expectOne(`${environment.apiBaseUrl}/quiz/999`);
-    req.flush('Quiz not found', { status: 404, statusText: 'Not Found' });
-  });
-
-  it('should handle save result errors', () => {
+  it('should handle save game result error for authenticated user', () => {
     mockAuthService.isGuest.and.returnValue(false);
 
     service.saveGameResult(1, 85).subscribe({
       next: () => fail('should have failed'),
       error: error => {
         expect(error.status).toBe(500);
-      },
+        expect(error.statusText).toBe('Internal Server Error');
+      }
     });
 
     const req = httpMock.expectOne(`${environment.apiBaseUrl}/user-answer/game-result`);
-    req.flush('Server error', { status: 500, statusText: 'Internal Server Error' });
+    req.flush({ error: 'Server error' }, { status: 500, statusText: 'Internal Server Error' });
   });
 
-  it('should load quiz with different data structures', () => {
+  it('should load quiz with different ID', () => {
     const mockQuiz = {
       id: 2,
-      title: 'Advanced Quiz',
-      description: 'Advanced Description',
-      questions: [
-        {
-          id: 1,
-          question: 'Question 1',
-          type_question: 'multiple_choice',
-          answers: [
-            { id: 1, answer: 'Answer 1', is_correct: true },
-            { id: 2, answer: 'Answer 2', is_correct: false },
-          ],
-        },
-        {
-          id: 2,
-          question: 'Question 2',
-          type_question: 'true_false',
-          answers: [
-            { id: 3, answer: 'True', is_correct: false },
-            { id: 4, answer: 'False', is_correct: true },
-          ],
-        },
-      ],
+      title: 'Another Quiz',
+      description: 'Another Description',
+      questions: []
     };
 
     service.loadQuiz(2).subscribe(quiz => {
-      expect(quiz.questions.length).toBe(2);
-      expect(quiz.questions[0].type_question).toBe('multiple_choice');
-      expect(quiz.questions[1].type_question).toBe('true_false');
+      expect(quiz).toEqual(mockQuiz);
     });
 
     const req = httpMock.expectOne(`${environment.apiBaseUrl}/quiz/2`);
+    expect(req.request.method).toBe('GET');
     req.flush(mockQuiz);
   });
 
-  it('should save different score values for authenticated users', () => {
-    mockAuthService.isGuest.and.returnValue(false);
-
-    const testCases = [0, 50, 100];
-
-    testCases.forEach((score, index) => {
-      const mockResponse = {
-        success: true,
-        saved: true,
-        score: score,
-      };
-
-      service.saveGameResult(index + 1, score).subscribe(response => {
-        expect(response.score).toBe(score);
-        expect(response.saved).toBe(true);
-      });
-
-      const req = httpMock.expectOne(`${environment.apiBaseUrl}/user-answer/game-result`);
-      expect(req.request.body.total_score).toBe(score);
-      req.flush(mockResponse);
-    });
-  });
-
-  it('should handle guest mode with different scores', () => {
+  it('should save game result with different score for guest', () => {
     mockAuthService.isGuest.and.returnValue(true);
 
-    const scores = [25, 75, 100];
-
-    scores.forEach(score => {
-      service.saveGameResult(1, score).subscribe(response => {
-        expect(response.score).toBe(score);
-        expect(response.saved).toBe(false);
-        expect(response.success).toBe(true);
-      });
-
-      expect(sessionStorage.getItem('guest-quiz-score')).toBe(score.toString());
-      httpMock.expectNone(`${environment.apiBaseUrl}/user-answer/game-result`);
+    service.saveGameResult(3, 100).subscribe(result => {
+      expect(result).toEqual({ success: true, saved: false, score: 100 });
     });
+
+    expect(sessionStorage.getItem('guest-quiz-score')).toBe('100');
+  });
+
+  it('should save game result with zero score', () => {
+    mockAuthService.isGuest.and.returnValue(false);
+    const mockResponse = { success: true, saved: true, score: 0 };
+
+    service.saveGameResult(1, 0).subscribe(result => {
+      expect(result).toEqual(mockResponse);
+    });
+
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/user-answer/game-result`);
+    expect(req.request.body).toEqual({
+      quiz_id: 1,
+      total_score: 0
+    });
+    req.flush(mockResponse);
+  });
+
+  it('should save game result with negative score', () => {
+    mockAuthService.isGuest.and.returnValue(false);
+    const mockResponse = { success: true, saved: true, score: -10 };
+
+    service.saveGameResult(1, -10).subscribe(result => {
+      expect(result).toEqual(mockResponse);
+    });
+
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/user-answer/game-result`);
+    expect(req.request.body).toEqual({
+      quiz_id: 1,
+      total_score: -10
+    });
+    req.flush(mockResponse);
+  });
+
+  it('should handle load quiz error', () => {
+    service.loadQuiz(999).subscribe({
+      next: () => fail('should have failed'),
+      error: error => {
+        expect(error.status).toBe(404);
+        expect(error.statusText).toBe('Not Found');
+      }
+    });
+
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/quiz/999`);
+    req.flush({ error: 'Quiz not found' }, { status: 404, statusText: 'Not Found' });
+  });
+
+  it('should clear sessionStorage before saving new guest score', () => {
+    mockAuthService.isGuest.and.returnValue(true);
+    
+    // Set initial value
+    sessionStorage.setItem('guest-quiz-score', '50');
+    
+    service.saveGameResult(1, 90).subscribe();
+
+    expect(sessionStorage.getItem('guest-quiz-score')).toBe('90');
   });
 });

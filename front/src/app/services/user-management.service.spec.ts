@@ -10,9 +10,16 @@ describe('UserManagementService', () => {
   let httpMock: HttpTestingController;
 
   beforeEach(() => {
+    const mockAuthService = {
+      hasPermission: jasmine.createSpy('hasPermission').and.returnValue(of(true)),
+    };
+
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      providers: [UserManagementService],
+      providers: [
+        UserManagementService,
+        { provide: AuthService, useValue: mockAuthService },
+      ],
     });
     service = TestBed.inject(UserManagementService);
     httpMock = TestBed.inject(HttpTestingController);
@@ -41,27 +48,16 @@ describe('UserManagementService', () => {
       },
     ];
 
-    service.getUsers().subscribe(users => {
-      expect(users).toEqual(mockUsers);
+    service.getUsers().subscribe(response => {
+      expect(response.data).toEqual(mockUsers);
     });
 
-    const req = httpMock.expectOne(`${environment.apiBaseUrl}/users`);
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/admin/all?page=1&limit=20&sort=email`);
     expect(req.request.method).toBe('GET');
-    req.flush(mockUsers);
+    req.flush({ data: mockUsers });
   });
 
   it('should anonymize user', () => {
-    // Mock AuthService pour retourner true pour hasPermission
-    const mockAuthService = jasmine.createSpyObj('AuthService', ['hasPermission']);
-    mockAuthService.hasPermission.and.returnValue(of(true));
-
-    TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
-      providers: [UserManagementService, { provide: AuthService, useValue: mockAuthService }],
-    });
-
-    service = TestBed.inject(UserManagementService);
-
     service.anonymizeUser(1).subscribe(() => {
       expect(true).toBe(true); // Test passé si pas d'erreur
     });
@@ -72,16 +68,6 @@ describe('UserManagementService', () => {
   });
 
   it('should update user roles', () => {
-    const mockAuthService = jasmine.createSpyObj('AuthService', ['hasPermission']);
-    mockAuthService.hasPermission.and.returnValue(of(true));
-
-    TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
-      providers: [UserManagementService, { provide: AuthService, useValue: mockAuthService }],
-    });
-
-    service = TestBed.inject(UserManagementService);
-
     const roles = ['ROLE_USER'];
     const permissions = ['MANAGE_QUIZ'];
 
@@ -103,7 +89,7 @@ describe('UserManagementService', () => {
       },
     });
 
-    const req = httpMock.expectOne(`${environment.apiBaseUrl}/users`);
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/admin/all?page=1&limit=20&sort=email`);
     req.flush('Server error', { status: 500, statusText: 'Internal Server Error' });
   });
 });

@@ -22,6 +22,7 @@ services:
       - ./back/.docker/dev/php/conf.d/custom.ini:/usr/local/etc/php/conf.d/custom.ini
     environment:
       - APP_ENV=${APP_ENV:-dev}
+      - RECAPTCHA_SECRET_KEY=6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe
     networks:
       - adimeo_local_proxy
 
