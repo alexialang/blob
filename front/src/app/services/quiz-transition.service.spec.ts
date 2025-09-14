@@ -15,10 +15,20 @@ describe('QuizTransitionService', () => {
   });
 
   it('should have initial values', () => {
-    service.showTransition$.subscribe(show => expect(show).toBe(false));
-    service.currentQuiz$.subscribe(quiz => expect(quiz).toBeNull());
-    service.cardPosition$.subscribe(position => expect(position).toBeNull());
-    service.isExiting$.subscribe(exiting => expect(exiting).toBe(false));
+    let showValue: boolean = false;
+    let quizValue: QuizCard | null = null;
+    let positionValue: any = null;
+    let exitingValue: boolean = false;
+
+    service.showTransition$.subscribe(show => showValue = show);
+    service.currentQuiz$.subscribe(quiz => quizValue = quiz);
+    service.cardPosition$.subscribe(position => positionValue = position);
+    service.isExiting$.subscribe(exiting => exitingValue = exiting);
+
+    expect(showValue).toBe(false);
+    expect(quizValue).toBeNull();
+    expect(positionValue).toBeNull();
+    expect(exitingValue).toBe(false);
   });
 
   it('should start transition', () => {
@@ -27,8 +37,14 @@ describe('QuizTransitionService', () => {
     
     service.startTransition(mockQuiz, mockElement, 'red');
     
-    service.showTransition$.subscribe(show => expect(show).toBe(true));
-    service.currentQuiz$.subscribe(quiz => expect(quiz).toEqual(mockQuiz));
+    let showValue: boolean = false;
+    let quizValue: any = null;
+    
+    service.showTransition$.subscribe(show => showValue = show);
+    service.currentQuiz$.subscribe(quiz => quizValue = quiz);
+    
+    expect(showValue).toBe(true);
+    expect(quizValue).toEqual(mockQuiz);
   });
 
   it('should have observables', () => {
@@ -41,6 +57,10 @@ describe('QuizTransitionService', () => {
   it('should handle quiz data', () => {
     const mockQuiz = { id: 1, title: 'Test Quiz' } as QuizCard;
     service['_currentQuiz'].next(mockQuiz);
-    service.currentQuiz$.subscribe(quiz => expect(quiz).toEqual(mockQuiz));
+    
+    let quizValue: any = null;
+    service.currentQuiz$.subscribe(quiz => quizValue = quiz);
+    
+    expect(quizValue).toEqual(mockQuiz);
   });
 });

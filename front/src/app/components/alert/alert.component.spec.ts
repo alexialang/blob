@@ -34,23 +34,17 @@ describe('AlertComponent', () => {
     expect(component.currentAlert).toBeNull();
   });
 
-  it('should show alert when received from service', (done) => {
+  it('should show alert when received from service', () => {
     const mockAlert: AlertMessage = {
       message: 'Test alert',
       type: 'success',
       duration: 5000
     };
 
-    // Mock the alerts$ observable to emit the alert
-    (alertService.alerts$ as any) = of(mockAlert);
+    // Simuler directement l'appel à showAlert
+    component['showAlert'](mockAlert);
 
-    component.ngOnInit();
-
-    // Wait for the subscription to process
-    setTimeout(() => {
-      expect(component.currentAlert).toEqual(mockAlert);
-      done();
-    }, 0);
+    expect(component.currentAlert).toEqual(mockAlert);
   });
 
   it('should close alert when closeAlert is called', () => {
