@@ -41,8 +41,7 @@ export class PrivacyConsentComponent implements OnInit {
     );
     this.showConsentBanner = false;
 
-    // Activer les analytics et tracker le consentement
-    this.analyticsService.enableAnalytics();
+    // Tracker le consentement
     this.analyticsService.trackEvent({
       name: 'privacy_consent_accepted',
     });

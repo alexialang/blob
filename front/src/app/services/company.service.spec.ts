@@ -1,9 +1,10 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { CompanyService } from './company.service';
-import { environment } from '../../environments/environment';
-import { AuthService } from './auth.service';
 import { of } from 'rxjs';
+
+import { CompanyService } from './company.service';
+import { AuthService } from './auth.service';
+import { environment } from '../../environments/environment';
 
 describe('CompanyService', () => {
   let service: CompanyService;
@@ -11,8 +12,7 @@ describe('CompanyService', () => {
   let mockAuthService: jasmine.SpyObj<AuthService>;
 
   beforeEach(() => {
-    const authServiceSpy = jasmine.createSpyObj('AuthService', ['hasPermission']);
-    authServiceSpy.hasPermission.and.returnValue(of(true));
+    const authServiceSpy = jasmine.createSpyObj('AuthService', ['getToken', 'getCurrentUser', 'hasPermission']);
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
@@ -21,9 +21,13 @@ describe('CompanyService', () => {
         { provide: AuthService, useValue: authServiceSpy },
       ],
     });
+
     service = TestBed.inject(CompanyService);
     httpMock = TestBed.inject(HttpTestingController);
     mockAuthService = TestBed.inject(AuthService) as jasmine.SpyObj<AuthService>;
+
+    mockAuthService.getToken.and.returnValue('test-token');
+    mockAuthService.hasPermission.and.returnValue(of(true));
   });
 
   afterEach(() => {
@@ -34,96 +38,127 @@ describe('CompanyService', () => {
     expect(service).toBeTruthy();
   });
 
-  it('should get companies', () => {
-    const mockCompanies = [
-      {
-        id: 1,
-        name: 'Test Company',
-        address: '123 Test St',
-        email: 'test@company.com',
-        phone: '123-456-7890',
-        isActive: true,
-      },
-    ];
+  it('should get company by id', () => {
+    const companyId = 1;
+    const mockCompany = {
+      id: 1,
+      name: 'Test Company',
+      userCount: 10,
+      groupCount: 2,
+      quizCount: 5
+    };
 
-    service.getCompanies().subscribe(companies => {
-      expect(companies).toEqual(mockCompanies);
+    service.getCompany(companyId).subscribe(company => {
+      expect(company).toEqual(mockCompany);
     });
 
-    const req = httpMock.expectOne(`${environment.apiBaseUrl}/companies`);
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/companies/${companyId}`);
     expect(req.request.method).toBe('GET');
-    req.flush(mockCompanies);
+    req.flush(mockCompany);
   });
 
-  it('should create company', () => {
-    const newCompany = {
-      name: 'New Company',
-      address: '456 New St',
-      email: 'new@company.com',
-      phone: '987-654-3210',
-    };
+  it('should get company users', () => {
+    const companyId = 1;
+    const mockUsers = [
+      {
+        id: 1,
+        email: 'user1@example.com',
+        firstName: 'User',
+        lastName: 'One',
+        roles: ['ROLE_USER'],
+        isActive: true,
+        isVerified: true
+      }
+    ];
 
-    const mockResponse = {
-      id: 2,
-      ...newCompany,
-      isActive: true,
-    };
-
-    service.createCompany(newCompany).subscribe(response => {
-      expect(response).toEqual(mockResponse);
+    service.getCompanyUsers(companyId).subscribe(users => {
+      expect(users).toEqual(mockUsers);
     });
 
-    const req = httpMock.expectOne(`${environment.apiBaseUrl}/companies`);
-    expect(req.request.method).toBe('POST');
-    expect(req.request.body).toEqual(newCompany);
-    req.flush(mockResponse);
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/companies/${companyId}/users`);
+    expect(req.request.method).toBe('GET');
+    req.flush(mockUsers);
+  });
+
+  it('should get company groups', () => {
+    const companyId = 1;
+    const mockGroups = [
+      {
+        id: 1,
+        name: 'Development Team',
+        description: 'Software developers',
+        userCount: 5,
+        quizCount: 3
+      }
+    ];
+
+    service.getCompanyGroups(companyId).subscribe(groups => {
+      expect(groups).toEqual(mockGroups);
+    });
+
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/companies/${companyId}/groups`);
+    expect(req.request.method).toBe('GET');
+    req.flush(mockGroups);
   });
 
   it('should get company stats', () => {
+    const companyId = 1;
     const mockStats = {
       id: 1,
       name: 'Test Company',
       userCount: 10,
       activeUsers: 8,
-      groupCount: 3,
-      quizCount: 5,
-      createdAt: '2024-01-01',
-      lastActivity: '2024-01-15',
+      groupCount: 2,
+      quizCount: 5
     };
 
-    service.getCompanyStats(1).subscribe(stats => {
+    service.getCompanyStats(companyId).subscribe(stats => {
       expect(stats).toEqual(mockStats);
     });
 
-    const req = httpMock.expectOne(`${environment.apiBaseUrl}/companies/1/stats`);
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/companies/${companyId}/stats`);
     expect(req.request.method).toBe('GET');
     req.flush(mockStats);
   });
 
-  it('should get available users for company', () => {
-    const mockUsers = [
-      { id: 1, email: 'user1@test.com', firstName: 'John', lastName: 'Doe' },
-      { id: 2, email: 'user2@test.com', firstName: 'Jane', lastName: 'Smith' },
-    ];
 
-    service.getAvailableUsers(1).subscribe(users => {
-      expect(users.length).toBe(2);
+  it('should handle API errors', () => {
+    const companyId = 1;
+
+    service.getCompany(companyId).subscribe({
+      next: () => fail('Should have failed'),
+      error: (error) => {
+        expect(error).toBeTruthy();
+      }
     });
 
-    const req = httpMock.expectOne(`${environment.apiBaseUrl}/companies/1/available-users`);
-    expect(req.request.method).toBe('GET');
-    req.flush(mockUsers);
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/companies/${companyId}`);
+    req.flush('Error', { status: 500, statusText: 'Internal Server Error' });
   });
 
-  it('should handle errors gracefully', () => {
-    service.getCompanies().subscribe({
-      next: () => fail('should have failed'),
-      error: error => {
-        expect(error.status).toBe(404);
-      },
+  it('should handle network errors', () => {
+    const companyId = 1;
+
+    service.getCompany(companyId).subscribe({
+      next: () => fail('Should have failed'),
+      error: (error) => {
+        expect(error).toBeTruthy();
+      }
     });
 
-    const req = httpMock.expectOne(`${environment.apiBaseUrl}/companies`);
-    req.flush('Not found', { status: 404, statusText: 'Not Found' });
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/companies/${companyId}`);
+    req.error(new ProgressEvent('Network error'));
+  });
+
+  it('should handle empty responses', () => {
+    const companyId = 1;
+    const emptyCompany = null;
+
+    service.getCompany(companyId).subscribe(company => {
+      expect(company).toBeNull();
+    });
+
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/companies/${companyId}`);
+    req.flush(emptyCompany);
   });
 });

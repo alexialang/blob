@@ -32,3 +32,8 @@ describe('QuizResultsComponent', () => {
     expect(component).toBeTruthy();
   });
 });
+
+
+
+
+

@@ -76,3 +76,8 @@ class CoreBundlesTest extends KernelTestCase
         $this->assertGreaterThan(5, count($bundles));
     }
 }
+
+
+
+
+

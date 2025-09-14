@@ -3,7 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\TypeQuestion;
-use App\Enum\TypeQuestionName;
+use App\Repository\TypeQuestionRepository;
 use OpenApi\Annotations as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -12,6 +12,11 @@ use Symfony\Component\Routing\Annotation\Route;
 #[Route('/api/type-question')]
 class TypeQuestionController extends AbstractController
 {
+    public function __construct(
+        private TypeQuestionRepository $typeQuestionRepository
+    ) {
+    }
+
     /**
      * @OA\Get(summary="Lister les types de question", tags={"TypeQuestion"})
      *
@@ -20,13 +25,15 @@ class TypeQuestionController extends AbstractController
     #[Route('/list', name: 'type_question_list', methods: ['GET'])]
     public function list(): JsonResponse
     {
-        $typeQuestions = array_map(fn ($enum) => [
-            'id' => $enum->value,
-            'name' => $enum->getName(),
-            'key' => $enum->value,
-        ], TypeQuestionName::cases());
+        $typeQuestions = $this->typeQuestionRepository->findAll();
+        
+        $result = array_map(fn (TypeQuestion $typeQuestion) => [
+            'id' => $typeQuestion->getId(),
+            'name' => $typeQuestion->getName(),
+            'key' => $typeQuestion->getName(), // Pour compatibilité avec le frontend
+        ], $typeQuestions);
 
-        return $this->json($typeQuestions);
+        return $this->json($result);
     }
 
     /**

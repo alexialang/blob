@@ -49,3 +49,8 @@ echo "• Sécurité renforcée\n\n";
 
 echo "✅ TOUS LES CRITÈRES RESPECTÉS\n";
 
+
+
+
+
+

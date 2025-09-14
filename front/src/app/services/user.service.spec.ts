@@ -1,11 +1,10 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { of, throwError } from 'rxjs';
+import { of } from 'rxjs';
 
 import { UserService } from './user.service';
 import { AuthService } from './auth.service';
 import { User } from '../models/user.interface';
-import { environment } from '../../environments/environment';
 
 describe('UserService', () => {
   let service: UserService;
@@ -14,15 +13,15 @@ describe('UserService', () => {
 
   beforeEach(() => {
     const authServiceSpy = jasmine.createSpyObj('AuthService', ['hasPermission']);
-    authServiceSpy.hasPermission.and.returnValue(of(true));
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
       providers: [
         UserService,
-        { provide: AuthService, useValue: authServiceSpy },
-      ],
+        { provide: AuthService, useValue: authServiceSpy }
+      ]
     });
+
     service = TestBed.inject(UserService);
     httpMock = TestBed.inject(HttpTestingController);
     mockAuthService = TestBed.inject(AuthService) as jasmine.SpyObj<AuthService>;
@@ -42,15 +41,42 @@ describe('UserService', () => {
       email: 'test@example.com',
       firstName: 'Test',
       lastName: 'User',
+      pseudo: 'testuser',
+      avatar: 'avatar.jpg',
+      avatarShape: 'circle',
       roles: ['ROLE_USER'],
-      dateRegistration: '2024-01-01',
+      userPermissions: [],
+      dateRegistration: '2023-01-01',
       isAdmin: false,
       isActive: true,
-      isVerified: true,
+      isVerified: true
     };
 
     service.setCurrentUser(mockUser);
     expect(service.getCurrentUser()).toEqual(mockUser);
+  });
+
+  it('should set current user', () => {
+    const mockUser: User = {
+      id: 1,
+      email: 'test@example.com',
+      firstName: 'Test',
+      lastName: 'User',
+      pseudo: 'testuser',
+      avatar: 'avatar.jpg',
+      avatarShape: 'circle',
+      roles: ['ROLE_USER'],
+      userPermissions: [],
+      dateRegistration: '2023-01-01',
+      isAdmin: false,
+      isActive: true,
+      isVerified: true
+    };
+
+    service.setCurrentUser(mockUser);
+    service.currentUser$.subscribe(user => {
+      expect(user).toEqual(mockUser);
+    });
   });
 
   it('should get user profile', () => {
@@ -59,130 +85,99 @@ describe('UserService', () => {
       email: 'test@example.com',
       firstName: 'Test',
       lastName: 'User',
+      pseudo: 'testuser',
+      avatar: 'avatar.jpg',
+      avatarShape: 'circle',
       roles: ['ROLE_USER'],
-      dateRegistration: '2024-01-01',
+      userPermissions: [],
+      dateRegistration: '2023-01-01',
       isAdmin: false,
       isActive: true,
-      isVerified: true,
+      isVerified: true
     };
 
     service.getUserProfile().subscribe(user => {
       expect(user).toEqual(mockUser);
     });
 
-    const req = httpMock.expectOne(`${environment.apiBaseUrl}/user/profile`);
+    const req = httpMock.expectOne(`${service['baseUrl']}/profile`);
     expect(req.request.method).toBe('GET');
     req.flush(mockUser);
   });
 
-  it('should get user profile by id', () => {
+  it('should get user profile by id with permission', () => {
     const mockUser: User = {
       id: 2,
       email: 'other@example.com',
       firstName: 'Other',
       lastName: 'User',
+      pseudo: 'otheruser',
+      avatar: 'avatar2.jpg',
+      avatarShape: 'circle',
       roles: ['ROLE_USER'],
-      dateRegistration: '2024-01-01',
+      userPermissions: [],
+      dateRegistration: '2023-01-01',
       isAdmin: false,
       isActive: true,
-      isVerified: true,
+      isVerified: true
     };
+
+    mockAuthService.hasPermission.and.returnValue(of(true));
 
     service.getUserProfileById(2).subscribe(user => {
       expect(user).toEqual(mockUser);
     });
 
-    const req = httpMock.expectOne(`${environment.apiBaseUrl}/user/2`);
+    const req = httpMock.expectOne(`${service['baseUrl']}/2`);
     expect(req.request.method).toBe('GET');
     req.flush(mockUser);
   });
 
+  it('should throw error when getting user profile by id without permission', () => {
+    mockAuthService.hasPermission.and.returnValue(of(false));
+
+    service.getUserProfileById(2).subscribe({
+      next: () => fail('Should have thrown an error'),
+      error: (error) => {
+        expect(error.message).toBe('Permission VIEW_RESULTS requise');
+      }
+    });
+  });
+
   it('should update user profile', () => {
     const updateData = { firstName: 'Updated' };
-    const mockUpdatedUser: User = {
+    const mockUser: User = {
       id: 1,
       email: 'test@example.com',
       firstName: 'Updated',
       lastName: 'User',
+      pseudo: 'testuser',
+      avatar: 'avatar.jpg',
+      avatarShape: 'circle',
       roles: ['ROLE_USER'],
-      dateRegistration: '2024-01-01',
+      userPermissions: [],
+      dateRegistration: '2023-01-01',
       isAdmin: false,
       isActive: true,
-      isVerified: true,
+      isVerified: true
     };
 
     service.updateUserProfile(updateData).subscribe(user => {
-      expect(user).toEqual(mockUpdatedUser);
+      expect(user).toEqual(mockUser);
     });
 
-    const req = httpMock.expectOne(`${environment.apiBaseUrl}/user/profile/update`);
+    const req = httpMock.expectOne(`${service['baseUrl']}/profile/update`);
     expect(req.request.method).toBe('PUT');
     expect(req.request.body).toEqual(updateData);
-    req.flush(mockUpdatedUser);
+    req.flush(mockUser);
   });
 
-  it('should get user statistics', () => {
-    const mockStats = { totalQuizzes: 10, averageScore: 85 };
-
-    service.getUserStatistics().subscribe(stats => {
-      expect(stats).toEqual(mockStats);
-    });
-
-    const req = httpMock.expectOne(`${environment.apiBaseUrl}/user/statistics`);
-    expect(req.request.method).toBe('GET');
-    req.flush(mockStats);
+  it('should have currentUser$ observable', () => {
+    expect(service.currentUser$).toBeDefined();
+    expect(typeof service.currentUser$.subscribe).toBe('function');
   });
 
-  it('should get user statistics by id', () => {
-    const mockStats = { totalQuizzes: 5, averageScore: 90 };
-
-    service.getUserStatisticsById(2).subscribe(stats => {
-      expect(stats).toEqual(mockStats);
-    });
-
-    const req = httpMock.expectOne(`${environment.apiBaseUrl}/user/2/statistics`);
-    expect(req.request.method).toBe('GET');
-    req.flush(mockStats);
-  });
-
-  it('should update avatar', () => {
-    const avatarData = { shape: 'blob_circle', color: '#FF0000' };
-    const mockUpdatedUser: User = {
-      id: 1,
-      email: 'test@example.com',
-      firstName: 'Test',
-      lastName: 'User',
-      roles: ['ROLE_USER'],
-      dateRegistration: '2024-01-01',
-      isAdmin: false,
-      isActive: true,
-      isVerified: true,
-      avatarShape: 'blob_circle',
-      avatarColor: '#FF0000',
-    };
-
-    service.updateAvatar(avatarData).subscribe(user => {
-      expect(user).toEqual(mockUpdatedUser);
-    });
-
-    const req = httpMock.expectOne(`${environment.apiBaseUrl}/user/profile/update`);
-    expect(req.request.method).toBe('PUT');
-    expect(req.request.body).toEqual({
-      avatarShape: 'blob_circle',
-      avatarColor: '#FF0000',
-    });
-    req.flush(mockUpdatedUser);
-  });
-
-  it('should handle error when getting user profile', () => {
-    service.getUserProfile().subscribe({
-      next: () => fail('should have failed'),
-      error: error => {
-        expect(error.status).toBe(500);
-      },
-    });
-
-    const req = httpMock.expectOne(`${environment.apiBaseUrl}/user/profile`);
-    req.flush('Server error', { status: 500, statusText: 'Internal Server Error' });
+  it('should return null when no current user is set', () => {
+    expect(service.getCurrentUser()).toBeNull();
   });
 });

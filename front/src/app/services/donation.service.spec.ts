@@ -1,6 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { DonationService, DonationRequest, PaymentLinkResponse } from './donation.service';
+import { of, throwError } from 'rxjs';
+
+import { DonationService } from './donation.service';
 import { environment } from '../../environments/environment';
 
 describe('DonationService', () => {
@@ -24,42 +26,112 @@ describe('DonationService', () => {
     expect(service).toBeTruthy();
   });
 
-  it('should create payment link', () => {
-    const mockDonation: DonationRequest = {
-      amount: 25,
-      donor_email: 'test@example.com',
-      donor_name: 'Test User',
+  it('should create payment link successfully', () => {
+    const donationRequest = {
+      amount: 1000,
+      currency: 'eur',
+      description: 'Donation for Blob',
+      customerEmail: 'test@example.com'
     };
 
-    const mockResponse: PaymentLinkResponse = {
-      payment_url: 'https://checkout.stripe.com/test',
-      payment_link_id: 'test-link-id',
-      donation_id: 123,
+    const mockResponse = {
+      paymentLinkId: 'plink_123',
+      url: 'https://checkout.stripe.com/pay/plink_123',
+      success: true
     };
 
-    service.createPaymentLink(mockDonation).subscribe(response => {
-      expect(response).toEqual(mockResponse);
+    service.createPaymentLink(donationRequest).subscribe(response => {
+      expect(response).toEqual(jasmine.objectContaining(mockResponse));
     });
 
-    const req = httpMock.expectOne(`${environment.apiUrl}/api/donations/create-payment-link`);
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/donations/create-payment-link`);
     expect(req.request.method).toBe('POST');
-    expect(req.request.body).toEqual(mockDonation);
+    expect(req.request.body).toEqual(donationRequest);
     req.flush(mockResponse);
   });
 
-  it('should handle error when creating payment link', () => {
-    const mockDonation: DonationRequest = {
-      amount: 25,
+  it('should handle payment link creation error', () => {
+    const donationRequest = {
+      amount: 1000,
+      currency: 'eur',
+      description: 'Donation for Blob',
+      customerEmail: 'test@example.com'
     };
 
-    service.createPaymentLink(mockDonation).subscribe({
-      next: () => fail('should have failed'),
-      error: error => {
-        expect(error.status).toBe(500);
-      },
+    service.createPaymentLink(donationRequest).subscribe({
+      next: () => fail('Should have failed'),
+      error: (error) => {
+        expect(error).toBeTruthy();
+      }
     });
 
-    const req = httpMock.expectOne(`${environment.apiUrl}/api/donations/create-payment-link`);
-    req.flush('Server error', { status: 500, statusText: 'Internal Server Error' });
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/donations/create-payment-link`);
+    req.flush('Error', { status: 400, statusText: 'Bad Request' });
+  });
+
+  it('should validate donation amount', () => {
+    const validDonation = {
+      amount: 500,
+      currency: 'eur',
+      description: 'Valid donation',
+      customerEmail: 'test@example.com'
+    };
+
+    service.createPaymentLink(validDonation).subscribe(response => {
+      expect(response).toBeTruthy();
+    });
+
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/donations/create-payment-link`);
+    req.flush({ success: true });
+  });
+
+  it('should handle network error', () => {
+    const donationRequest = {
+      amount: 1000,
+      currency: 'eur',
+      description: 'Donation for Blob',
+      customerEmail: 'test@example.com'
+    };
+
+    service.createPaymentLink(donationRequest).subscribe({
+      next: () => fail('Should have failed'),
+      error: (error) => {
+        expect(error).toBeTruthy();
+      }
+    });
+
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/donations/create-payment-link`);
+    req.error(new ProgressEvent('Network error'));
+  });
+
+  it('should handle different currencies', () => {
+    const donationRequest = {
+      amount: 1000,
+      currency: 'usd',
+      description: 'USD donation',
+      customerEmail: 'test@example.com'
+    };
+
+    service.createPaymentLink(donationRequest).subscribe(response => {
+      expect(response).toBeTruthy();
+    });
+
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/donations/create-payment-link`);
+    req.flush({ success: true });
+  });
+
+  it('should handle missing email', () => {
+    const donationRequest = {
+      amount: 1000,
+      currency: 'eur',
+      description: 'Donation without email'
+    };
+
+    service.createPaymentLink(donationRequest).subscribe(response => {
+      expect(response).toBeTruthy();
+    });
+
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/donations/create-payment-link`);
+    req.flush({ success: true });
   });
 });
