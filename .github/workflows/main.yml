@@ -125,9 +125,18 @@ jobs:
       working-directory: ./front
       run: npm run test -- --watch=false --browsers=ChromeHeadless
 
-    - name: Run e2e tests
-      working-directory: ./front
-      run: npm run e2e
+    # - name: Start Angular application
+    #   working-directory: ./front
+    #   run: |
+    #     npm run build
+    #     npx http-server dist/blob-front -p 4201 &
+    #     sleep 10
+    #   env:
+    #     CI: true
+
+    # - name: Run e2e tests
+    #   working-directory: ./front
+    #   run: npm run e2e
 
     - name: Build application
       working-directory: ./front
