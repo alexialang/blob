@@ -7,8 +7,8 @@ on:
     branches: [ main, dev-admin-crud, develop ]
 
 jobs:
-  test:
-    name: Tests et Qualité
+  backend:
+    name: Backend - Tests et Qualité
     runs-on: ubuntu-latest
     
     services:
@@ -92,9 +92,54 @@ jobs:
       working-directory: ./back
       run: vendor/bin/php-cs-fixer fix --dry-run --diff
 
-    - name: Success notification
+    - name: Backend Success notification
       run: |
-        echo "Pipeline CI/CD terminé"
-        echo "Tests exécutés"
-        echo "Qualité vérifiée"
-        echo "Workflow GitHub Actions fonctionnel"
+        echo "Backend Pipeline CI/CD terminé"
+        echo "Tests backend exécutés"
+        echo "Qualité backend vérifiée"
+
+  frontend:
+    name: Frontend - Tests et Qualité
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: front/package-lock.json
+
+    - name: Install dependencies
+      working-directory: ./front
+      run: npm ci
+
+    - name: Run linting
+      working-directory: ./front
+      run: npm run lint
+
+    - name: Run tests
+      working-directory: ./front
+      run: npm run test -- --watch=false --browsers=ChromeHeadless
+
+    - name: Run e2e tests
+      working-directory: ./front
+      run: npm run e2e
+
+    - name: Build application
+      working-directory: ./front
+      run: npm run build
+
+    - name: Run prerender
+      working-directory: ./front
+      run: node scripts/prerender.js
+
+    - name: Frontend Success notification
+      run: |
+        echo "Frontend Pipeline CI/CD terminé"
+        echo "Tests frontend exécutés"
+        echo "Build frontend réussi"
+        echo "Prerender frontend terminé"

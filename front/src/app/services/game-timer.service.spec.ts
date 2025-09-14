@@ -107,66 +107,57 @@ describe('GameTimerService', () => {
     expect(service.getCurrentTime()).toBe(0); // Doit être 0, pas négatif
   });
 
-  it('should emit time updates through observable', (done) => {
+  it('should emit time updates through observable', fakeAsync(() => {
     const timeValues: number[] = [];
-    let callCount = 0;
     
     service.getTimeLeft().subscribe((time: number) => {
       timeValues.push(time);
-      callCount++;
-      
-      if (callCount >= 3) {
-        expect(timeValues[0]).toBe(5);
-        expect(timeValues[1]).toBe(4);
-        expect(timeValues[2]).toBe(3);
-        done();
-      }
     });
     
+    // L'état initial est 0
+    expect(timeValues[0]).toBe(0);
+    
     service.startLocalTimer(5, 'observable-test');
+    expect(timeValues[1]).toBe(5);
     
-    // Simuler le passage du temps
-    setTimeout(() => {
-      service.startLocalTimer(4, 'observable-test');
-    }, 100);
+    // Avancer le temps de 1 seconde
+    tick(1000);
+    expect(timeValues[2]).toBe(4);
     
-    setTimeout(() => {
-      service.startLocalTimer(3, 'observable-test');
-    }, 200);
-  });
+    // Avancer le temps de 1 seconde de plus
+    tick(1000);
+    expect(timeValues[3]).toBe(3);
+  }));
 
-  it('should emit phase updates through observable', (done) => {
+  it('should emit phase updates through observable', () => {
     const phaseValues: string[] = [];
     service.getPhase().subscribe((phase: string) => {
       phaseValues.push(phase);
-      if (phaseValues.length === 3) {
-        expect(phaseValues).toEqual(['waiting', 'playing', 'finished']);
-        done();
-      }
     });
     
     service.startLocalTimer(5, 'playing');
     service.updateFromServer(3, 'finished');
+    
+    expect(phaseValues).toEqual(['waiting', 'playing', 'finished']);
   });
 
-  it('should emit running state updates through observable', (done) => {
+  it('should emit running state updates through observable', () => {
     const runningValues: boolean[] = [];
-    let callCount = 0;
     
     service.isRunning().subscribe((running: boolean) => {
       runningValues.push(running);
-      callCount++;
-      
-      if (callCount >= 3) {
-        expect(runningValues[0]).toBe(false);
-        expect(runningValues[1]).toBe(true);
-        expect(runningValues[2]).toBe(false);
-        done();
-      }
     });
     
+    // L'état initial est false
+    expect(runningValues[0]).toBe(false);
+    
     service.startLocalTimer(5, 'running-test');
+    // Maintenant c'est true
+    expect(runningValues[1]).toBe(true);
+    
     service.stopTimer();
+    // Maintenant c'est false
+    expect(runningValues[2]).toBe(false);
   });
 
   it('should destroy timer on destroy', () => {

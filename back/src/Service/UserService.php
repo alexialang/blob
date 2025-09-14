@@ -559,10 +559,11 @@ class UserService
                 $actionValid = $result['action'] ?? '';
 
                 // Si score est null, c'est reCAPTCHA v2 (pas de score)
-                if ($score === null) {
+                if (null === $score) {
                     $this->logger->info('reCAPTCHA v2 validé', [
                         'action' => $action,
                     ]);
+
                     return true;
                 }
 

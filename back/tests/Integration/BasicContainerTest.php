@@ -78,8 +78,3 @@ class BasicContainerTest extends KernelTestCase
         $this->assertTrue($container->hasParameter('kernel.charset'));
     }
 }
-
-
-
-
-

@@ -13,7 +13,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class TypeQuestionController extends AbstractController
 {
     public function __construct(
-        private TypeQuestionRepository $typeQuestionRepository
+        private TypeQuestionRepository $typeQuestionRepository,
     ) {
     }
 
@@ -26,7 +26,7 @@ class TypeQuestionController extends AbstractController
     public function list(): JsonResponse
     {
         $typeQuestions = $this->typeQuestionRepository->findAll();
-        
+
         $result = array_map(fn (TypeQuestion $typeQuestion) => [
             'id' => $typeQuestion->getId(),
             'name' => $typeQuestion->getName(),

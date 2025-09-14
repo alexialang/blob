@@ -95,7 +95,6 @@ class QuizController extends AbstractSecureController
         try {
             $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
 
-
             $user = $this->getCurrentUser();
             if (!$user) {
                 return $this->json(['error' => 'User not authenticated'], 401);
@@ -105,7 +104,6 @@ class QuizController extends AbstractSecureController
 
             return $this->json($quiz, 201, [], ['groups' => ['quiz:read']]);
         } catch (\JsonException $e) {
-
             return $this->json(['error' => 'Invalid JSON'], 400);
         } catch (ValidationFailedException $e) {
             $errorMessages = [];
@@ -113,10 +111,8 @@ class QuizController extends AbstractSecureController
                 $errorMessages[] = $violation->getMessage();
             }
 
-
             return $this->json(['error' => 'Données invalides', 'details' => $errorMessages], 400);
         } catch (\Exception $e) {
-
             return $this->json(['error' => 'Erreur: '.$e->getMessage()], 500);
         }
     }

@@ -37,7 +37,6 @@ class LeaderboardService
                 $displayName = 'Joueur anonyme';
             }
 
-
             $leaderboard[] = [
                 'rank' => $rank,
                 'name' => trim((string) $displayName),
@@ -47,15 +46,14 @@ class LeaderboardService
             ];
         }
 
+        // Si l'utilisateur actuel n'est pas dans les résultats, lui donner le rang suivant
+        if (!$currentUserRank && $currentUserId) {
+            $currentUserRank = count($results) + 1;
+        }
 
-
-
-
-        // Si l'utilisateur actuel n'est pas dans les résultats, ne pas l'ajouter artificiellement
-        // Juste retourner les résultats de la base de données
         return [
             'leaderboard' => array_slice($leaderboard, 0, 10),
-            'currentUserRank' => $currentUserRank ?: null, // Ne pas inventer un rang si l'utilisateur n'est pas dans les résultats
+            'currentUserRank' => $currentUserRank ?: (count($results) + 1), // Rang suivant si pas d'utilisateur
             'totalPlayers' => count($results),
             'currentUserScore' => $currentUserId ? $this->getCurrentUserQuizScore($quiz->getId(), $currentUserId) : 0,
         ];

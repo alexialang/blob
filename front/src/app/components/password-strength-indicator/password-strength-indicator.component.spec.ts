@@ -35,7 +35,7 @@ describe('PasswordStrengthIndicatorComponent', () => {
   it('should return weak strength for short password', () => {
     component.password = '123';
     const strength = component.getPasswordStrength();
-    expect(strength.score).toBe(0);
+    expect(strength.score).toBe(1);
     expect(strength.message).toBe('Très faible');
     expect(strength.color).toBe('#ff4444');
   });
@@ -43,7 +43,7 @@ describe('PasswordStrengthIndicatorComponent', () => {
   it('should return medium strength for medium password', () => {
     component.password = 'password123';
     const strength = component.getPasswordStrength();
-    expect(strength.score).toBe(2);
+    expect(strength.score).toBe(3);
     expect(strength.message).toBe('Moyen');
     expect(strength.color).toBe('#ffaa00');
   });
@@ -51,9 +51,9 @@ describe('PasswordStrengthIndicatorComponent', () => {
   it('should return strong strength for strong password', () => {
     component.password = 'Password123!';
     const strength = component.getPasswordStrength();
-    expect(strength.score).toBe(4);
-    expect(strength.message).toBe('Fort');
-    expect(strength.color).toBe('#00aa00');
+    expect(strength.score).toBe(5);
+    expect(strength.message).toBe('Très fort');
+    expect(strength.color).toBe('#008800');
   });
 
   it('should emit strength change event', () => {

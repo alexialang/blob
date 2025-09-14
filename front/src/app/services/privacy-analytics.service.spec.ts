@@ -58,3 +58,4 @@ describe('PrivacyAnalyticsService', () => {
     expect(() => service.trackEvent(event)).not.toThrow();
   });
 });
+

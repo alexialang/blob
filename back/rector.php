@@ -17,8 +17,3 @@ return RectorConfig::configure()
         // Skip specific files or directories if needed
         __DIR__.'/src/Kernel.php',
     ]);
-
-
-
-
-

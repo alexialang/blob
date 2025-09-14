@@ -45,8 +45,3 @@ class EntityRepositoryTest extends KernelTestCase
         $this->assertInstanceOf(\App\Repository\CategoryQuizRepository::class, $repository);
     }
 }
-
-
-
-
-

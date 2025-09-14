@@ -44,14 +44,13 @@ security:
 
             jwt: ~
 
-            refresh_jwt:
-                check_path: /api/token/refresh
+            # refresh_jwt:
+            #     check_path: /api/token/refresh
             entry_point: jwt
             lazy: false
         main:
             lazy: true
             provider: app_user_provider
-            entry_point: lexik_jwt_authentication.jwt_manager
  
     role_hierarchy:
         ROLE_ADMIN: [ROLE_USER]

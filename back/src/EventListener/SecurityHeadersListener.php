@@ -22,9 +22,15 @@ class SecurityHeadersListener implements EventSubscriberInterface
         }
 
         $response = $event->getResponse();
+        $request = $event->getRequest();
 
-        // Strict Transport Security (HSTS)
-        $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+        // Vérifier si on est en mode développement
+        $isDev = 'dev' === $request->server->get('APP_ENV');
+
+        // Strict Transport Security (HSTS) - seulement en production
+        if (!$isDev) {
+            $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+        }
 
         // Empêche l'affichage en iframe (clickjacking)
         $response->headers->set('X-Frame-Options', 'DENY');
@@ -38,11 +44,25 @@ class SecurityHeadersListener implements EventSubscriberInterface
         // Contrôle du referrer
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
 
-        // Content Security Policy (CSP) - API stricte
-        $csp = "default-src 'none'; ".
-               "connect-src 'self'; ".
-               "frame-ancestors 'none'; ".
-               "base-uri 'none'";
+        // Content Security Policy (CSP) - différente selon l'environnement
+        if ($isDev) {
+            // CSP permissive pour le développement (Web Debug Toolbar + Swagger UI)
+            $csp = "default-src 'self'; ".
+                   "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; ".
+                   "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; ".
+                   "img-src 'self' data: https://cdn.jsdelivr.net; ".
+                   "font-src 'self' data: https://cdn.jsdelivr.net; ".
+                   "connect-src 'self' ws: wss: http: https:; ".
+                   "frame-src 'self'; ".
+                   "frame-ancestors 'none'; ".
+                   "base-uri 'self'";
+        } else {
+            // CSP stricte pour la production
+            $csp = "default-src 'none'; ".
+                   "connect-src 'self'; ".
+                   "frame-ancestors 'none'; ".
+                   "base-uri 'none'";
+        }
         $response->headers->set('Content-Security-Policy', $csp);
 
         // Permissions Policy (Feature Policy)
@@ -52,8 +72,3 @@ class SecurityHeadersListener implements EventSubscriberInterface
         );
     }
 }
-
-
-
-
-

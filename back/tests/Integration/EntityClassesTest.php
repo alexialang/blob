@@ -96,8 +96,3 @@ class EntityClassesTest extends KernelTestCase
         $this->assertInstanceOf(Company::class, $company);
     }
 }
-
-
-
-
-
