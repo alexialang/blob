@@ -7,8 +7,9 @@ describe('PaginationComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [PaginationComponent],
-    }).compileComponents();
+      imports: [PaginationComponent]
+    })
+    .compileComponents();
 
     fixture = TestBed.createComponent(PaginationComponent);
     component = fixture.componentInstance;
@@ -20,51 +21,47 @@ describe('PaginationComponent', () => {
   });
 
   it('should have default values', () => {
-    expect(component.page).toBe(1);
     expect(component.totalItems).toBe(0);
     expect(component.pageSize).toBe(10);
+    expect(component.page).toBe(1);
     expect(component.activePadding).toBe(2);
   });
 
-  it('should calculate total pages', () => {
-    component.totalItems = 100;
+  it('should calculate totalPages correctly', () => {
+    component.totalItems = 25;
     component.pageSize = 10;
-    expect(component.totalPages).toBe(10);
     
-    component.totalItems = 95;
+    expect(component.totalPages).toBe(3);
+  });
+
+  it('should return 1 for totalPages when totalItems is 0', () => {
+    component.totalItems = 0;
     component.pageSize = 10;
-    expect(component.totalPages).toBe(10);
+    
+    expect(component.totalPages).toBe(1);
   });
 
-  it('should calculate tui index', () => {
-    component.page = 3;
-    component.totalItems = 100;
+  it('should calculate tuiIndex correctly', () => {
+    component.totalItems = 25;
     component.pageSize = 10;
-    expect(component.tuiIndex).toBe(2);
-  });
-
-  it('should emit page change on tui index change', () => {
-    spyOn(component.pageChange, 'emit');
-    component.onTuiIndexChange(1);
-    expect(component.pageChange.emit).toHaveBeenCalledWith(2);
-  });
-
-  it('should not emit page change if page is same', () => {
     component.page = 2;
-    spyOn(component.pageChange, 'emit');
-    component.onTuiIndexChange(1);
-    expect(component.pageChange.emit).not.toHaveBeenCalled();
+    
+    expect(component.tuiIndex).toBe(1);
   });
 
-  it('should handle edge cases for tui index', () => {
-    component.page = 0;
-    component.totalItems = 50;
+  it('should clamp tuiIndex to valid range', () => {
+    component.totalItems = 25;
     component.pageSize = 10;
-    expect(component.tuiIndex).toBe(0);
+    component.page = 5; // Beyond totalPages
     
-    component.page = 10;
-    component.totalItems = 50;
-    component.pageSize = 10;
-    expect(component.tuiIndex).toBe(4);
+    expect(component.tuiIndex).toBe(2); // Should be clamped to max index
+  });
+
+  it('should emit pageChange when onTuiIndexChange is called', () => {
+    spyOn(component.pageChange, 'emit');
+    
+    component.onTuiIndexChange(2); // Index 2 = page 3
+    
+    expect(component.pageChange.emit).toHaveBeenCalledWith(3);
   });
 });

@@ -60,8 +60,8 @@ export class PrivacyConsentComponent implements OnInit {
     );
     this.showConsentBanner = false;
 
-    // Nettoyer toutes les données existantes
-    this.analyticsService.clearLocalData();
+    // Avec Umami Cloud, pas besoin de nettoyer des données locales
+    // Umami ne stocke pas de cookies et respecte automatiquement le refus
   }
 
   /**
@@ -69,5 +69,13 @@ export class PrivacyConsentComponent implements OnInit {
    */
   openPrivacySettings(): void {
     // Cette méthode peut ouvrir une modal détaillée
+  }
+
+  /**
+   * Méthode de test pour forcer l'affichage de la bannière
+   */
+  showBannerForTesting(): void {
+    localStorage.removeItem('blob_privacy_consent');
+    this.showConsentBanner = true;
   }
 }

@@ -19,164 +19,200 @@ describe('GameTimerService', () => {
   });
 
   it('should initialize with default values', () => {
-    service.getTimeLeft().subscribe(time => expect(time).toBe(0));
-    service.getPhase().subscribe(phase => expect(phase).toBe('waiting'));
-    service.isRunning().subscribe(running => expect(running).toBeFalsy());
     expect(service.getCurrentTime()).toBe(0);
     expect(service.getCurrentPhase()).toBe('waiting');
-    expect(service.isTimerRunning()).toBeFalsy();
+    expect(service.isTimerRunning()).toBe(false);
   });
 
   it('should start local timer correctly', fakeAsync(() => {
-    const duration = 10;
-    const phase = 'question';
-
+    const duration = 5;
+    const phase = 'playing';
+    
     service.startLocalTimer(duration, phase);
-
+    
     expect(service.getCurrentTime()).toBe(duration);
     expect(service.getCurrentPhase()).toBe(phase);
-    expect(service.isTimerRunning()).toBeTruthy();
-
-    // Simuler le passage du temps
-    tick(2000);
-    expect(service.getCurrentTime()).toBeLessThan(duration);
-
-    // Arrêter le timer
-    service.stopTimer();
+    expect(service.isTimerRunning()).toBe(true);
+    
+    // Avancer le temps de 1 seconde
+    tick(1000);
+    expect(service.getCurrentTime()).toBe(duration - 1);
+    
+    // Avancer le temps jusqu'à la fin
+    tick(4000);
     expect(service.getCurrentTime()).toBe(0);
-    expect(service.isTimerRunning()).toBeFalsy();
+    expect(service.isTimerRunning()).toBe(false);
   }));
 
   it('should start synchronized timer correctly', fakeAsync(() => {
-    const serverTimestamp = Date.now() - 5000; // 5 secondes dans le passé
-    const duration = 30;
-    const phase = 'question';
-
+    const serverTimestamp = Date.now() - 2000; // 2 secondes dans le passé
+    const duration = 10;
+    const phase = 'synchronized';
+    
     service.startSynchronizedTimer(serverTimestamp, duration, phase);
-
-    // Le temps restant devrait être inférieur à la durée totale
-    expect(service.getCurrentTime()).toBeLessThanOrEqual(duration);
+    
+    expect(service.getCurrentTime()).toBe(duration - 2); // 10 - 2 = 8
     expect(service.getCurrentPhase()).toBe(phase);
-    expect(service.isTimerRunning()).toBeTruthy();
-
+    expect(service.isTimerRunning()).toBe(true);
+    
+    // Avancer le temps de 1 seconde
     tick(1000);
-    // Le temps devrait diminuer
-    const timeAfterTick = service.getCurrentTime();
-    expect(timeAfterTick).toBeLessThan(duration);
+    expect(service.getCurrentTime()).toBe(duration - 3); // 10 - 3 = 7
   }));
 
   it('should update from server correctly', () => {
-    const serverTimeLeft = 15;
-    const phase = 'answer';
-
-    service.updateFromServer(serverTimeLeft, phase);
-
-    expect(service.getCurrentTime()).toBe(serverTimeLeft);
-    expect(service.getCurrentPhase()).toBe(phase);
+    service.updateFromServer(15, 'server-update');
+    
+    expect(service.getCurrentTime()).toBe(15);
+    expect(service.getCurrentPhase()).toBe('server-update');
   });
 
-  it('should stop timer when server time is zero', () => {
-    const serverTimeLeft = 0;
-    const phase = 'finished';
-
-    service.updateFromServer(serverTimeLeft, phase);
-
+  it('should stop timer when server time is 0 or negative', () => {
+    service.startLocalTimer(10, 'playing');
+    expect(service.isTimerRunning()).toBe(true);
+    
+    service.updateFromServer(0, 'finished');
     expect(service.getCurrentTime()).toBe(0);
-    expect(service.getCurrentPhase()).toBe(phase);
-    expect(service.isTimerRunning()).toBeFalsy();
-  });
-
-  it('should handle negative server time', () => {
-    const serverTimeLeft = -5;
-    const phase = 'finished';
-
-    service.updateFromServer(serverTimeLeft, phase);
-
-    expect(service.getCurrentTime()).toBe(0);
-    expect(service.getCurrentPhase()).toBe(phase);
+    expect(service.isTimerRunning()).toBe(false);
   });
 
   it('should stop timer correctly', () => {
-    service.startLocalTimer(30, 'question');
-    expect(service.isTimerRunning()).toBeTruthy();
-
+    service.startLocalTimer(10, 'playing');
+    expect(service.isTimerRunning()).toBe(true);
+    
     service.stopTimer();
-
     expect(service.getCurrentTime()).toBe(0);
-    expect(service.isTimerRunning()).toBeFalsy();
+    expect(service.isTimerRunning()).toBe(false);
   });
 
-  it('should handle multiple timer starts', () => {
-    service.startLocalTimer(30, 'question');
-    expect(service.getCurrentTime()).toBe(30);
-
-    service.startLocalTimer(60, 'answer');
-    expect(service.getCurrentTime()).toBe(60);
-    expect(service.getCurrentPhase()).toBe('answer');
-  });
-
-  it('should emit observable values correctly', () => {
-    let timeLeftValues: number[] = [];
-    let phaseValues: string[] = [];
-    let runningValues: boolean[] = [];
-
-    service.getTimeLeft().subscribe(time => timeLeftValues.push(time));
-    service.getPhase().subscribe(phase => phaseValues.push(phase));
-    service.isRunning().subscribe(running => runningValues.push(running));
-
-    service.startLocalTimer(10, 'question');
-
-    expect(timeLeftValues).toContain(0); // Valeur initiale
-    expect(timeLeftValues).toContain(10); // Après démarrage
-    expect(phaseValues).toContain('waiting'); // Valeur initiale
-    expect(phaseValues).toContain('question'); // Après démarrage
-    expect(runningValues).toContain(false); // Valeur initiale
-    expect(runningValues).toContain(true); // Après démarrage
-  });
-
-  it('should handle timer expiration', fakeAsync(() => {
-    const duration = 1; // 1 seconde
-    const phase = 'question';
-
-    service.startLocalTimer(duration, phase);
-
-    // Attendre que le timer expire
-    tick(2000);
-
-    expect(service.getCurrentTime()).toBe(0);
-    expect(service.isTimerRunning()).toBeFalsy();
+  it('should handle multiple timer starts correctly', fakeAsync(() => {
+    // Premier timer
+    service.startLocalTimer(5, 'first');
+    expect(service.getCurrentTime()).toBe(5);
+    
+    // Deuxième timer (doit arrêter le premier)
+    service.startLocalTimer(10, 'second');
+    expect(service.getCurrentTime()).toBe(10);
+    expect(service.getCurrentPhase()).toBe('second');
+    
+    tick(1000);
+    expect(service.getCurrentTime()).toBe(9);
   }));
 
-  it('should destroy correctly', () => {
-    service.startLocalTimer(30, 'question');
-    expect(service.isTimerRunning()).toBeTruthy();
+  it('should handle negative time correctly', () => {
+    const serverTimestamp = Date.now() - 5000; // 5 secondes dans le passé
+    const duration = 3; // Plus court que le temps écoulé
+    
+    service.startSynchronizedTimer(serverTimestamp, duration, 'negative-test');
+    expect(service.getCurrentTime()).toBe(0); // Doit être 0, pas négatif
+  });
 
+  it('should emit time updates through observable', (done) => {
+    const timeValues: number[] = [];
+    let callCount = 0;
+    
+    service.getTimeLeft().subscribe((time: number) => {
+      timeValues.push(time);
+      callCount++;
+      
+      if (callCount >= 3) {
+        expect(timeValues[0]).toBe(5);
+        expect(timeValues[1]).toBe(4);
+        expect(timeValues[2]).toBe(3);
+        done();
+      }
+    });
+    
+    service.startLocalTimer(5, 'observable-test');
+    
+    // Simuler le passage du temps
+    setTimeout(() => {
+      service.startLocalTimer(4, 'observable-test');
+    }, 100);
+    
+    setTimeout(() => {
+      service.startLocalTimer(3, 'observable-test');
+    }, 200);
+  });
+
+  it('should emit phase updates through observable', (done) => {
+    const phaseValues: string[] = [];
+    service.getPhase().subscribe((phase: string) => {
+      phaseValues.push(phase);
+      if (phaseValues.length === 3) {
+        expect(phaseValues).toEqual(['waiting', 'playing', 'finished']);
+        done();
+      }
+    });
+    
+    service.startLocalTimer(5, 'playing');
+    service.updateFromServer(3, 'finished');
+  });
+
+  it('should emit running state updates through observable', (done) => {
+    const runningValues: boolean[] = [];
+    let callCount = 0;
+    
+    service.isRunning().subscribe((running: boolean) => {
+      runningValues.push(running);
+      callCount++;
+      
+      if (callCount >= 3) {
+        expect(runningValues[0]).toBe(false);
+        expect(runningValues[1]).toBe(true);
+        expect(runningValues[2]).toBe(false);
+        done();
+      }
+    });
+    
+    service.startLocalTimer(5, 'running-test');
+    service.stopTimer();
+  });
+
+  it('should destroy timer on destroy', () => {
+    service.startLocalTimer(10, 'destroy-test');
+    expect(service.isTimerRunning()).toBe(true);
+    
     service.destroy();
-
+    expect(service.isTimerRunning()).toBe(false);
     expect(service.getCurrentTime()).toBe(0);
-    expect(service.isTimerRunning()).toBeFalsy();
   });
 
-  it('should handle synchronized timer with future server timestamp', () => {
-    const serverTimestamp = Date.now() + 1000; // 1 seconde dans le futur
-    const duration = 30;
-    const phase = 'question';
+  it('should handle timer completion', fakeAsync(() => {
+    let completed = false;
+    service.getTimeLeft().subscribe((time: number) => {
+      if (time === 0) {
+        completed = true;
+      }
+    });
+    
+    service.startLocalTimer(1, 'completion-test');
+    tick(1000);
+    
+    expect(completed).toBe(true);
+    expect(service.getCurrentTime()).toBe(0);
+  }));
 
-    service.startSynchronizedTimer(serverTimestamp, duration, phase);
-
-    // Le temps restant devrait être proche de la durée totale (avec une marge pour les calculs)
-    expect(service.getCurrentTime()).toBeGreaterThan(duration - 2);
-    expect(service.getCurrentTime()).toBeLessThanOrEqual(duration + 2);
+  it('should handle multiple timer starts', () => {
+    service.startLocalTimer(5, 'test1');
+    expect(service.getCurrentTime()).toBe(5);
+    
+    service.startLocalTimer(10, 'test2');
+    expect(service.getCurrentTime()).toBe(10);
   });
 
-  it('should handle synchronized timer with old server timestamp', () => {
-    const serverTimestamp = Date.now() - 35000; // 35 secondes dans le passé
-    const duration = 30;
-    const phase = 'question';
+  it('should handle server update with different phase', () => {
+    service.startLocalTimer(5, 'playing');
+    expect(service.getCurrentPhase()).toBe('playing');
+    
+    service.updateFromServer(3, 'finished');
+    expect(service.getCurrentTime()).toBe(3);
+    expect(service.getCurrentPhase()).toBe('finished');
+  });
 
-    service.startSynchronizedTimer(serverTimestamp, duration, phase);
-
-    // Le temps devrait être expiré
-    expect(service.getCurrentTime()).toBe(0);
+  it('should handle stop timer when not running', () => {
+    expect(service.isTimerRunning()).toBe(false);
+    service.stopTimer();
+    expect(service.isTimerRunning()).toBe(false);
   });
 });

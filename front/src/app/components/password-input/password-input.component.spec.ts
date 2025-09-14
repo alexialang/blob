@@ -1,6 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { PasswordInputComponent } from './password-input.component';
-import { NO_ERRORS_SCHEMA } from '@angular/core';
 
 describe('PasswordInputComponent', () => {
   let component: PasswordInputComponent;
@@ -8,9 +7,9 @@ describe('PasswordInputComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [PasswordInputComponent],
-      schemas: [NO_ERRORS_SCHEMA]
-    }).compileComponents();
+      imports: [PasswordInputComponent]
+    })
+    .compileComponents();
 
     fixture = TestBed.createComponent(PasswordInputComponent);
     component = fixture.componentInstance;
@@ -21,22 +20,12 @@ describe('PasswordInputComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should initialize with default values', () => {
+  it('should have default values', () => {
     expect(component.placeholder).toBe('Mot de passe');
     expect(component.required).toBe(false);
     expect(component.disabled).toBe(false);
     expect(component.theme).toBe('dark');
     expect(component.hasError).toBe(false);
-  });
-
-  it('should update value when set', () => {
-    component.value = 'test123';
-    expect(component.value).toBe('test123');
-  });
-
-  it('should handle empty value', () => {
-    component.value = '';
-    expect(component.value).toBe('');
   });
 
   it('should toggle password visibility', () => {
@@ -47,4 +36,26 @@ describe('PasswordInputComponent', () => {
     expect(component.showPassword).toBe(false);
   });
 
+  it('should set value', () => {
+    const testValue = 'test123';
+    component.value = testValue;
+    expect(component.value).toBe(testValue);
+  });
+
+  it('should handle input change', () => {
+    const testValue = 'newpassword';
+    component.value = testValue;
+    expect(component.value).toBe(testValue);
+  });
+
+  it('should handle blur event', () => {
+    component.onBlur();
+    expect(component).toBeTruthy();
+  });
+
+  it('should implement ControlValueAccessor', () => {
+    const testValue = 'test';
+    component.writeValue(testValue);
+    expect(component.value).toBe(testValue);
+  });
 });

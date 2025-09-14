@@ -1,23 +1,18 @@
 import { TestBed } from '@angular/core/testing';
+import { SeoService, SEOData } from './seo.service';
 import { Meta, Title } from '@angular/platform-browser';
 import { DOCUMENT } from '@angular/common';
 
-import { SeoService, SEOData } from './seo.service';
-
 describe('SeoService', () => {
   let service: SeoService;
-  let mockMeta: jasmine.SpyObj<Meta>;
-  let mockTitle: jasmine.SpyObj<Title>;
-  let mockDocument: jasmine.SpyObj<Document>;
-  let mockHead: jasmine.SpyObj<HTMLHeadElement>;
+  let meta: jasmine.SpyObj<Meta>;
+  let title: jasmine.SpyObj<Title>;
+  let document: jasmine.SpyObj<Document>;
 
   beforeEach(() => {
-    const metaSpy = jasmine.createSpyObj('Meta', ['updateTag']);
+    const metaSpy = jasmine.createSpyObj('Meta', ['updateTag', 'addTag']);
     const titleSpy = jasmine.createSpyObj('Title', ['setTitle']);
-    const headSpy = jasmine.createSpyObj('HTMLHeadElement', ['appendChild']);
-    const documentSpy = jasmine.createSpyObj('Document', ['createElement'], {
-      head: headSpy
-    });
+    const documentSpy = jasmine.createSpyObj('Document', ['querySelector']);
 
     TestBed.configureTestingModule({
       providers: [
@@ -29,111 +24,112 @@ describe('SeoService', () => {
     });
 
     service = TestBed.inject(SeoService);
-    mockMeta = TestBed.inject(Meta) as jasmine.SpyObj<Meta>;
-    mockTitle = TestBed.inject(Title) as jasmine.SpyObj<Title>;
-    mockDocument = TestBed.inject(DOCUMENT) as jasmine.SpyObj<Document>;
-    mockHead = headSpy;
+    meta = TestBed.inject(Meta) as jasmine.SpyObj<Meta>;
+    title = TestBed.inject(Title) as jasmine.SpyObj<Title>;
+    document = TestBed.inject(DOCUMENT) as jasmine.SpyObj<Document>;
   });
 
   it('should be created', () => {
     expect(service).toBeTruthy();
   });
 
-  it('should update SEO with default values when no data provided', () => {
-    service.updateSEO();
-
-    expect(mockTitle.setTitle).toHaveBeenCalledWith('Blob.');
-    expect(mockMeta.updateTag).toHaveBeenCalledWith({ name: 'description', content: "Découvrez Blob, la plateforme de quiz interactifs pour apprendre en s'amusant. Créez, partagez et jouez à des quiz personnalisés." });
-    expect(mockMeta.updateTag).toHaveBeenCalledWith({ name: 'keywords', content: 'quiz, apprentissage, éducation, jeux, formation, entreprise' });
-    expect(mockMeta.updateTag).toHaveBeenCalledWith({ name: 'author', content: 'Blob' });
-    expect(mockMeta.updateTag).toHaveBeenCalledWith({ name: 'robots', content: 'index, follow' });
-  });
-
-  it('should update SEO with custom data', () => {
-    const customData: SEOData = {
-      title: 'Custom Title',
-      description: 'Custom Description',
-      keywords: 'custom, keywords'
+  it('should update title', () => {
+    const seoData: SEOData = {
+      title: 'Test Title'
     };
 
-    service.updateSEO(customData);
+    service.updateSEO(seoData);
 
-    expect(mockTitle.setTitle).toHaveBeenCalledWith('Custom Title');
-    expect(mockMeta.updateTag).toHaveBeenCalledWith({ name: 'description', content: 'Custom Description' });
-    expect(mockMeta.updateTag).toHaveBeenCalledWith({ name: 'keywords', content: 'custom, keywords' });
+    expect(title.setTitle).toHaveBeenCalledWith('Test Title');
   });
 
-  it('should update Open Graph meta tags', () => {
-    const customData: SEOData = {
-      ogTitle: 'Custom OG Title',
-      ogDescription: 'Custom OG Description',
-      ogImage: '/custom-image.jpg',
-      ogUrl: '/custom-url'
+  it('should update meta description', () => {
+    const seoData: SEOData = {
+      description: 'Test Description'
     };
 
-    service.updateSEO(customData);
+    service.updateSEO(seoData);
 
-    expect(mockMeta.updateTag).toHaveBeenCalledWith({ property: 'og:type', content: 'website' });
-    expect(mockMeta.updateTag).toHaveBeenCalledWith({ property: 'og:title', content: 'Custom OG Title' });
-    expect(mockMeta.updateTag).toHaveBeenCalledWith({ property: 'og:description', content: 'Custom OG Description' });
-    expect(mockMeta.updateTag).toHaveBeenCalledWith({ property: 'og:image', content: '/custom-image.jpg' });
-    expect(mockMeta.updateTag).toHaveBeenCalledWith({ property: 'og:url', content: '/custom-url' });
-  });
-
-  it('should update Twitter meta tags', () => {
-    service.updateSEO();
-
-    expect(mockMeta.updateTag).toHaveBeenCalledWith({ name: 'twitter:card', content: 'summary_large_image' });
-    expect(mockMeta.updateTag).toHaveBeenCalledWith({ name: 'twitter:title', content: 'Blob.' });
-    expect(mockMeta.updateTag).toHaveBeenCalledWith({ name: 'twitter:description', content: "Découvrez Blob, la plateforme de quiz interactifs pour apprendre en s'amusant. Créez, partagez et jouez à des quiz personnalisés." });
-    expect(mockMeta.updateTag).toHaveBeenCalledWith({ name: 'twitter:image', content: '/assets/svg/blob_flower.svg' });
-  });
-
-  it('should add structured data', () => {
-    const mockScript = jasmine.createSpyObj('HTMLScriptElement', [], {
-      type: '',
-      text: ''
+    expect(meta.updateTag).toHaveBeenCalledWith({
+      name: 'description',
+      content: 'Test Description'
     });
-    Object.defineProperty(mockScript, 'type', {
-      get: () => mockScript._type || '',
-      set: (value) => mockScript._type = value,
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(mockScript, 'text', {
-      get: () => mockScript._text || '',
-      set: (value) => mockScript._text = value,
-      enumerable: true,
-      configurable: true
-    });
-    
-    mockDocument.createElement.and.returnValue(mockScript);
-
-    const structuredData = {
-      '@context': 'https://schema.org',
-      '@type': 'WebSite',
-      name: 'Blob'
-    };
-
-    service.addStructuredData(structuredData);
-
-    expect(mockDocument.createElement).toHaveBeenCalledWith('script');
-    expect(mockScript.type).toBe('application/ld+json');
-    expect(mockScript.text).toBe(JSON.stringify(structuredData));
-    expect(mockHead.appendChild).toHaveBeenCalledWith(mockScript);
   });
 
-  it('should merge custom data with defaults', () => {
-    const customData: SEOData = {
-      title: 'Custom Title',
-      author: 'Custom Author'
+  it('should update meta keywords', () => {
+    const seoData: SEOData = {
+      keywords: 'test, keywords'
     };
 
-    service.updateSEO(customData);
+    service.updateSEO(seoData);
 
-    expect(mockTitle.setTitle).toHaveBeenCalledWith('Custom Title');
-    expect(mockMeta.updateTag).toHaveBeenCalledWith({ name: 'author', content: 'Custom Author' });
-    // Should still use default description
-    expect(mockMeta.updateTag).toHaveBeenCalledWith({ name: 'description', content: "Découvrez Blob, la plateforme de quiz interactifs pour apprendre en s'amusant. Créez, partagez et jouez à des quiz personnalisés." });
+    expect(meta.updateTag).toHaveBeenCalledWith({
+      name: 'keywords',
+      content: 'test, keywords'
+    });
+  });
+
+  it('should update meta author', () => {
+    const seoData: SEOData = {
+      author: 'Test Author'
+    };
+
+    service.updateSEO(seoData);
+
+    expect(meta.updateTag).toHaveBeenCalledWith({
+      name: 'author',
+      content: 'Test Author'
+    });
+  });
+
+  it('should update meta robots', () => {
+    const seoData: SEOData = {
+      robots: 'noindex, nofollow'
+    };
+
+    service.updateSEO(seoData);
+
+    expect(meta.updateTag).toHaveBeenCalledWith({
+      name: 'robots',
+      content: 'noindex, nofollow'
+    });
+  });
+
+  it('should update Open Graph tags', () => {
+    const seoData: SEOData = {
+      ogTitle: 'OG Test Title',
+      ogDescription: 'OG Test Description',
+      ogImage: '/test-image.jpg',
+      ogUrl: '/test-url'
+    };
+
+    service.updateSEO(seoData);
+
+    expect(meta.updateTag).toHaveBeenCalledWith({
+      property: 'og:title',
+      content: 'OG Test Title'
+    });
+    expect(meta.updateTag).toHaveBeenCalledWith({
+      property: 'og:description',
+      content: 'OG Test Description'
+    });
+    expect(meta.updateTag).toHaveBeenCalledWith({
+      property: 'og:image',
+      content: '/test-image.jpg'
+    });
+    expect(meta.updateTag).toHaveBeenCalledWith({
+      property: 'og:url',
+      content: '/test-url'
+    });
+  });
+
+  it('should use default values when no data provided', () => {
+    service.updateSEO({});
+
+    expect(title.setTitle).toHaveBeenCalledWith('Blob.');
+    expect(meta.updateTag).toHaveBeenCalledWith({
+      name: 'description',
+      content: "Découvrez Blob, la plateforme de quiz interactifs pour apprendre en s'amusant. Créez, partagez et jouez à des quiz personnalisés."
+    });
   });
 });

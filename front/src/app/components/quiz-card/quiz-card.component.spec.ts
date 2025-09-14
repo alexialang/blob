@@ -182,4 +182,104 @@ describe('QuizCardComponent', () => {
 
     expect(component.getCompanyBadgeText()).toBe('');
   });
+
+  it('should return true for isGuest when authService.isGuest returns true', () => {
+    mockAuthService.isGuest.and.returnValue(true);
+    expect(component.isGuest).toBe(true);
+  });
+
+  it('should return false for isGuest when authService.isGuest returns false', () => {
+    mockAuthService.isGuest.and.returnValue(false);
+    expect(component.isGuest).toBe(false);
+  });
+
+  it('should start team quiz without transition', async () => {
+    spyOn(component.quizStart, 'emit');
+    component.quiz = {
+      id: 1,
+      title: 'Test Quiz',
+      description: 'Test Description',
+      is_public: true,
+      company: 'Test Company',
+      category: 'Technology',
+      difficulty: 'Facile',
+      rating: 4.5,
+      questionCount: 10,
+      isFlipped: false,
+      playMode: 'team'
+    } as QuizCard;
+
+    await component.startQuiz();
+
+    expect(mockQuizTransitionService.startTransition).not.toHaveBeenCalled();
+    expect(component.quizStart.emit).toHaveBeenCalledWith(component.quiz);
+  });
+
+  it('should not toggle play mode when user is guest', () => {
+    spyOn(component.playModeChange, 'emit');
+    mockAuthService.isGuest.and.returnValue(true);
+    component.quiz = {
+      id: 1,
+      title: 'Test Quiz',
+      description: 'Test Description',
+      is_public: true,
+      company: 'Test Company',
+      category: 'Technology',
+      difficulty: 'Facile',
+      rating: 4.5,
+      questionCount: 10,
+      isFlipped: false,
+      playMode: 'solo'
+    } as QuizCard;
+
+    component.togglePlayMode();
+
+    expect(component.playModeChange.emit).not.toHaveBeenCalled();
+  });
+
+  it('should return empty string when quiz is not public but has no groupName', () => {
+    component.quiz = {
+      id: 1,
+      title: 'Test Quiz',
+      description: 'Test Description',
+      is_public: false,
+      company: 'Test Company',
+      category: 'Technology',
+      difficulty: 'Facile',
+      rating: 4.5,
+      questionCount: 10,
+      isFlipped: false,
+      playMode: 'solo'
+    } as QuizCard;
+
+    expect(component.getCompanyBadgeText()).toBe('');
+  });
+
+  it('should assign different colors for different indices', () => {
+    component.quiz = {
+      id: 1,
+      title: 'Test Quiz',
+      description: 'Test Description',
+      is_public: true,
+      company: 'Test Company',
+      category: 'Technology',
+      difficulty: 'Facile',
+      rating: 4.5,
+      questionCount: 10,
+      isFlipped: false,
+      playMode: 'solo'
+    } as QuizCard;
+
+    component.index = 0;
+    component.rowIndex = 0;
+    component.ngOnInit();
+    const color1 = component.cardColor;
+
+    component.index = 1;
+    component.rowIndex = 0;
+    component.ngOnInit();
+    const color2 = component.cardColor;
+
+    expect(color1).not.toBe(color2);
+  });
 });

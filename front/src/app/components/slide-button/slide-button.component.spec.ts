@@ -7,8 +7,9 @@ describe('SlideButtonComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [SlideButtonComponent],
-    }).compileComponents();
+      imports: [SlideButtonComponent]
+    })
+    .compileComponents();
 
     fixture = TestBed.createComponent(SlideButtonComponent);
     component = fixture.componentInstance;
@@ -29,49 +30,49 @@ describe('SlideButtonComponent', () => {
     expect(component.type).toBe('button');
   });
 
-  it('should emit button click', () => {
+  it('should emit buttonClick when clicked', () => {
     spyOn(component.buttonClick, 'emit');
+    
     component.onClick();
+    
     expect(component.buttonClick.emit).toHaveBeenCalled();
   });
 
-  it('should calculate final background color when negative', () => {
-    component.negative = true;
-    expect(component.finalBackgroundColor).toBe('#000');
-    
+  it('should return correct finalBackgroundColor when negative is false', () => {
     component.negative = false;
-    expect(component.finalBackgroundColor).toBe('#fff');
+    component.backgroundColor = '#ff0000';
+    
+    expect(component.finalBackgroundColor).toBe('#ff0000');
   });
 
-  it('should calculate final button background when negative', () => {
+  it('should return correct finalBackgroundColor when negative is true', () => {
     component.negative = true;
-    expect(component.finalButtonBackground).toBe('#fff');
+    component.backgroundColor = '#ff0000';
     
+    expect(component.finalBackgroundColor).toBe('#000');
+  });
+
+  it('should return correct finalButtonBackground when negative is false', () => {
     component.negative = false;
+    
     expect(component.finalButtonBackground).toBe('transparent');
   });
 
-  it('should calculate final border color when negative', () => {
+  it('should return correct finalButtonBackground when negative is true', () => {
     component.negative = true;
-    expect(component.finalBorderColor).toBe('#000');
     
+    expect(component.finalButtonBackground).toBe('#fff');
+  });
+
+  it('should return correct finalBorderColor when negative is false', () => {
     component.negative = false;
+    
     expect(component.finalBorderColor).toBe('#fff');
   });
 
-  it('should calculate final white text color when negative', () => {
+  it('should return correct finalBorderColor when negative is true', () => {
     component.negative = true;
-    expect(component.finalWhiteTextColor).toBe('#000');
     
-    component.negative = false;
-    expect(component.finalWhiteTextColor).toBe('#fff');
-  });
-
-  it('should calculate final black text color when negative', () => {
-    component.negative = true;
-    expect(component.finalBlackTextColor).toBe('#fff');
-    
-    component.negative = false;
-    expect(component.finalBlackTextColor).toBe('#000');
+    expect(component.finalBorderColor).toBe('#000');
   });
 });

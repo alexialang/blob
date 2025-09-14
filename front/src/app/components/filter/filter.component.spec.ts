@@ -1,7 +1,4 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
-
 import { FilterComponent } from './filter.component';
 
 describe('FilterComponent', () => {
@@ -10,8 +7,9 @@ describe('FilterComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [FilterComponent, FormsModule, CommonModule],
-    }).compileComponents();
+      imports: [FilterComponent]
+    })
+    .compileComponents();
 
     fixture = TestBed.createComponent(FilterComponent);
     component = fixture.componentInstance;
@@ -22,23 +20,24 @@ describe('FilterComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should emit filter change on input change', () => {
-    spyOn(component.filterChange, 'emit');
-
-    component.onFilterChange('test', 'value');
-
-    expect(component.filters['test']).toBe('value');
-    expect(component.filterChange.emit).toHaveBeenCalledWith(component.filters);
+  it('should have default values', () => {
+    expect(component.filterOptions).toEqual([]);
+    expect(component.filters).toEqual({});
   });
 
-  it('should handle multiple filter options', () => {
-    component.filterOptions = [
-      { label: 'Category', options: ['Option1', 'Option2'] },
-      { label: 'Difficulty', options: ['Easy', 'Hard'] },
-    ];
+  it('should emit filter change when filter is updated', () => {
+    spyOn(component.filterChange, 'emit');
+    component.onFilterChange('difficulty', 'easy');
+    expect(component.filters['difficulty']).toBe('easy');
+    expect(component.filterChange.emit).toHaveBeenCalledWith({ difficulty: 'easy' });
+  });
 
-    fixture.detectChanges();
-
-    expect(component.filterOptions.length).toBe(2);
+  it('should update multiple filters', () => {
+    spyOn(component.filterChange, 'emit');
+    component.onFilterChange('difficulty', 'medium');
+    component.onFilterChange('category', 'science');
+    expect(component.filters['difficulty']).toBe('medium');
+    expect(component.filters['category']).toBe('science');
+    expect(component.filterChange.emit).toHaveBeenCalledTimes(2);
   });
 });

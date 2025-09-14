@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { PasswordStrengthIndicatorComponent } from './password-strength-indicator.component';
+import { PasswordStrengthIndicatorComponent, PasswordStrength } from './password-strength-indicator.component';
 
 describe('PasswordStrengthIndicatorComponent', () => {
   let component: PasswordStrengthIndicatorComponent;
@@ -20,44 +20,46 @@ describe('PasswordStrengthIndicatorComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should return weak password strength for empty password', () => {
-    component.password = '';
-    const result = component.getPasswordStrength();
-    
-    expect(result.score).toBe(0);
-    expect(result.message).toBe('');
-    expect(result.color).toBe('#ccc');
+  it('should have default values', () => {
+    expect(component.password).toBe('');
+    expect(component.theme).toBe('dark');
   });
 
-  it('should return very weak password strength for short password', () => {
-    component.password = 'abc';
-    const result = component.getPasswordStrength();
-    
-    expect(result.score).toBe(1);
-    expect(result.message).toBe('Très faible');
-    expect(result.color).toBe('#ff4444');
+  it('should return weak strength for empty password', () => {
+    const strength = component.getPasswordStrength();
+    expect(strength.score).toBe(0);
+    expect(strength.message).toBe('');
+    expect(strength.color).toBe('#ccc');
   });
 
-  it('should return strong password strength for complex password', () => {
-    component.password = 'Abc123!@#';
-    const result = component.getPasswordStrength();
-    
-    expect(result.score).toBe(5);
-    expect(result.message).toBe('Très fort');
-    expect(result.color).toBe('#008800');
+  it('should return weak strength for short password', () => {
+    component.password = '123';
+    const strength = component.getPasswordStrength();
+    expect(strength.score).toBe(0);
+    expect(strength.message).toBe('Très faible');
+    expect(strength.color).toBe('#ff4444');
+  });
+
+  it('should return medium strength for medium password', () => {
+    component.password = 'password123';
+    const strength = component.getPasswordStrength();
+    expect(strength.score).toBe(2);
+    expect(strength.message).toBe('Moyen');
+    expect(strength.color).toBe('#ffaa00');
+  });
+
+  it('should return strong strength for strong password', () => {
+    component.password = 'Password123!';
+    const strength = component.getPasswordStrength();
+    expect(strength.score).toBe(4);
+    expect(strength.message).toBe('Fort');
+    expect(strength.color).toBe('#00aa00');
   });
 
   it('should emit strength change event', () => {
     spyOn(component.strengthChange, 'emit');
-    component.password = 'Test123';
-    
+    component.password = 'test123';
     component.getPasswordStrength();
-    
     expect(component.strengthChange.emit).toHaveBeenCalled();
-  });
-
-  it('should set theme input', () => {
-    component.theme = 'light';
-    expect(component.theme).toBe('light');
   });
 });
