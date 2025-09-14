@@ -194,10 +194,15 @@ async function prerender() {
 
     console.log('Stop server...');
     server.kill('SIGTERM');
-
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    // Attendre que le serveur se ferme complètement
+    await new Promise(resolve => {
+      server.on('close', resolve);
+      setTimeout(resolve, 3000); // Timeout de sécurité
+    });
 
     console.log('Pre-render finished !');
+    process.exit(0);
   }
 }
 
