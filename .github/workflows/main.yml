@@ -138,13 +138,11 @@ jobs:
     #   working-directory: ./front
     #   run: npm run e2e
 
-    - name: Build application
+    - name: Build application and prerender
       working-directory: ./front
-      run: npm run build
-
-    - name: Run prerender
-      working-directory: ./front
-      run: node scripts/prerender.js
+      run: |
+        npm run build
+        node scripts/prerender.js
 
     - name: Frontend Success notification
       run: |

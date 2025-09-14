@@ -63,7 +63,7 @@ async function prerender() {
   });
 
   console.log('The server is starting...');
-  await new Promise(resolve => setTimeout(resolve, 5000));
+  await new Promise(resolve => setTimeout(resolve, 2000));
 
   let browser;
   try {
@@ -137,7 +137,7 @@ async function prerender() {
           });
         }
 
-        await new Promise(resolve => setTimeout(resolve, 3000));
+        await new Promise(resolve => setTimeout(resolve, 1000));
 
         const currentUrl = await page.url();
         const currentPath = new URL(currentUrl).pathname;
