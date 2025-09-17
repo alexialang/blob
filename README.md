@@ -46,7 +46,7 @@ Blob transforme les évaluations en expériences stimulantes grâce à :
 | Fonctionnalité | Capture                                       | Description |
 |----------------|-----------------------------------------------|-------------|
 | **Connexion Sécurisée** | ![Connexion](docs/images/connexion.png)       | Authentification JWT + validation |
-| **Inscription** | ![Inscription](docs/images/inscription.png)   | reCAPTCHA v3 + validation email |
+| **Inscription** | ![Inscription](docs/images/inscription.png)   | reCAPTCHA v2 + validation email |
 | **Dashboard Quiz** | ![Dashboard](docs/images/dashboard.png)       | Filtrage par catégorie et difficulté |
 | **Administration** | ![Admin](docs/images/manage-user.png)         | Gestion multi-tenant des utilisateurs |
 | **Création Quiz** | ![Création](docs/images/quiz-creation.png)    | 7 types de questions supportés |
@@ -202,7 +202,7 @@ Le projet suit une approche inspirée de la méthode Agile avec :
 - **SSR + SEO** : Pré-rendu Puppeteer des pages publiques pour l'indexation
 - **Analytics Respectueux** : Simple Analytics (RGPD-compliant) + analytics locales anonymisées
 - **Rate Limiting** : Système custom anti-brute force spécifique au login
-- **reCAPTCHA v3** : Score minimum 0.5 pour inscription et reset password
+- **reCAPTCHA v2** : Score minimum 0.5 pour inscription et reset password
 - **CORS sécurisé** : Configuration Nelmio avec domaines autorisés
 - **Email automatisé** : Confirmation d'inscription via Symfony Messenger
 - **Paiements Stripe** : Système de dons avec PaymentLinks
@@ -224,7 +224,7 @@ Le projet suit une approche inspirée de la méthode Agile avec :
 
 #### **Protection Anti-Attaques**
 - **Rate limiting** : 5 tentatives de connexion max par IP (blocage 15min)
-- **reCAPTCHA v3** : Score minimum 0.5 sur inscription et reset password
+- **reCAPTCHA v2** : Score minimum 0.5 sur inscription et reset password
 - **CORS** : Domaines autorisés uniquement (`blob.dev.local`)
 - **Stateless** : API sans session, tokens JWT uniquement
 
@@ -399,7 +399,7 @@ server {
 - **Développement Full Stack** : Angular 19 + Symfony 7.2
 - **SEO avancé** : SSR Puppeteer, méta-tags dynamiques, sitemap
 - **Analytics** : Simple Analytics (RGPD), tracking respectueux de la vie privée
-- **Sécurité** : Protection login sur-mesure, reCAPTCHA v3, JWT refresh
+- **Sécurité** : Protection login sur-mesure, reCAPTCHA v2, JWT refresh
 - **Paiements** : Intégration Stripe PaymentLinks, webhooks
 - **Performance** : Optimisation des temps de chargement
 - **Monitoring** : Logging Monolog, health checks, métriques
