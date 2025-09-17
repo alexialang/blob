@@ -14,14 +14,14 @@ describe('BlindTestQuestionComponent', () => {
     answers: [
       { id: 1, answer: 'Chanson A', is_correct: true },
       { id: 2, answer: 'Chanson B', is_correct: false },
-      { id: 3, answer: 'Chanson C', is_correct: false }
-    ]
+      { id: 3, answer: 'Chanson C', is_correct: false },
+    ],
   } as any;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [BlindTestQuestionComponent],
-      schemas: [NO_ERRORS_SCHEMA]
+      schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
 
     fixture = TestBed.createComponent(BlindTestQuestionComponent);
@@ -53,9 +53,9 @@ describe('BlindTestQuestionComponent', () => {
   it('should select answer', () => {
     spyOn(component.answerSelected, 'emit');
     const answerId = 1;
-    
+
     component.selectAnswer(answerId);
-    
+
     expect(component.selectedAnswerId).toBe(answerId);
     expect(component.answerSelected.emit).toHaveBeenCalledWith(answerId);
   });
@@ -63,27 +63,27 @@ describe('BlindTestQuestionComponent', () => {
   it('should validate answer', () => {
     spyOn(component.answerValidated, 'emit');
     component.selectedAnswerId = 1;
-    
+
     component.validateAnswer();
-    
+
     expect(component.answerValidated.emit).toHaveBeenCalled();
   });
 
   it('should not validate answer if none selected', () => {
     spyOn(component.answerValidated, 'emit');
     component.selectedAnswerId = null;
-    
+
     component.validateAnswer();
-    
+
     expect(component.answerValidated.emit).not.toHaveBeenCalled();
   });
 
   it('should toggle play/pause', () => {
     component.isPlaying = false;
-    
+
     component.togglePlayPause();
     expect(component.isPlaying).toBe(true);
-    
+
     component.togglePlayPause();
     expect(component.isPlaying).toBe(false);
   });
@@ -91,18 +91,18 @@ describe('BlindTestQuestionComponent', () => {
   it('should clear interval on destroy', () => {
     spyOn(window, 'clearInterval');
     component.intervalId = 123;
-    
+
     component.ngOnDestroy();
-    
+
     expect(window.clearInterval).toHaveBeenCalledWith(123);
   });
 
   it('should not clear interval if none exists', () => {
     spyOn(window, 'clearInterval');
     component.intervalId = null;
-    
+
     component.ngOnDestroy();
-    
+
     expect(window.clearInterval).not.toHaveBeenCalled();
   });
 });

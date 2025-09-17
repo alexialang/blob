@@ -24,3 +24,6 @@ describe('Blob Application', () => {
     cy.get('.privacy-consent-banner').should('be.visible');
   });
 });
+
+
+

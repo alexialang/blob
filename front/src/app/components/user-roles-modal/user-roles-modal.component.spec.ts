@@ -10,7 +10,7 @@ describe('UserRolesModalComponent', () => {
     name: 'Test User',
     email: 'test@example.com',
     roles: ['ROLE_USER'],
-    permissions: ['VIEW_RESULTS']
+    permissions: ['VIEW_RESULTS'],
   };
 
   const mockRoles: UserRole[] = [
@@ -18,23 +18,22 @@ describe('UserRolesModalComponent', () => {
       id: 1,
       name: 'ROLE_ADMIN',
       description: 'Administrateur',
-      permissions: ['CREATE_QUIZ', 'MANAGE_USERS', 'VIEW_RESULTS']
+      permissions: ['CREATE_QUIZ', 'MANAGE_USERS', 'VIEW_RESULTS'],
     },
     {
       id: 2,
       name: 'ROLE_USER',
       description: 'Utilisateur',
-      permissions: ['VIEW_RESULTS']
-    }
+      permissions: ['VIEW_RESULTS'],
+    },
   ];
 
   const mockPermissions = ['CREATE_QUIZ', 'MANAGE_USERS', 'VIEW_RESULTS'];
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [UserRolesModalComponent]
-    })
-    .compileComponents();
+      imports: [UserRolesModalComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(UserRolesModalComponent);
     component = fixture.componentInstance;
@@ -56,7 +55,7 @@ describe('UserRolesModalComponent', () => {
   it('should toggle role selection', () => {
     component.toggleRole('ROLE_ADMIN');
     expect(component.selectedRoles.has('ROLE_ADMIN')).toBe(true);
-    
+
     component.toggleRole('ROLE_ADMIN');
     expect(component.selectedRoles.has('ROLE_ADMIN')).toBe(false);
   });
@@ -64,7 +63,7 @@ describe('UserRolesModalComponent', () => {
   it('should clear permissions when admin role is removed', () => {
     component.selectedRoles.add('ROLE_ADMIN');
     component.selectedPermissions.add('CREATE_QUIZ');
-    
+
     component.toggleRole('ROLE_ADMIN');
     expect(component.selectedPermissions.size).toBe(0);
   });
@@ -77,7 +76,7 @@ describe('UserRolesModalComponent', () => {
   it('should toggle permission selection', () => {
     component.togglePermission('CREATE_QUIZ');
     expect(component.selectedPermissions.has('CREATE_QUIZ')).toBe(true);
-    
+
     component.togglePermission('CREATE_QUIZ');
     expect(component.selectedPermissions.has('CREATE_QUIZ')).toBe(false);
   });
@@ -103,7 +102,7 @@ describe('UserRolesModalComponent', () => {
 
   it('should check if permission is disabled', () => {
     expect(component.isPermissionDisabled()).toBe(false);
-    
+
     component.selectedRoles.add('ROLE_ADMIN');
     expect(component.isPermissionDisabled()).toBe(true);
   });
@@ -114,13 +113,13 @@ describe('UserRolesModalComponent', () => {
     component.selectedRoles.add('ROLE_ADMIN');
     component.selectedPermissions.clear();
     component.selectedPermissions.add('CREATE_QUIZ');
-    
+
     component.onSave();
-    
+
     expect(component.saveChanges.emit).toHaveBeenCalledWith({
       userId: mockUser.id,
       roles: ['ROLE_ADMIN'],
-      permissions: ['CREATE_QUIZ']
+      permissions: ['CREATE_QUIZ'],
     });
   });
 

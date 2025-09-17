@@ -86,7 +86,7 @@ export class QuizCreationComponent implements OnInit {
   ngOnInit(): void {
     this.generateRandomColor();
     this.quizForm = this.createQuizForm();
-    
+
     // Charger d'abord les types de questions
     this.loadTypeQuestions().then(() => {
       this.loadCategories();
@@ -444,7 +444,7 @@ export class QuizCreationComponent implements OnInit {
         console.log('DEBUG: Question reçue:', q);
         console.log('DEBUG: Type de question:', q.type_question);
         console.log('DEBUG: TypeQuestions disponibles:', this.typeQuestions);
-        
+
         let questionTypeKey = '';
         if (typeof q.type_question === 'object' && q.type_question !== null) {
           // Utiliser le name du backend (ex: "QCM") au lieu de la key
@@ -619,8 +619,9 @@ export class QuizCreationComponent implements OnInit {
    */
   private getTypeQuestionId(typeKey: string): number {
     // Chercher d'abord par name (format backend), puis par key (fallback)
-    const typeQuestion = this.typeQuestions.find(t => t.name === typeKey) || 
-                        this.typeQuestions.find(t => t.key === typeKey);
+    const typeQuestion =
+      this.typeQuestions.find(t => t.name === typeKey) ||
+      this.typeQuestions.find(t => t.key === typeKey);
 
     // Convertir l'ID en nombre si c'est une string
     const rawId = typeQuestion ? typeQuestion.id : 0;

@@ -16,14 +16,14 @@ describe('MatchingQuestionComponent', () => {
       { id: 1, answer: 'Answer A', is_correct: true },
       { id: 2, answer: 'Answer B', is_correct: false },
       { id: 3, answer: 'Answer C', is_correct: false },
-      { id: 4, answer: 'Answer D', is_correct: false }
-    ]
+      { id: 4, answer: 'Answer D', is_correct: false },
+    ],
   };
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [MatchingQuestionComponent],
-      schemas: [NO_ERRORS_SCHEMA]
+      schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
 
     fixture = TestBed.createComponent(MatchingQuestionComponent);
@@ -86,7 +86,7 @@ describe('MatchingQuestionComponent', () => {
   it('should check if can validate', () => {
     component.leftColumn = [
       { id: 1, answer: 'A', is_correct: true },
-      { id: 2, answer: 'B', is_correct: false }
+      { id: 2, answer: 'B', is_correct: false },
     ];
     component.matches = { '1': '3', '2': '4' };
     expect(component.canValidate()).toBe(true);
@@ -95,7 +95,7 @@ describe('MatchingQuestionComponent', () => {
   it('should not validate when matches are incomplete', () => {
     component.leftColumn = [
       { id: 1, answer: 'A', is_correct: true },
-      { id: 2, answer: 'B', is_correct: false }
+      { id: 2, answer: 'B', is_correct: false },
     ];
     component.matches = { '1': '3' };
     expect(component.canValidate()).toBe(false);
@@ -117,9 +117,9 @@ describe('MatchingQuestionComponent', () => {
     spyOn(component as any, 'setupCanvas');
     spyOn(component as any, 'setupEventListeners');
     spyOn(component as any, 'setupTouchOptimization');
-    
+
     component.ngAfterViewInit();
-    
+
     expect((component as any).setupCanvas).toHaveBeenCalled();
     expect((component as any).setupEventListeners).toHaveBeenCalled();
     expect((component as any).setupTouchOptimization).toHaveBeenCalled();

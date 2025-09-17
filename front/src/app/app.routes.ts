@@ -9,19 +9,16 @@ import {
 } from './guards/permission.guard';
 import { quizAccessGuard } from './guards/quiz-access.guard';
 
-// Import critical components
+// Import only critical components for initial load
 import { LoginComponent } from './pages/login/login.component';
-import { QuizCardsComponent } from './pages/quiz-cards/quiz-cards.component';
 import { NotFoundComponent } from './pages/not-found/not-found.component';
-import { RegistrationComponent } from './pages/registration/registration.component';
-import { UserProfileComponent } from './pages/user-profile/user-profile.component';
-import { LeaderboardComponent } from './pages/leaderboard/leaderboard.component';
 
 export const routes: Routes = [
   { path: 'connexion', component: LoginComponent, data: { hideNavbar: true } },
   {
     path: 'inscription',
-    component: RegistrationComponent,
+    loadComponent: () =>
+      import('./pages/registration/registration.component').then(m => m.RegistrationComponent),
     data: { hideNavbar: true },
   },
 
@@ -63,12 +60,14 @@ export const routes: Routes = [
   },
   {
     path: 'quiz',
-    component: QuizCardsComponent,
+    loadComponent: () =>
+      import('./pages/quiz-cards/quiz-cards.component').then(m => m.QuizCardsComponent),
     canActivate: [quizAccessGuard],
   },
   {
     path: 'profil',
-    component: UserProfileComponent,
+    loadComponent: () =>
+      import('./pages/user-profile/user-profile.component').then(m => m.UserProfileComponent),
     canActivate: [authGuard],
   },
   {
@@ -81,12 +80,14 @@ export const routes: Routes = [
   },
   {
     path: 'profil/:id',
-    component: UserProfileComponent,
+    loadComponent: () =>
+      import('./pages/user-profile/user-profile.component').then(m => m.UserProfileComponent),
     canActivate: [authGuard, manageUsersGuard],
   },
   {
     path: 'classement',
-    component: LeaderboardComponent,
+    loadComponent: () =>
+      import('./pages/leaderboard/leaderboard.component').then(m => m.LeaderboardComponent),
     canActivate: [authGuard],
   },
   {

@@ -1,5 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { PasswordStrengthIndicatorComponent, PasswordStrength } from './password-strength-indicator.component';
+import {
+  PasswordStrengthIndicatorComponent,
+  PasswordStrength,
+} from './password-strength-indicator.component';
 
 describe('PasswordStrengthIndicatorComponent', () => {
   let component: PasswordStrengthIndicatorComponent;
@@ -7,9 +10,8 @@ describe('PasswordStrengthIndicatorComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [PasswordStrengthIndicatorComponent]
-    })
-    .compileComponents();
+      imports: [PasswordStrengthIndicatorComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(PasswordStrengthIndicatorComponent);
     component = fixture.componentInstance;

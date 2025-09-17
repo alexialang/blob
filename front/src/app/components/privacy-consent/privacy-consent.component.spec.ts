@@ -10,14 +10,12 @@ describe('PrivacyConsentComponent', () => {
   beforeEach(async () => {
     mockPrivacyAnalyticsService = jasmine.createSpyObj('PrivacyAnalyticsService', [
       'initializeAnalytics',
-      'trackEvent'
+      'trackEvent',
     ]);
 
     await TestBed.configureTestingModule({
       imports: [PrivacyConsentComponent],
-      providers: [
-        { provide: PrivacyAnalyticsService, useValue: mockPrivacyAnalyticsService }
-      ]
+      providers: [{ provide: PrivacyAnalyticsService, useValue: mockPrivacyAnalyticsService }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(PrivacyConsentComponent);
@@ -34,6 +32,4 @@ describe('PrivacyConsentComponent', () => {
     component.ngOnInit();
     expect(component.showConsentBanner).toBe(true);
   });
-
-
 });

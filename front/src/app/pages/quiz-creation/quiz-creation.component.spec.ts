@@ -14,22 +14,22 @@ describe('QuizCreationComponent', () => {
 
   const mockTypeQuestions = [
     { id: 1, name: 'Question ouverte', key: 'open' },
-    { id: 2, name: 'Question à choix multiples', key: 'multiple_choice' }
+    { id: 2, name: 'Question à choix multiples', key: 'multiple_choice' },
   ];
 
   const mockCategories = [
     { id: 1, name: 'Géographie' },
-    { id: 2, name: 'Histoire' }
+    { id: 2, name: 'Histoire' },
   ];
 
   const mockGroups = [
     { id: 1, name: 'Groupe 1' },
-    { id: 2, name: 'Groupe 2' }
+    { id: 2, name: 'Groupe 2' },
   ];
 
   const mockStatuses = [
     { id: 1, name: 'Brouillon', value: 'draft' },
-    { id: 2, name: 'Publié', value: 'published' }
+    { id: 2, name: 'Publié', value: 'published' },
   ];
 
   const mockQuiz = {
@@ -47,10 +47,10 @@ describe('QuizCreationComponent', () => {
         difficulty: 'easy',
         answers: [
           { answer: 'Answer 1', is_correct: true },
-          { answer: 'Answer 2', is_correct: false }
-        ]
-      }
-    ]
+          { answer: 'Answer 2', is_correct: false },
+        ],
+      },
+    ],
   };
 
   beforeEach(async () => {
@@ -62,13 +62,13 @@ describe('QuizCreationComponent', () => {
       'getQuiz',
       'getQuizForEdit',
       'createQuiz',
-      'updateQuiz'
+      'updateQuiz',
     ]);
 
     mockRouter = jasmine.createSpyObj('Router', ['navigate']);
 
     mockActivatedRoute = {
-      params: of({})
+      params: of({}),
     };
 
     await TestBed.configureTestingModule({
@@ -77,8 +77,8 @@ describe('QuizCreationComponent', () => {
         FormBuilder,
         { provide: QuizManagementService, useValue: mockQuizService },
         { provide: Router, useValue: mockRouter },
-        { provide: ActivatedRoute, useValue: mockActivatedRoute }
-      ]
+        { provide: ActivatedRoute, useValue: mockActivatedRoute },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(QuizCreationComponent);
@@ -158,9 +158,9 @@ describe('QuizCreationComponent', () => {
   it('should add question to form', () => {
     const initialLength = component.questions.length;
     component.addQuestion();
-    
+
     expect(component.questions.length).toBe(initialLength + 1);
-    
+
     const newQuestion = component.questions.at(component.questions.length - 1);
     expect(newQuestion.get('question')?.hasError('required')).toBe(true);
     expect(newQuestion.get('type_question')?.hasError('required')).toBe(true);
@@ -171,12 +171,14 @@ describe('QuizCreationComponent', () => {
     component.addQuestion();
     const questionIndex = component.questions.length - 1;
     const initialAnswersLength = component.getAnswers(questionIndex).length;
-    
+
     component.addAnswer(questionIndex);
-    
+
     expect(component.getAnswers(questionIndex).length).toBe(initialAnswersLength + 1);
-    
-    const newAnswer = component.getAnswers(questionIndex).at(component.getAnswers(questionIndex).length - 1);
+
+    const newAnswer = component
+      .getAnswers(questionIndex)
+      .at(component.getAnswers(questionIndex).length - 1);
     expect(newAnswer.get('answer')?.hasError('required')).toBe(true);
     expect(newAnswer.get('is_correct')?.value).toBe(false);
   });
@@ -185,17 +187,17 @@ describe('QuizCreationComponent', () => {
     component.addQuestion();
     component.addQuestion();
     const initialLength = component.questions.length;
-    
+
     component.removeQuestion(0);
-    
+
     expect(component.questions.length).toBe(initialLength - 1);
   });
 
   it('should not remove question if only one left', () => {
     const initialLength = component.questions.length;
-    
+
     component.removeQuestion(0);
-    
+
     expect(component.questions.length).toBe(initialLength);
   });
 
@@ -204,9 +206,9 @@ describe('QuizCreationComponent', () => {
     const questionIndex = component.questions.length - 1;
     component.addAnswer(questionIndex);
     const initialAnswersLength = component.getAnswers(questionIndex).length;
-    
+
     component.removeAnswer(questionIndex, 0);
-    
+
     expect(component.getAnswers(questionIndex).length).toBe(initialAnswersLength - 1);
   });
 
@@ -214,27 +216,27 @@ describe('QuizCreationComponent', () => {
     component.addQuestion();
     const questionIndex = component.questions.length - 1;
     const initialAnswersLength = component.getAnswers(questionIndex).length;
-    
+
     component.removeAnswer(questionIndex, 0);
-    
+
     expect(component.getAnswers(questionIndex).length).toBe(initialAnswersLength);
   });
 
   it('should filter categories based on search', () => {
     component.categories = mockCategories;
     component.categorySearch = 'Géo';
-    
+
     component.filterCategories();
-    
+
     expect(component.filteredCategories.length).toBe(1);
     expect(component.filteredCategories[0].name).toBe('Géographie');
   });
 
   it('should select category', () => {
     const category = mockCategories[0];
-    
+
     component.selectCategory(category);
-    
+
     expect(component.selectedCategory).toBe(category);
     expect(component.quizForm.get('category')?.value).toBe(category.id);
     expect(component.categorySearch).toBe(category.name);
@@ -243,9 +245,9 @@ describe('QuizCreationComponent', () => {
 
   it('should toggle category dropdown', () => {
     component.showCategoryDropdown = false;
-    
+
     component.showCategoryDropdown = true;
-    
+
     expect(component.showCategoryDropdown).toBe(true);
   });
 
@@ -253,12 +255,12 @@ describe('QuizCreationComponent', () => {
     component.showCategoryDropdown = true;
     const mockEvent = {
       target: {
-        closest: jasmine.createSpy('closest').and.returnValue(null)
-      }
+        closest: jasmine.createSpy('closest').and.returnValue(null),
+      },
     } as any;
-    
+
     component.onDocumentClick(mockEvent);
-    
+
     expect(component.showCategoryDropdown).toBe(false);
   });
 
@@ -266,48 +268,48 @@ describe('QuizCreationComponent', () => {
     component.showCategoryDropdown = true;
     const mockEvent = {
       target: {
-        closest: jasmine.createSpy('closest').and.returnValue({})
-      }
+        closest: jasmine.createSpy('closest').and.returnValue({}),
+      },
     } as any;
-    
+
     component.onDocumentClick(mockEvent);
-    
+
     expect(component.showCategoryDropdown).toBe(true);
   });
 
   it('should get answers for question', () => {
     component.addQuestion();
     const questionIndex = 0;
-    
+
     const answers = component.getAnswers(questionIndex);
-    
+
     expect(answers).toBeDefined();
     expect(answers.length).toBeGreaterThan(0);
   });
 
   it('should validate form before submission', () => {
     expect(component.quizForm.valid).toBe(false);
-    
+
     component.quizForm.patchValue({
       title: 'Test Quiz',
       description: 'Test Description',
-      category: mockCategories[0]
+      category: mockCategories[0],
     });
-    
+
     if (component.questions.length > 0) {
       component.questions.at(0).patchValue({
         question: 'Test question?',
-        type_question: mockTypeQuestions[0]
+        type_question: mockTypeQuestions[0],
       });
     }
-    
+
     if (component.questions.length > 0 && component.getAnswers(0).length > 0) {
       component.getAnswers(0).at(0).patchValue({
         answer: 'Test answer',
-        is_correct: true
+        is_correct: true,
       });
     }
-    
+
     expect(component.quizForm.valid).toBe(true);
   });
 
@@ -315,12 +317,12 @@ describe('QuizCreationComponent', () => {
     component.quizForm.patchValue({
       title: 'Test Quiz',
       description: 'Test Description',
-      category: mockCategories[0]
+      category: mockCategories[0],
     });
-    
+
     component.onSubmit();
     tick();
-    
+
     expect(mockQuizService.createQuiz).toHaveBeenCalled();
     expect(mockRouter.navigate).toHaveBeenCalledWith(['/quiz']);
   }));
@@ -328,16 +330,16 @@ describe('QuizCreationComponent', () => {
   it('should submit quiz in edit mode', fakeAsync(() => {
     component.isEditMode = true;
     component.quizId = 1;
-    
+
     component.quizForm.patchValue({
       title: 'Updated Quiz',
       description: 'Updated Description',
-      category: mockCategories[0]
+      category: mockCategories[0],
     });
-    
+
     component.onSubmit();
     tick();
-    
+
     expect(mockQuizService.updateQuiz).toHaveBeenCalledWith(1, jasmine.any(Object));
     expect(mockRouter.navigate).toHaveBeenCalledWith(['/quiz']);
   }));
@@ -345,16 +347,16 @@ describe('QuizCreationComponent', () => {
   it('should handle submission error', fakeAsync(() => {
     mockQuizService.createQuiz.and.returnValue(throwError(() => new Error('API Error')));
     spyOn(console, 'error');
-    
+
     component.quizForm.patchValue({
       title: 'Test Quiz',
       description: 'Test Description',
-      category: mockCategories[0]
+      category: mockCategories[0],
     });
-    
+
     component.onSubmit();
     tick();
-    
+
     expect(console.error).toHaveBeenCalled();
     expect(component.isSubmitting).toBe(false);
   }));
@@ -362,9 +364,9 @@ describe('QuizCreationComponent', () => {
   it('should handle question type change', () => {
     component.addQuestion();
     const questionIndex = 0;
-    
+
     component.onQuestionTypeChange(questionIndex);
-    
+
     // Should clear existing answers and initialize new ones
     expect(component.getAnswers(questionIndex).length).toBeGreaterThan(0);
   });
@@ -373,12 +375,12 @@ describe('QuizCreationComponent', () => {
     component.addQuestion();
     const questionIndex = 0;
     const answerIndex = 0;
-    
+
     // Set the answer as correct first
     component.getAnswers(questionIndex).at(answerIndex).get('is_correct')?.setValue(true);
-    
+
     component.onCorrectAnswerChange(questionIndex, answerIndex);
-    
+
     // For MCQ type, other answers should be set to false
     expect(component.getAnswers(questionIndex).at(answerIndex).get('is_correct')?.value).toBe(true);
   });
@@ -393,9 +395,9 @@ describe('QuizCreationComponent', () => {
   it('should handle true false correct answer change', () => {
     component.addQuestion();
     const questionIndex = component.questions.length - 1;
-    
+
     component.onTrueFalseCorrectAnswerChange(questionIndex, true);
-    
+
     const answers = component.getAnswers(questionIndex);
     expect(answers.at(0).get('is_correct')?.value).toBe(true);
     expect(answers.at(1).get('is_correct')?.value).toBe(false);
@@ -404,15 +406,15 @@ describe('QuizCreationComponent', () => {
   it('should get true false correct answer', () => {
     component.addQuestion();
     const questionIndex = component.questions.length - 1;
-    
+
     const result = component.getTrueFalseCorrectAnswer(questionIndex);
-    
+
     expect(typeof result).toBe('boolean');
   });
 
   it('should cancel and navigate back', () => {
     component.cancel();
-    
+
     expect(mockRouter.navigate).toHaveBeenCalledWith(['/quiz-management']);
   });
 });

@@ -25,9 +25,7 @@ describe('ConfirmAccountComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [ConfirmAccountComponent, HttpClientTestingModule],
-      providers: [
-        { provide: ActivatedRoute, useValue: mockActivatedRoute },
-      ],
+      providers: [{ provide: ActivatedRoute, useValue: mockActivatedRoute }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ConfirmAccountComponent);

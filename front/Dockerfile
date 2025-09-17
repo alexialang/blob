@@ -29,8 +29,14 @@ COPY . .
 # Analyse statique
 RUN npm run quality:lint
 
-# Build de production
-RUN npm run build
+# Build de production ultra-optimisé
+RUN npm run build:ultra
+
+# Purger le CSS inutilisé
+RUN node scripts/purge-css.js
+
+# Ajouter le préchargement des ressources critiques
+RUN node scripts/preload-critical.js
 
 # Run Nginx for prod
 FROM nginx:stable-alpine AS prod

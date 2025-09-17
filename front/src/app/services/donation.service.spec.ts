@@ -31,13 +31,13 @@ describe('DonationService', () => {
       amount: 1000,
       currency: 'eur',
       description: 'Donation for Blob',
-      customerEmail: 'test@example.com'
+      customerEmail: 'test@example.com',
     };
 
     const mockResponse = {
       paymentLinkId: 'plink_123',
       url: 'https://checkout.stripe.com/pay/plink_123',
-      success: true
+      success: true,
     };
 
     service.createPaymentLink(donationRequest).subscribe(response => {
@@ -55,14 +55,14 @@ describe('DonationService', () => {
       amount: 1000,
       currency: 'eur',
       description: 'Donation for Blob',
-      customerEmail: 'test@example.com'
+      customerEmail: 'test@example.com',
     };
 
     service.createPaymentLink(donationRequest).subscribe({
       next: () => fail('Should have failed'),
-      error: (error) => {
+      error: error => {
         expect(error).toBeTruthy();
-      }
+      },
     });
 
     const req = httpMock.expectOne(`${environment.apiBaseUrl}/donations/create-payment-link`);
@@ -74,7 +74,7 @@ describe('DonationService', () => {
       amount: 500,
       currency: 'eur',
       description: 'Valid donation',
-      customerEmail: 'test@example.com'
+      customerEmail: 'test@example.com',
     };
 
     service.createPaymentLink(validDonation).subscribe(response => {
@@ -90,14 +90,14 @@ describe('DonationService', () => {
       amount: 1000,
       currency: 'eur',
       description: 'Donation for Blob',
-      customerEmail: 'test@example.com'
+      customerEmail: 'test@example.com',
     };
 
     service.createPaymentLink(donationRequest).subscribe({
       next: () => fail('Should have failed'),
-      error: (error) => {
+      error: error => {
         expect(error).toBeTruthy();
-      }
+      },
     });
 
     const req = httpMock.expectOne(`${environment.apiBaseUrl}/donations/create-payment-link`);
@@ -109,7 +109,7 @@ describe('DonationService', () => {
       amount: 1000,
       currency: 'usd',
       description: 'USD donation',
-      customerEmail: 'test@example.com'
+      customerEmail: 'test@example.com',
     };
 
     service.createPaymentLink(donationRequest).subscribe(response => {
@@ -124,7 +124,7 @@ describe('DonationService', () => {
     const donationRequest = {
       amount: 1000,
       currency: 'eur',
-      description: 'Donation without email'
+      description: 'Donation without email',
     };
 
     service.createPaymentLink(donationRequest).subscribe(response => {

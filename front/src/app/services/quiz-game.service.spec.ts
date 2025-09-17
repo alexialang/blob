@@ -14,10 +14,7 @@ describe('QuizGameService', () => {
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      providers: [
-        QuizGameService,
-        { provide: AuthService, useValue: authServiceSpy }
-      ],
+      providers: [QuizGameService, { provide: AuthService, useValue: authServiceSpy }],
     });
 
     service = TestBed.inject(QuizGameService);
@@ -39,7 +36,7 @@ describe('QuizGameService', () => {
       id: 1,
       title: 'Test Quiz',
       description: 'Test Description',
-      questions: []
+      questions: [],
     };
 
     service.loadQuiz(1).subscribe(quiz => {
@@ -63,7 +60,7 @@ describe('QuizGameService', () => {
     expect(req.request.method).toBe('POST');
     expect(req.request.body).toEqual({
       quiz_id: 1,
-      total_score: 85
+      total_score: 85,
     });
     req.flush(mockResponse);
   });
@@ -87,7 +84,7 @@ describe('QuizGameService', () => {
       error: error => {
         expect(error.status).toBe(500);
         expect(error.statusText).toBe('Internal Server Error');
-      }
+      },
     });
 
     const req = httpMock.expectOne(`${environment.apiBaseUrl}/user-answer/game-result`);
@@ -99,7 +96,7 @@ describe('QuizGameService', () => {
       id: 2,
       title: 'Another Quiz',
       description: 'Another Description',
-      questions: []
+      questions: [],
     };
 
     service.loadQuiz(2).subscribe(quiz => {
@@ -132,7 +129,7 @@ describe('QuizGameService', () => {
     const req = httpMock.expectOne(`${environment.apiBaseUrl}/user-answer/game-result`);
     expect(req.request.body).toEqual({
       quiz_id: 1,
-      total_score: 0
+      total_score: 0,
     });
     req.flush(mockResponse);
   });
@@ -148,7 +145,7 @@ describe('QuizGameService', () => {
     const req = httpMock.expectOne(`${environment.apiBaseUrl}/user-answer/game-result`);
     expect(req.request.body).toEqual({
       quiz_id: 1,
-      total_score: -10
+      total_score: -10,
     });
     req.flush(mockResponse);
   });
@@ -159,7 +156,7 @@ describe('QuizGameService', () => {
       error: error => {
         expect(error.status).toBe(404);
         expect(error.statusText).toBe('Not Found');
-      }
+      },
     });
 
     const req = httpMock.expectOne(`${environment.apiBaseUrl}/quiz/999`);
@@ -168,10 +165,10 @@ describe('QuizGameService', () => {
 
   it('should clear sessionStorage before saving new guest score', () => {
     mockAuthService.isGuest.and.returnValue(true);
-    
+
     // Set initial value
     sessionStorage.setItem('guest-quiz-score', '50');
-    
+
     service.saveGameResult(1, 90).subscribe();
 
     expect(sessionStorage.getItem('guest-quiz-score')).toBe('90');

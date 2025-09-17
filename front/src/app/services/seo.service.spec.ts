@@ -19,8 +19,8 @@ describe('SeoService', () => {
         SeoService,
         { provide: Meta, useValue: metaSpy },
         { provide: Title, useValue: titleSpy },
-        { provide: DOCUMENT, useValue: documentSpy }
-      ]
+        { provide: DOCUMENT, useValue: documentSpy },
+      ],
     });
 
     service = TestBed.inject(SeoService);
@@ -35,7 +35,7 @@ describe('SeoService', () => {
 
   it('should update title', () => {
     const seoData: SEOData = {
-      title: 'Test Title'
+      title: 'Test Title',
     };
 
     service.updateSEO(seoData);
@@ -45,53 +45,53 @@ describe('SeoService', () => {
 
   it('should update meta description', () => {
     const seoData: SEOData = {
-      description: 'Test Description'
+      description: 'Test Description',
     };
 
     service.updateSEO(seoData);
 
     expect(meta.updateTag).toHaveBeenCalledWith({
       name: 'description',
-      content: 'Test Description'
+      content: 'Test Description',
     });
   });
 
   it('should update meta keywords', () => {
     const seoData: SEOData = {
-      keywords: 'test, keywords'
+      keywords: 'test, keywords',
     };
 
     service.updateSEO(seoData);
 
     expect(meta.updateTag).toHaveBeenCalledWith({
       name: 'keywords',
-      content: 'test, keywords'
+      content: 'test, keywords',
     });
   });
 
   it('should update meta author', () => {
     const seoData: SEOData = {
-      author: 'Test Author'
+      author: 'Test Author',
     };
 
     service.updateSEO(seoData);
 
     expect(meta.updateTag).toHaveBeenCalledWith({
       name: 'author',
-      content: 'Test Author'
+      content: 'Test Author',
     });
   });
 
   it('should update meta robots', () => {
     const seoData: SEOData = {
-      robots: 'noindex, nofollow'
+      robots: 'noindex, nofollow',
     };
 
     service.updateSEO(seoData);
 
     expect(meta.updateTag).toHaveBeenCalledWith({
       name: 'robots',
-      content: 'noindex, nofollow'
+      content: 'noindex, nofollow',
     });
   });
 
@@ -100,26 +100,26 @@ describe('SeoService', () => {
       ogTitle: 'OG Test Title',
       ogDescription: 'OG Test Description',
       ogImage: '/test-image.jpg',
-      ogUrl: '/test-url'
+      ogUrl: '/test-url',
     };
 
     service.updateSEO(seoData);
 
     expect(meta.updateTag).toHaveBeenCalledWith({
       property: 'og:title',
-      content: 'OG Test Title'
+      content: 'OG Test Title',
     });
     expect(meta.updateTag).toHaveBeenCalledWith({
       property: 'og:description',
-      content: 'OG Test Description'
+      content: 'OG Test Description',
     });
     expect(meta.updateTag).toHaveBeenCalledWith({
       property: 'og:image',
-      content: '/test-image.jpg'
+      content: '/test-image.jpg',
     });
     expect(meta.updateTag).toHaveBeenCalledWith({
       property: 'og:url',
-      content: '/test-url'
+      content: '/test-url',
     });
   });
 
@@ -129,7 +129,8 @@ describe('SeoService', () => {
     expect(title.setTitle).toHaveBeenCalledWith('Blob.');
     expect(meta.updateTag).toHaveBeenCalledWith({
       name: 'description',
-      content: "Découvrez Blob, la plateforme de quiz interactifs pour apprendre en s'amusant. Créez, partagez et jouez à des quiz personnalisés."
+      content:
+        "Découvrez Blob, la plateforme de quiz interactifs pour apprendre en s'amusant. Créez, partagez et jouez à des quiz personnalisés.",
     });
   });
 });

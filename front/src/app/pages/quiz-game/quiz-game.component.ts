@@ -508,11 +508,11 @@ export class QuizGameComponent implements OnInit, OnDestroy {
               rank++;
             }
           }
-          
+
           this.playerRank = rank;
           this.totalPlayers = this.totalPlayers + 1;
         }
-        
+
         this.isLoadingLeaderboard = false;
       },
       error: error => {

@@ -20,10 +20,10 @@ describe('QuizTransitionService', () => {
     let positionValue: any = null;
     let exitingValue: boolean = false;
 
-    service.showTransition$.subscribe(show => showValue = show);
-    service.currentQuiz$.subscribe(quiz => quizValue = quiz);
-    service.cardPosition$.subscribe(position => positionValue = position);
-    service.isExiting$.subscribe(exiting => exitingValue = exiting);
+    service.showTransition$.subscribe(show => (showValue = show));
+    service.currentQuiz$.subscribe(quiz => (quizValue = quiz));
+    service.cardPosition$.subscribe(position => (positionValue = position));
+    service.isExiting$.subscribe(exiting => (exitingValue = exiting));
 
     expect(showValue).toBe(false);
     expect(quizValue).toBeNull();
@@ -34,15 +34,15 @@ describe('QuizTransitionService', () => {
   it('should start transition', () => {
     const mockQuiz = { id: 1, title: 'Test Quiz' } as QuizCard;
     const mockElement = document.createElement('div');
-    
+
     service.startTransition(mockQuiz, mockElement, 'red');
-    
+
     let showValue: boolean = false;
     let quizValue: any = null;
-    
-    service.showTransition$.subscribe(show => showValue = show);
-    service.currentQuiz$.subscribe(quiz => quizValue = quiz);
-    
+
+    service.showTransition$.subscribe(show => (showValue = show));
+    service.currentQuiz$.subscribe(quiz => (quizValue = quiz));
+
     expect(showValue).toBe(true);
     expect(quizValue).toEqual(mockQuiz);
   });
@@ -57,10 +57,10 @@ describe('QuizTransitionService', () => {
   it('should handle quiz data', () => {
     const mockQuiz = { id: 1, title: 'Test Quiz' } as QuizCard;
     service['_currentQuiz'].next(mockQuiz);
-    
+
     let quizValue: any = null;
-    service.currentQuiz$.subscribe(quiz => quizValue = quiz);
-    
+    service.currentQuiz$.subscribe(quiz => (quizValue = quiz));
+
     expect(quizValue).toEqual(mockQuiz);
   });
 });

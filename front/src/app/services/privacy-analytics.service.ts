@@ -106,8 +106,6 @@ export class PrivacyAnalyticsService {
     }
   }
 
-
-
   /**
    * Méthodes de tracking spécifiques pour l'application
    */

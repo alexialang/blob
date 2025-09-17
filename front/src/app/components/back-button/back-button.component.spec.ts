@@ -17,10 +17,9 @@ describe('BackButtonComponent', () => {
       imports: [BackButtonComponent],
       providers: [
         { provide: Router, useValue: routerSpy },
-        { provide: Location, useValue: locationSpy }
-      ]
-    })
-    .compileComponents();
+        { provide: Location, useValue: locationSpy },
+      ],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(BackButtonComponent);
     component = fixture.componentInstance;
@@ -39,7 +38,7 @@ describe('BackButtonComponent', () => {
   it('should go back when history length > 1', () => {
     Object.defineProperty(window, 'history', {
       value: { length: 2 },
-      writable: true
+      writable: true,
     });
 
     component.goBack();
@@ -51,7 +50,7 @@ describe('BackButtonComponent', () => {
   it('should navigate to fallback route when history length <= 1', () => {
     Object.defineProperty(window, 'history', {
       value: { length: 1 },
-      writable: true
+      writable: true,
     });
 
     component.goBack();
@@ -64,7 +63,7 @@ describe('BackButtonComponent', () => {
     component.fallbackRoute = '/custom-route';
     Object.defineProperty(window, 'history', {
       value: { length: 1 },
-      writable: true
+      writable: true,
     });
 
     component.goBack();

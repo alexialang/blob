@@ -16,10 +16,7 @@ describe('UserService', () => {
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      providers: [
-        UserService,
-        { provide: AuthService, useValue: authServiceSpy }
-      ]
+      providers: [UserService, { provide: AuthService, useValue: authServiceSpy }],
     });
 
     service = TestBed.inject(UserService);
@@ -49,7 +46,7 @@ describe('UserService', () => {
       dateRegistration: '2023-01-01',
       isAdmin: false,
       isActive: true,
-      isVerified: true
+      isVerified: true,
     };
 
     service.setCurrentUser(mockUser);
@@ -70,7 +67,7 @@ describe('UserService', () => {
       dateRegistration: '2023-01-01',
       isAdmin: false,
       isActive: true,
-      isVerified: true
+      isVerified: true,
     };
 
     service.setCurrentUser(mockUser);
@@ -93,7 +90,7 @@ describe('UserService', () => {
       dateRegistration: '2023-01-01',
       isAdmin: false,
       isActive: true,
-      isVerified: true
+      isVerified: true,
     };
 
     service.getUserProfile().subscribe(user => {
@@ -119,7 +116,7 @@ describe('UserService', () => {
       dateRegistration: '2023-01-01',
       isAdmin: false,
       isActive: true,
-      isVerified: true
+      isVerified: true,
     };
 
     mockAuthService.hasPermission.and.returnValue(of(true));
@@ -138,9 +135,9 @@ describe('UserService', () => {
 
     service.getUserProfileById(2).subscribe({
       next: () => fail('Should have thrown an error'),
-      error: (error) => {
+      error: error => {
         expect(error.message).toBe('Permission VIEW_RESULTS requise');
-      }
+      },
     });
   });
 
@@ -159,7 +156,7 @@ describe('UserService', () => {
       dateRegistration: '2023-01-01',
       isAdmin: false,
       isActive: true,
-      isVerified: true
+      isVerified: true,
     };
 
     service.updateUserProfile(updateData).subscribe(user => {

@@ -2,7 +2,12 @@ import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { of, throwError } from 'rxjs';
 
-import { QuizResultsService, QuizResult, QuizRating, QuizLeaderboard } from './quiz-results.service';
+import {
+  QuizResultsService,
+  QuizResult,
+  QuizRating,
+  QuizLeaderboard,
+} from './quiz-results.service';
 import { AuthService } from './auth.service';
 import { environment } from '../../environments/environment';
 
@@ -18,10 +23,7 @@ describe('QuizResultsService', () => {
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      providers: [
-        QuizResultsService,
-        { provide: AuthService, useValue: authServiceSpy },
-      ],
+      providers: [QuizResultsService, { provide: AuthService, useValue: authServiceSpy }],
     });
     service = TestBed.inject(QuizResultsService);
     httpMock = TestBed.inject(HttpTestingController);
@@ -147,9 +149,9 @@ describe('QuizResultsService', () => {
     const result: QuizResult = { quizId: 1, score: 85 };
 
     service.saveQuizResult(result).subscribe({
-      error: (error) => {
+      error: error => {
         expect(error).toBeTruthy();
-      }
+      },
     });
 
     const req = httpMock.expectOne(`${environment.apiBaseUrl}/user-answer/game-result`);

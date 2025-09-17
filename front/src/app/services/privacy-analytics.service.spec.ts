@@ -7,7 +7,7 @@ describe('PrivacyAnalyticsService', () => {
   beforeEach(() => {
     // Mock window.umami
     (window as any).umami = {
-      track: jasmine.createSpy('track')
+      track: jasmine.createSpy('track'),
     };
 
     TestBed.configureTestingModule({});
@@ -24,7 +24,7 @@ describe('PrivacyAnalyticsService', () => {
 
     const event: AnalyticsEvent = {
       name: 'test_event',
-      properties: { test: 'value' }
+      properties: { test: 'value' },
     };
 
     // Should not throw error
@@ -34,7 +34,7 @@ describe('PrivacyAnalyticsService', () => {
   it('should not track when analytics is disabled', () => {
     const event: AnalyticsEvent = {
       name: 'test_event',
-      properties: { test: 'value' }
+      properties: { test: 'value' },
     };
 
     // Disable analytics
@@ -48,7 +48,7 @@ describe('PrivacyAnalyticsService', () => {
   it('should handle umami track error gracefully', () => {
     const event: AnalyticsEvent = {
       name: 'test_event',
-      properties: { test: 'value' }
+      properties: { test: 'value' },
     };
 
     // Mock umami.track to throw an error
@@ -58,4 +58,3 @@ describe('PrivacyAnalyticsService', () => {
     expect(() => service.trackEvent(event)).not.toThrow();
   });
 });
-

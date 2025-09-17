@@ -23,9 +23,7 @@ describe('ResetPasswordComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [ResetPasswordComponent, HttpClientTestingModule],
-      providers: [
-        { provide: ActivatedRoute, useValue: mockActivatedRoute },
-      ],
+      providers: [{ provide: ActivatedRoute, useValue: mockActivatedRoute }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ResetPasswordComponent);

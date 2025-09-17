@@ -16,11 +16,11 @@ describe('AppComponent', () => {
     navigationSubject = new Subject();
     mockRouter = jasmine.createSpyObj('Router', ['navigate'], {
       events: navigationSubject.asObservable(),
-      routerState: { 
-        root: { 
+      routerState: {
+        root: {
           children: [],
-          snapshot: { data: {} }
-        } 
+          snapshot: { data: {} },
+        },
       },
     });
     mockAuthService = jasmine.createSpyObj('AuthService', ['loginStatus$', 'isLoggedIn']);
@@ -52,74 +52,74 @@ describe('AppComponent', () => {
   it('should show navbar when route does not hide it', () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
-    
+
     // Initialize component to set up the subscription
     app.ngOnInit();
-    
+
     // Simulate navigation event without hideNavbar
     const navigationEnd = new NavigationEnd(1, '/test', '/test');
     navigationSubject.next(navigationEnd);
-    
+
     expect(app.showNavbar).toBe(true);
   });
 
   it('should hide navbar when route has hideNavbar data', () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
-    
+
     // Initialize component to set up the subscription
     app.ngOnInit();
-    
+
     // Mock route with hideNavbar data
     const mockRoute = {
       snapshot: { data: { hideNavbar: true } },
-      children: []
+      children: [],
     };
     (mockRouter.routerState as any).root = mockRoute;
-    
+
     // Simulate navigation event
     const navigationEnd = new NavigationEnd(1, '/test', '/test');
     navigationSubject.next(navigationEnd);
-    
+
     expect(app.showNavbar).toBe(false);
   });
 
   it('should track page view on navigation', () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
-    
+
     // Initialize component to set up the subscription
     app.ngOnInit();
-    
+
     // Simulate navigation event
     const navigationEnd = new NavigationEnd(1, '/test-page', '/test-page');
     navigationSubject.next(navigationEnd);
-    
+
     expect(mockAnalyticsService.trackPageView).toHaveBeenCalledWith('/test-page', document.title);
   });
 
   it('should handle nested routes correctly', () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
-    
+
     // Initialize component to set up the subscription
     app.ngOnInit();
-    
+
     // Mock nested route structure
     const mockChildRoute = {
       snapshot: { data: { hideNavbar: false } },
-      children: []
+      children: [],
     };
     const mockParentRoute = {
       snapshot: { data: {} },
-      children: [mockChildRoute]
+      children: [mockChildRoute],
     };
     (mockRouter.routerState as any).root = mockParentRoute;
-    
+
     // Simulate navigation event
     const navigationEnd = new NavigationEnd(1, '/nested/route', '/nested/route');
     navigationSubject.next(navigationEnd);
-    
+
     expect(app.showNavbar).toBe(true);
   });
 });

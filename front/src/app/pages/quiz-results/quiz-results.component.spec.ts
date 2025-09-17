@@ -18,9 +18,7 @@ describe('QuizResultsComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [QuizResultsComponent, HttpClientTestingModule],
-      providers: [
-        { provide: ActivatedRoute, useValue: mockActivatedRoute },
-      ],
+      providers: [{ provide: ActivatedRoute, useValue: mockActivatedRoute }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(QuizResultsComponent);
@@ -32,8 +30,3 @@ describe('QuizResultsComponent', () => {
     expect(component).toBeTruthy();
   });
 });
-
-
-
-
-

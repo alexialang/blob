@@ -21,10 +21,9 @@ describe('AddCompanyModalComponent', () => {
       providers: [
         { provide: CompanyService, useValue: mockCompanyService },
         { provide: TuiDialogService, useValue: mockDialogService },
-        { provide: TuiAlertService, useValue: mockAlertService }
-      ]
-    })
-    .compileComponents();
+        { provide: TuiAlertService, useValue: mockAlertService },
+      ],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(AddCompanyModalComponent);
     component = fixture.componentInstance;
@@ -49,9 +48,9 @@ describe('AddCompanyModalComponent', () => {
     component.companyName = '';
     spyOn(component.companyCreated, 'emit');
     mockCompanyService.createCompany.and.returnValue(of({ id: 1, name: 'Test' }));
-    
+
     component.save();
-    
+
     expect(mockCompanyService.createCompany).not.toHaveBeenCalled();
     expect(component.companyCreated.emit).not.toHaveBeenCalled();
   });
@@ -60,9 +59,9 @@ describe('AddCompanyModalComponent', () => {
     component.companyName = '   ';
     spyOn(component.companyCreated, 'emit');
     mockCompanyService.createCompany.and.returnValue(of({ id: 1, name: 'Test' }));
-    
+
     component.save();
-    
+
     expect(mockCompanyService.createCompany).not.toHaveBeenCalled();
     expect(component.companyCreated.emit).not.toHaveBeenCalled();
   });
@@ -73,11 +72,13 @@ describe('AddCompanyModalComponent', () => {
     mockCompanyService.createCompany.and.returnValue(of(mockCompany));
     mockAlertService.open.and.returnValue(of({}));
     spyOn(component.companyCreated, 'emit');
-    
+
     component.save();
-    
+
     expect(mockCompanyService.createCompany).toHaveBeenCalledWith({ name: 'Test Company' });
-    expect(mockAlertService.open).toHaveBeenCalledWith('Entreprise créée avec succès !', { appearance: 'success' });
+    expect(mockAlertService.open).toHaveBeenCalledWith('Entreprise créée avec succès !', {
+      appearance: 'success',
+    });
     expect(component.companyCreated.emit).toHaveBeenCalledWith(mockCompany);
   });
 
@@ -86,11 +87,14 @@ describe('AddCompanyModalComponent', () => {
     mockCompanyService.createCompany.and.returnValue(throwError('Error'));
     mockAlertService.open.and.returnValue(of({}));
     spyOn(console, 'error');
-    
+
     component.save();
-    
+
     expect(mockCompanyService.createCompany).toHaveBeenCalledWith({ name: 'Test Company' });
-    expect(mockAlertService.open).toHaveBeenCalledWith("Erreur lors de la création de l'entreprise", { appearance: 'error' });
+    expect(mockAlertService.open).toHaveBeenCalledWith(
+      "Erreur lors de la création de l'entreprise",
+      { appearance: 'error' }
+    );
     expect(console.error).toHaveBeenCalledWith('Erreur création entreprise:', 'Error');
   });
 
@@ -99,9 +103,9 @@ describe('AddCompanyModalComponent', () => {
     component.companyName = '  Test Company  ';
     mockCompanyService.createCompany.and.returnValue(of(mockCompany));
     mockAlertService.open.and.returnValue(of({}));
-    
+
     component.save();
-    
+
     expect(mockCompanyService.createCompany).toHaveBeenCalledWith({ name: 'Test Company' });
   });
 });

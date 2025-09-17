@@ -253,7 +253,7 @@ describe('AuthService', () => {
 
   it('should get token', () => {
     expect(service.getToken()).toBeNull();
-    
+
     localStorage.setItem('JWT_TOKEN', 'test-token');
     expect(service.getToken()).toBe('test-token');
   });
@@ -336,18 +336,20 @@ describe('AuthService', () => {
       password: 'password123',
       firstName: 'Test',
       lastName: 'User',
-      recaptchaToken: 'recaptcha-token'
+      recaptchaToken: 'recaptcha-token',
     };
 
-    service.register(
-      userData.email,
-      userData.password,
-      userData.firstName,
-      userData.lastName,
-      userData.recaptchaToken
-    ).subscribe(response => {
-      expect(response).toEqual(mockResponse);
-    });
+    service
+      .register(
+        userData.email,
+        userData.password,
+        userData.firstName,
+        userData.lastName,
+        userData.recaptchaToken
+      )
+      .subscribe(response => {
+        expect(response).toEqual(mockResponse);
+      });
 
     const req = httpMock.expectOne(`${environment.apiBaseUrl}/user-create`);
     expect(req.request.method).toBe('POST');
@@ -360,7 +362,7 @@ describe('AuthService', () => {
       next: () => fail('should have failed'),
       error: error => {
         expect(error).toBeDefined();
-      }
+      },
     });
 
     const req = httpMock.expectOne(`${environment.apiBaseUrl}/login_check`);
@@ -374,7 +376,7 @@ describe('AuthService', () => {
       next: () => fail('should have failed'),
       error: error => {
         expect(error).toBeDefined();
-      }
+      },
     });
 
     const req = httpMock.expectOne(`${environment.apiBaseUrl}/token/refresh`);

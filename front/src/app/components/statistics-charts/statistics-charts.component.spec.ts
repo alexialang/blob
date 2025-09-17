@@ -10,18 +10,18 @@ describe('StatisticsChartsComponent', () => {
   const mockUserStatistics = {
     scoreHistory: [
       { date: '2024-01-01', score: 80 },
-      { date: '2024-01-02', score: 85 }
+      { date: '2024-01-02', score: 85 },
     ],
     categoryStats: [
       { category: 'Math', correctAnswers: 8, totalAnswers: 10 },
-      { category: 'Science', correctAnswers: 6, totalAnswers: 8 }
-    ]
+      { category: 'Science', correctAnswers: 6, totalAnswers: 8 },
+    ],
   };
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [StatisticsChartsComponent, HttpClientTestingModule],
-      schemas: [NO_ERRORS_SCHEMA]
+      schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
 
     fixture = TestBed.createComponent(StatisticsChartsComponent);
@@ -65,7 +65,7 @@ describe('StatisticsChartsComponent', () => {
     (window as any).Chart = {};
     component['scoreChart'] = { nativeElement: { getContext: () => ({}) } } as any;
     component['categoryChart'] = { nativeElement: { getContext: () => ({}) } } as any;
-    
+
     spyOn(component as any, 'createCharts');
 
     component.ngOnChanges();
@@ -78,7 +78,7 @@ describe('StatisticsChartsComponent', () => {
     (window as any).Chart = undefined;
     component['scoreChart'] = { nativeElement: { getContext: () => ({}) } } as any;
     component['categoryChart'] = { nativeElement: { getContext: () => ({}) } } as any;
-    
+
     spyOn(component as any, 'createCharts');
 
     component.ngOnChanges();
@@ -91,7 +91,7 @@ describe('StatisticsChartsComponent', () => {
     (window as any).Chart = {};
     component['scoreChart'] = { nativeElement: { getContext: () => ({}) } } as any;
     component['categoryChart'] = { nativeElement: { getContext: () => ({}) } } as any;
-    
+
     spyOn(component as any, 'createCharts');
 
     component.ngOnChanges();
@@ -103,12 +103,12 @@ describe('StatisticsChartsComponent', () => {
     (window as any).Chart = {};
     component['scoreChart'] = { nativeElement: { getContext: () => ({}) } } as any;
     component['categoryChart'] = { nativeElement: { getContext: () => ({}) } } as any;
-    
+
     const mockScoreChart = { destroy: jasmine.createSpy('destroy') };
     const mockCategoryChart = { destroy: jasmine.createSpy('destroy') };
     component['scoreEvolutionChartInstance'] = mockScoreChart;
     component['categoryChartInstance'] = mockCategoryChart;
-    
+
     spyOn(component as any, 'createCharts');
 
     component.ngOnChanges();
@@ -128,7 +128,7 @@ describe('StatisticsChartsComponent', () => {
     (window as any).Chart = undefined;
 
     const loadPromise = (component as any).loadChartJs();
-    
+
     // Simulate script load
     setTimeout(() => {
       if (mockScript.onload) {
@@ -147,7 +147,7 @@ describe('StatisticsChartsComponent', () => {
     (window as any).Chart = {};
 
     const result = await (component as any).loadChartJs();
-    
+
     expect(result).toBeUndefined();
   });
 

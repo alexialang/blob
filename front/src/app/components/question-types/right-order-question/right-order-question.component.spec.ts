@@ -15,8 +15,8 @@ describe('RightOrderQuestionComponent', () => {
       { id: 1, answer: 'Answer A', is_correct: true },
       { id: 2, answer: 'Answer B', is_correct: false },
       { id: 3, answer: 'Answer C', is_correct: false },
-      { id: 4, answer: 'Answer D', is_correct: false }
-    ]
+      { id: 4, answer: 'Answer D', is_correct: false },
+    ],
   };
 
   beforeEach(async () => {
@@ -61,7 +61,7 @@ describe('RightOrderQuestionComponent', () => {
     spyOn(component.answerSelected, 'emit');
     const mockEvent = {
       previousIndex: 0,
-      currentIndex: 1
+      currentIndex: 1,
     } as any;
     component.drop(mockEvent);
     expect(component.answerSelected.emit).toHaveBeenCalled();

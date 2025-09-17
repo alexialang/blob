@@ -30,27 +30,25 @@ describe('NavbarComponent', () => {
   };
 
   beforeEach(async () => {
-    const authServiceSpy = jasmine.createSpyObj('AuthService', [
-      'isLoggedIn',
-      'isGuest',
-      'getCurrentUser',
-      'isAdmin',
-      'logout'
-    ], {
-      loginStatus$: of(true)
-    });
+    const authServiceSpy = jasmine.createSpyObj(
+      'AuthService',
+      ['isLoggedIn', 'isGuest', 'getCurrentUser', 'isAdmin', 'logout'],
+      {
+        loginStatus$: of(true),
+      }
+    );
 
     const sanitizerSpy = jasmine.createSpyObj('DomSanitizer', [
       'bypassSecurityTrustUrl',
-      'bypassSecurityTrustHtml'
+      'bypassSecurityTrustHtml',
     ]);
 
     await TestBed.configureTestingModule({
       imports: [NavbarComponent, HttpClientTestingModule, RouterTestingModule],
       providers: [
         { provide: AuthService, useValue: authServiceSpy },
-        { provide: DomSanitizer, useValue: sanitizerSpy }
-      ]
+        { provide: DomSanitizer, useValue: sanitizerSpy },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(NavbarComponent);
@@ -138,9 +136,9 @@ describe('NavbarComponent', () => {
   describe('logout', () => {
     it('should call authService logout and reload user data', () => {
       spyOn(component, 'loadUserData');
-      
+
       component.logout();
-      
+
       expect(mockAuthService.logout).toHaveBeenCalled();
       expect(component.loadUserData).toHaveBeenCalled();
     });
@@ -162,7 +160,7 @@ describe('NavbarComponent', () => {
     it('should return mobile menu state', () => {
       component.isMobileMenuOpen = true;
       expect(component.open()).toBe(true);
-      
+
       component.isMobileMenuOpen = false;
       expect(component.open()).toBe(false);
     });
@@ -172,15 +170,15 @@ describe('NavbarComponent', () => {
     it('should handle image error', () => {
       spyOn(console, 'error');
       const mockEvent = { target: { src: 'invalid-image.jpg' } };
-      
+
       component.onImageError(mockEvent);
-      
+
       expect(console.error).toHaveBeenCalledWith('Image failed to load:', 'invalid-image.jpg');
     });
 
     it('should handle image load', () => {
       const mockEvent = { target: { src: 'valid-image.jpg' } };
-      
+
       expect(() => component.onImageLoad(mockEvent)).not.toThrow();
     });
   });
@@ -189,9 +187,9 @@ describe('NavbarComponent', () => {
     it('should initialize component correctly', () => {
       spyOn(component, 'generateRandomColor');
       spyOn(component, 'loadUserData');
-      
+
       component.ngOnInit();
-      
+
       expect(component.generateRandomColor).toHaveBeenCalled();
       expect(component.loadUserData).toHaveBeenCalled();
     });

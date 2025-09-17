@@ -18,9 +18,7 @@ describe('ForgotPasswordComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [ForgotPasswordComponent, HttpClientTestingModule],
-      providers: [
-        { provide: ActivatedRoute, useValue: mockActivatedRoute },
-      ],
+      providers: [{ provide: ActivatedRoute, useValue: mockActivatedRoute }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ForgotPasswordComponent);

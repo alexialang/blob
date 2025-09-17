@@ -21,7 +21,7 @@ describe('QuizTransitionComponent', () => {
     createdAt: new Date(),
     updatedAt: new Date(),
     authorId: 1,
-    authorName: 'Test Author'
+    authorName: 'Test Author',
   };
 
   beforeEach(async () => {
@@ -30,15 +30,13 @@ describe('QuizTransitionComponent', () => {
       currentQuiz$: of(null),
       cardPosition$: of(null),
       isExiting$: of(false),
-      cardColor$: of('var(--color-primary)')
+      cardColor$: of('var(--color-primary)'),
     });
 
     await TestBed.configureTestingModule({
       imports: [QuizTransitionComponent],
-      providers: [
-        { provide: QuizTransitionService, useValue: mockQuizTransitionService }
-      ],
-      schemas: [NO_ERRORS_SCHEMA]
+      providers: [{ provide: QuizTransitionService, useValue: mockQuizTransitionService }],
+      schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
 
     fixture = TestBed.createComponent(QuizTransitionComponent);
@@ -60,9 +58,9 @@ describe('QuizTransitionComponent', () => {
 
   it('should clean up subscriptions on destroy', () => {
     spyOn(component['subscriptions'], 'forEach');
-    
+
     component.ngOnDestroy();
-    
+
     expect(component['subscriptions'].forEach).toHaveBeenCalled();
   });
 });

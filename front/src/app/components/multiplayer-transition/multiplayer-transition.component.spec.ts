@@ -1,5 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MultiplayerTransitionComponent, TransitionPlayer } from './multiplayer-transition.component';
+import {
+  MultiplayerTransitionComponent,
+  TransitionPlayer,
+} from './multiplayer-transition.component';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 
 describe('MultiplayerTransitionComponent', () => {
@@ -17,7 +20,7 @@ describe('MultiplayerTransitionComponent', () => {
       isCurrentUser: true,
       lastAnswerCorrect: true,
       scorePercentage: 80,
-      pointsGained: 10
+      pointsGained: 10,
     },
     {
       id: 2,
@@ -27,7 +30,7 @@ describe('MultiplayerTransitionComponent', () => {
       isCurrentUser: false,
       lastAnswerCorrect: false,
       scorePercentage: 60,
-      pointsGained: 5
+      pointsGained: 5,
     },
     {
       id: 3,
@@ -37,14 +40,14 @@ describe('MultiplayerTransitionComponent', () => {
       isCurrentUser: false,
       lastAnswerCorrect: true,
       scorePercentage: 40,
-      pointsGained: 0
-    }
+      pointsGained: 0,
+    },
   ];
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [MultiplayerTransitionComponent],
-      schemas: [NO_ERRORS_SCHEMA]
+      schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
 
     fixture = TestBed.createComponent(MultiplayerTransitionComponent);
@@ -64,12 +67,19 @@ describe('MultiplayerTransitionComponent', () => {
   it('should sort players by score in descending order', () => {
     component.players = [
       { id: 1, username: 'Player1', score: 50, rank: 0, isCurrentUser: false, scorePercentage: 50 },
-      { id: 2, username: 'Player2', score: 100, rank: 0, isCurrentUser: false, scorePercentage: 100 },
-      { id: 3, username: 'Player3', score: 75, rank: 0, isCurrentUser: false, scorePercentage: 75 }
+      {
+        id: 2,
+        username: 'Player2',
+        score: 100,
+        rank: 0,
+        isCurrentUser: false,
+        scorePercentage: 100,
+      },
+      { id: 3, username: 'Player3', score: 75, rank: 0, isCurrentUser: false, scorePercentage: 75 },
     ];
-    
+
     component['showTransition']();
-    
+
     expect(component.players[0].score).toBe(100);
     expect(component.players[1].score).toBe(75);
     expect(component.players[2].score).toBe(50);
@@ -78,12 +88,19 @@ describe('MultiplayerTransitionComponent', () => {
   it('should assign ranks correctly after sorting', () => {
     component.players = [
       { id: 1, username: 'Player1', score: 50, rank: 0, isCurrentUser: false, scorePercentage: 50 },
-      { id: 2, username: 'Player2', score: 100, rank: 0, isCurrentUser: false, scorePercentage: 100 },
-      { id: 3, username: 'Player3', score: 75, rank: 0, isCurrentUser: false, scorePercentage: 75 }
+      {
+        id: 2,
+        username: 'Player2',
+        score: 100,
+        rank: 0,
+        isCurrentUser: false,
+        scorePercentage: 100,
+      },
+      { id: 3, username: 'Player3', score: 75, rank: 0, isCurrentUser: false, scorePercentage: 75 },
     ];
-    
+
     component['showTransition']();
-    
+
     expect(component.players[0].rank).toBe(1);
     expect(component.players[1].rank).toBe(2);
     expect(component.players[2].rank).toBe(3);
@@ -107,7 +124,7 @@ describe('MultiplayerTransitionComponent', () => {
     const player1 = mockPlayers[0]; // rank 1, current user
     const player2 = mockPlayers[1]; // rank 2, not current user
     const player3 = mockPlayers[2]; // rank 3, not current user
-    
+
     expect(component.getPlayerCardClass(player1)).toBe('player-card current-user rank-1');
     expect(component.getPlayerCardClass(player2)).toBe('player-card rank-2');
     expect(component.getPlayerCardClass(player3)).toBe('player-card rank-3');
@@ -116,21 +133,23 @@ describe('MultiplayerTransitionComponent', () => {
   it('should calculate progress percentage correctly', () => {
     component.questionNumber = 3;
     component.totalQuestions = 10;
-    
+
     expect(component.getProgressPercentage()).toBe(30);
   });
 
   it('should return default avatar style when player has no avatar', () => {
     const playerWithoutAvatar = { ...mockPlayers[0], avatar: undefined };
     const style = component.getAvatarStyle(playerWithoutAvatar);
-    
-    expect(style.background).toBe('linear-gradient(135deg, var(--color-secondary), var(--color-secondary-dark))');
+
+    expect(style.background).toBe(
+      'linear-gradient(135deg, var(--color-secondary), var(--color-secondary-dark))'
+    );
   });
 
   it('should return correct avatar style when player has avatar', () => {
     const playerWithAvatar = mockPlayers[0];
     const style = component.getAvatarStyle(playerWithAvatar);
-    
+
     expect(style.background).toBe('linear-gradient(135deg, #91DEDA, #5BC0BE)');
   });
 
@@ -144,7 +163,7 @@ describe('MultiplayerTransitionComponent', () => {
   it('should return correct avatar shape', () => {
     const playerWithAvatar = mockPlayers[0];
     const playerWithoutAvatar = { ...mockPlayers[0], avatar: undefined };
-    
+
     expect(component.getAvatarShape(playerWithAvatar)).toBe('blob_circle');
     expect(component.getAvatarShape(playerWithoutAvatar)).toBe('blob_circle');
   });
@@ -152,18 +171,18 @@ describe('MultiplayerTransitionComponent', () => {
   it('should clear timeout on destroy', () => {
     spyOn(window, 'clearTimeout');
     component['hideTimeout'] = 123 as any;
-    
+
     component.ngOnDestroy();
-    
+
     expect(window.clearTimeout).toHaveBeenCalledWith(123);
   });
 
   it('should not clear timeout if none exists', () => {
     spyOn(window, 'clearTimeout');
     component['hideTimeout'] = undefined;
-    
+
     component.ngOnDestroy();
-    
+
     expect(window.clearTimeout).not.toHaveBeenCalled();
   });
 });

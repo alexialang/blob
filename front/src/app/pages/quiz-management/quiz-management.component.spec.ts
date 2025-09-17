@@ -27,34 +27,25 @@ describe('QuizManagementComponent', () => {
         isPublic: true,
         createdAt: '2024-01-01',
         updatedAt: '2024-01-01',
-        questionsCount: 10
-      }
+        questionsCount: 10,
+      },
     ],
     meta: {
       total: 1,
       per_page: 20,
       current_page: 1,
-      last_page: 1
-    }
+      last_page: 1,
+    },
   };
 
   beforeEach(async () => {
-    mockQuizService = jasmine.createSpyObj('QuizManagementService', [
-      'getQuizzes',
-      'deleteQuiz'
-    ]);
+    mockQuizService = jasmine.createSpyObj('QuizManagementService', ['getQuizzes', 'deleteQuiz']);
 
-    mockFileService = jasmine.createSpyObj('FileDownloadService', [
-      'downloadFile'
-    ]);
+    mockFileService = jasmine.createSpyObj('FileDownloadService', ['downloadFile']);
 
-    mockDialogService = jasmine.createSpyObj('TuiDialogService', [
-      'open'
-    ]);
+    mockDialogService = jasmine.createSpyObj('TuiDialogService', ['open']);
 
-    mockAlertService = jasmine.createSpyObj('TuiAlertService', [
-      'open'
-    ]);
+    mockAlertService = jasmine.createSpyObj('TuiAlertService', ['open']);
 
     mockRouter = jasmine.createSpyObj('Router', ['navigate']);
 
@@ -65,8 +56,8 @@ describe('QuizManagementComponent', () => {
         { provide: FileDownloadService, useValue: mockFileService },
         { provide: TuiDialogService, useValue: mockDialogService },
         { provide: TuiAlertService, useValue: mockAlertService },
-        { provide: Router, useValue: mockRouter }
-      ]
+        { provide: Router, useValue: mockRouter },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(QuizManagementComponent);
@@ -115,14 +106,10 @@ describe('QuizManagementComponent', () => {
 
   it('should get quiz stats', () => {
     const quizWithStats = {
-      userAnswers: [
-        { userId: 1 },
-        { userId: 2 },
-        { userId: 1 }
-      ],
-      isPublic: true
+      userAnswers: [{ userId: 1 }, { userId: 2 }, { userId: 1 }],
+      isPublic: true,
     };
-    
+
     const stats = component.getQuizStats(quizWithStats);
     expect(stats).toContain('2 joueurs');
     expect(stats).toContain('3 parties');
@@ -131,9 +118,9 @@ describe('QuizManagementComponent', () => {
   it('should get quiz stats for public quiz without answers', () => {
     const publicQuiz = {
       userAnswers: [],
-      isPublic: true
+      isPublic: true,
     };
-    
+
     const stats = component.getQuizStats(publicQuiz);
     expect(stats).toBe('Quiz public - 0 joueur');
   });
@@ -141,22 +128,22 @@ describe('QuizManagementComponent', () => {
   it('should get quiz stats for private quiz', () => {
     const privateQuiz = {
       userAnswers: [],
-      isPublic: false
+      isPublic: false,
     };
-    
+
     const stats = component.getQuizStats(privateQuiz);
     expect(stats).toBe('Quiz privé - 0 joueur');
   });
 
   it('should navigate to quiz creation', () => {
     component.onCreateQuiz();
-    
+
     expect(mockRouter.navigate).toHaveBeenCalledWith(['/creation-quiz']);
   });
 
   it('should navigate to quiz edit', () => {
     component.editQuiz(1);
-    
+
     expect(mockRouter.navigate).toHaveBeenCalledWith(['/creation-quiz', 1]);
   });
 
@@ -165,11 +152,11 @@ describe('QuizManagementComponent', () => {
       { id: 1, name: 'Groupe 1' },
       { id: 2, name: 'Groupe 2' },
       { id: 3, name: 'Groupe 3' },
-      { id: 4, name: 'Groupe 4' }
+      { id: 4, name: 'Groupe 4' },
     ];
-    
+
     const visibleGroups = component.getVisibleGroups(groups);
-    
+
     expect(visibleGroups.length).toBe(2);
     expect(visibleGroups[0].name).toBe('Groupe 1');
     expect(visibleGroups[1].name).toBe('Groupe 2');
@@ -180,11 +167,11 @@ describe('QuizManagementComponent', () => {
       { id: 1, name: 'Groupe 1' },
       { id: 2, name: 'Groupe 2' },
       { id: 3, name: 'Groupe 3' },
-      { id: 4, name: 'Groupe 4' }
+      { id: 4, name: 'Groupe 4' },
     ];
-    
+
     const remainingCount = component.getRemainingGroupsCount(groups);
-    
+
     expect(remainingCount).toBe(2);
   });
 
@@ -193,55 +180,95 @@ describe('QuizManagementComponent', () => {
       { id: 1, name: 'Groupe 1' },
       { id: 2, name: 'Groupe 2' },
       { id: 3, name: 'Groupe 3' },
-      { id: 4, name: 'Groupe 4' }
+      { id: 4, name: 'Groupe 4' },
     ];
-    
+
     const tooltip = component.getGroupsTooltip(groups);
-    
+
     expect(tooltip).toBe('Groupe 3, Groupe 4');
   });
 
   it('should get export button text', () => {
     component.rows = [
-      { id: 1, title: 'Quiz 1', selected: true, createdBy: 'User 1', groups: [], isPublic: true, status: 'published' },
-      { id: 2, title: 'Quiz 2', selected: false, createdBy: 'User 2', groups: [], isPublic: false, status: 'draft' },
-      { id: 3, title: 'Quiz 3', selected: true, createdBy: 'User 3', groups: [], isPublic: true, status: 'published' }
+      {
+        id: 1,
+        title: 'Quiz 1',
+        selected: true,
+        createdBy: 'User 1',
+        groups: [],
+        isPublic: true,
+        status: 'published',
+      },
+      {
+        id: 2,
+        title: 'Quiz 2',
+        selected: false,
+        createdBy: 'User 2',
+        groups: [],
+        isPublic: false,
+        status: 'draft',
+      },
+      {
+        id: 3,
+        title: 'Quiz 3',
+        selected: true,
+        createdBy: 'User 3',
+        groups: [],
+        isPublic: true,
+        status: 'published',
+      },
     ];
-    
+
     const buttonText = component.getExportButtonText();
-    
+
     expect(buttonText).toBe('Exporter (2)');
   });
 
   it('should get export tooltip', () => {
     component.rows = [
-      { id: 1, title: 'Quiz 1', selected: true, createdBy: 'User 1', groups: [], isPublic: true, status: 'published' },
-      { id: 2, title: 'Quiz 2', selected: false, createdBy: 'User 2', groups: [], isPublic: false, status: 'draft' }
+      {
+        id: 1,
+        title: 'Quiz 1',
+        selected: true,
+        createdBy: 'User 1',
+        groups: [],
+        isPublic: true,
+        status: 'published',
+      },
+      {
+        id: 2,
+        title: 'Quiz 2',
+        selected: false,
+        createdBy: 'User 2',
+        groups: [],
+        isPublic: false,
+        status: 'draft',
+      },
     ];
-    
+
     const tooltip = component.getExportTooltip();
-    
+
     expect(tooltip).toBe('Exporter le quiz sélectionné au format JSON');
   });
 
   it('should handle search term change', fakeAsync(() => {
     component.onSearchChange('test');
     tick(300);
-    
+
     expect(component.searchTerm).toBe('test');
     expect(component.page).toBe(1);
   }));
 
   it('should handle page change', () => {
     component.onPageChange(2);
-    
+
     expect(component.page).toBe(1);
     expect(mockQuizService.getQuizzes).toHaveBeenCalled();
   });
 
   it('should handle page size change', () => {
     component.onPageSizeChange(10);
-    
+
     expect(component.pageSize).toBe(10);
     expect(component.page).toBe(1);
     expect(mockQuizService.getQuizzes).toHaveBeenCalled();
@@ -249,13 +276,13 @@ describe('QuizManagementComponent', () => {
 
   it('should toggle import modal', () => {
     component.showImportModal = false;
-    
+
     component.showImportModal = true;
-    
+
     expect(component.showImportModal).toBe(true);
-    
+
     component.showImportModal = false;
-    
+
     expect(component.showImportModal).toBe(false);
   });
 
@@ -263,22 +290,22 @@ describe('QuizManagementComponent', () => {
     const mockFile = new File(['test'], 'test.json', { type: 'application/json' });
     const mockEvent = {
       target: {
-        files: [mockFile]
-      }
+        files: [mockFile],
+      },
     } as any;
-    
+
     component.onFileSelected(mockEvent);
-    
+
     expect(component.selectedFile).toBe(mockFile);
   });
 
   it('should handle service errors', fakeAsync(() => {
     mockQuizService.getQuizzes.and.returnValue(throwError(() => new Error('API Error')));
     spyOn(console, 'error');
-    
+
     component.loadQuizzes();
     tick();
-    
+
     expect(component.loadError).toBe(true);
     expect(component.isLoading).toBe(false);
   }));
@@ -286,9 +313,9 @@ describe('QuizManagementComponent', () => {
   it('should destroy component properly', () => {
     spyOn(component['destroy$'], 'next');
     spyOn(component['destroy$'], 'complete');
-    
+
     component.ngOnDestroy();
-    
+
     expect(component['destroy$'].next).toHaveBeenCalled();
     expect(component['destroy$'].complete).toHaveBeenCalled();
   });

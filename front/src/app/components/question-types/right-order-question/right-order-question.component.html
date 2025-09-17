@@ -1,8 +1,7 @@
 <div class="right-order-question-container">
   <div class="answers-container">
     <div class="order-list" cdkDropList (cdkDropListDropped)="drop($event)">
-      <div *ngFor="let answer of orderedAnswers; let i = index" class="order-item" cdkDrag>
-        <div class="order-number">{{ i + 1 }}</div>
+      <div *ngFor="let answer of orderedAnswers; let i = index" class="order-item" cdkDrag [style.background-image]="'url(assets/svg/blob_block' + ((answer.id % 4) + 1) + '.svg)'">
         <div class="order-content">
           <span class="order-text">{{ answer.answer }}</span>
         </div>

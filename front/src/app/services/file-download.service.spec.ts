@@ -42,7 +42,7 @@ describe('FileDownloadService', () => {
       href: '',
       download: '',
       style: { display: '' },
-      click: jasmine.createSpy('click')
+      click: jasmine.createSpy('click'),
     };
 
     spyOn(document, 'createElement').and.returnValue(mockLink as any);
@@ -90,7 +90,11 @@ describe('FileDownloadService', () => {
     service.downloadJson(data);
 
     const expectedContent = JSON.stringify(data, null, 2);
-    expect(service.downloadFile).toHaveBeenCalledWith(expectedContent, 'application/json', expectedFilename);
+    expect(service.downloadFile).toHaveBeenCalledWith(
+      expectedContent,
+      'application/json',
+      expectedFilename
+    );
   });
 
   it('should download JSON file with custom filename', () => {
@@ -102,19 +106,23 @@ describe('FileDownloadService', () => {
     service.downloadJson(data, customFilename);
 
     const expectedContent = JSON.stringify(data, null, 2);
-    expect(service.downloadFile).toHaveBeenCalledWith(expectedContent, 'application/json', customFilename);
+    expect(service.downloadFile).toHaveBeenCalledWith(
+      expectedContent,
+      'application/json',
+      customFilename
+    );
   });
 
   it('should handle complex JSON data', () => {
     const complexData = {
       users: [
         { id: 1, name: 'John', scores: [85, 90, 88] },
-        { id: 2, name: 'Jane', scores: [92, 87, 95] }
+        { id: 2, name: 'Jane', scores: [92, 87, 95] },
       ],
       metadata: {
         exportDate: '2023-01-01',
-        totalRecords: 2
-      }
+        totalRecords: 2,
+      },
     };
 
     spyOn(service, 'downloadFile');
@@ -184,7 +192,7 @@ describe('FileDownloadService', () => {
 
     // Test that the method doesn't throw and completes successfully
     expect(() => service.downloadFile(content, mimeType, filename)).not.toThrow();
-    
+
     expect(URL.createObjectURL).toHaveBeenCalled();
     expect(URL.revokeObjectURL).toHaveBeenCalled();
     expect(document.createElement).toHaveBeenCalledWith('a');

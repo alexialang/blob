@@ -13,7 +13,9 @@ describe('QuizCardComponent', () => {
   let mockAuthService: jasmine.SpyObj<AuthService>;
 
   beforeEach(async () => {
-    const quizTransitionServiceSpy = jasmine.createSpyObj('QuizTransitionService', ['startTransition']);
+    const quizTransitionServiceSpy = jasmine.createSpyObj('QuizTransitionService', [
+      'startTransition',
+    ]);
     const authServiceSpy = jasmine.createSpyObj('AuthService', ['isLoggedIn', 'isGuest']);
 
     await TestBed.configureTestingModule({
@@ -21,13 +23,15 @@ describe('QuizCardComponent', () => {
       providers: [
         { provide: QuizTransitionService, useValue: quizTransitionServiceSpy },
         { provide: AuthService, useValue: authServiceSpy },
-        { provide: ElementRef, useValue: {} }
-      ]
+        { provide: ElementRef, useValue: {} },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(QuizCardComponent);
     component = fixture.componentInstance;
-    mockQuizTransitionService = TestBed.inject(QuizTransitionService) as jasmine.SpyObj<QuizTransitionService>;
+    mockQuizTransitionService = TestBed.inject(
+      QuizTransitionService
+    ) as jasmine.SpyObj<QuizTransitionService>;
     mockAuthService = TestBed.inject(AuthService) as jasmine.SpyObj<AuthService>;
     mockAuthService.isGuest.and.returnValue(false);
   });
@@ -55,7 +59,7 @@ describe('QuizCardComponent', () => {
       rating: 4.5,
       questionCount: 10,
       isFlipped: false,
-      playMode: 'solo'
+      playMode: 'solo',
     } as QuizCard;
 
     component.ngOnInit();
@@ -78,7 +82,7 @@ describe('QuizCardComponent', () => {
       rating: 4.5,
       questionCount: 10,
       isFlipped: false,
-      playMode: 'solo'
+      playMode: 'solo',
     } as QuizCard;
 
     await component.startQuiz();
@@ -99,7 +103,7 @@ describe('QuizCardComponent', () => {
       rating: 4.5,
       questionCount: 10,
       isFlipped: false,
-      playMode: 'solo'
+      playMode: 'solo',
     } as QuizCard;
 
     component.flipCard();
@@ -120,7 +124,7 @@ describe('QuizCardComponent', () => {
       rating: 4.5,
       questionCount: 10,
       isFlipped: false,
-      playMode: 'solo'
+      playMode: 'solo',
     } as QuizCard;
 
     component.togglePlayMode();
@@ -140,7 +144,7 @@ describe('QuizCardComponent', () => {
   it('should handle different index values', () => {
     component.index = 5;
     component.rowIndex = 2;
-    
+
     expect(component.index).toBe(5);
     expect(component.rowIndex).toBe(2);
   });
@@ -158,7 +162,7 @@ describe('QuizCardComponent', () => {
       questionCount: 10,
       isFlipped: false,
       playMode: 'solo',
-      groupName: 'Test Group'
+      groupName: 'Test Group',
     } as QuizCard;
 
     expect(component.getCompanyBadgeText()).toBe('Test Group');
@@ -177,7 +181,7 @@ describe('QuizCardComponent', () => {
       questionCount: 10,
       isFlipped: false,
       playMode: 'solo',
-      groupName: 'Test Group'
+      groupName: 'Test Group',
     } as QuizCard;
 
     expect(component.getCompanyBadgeText()).toBe('');
@@ -206,7 +210,7 @@ describe('QuizCardComponent', () => {
       rating: 4.5,
       questionCount: 10,
       isFlipped: false,
-      playMode: 'team'
+      playMode: 'team',
     } as QuizCard;
 
     await component.startQuiz();
@@ -229,7 +233,7 @@ describe('QuizCardComponent', () => {
       rating: 4.5,
       questionCount: 10,
       isFlipped: false,
-      playMode: 'solo'
+      playMode: 'solo',
     } as QuizCard;
 
     component.togglePlayMode();
@@ -249,7 +253,7 @@ describe('QuizCardComponent', () => {
       rating: 4.5,
       questionCount: 10,
       isFlipped: false,
-      playMode: 'solo'
+      playMode: 'solo',
     } as QuizCard;
 
     expect(component.getCompanyBadgeText()).toBe('');
@@ -267,7 +271,7 @@ describe('QuizCardComponent', () => {
       rating: 4.5,
       questionCount: 10,
       isFlipped: false,
-      playMode: 'solo'
+      playMode: 'solo',
     } as QuizCard;
 
     component.index = 0;

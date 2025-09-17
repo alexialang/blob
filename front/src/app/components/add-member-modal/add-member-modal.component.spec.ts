@@ -9,21 +9,41 @@ describe('AddMemberModalComponent', () => {
   let mockCompanyService: jasmine.SpyObj<CompanyService>;
 
   const mockUsers = [
-    { id: 1, firstName: 'John', lastName: 'Doe', email: 'john@example.com', pseudo: 'john_doe', roles: [], isVerified: true, companyId: 1, companyName: 'Test Company' },
-    { id: 2, firstName: 'Jane', lastName: 'Smith', email: 'jane@example.com', pseudo: 'jane_smith', roles: [], isVerified: true, companyId: 1, companyName: 'Test Company' }
+    {
+      id: 1,
+      firstName: 'John',
+      lastName: 'Doe',
+      email: 'john@example.com',
+      pseudo: 'john_doe',
+      roles: [],
+      isVerified: true,
+      companyId: 1,
+      companyName: 'Test Company',
+    },
+    {
+      id: 2,
+      firstName: 'Jane',
+      lastName: 'Smith',
+      email: 'jane@example.com',
+      pseudo: 'jane_smith',
+      roles: [],
+      isVerified: true,
+      companyId: 1,
+      companyName: 'Test Company',
+    },
   ];
 
   beforeEach(async () => {
-    mockCompanyService = jasmine.createSpyObj('CompanyService', ['getAvailableUsers', 'assignUserToCompany']);
+    mockCompanyService = jasmine.createSpyObj('CompanyService', [
+      'getAvailableUsers',
+      'assignUserToCompany',
+    ]);
     mockCompanyService.getAvailableUsers.and.returnValue(of(mockUsers));
 
     await TestBed.configureTestingModule({
       imports: [AddMemberModalComponent],
-      providers: [
-        { provide: CompanyService, useValue: mockCompanyService }
-      ]
-    })
-    .compileComponents();
+      providers: [{ provide: CompanyService, useValue: mockCompanyService }],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(AddMemberModalComponent);
     component = fixture.componentInstance;
@@ -43,7 +63,7 @@ describe('AddMemberModalComponent', () => {
   it('should filter users based on search term', () => {
     component.availableUsers$.next(mockUsers);
     component.onSearchChange('john');
-    
+
     component.filteredUsers$.subscribe(filtered => {
       expect(filtered.length).toBe(1);
       expect(filtered[0].firstName).toBe('John');
@@ -67,9 +87,9 @@ describe('AddMemberModalComponent', () => {
     mockCompanyService.assignUserToCompany.and.returnValue(of(mockResult));
     spyOn(component.memberAdded, 'emit');
     spyOn(component, 'closeModal');
-    
+
     component.addMember();
-    
+
     expect(mockCompanyService.assignUserToCompany).toHaveBeenCalledWith(1, 1, ['ROLE_USER'], []);
     expect(component.memberAdded.emit).toHaveBeenCalledWith(mockUsers[0]);
     expect(component.closeModal).toHaveBeenCalled();
@@ -78,9 +98,9 @@ describe('AddMemberModalComponent', () => {
   it('should handle error when adding member fails', () => {
     component.selectedUserId = 1;
     mockCompanyService.assignUserToCompany.and.returnValue(throwError('Error'));
-    
+
     component.addMember();
-    
+
     expect(component.errorMessage).toBe("Erreur lors de l'ajout du membre");
     expect(component.loading).toBe(false);
   });

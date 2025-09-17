@@ -2,7 +2,11 @@ import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { of, throwError } from 'rxjs';
 
-import { GlobalStatisticsService, GlobalStatistics, CompanyStatistics } from './global-statistics.service';
+import {
+  GlobalStatisticsService,
+  GlobalStatistics,
+  CompanyStatistics,
+} from './global-statistics.service';
 import { AuthService } from './auth.service';
 import { environment } from '../../environments/environment';
 
@@ -16,10 +20,7 @@ describe('GlobalStatisticsService', () => {
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      providers: [
-        GlobalStatisticsService,
-        { provide: AuthService, useValue: authServiceSpy },
-      ],
+      providers: [GlobalStatisticsService, { provide: AuthService, useValue: authServiceSpy }],
     });
 
     service = TestBed.inject(GlobalStatisticsService);
@@ -49,8 +50,8 @@ describe('GlobalStatisticsService', () => {
           lastName: 'User',
           averageScore: 95.0,
           quizzesCompleted: 20,
-          companyName: 'Test Company'
-        }
+          companyName: 'Test Company',
+        },
       ],
       companyStats: [
         {
@@ -58,8 +59,8 @@ describe('GlobalStatisticsService', () => {
           name: 'Test Company',
           averageScore: 88.0,
           totalEmployees: 100,
-          totalQuizzes: 10
-        }
+          totalQuizzes: 10,
+        },
       ],
       quizPerformance: [
         {
@@ -67,8 +68,8 @@ describe('GlobalStatisticsService', () => {
           title: 'Test Quiz',
           averageScore: 82.0,
           totalAttempts: 200,
-          category: 'Technology'
-        }
+          category: 'Technology',
+        },
       ],
       groupStats: [
         {
@@ -78,9 +79,9 @@ describe('GlobalStatisticsService', () => {
           companyName: 'Test Company',
           totalMembers: 15,
           averageScore: 90.0,
-          totalQuizzes: 8
-        }
-      ]
+          totalQuizzes: 8,
+        },
+      ],
     };
 
     mockAuthService.isAdmin.and.returnValue(of(true));
@@ -99,9 +100,9 @@ describe('GlobalStatisticsService', () => {
 
     service.getGlobalStatistics().subscribe({
       next: () => fail('Should have thrown error'),
-      error: (error) => {
+      error: error => {
         expect(error.message).toBe('Rôle ADMIN requis');
-      }
+      },
     });
   });
 
@@ -110,9 +111,9 @@ describe('GlobalStatisticsService', () => {
 
     service.getGlobalStatistics().subscribe({
       next: () => fail('Should have thrown error'),
-      error: (error) => {
+      error: error => {
         expect(error.message).toBe('Auth error');
-      }
+      },
     });
   });
 
@@ -124,19 +125,19 @@ describe('GlobalStatisticsService', () => {
           quizTitle: 'Team Quiz',
           quizId: 1,
           averageScore: 85.0,
-          participants: 20
-        }
+          participants: 20,
+        },
       ],
       groupScores: {
-        'Development': [
+        Development: [
           {
             quizTitle: 'Dev Quiz',
             quizId: 2,
             averageScore: 90.0,
-            participants: 10
-          }
-        ]
-      }
+            participants: 10,
+          },
+        ],
+      },
     };
 
     mockAuthService.hasPermission.and.returnValue(of(true));
@@ -145,7 +146,9 @@ describe('GlobalStatisticsService', () => {
       expect(stats).toEqual(mockCompanyStats);
     });
 
-    const req = httpMock.expectOne(`${environment.apiUrl}/api/global-statistics/company/${companyId}`);
+    const req = httpMock.expectOne(
+      `${environment.apiUrl}/api/global-statistics/company/${companyId}`
+    );
     expect(req.request.method).toBe('GET');
     req.flush(mockCompanyStats);
   });
@@ -155,7 +158,7 @@ describe('GlobalStatisticsService', () => {
     const timestamp = 1234567890;
     const mockCompanyStats: CompanyStatistics = {
       teamScores: [],
-      groupScores: {}
+      groupScores: {},
     };
 
     mockAuthService.hasPermission.and.returnValue(of(true));
@@ -164,7 +167,9 @@ describe('GlobalStatisticsService', () => {
       expect(stats).toEqual(mockCompanyStats);
     });
 
-    const req = httpMock.expectOne(`${environment.apiUrl}/api/global-statistics/company/${companyId}?t=${timestamp}`);
+    const req = httpMock.expectOne(
+      `${environment.apiUrl}/api/global-statistics/company/${companyId}?t=${timestamp}`
+    );
     expect(req.request.method).toBe('GET');
     req.flush(mockCompanyStats);
   });
@@ -175,9 +180,9 @@ describe('GlobalStatisticsService', () => {
 
     service.getCompanyStatistics(companyId).subscribe({
       next: () => fail('Should have thrown error'),
-      error: (error) => {
+      error: error => {
         expect(error.message).toBe('Permission VIEW_RESULTS requise');
-      }
+      },
     });
   });
 
@@ -187,9 +192,9 @@ describe('GlobalStatisticsService', () => {
 
     service.getCompanyStatistics(companyId).subscribe({
       next: () => fail('Should have thrown error'),
-      error: (error) => {
+      error: error => {
         expect(error.message).toBe('Permission error');
-      }
+      },
     });
   });
 
@@ -198,9 +203,9 @@ describe('GlobalStatisticsService', () => {
 
     service.getGlobalStatistics().subscribe({
       next: () => fail('Should have failed'),
-      error: (error) => {
+      error: error => {
         expect(error).toBeTruthy();
-      }
+      },
     });
 
     const req = httpMock.expectOne(`${environment.apiUrl}/api/global-statistics`);
@@ -213,12 +218,14 @@ describe('GlobalStatisticsService', () => {
 
     service.getCompanyStatistics(companyId).subscribe({
       next: () => fail('Should have failed'),
-      error: (error) => {
+      error: error => {
         expect(error).toBeTruthy();
-      }
+      },
     });
 
-    const req = httpMock.expectOne(`${environment.apiUrl}/api/global-statistics/company/${companyId}`);
+    const req = httpMock.expectOne(
+      `${environment.apiUrl}/api/global-statistics/company/${companyId}`
+    );
     req.flush('Error', { status: 404, statusText: 'Not Found' });
   });
 
@@ -227,9 +234,9 @@ describe('GlobalStatisticsService', () => {
 
     service.getGlobalStatistics().subscribe({
       next: () => fail('Should have failed'),
-      error: (error) => {
+      error: error => {
         expect(error).toBeTruthy();
-      }
+      },
     });
 
     const req = httpMock.expectOne(`${environment.apiUrl}/api/global-statistics`);
@@ -245,7 +252,7 @@ describe('GlobalStatisticsService', () => {
       topEmployees: [],
       companyStats: [],
       quizPerformance: [],
-      groupStats: []
+      groupStats: [],
     };
 
     mockAuthService.isAdmin.and.returnValue(of(true));
@@ -262,7 +269,7 @@ describe('GlobalStatisticsService', () => {
     const companyId = 1;
     const emptyStats: CompanyStatistics = {
       teamScores: [],
-      groupScores: {}
+      groupScores: {},
     };
 
     mockAuthService.hasPermission.and.returnValue(of(true));
@@ -271,9 +278,9 @@ describe('GlobalStatisticsService', () => {
       expect(stats).toEqual(emptyStats);
     });
 
-    const req = httpMock.expectOne(`${environment.apiUrl}/api/global-statistics/company/${companyId}`);
+    const req = httpMock.expectOne(
+      `${environment.apiUrl}/api/global-statistics/company/${companyId}`
+    );
     req.flush(emptyStats);
   });
 });
-
-

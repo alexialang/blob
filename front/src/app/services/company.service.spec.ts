@@ -12,14 +12,15 @@ describe('CompanyService', () => {
   let mockAuthService: jasmine.SpyObj<AuthService>;
 
   beforeEach(() => {
-    const authServiceSpy = jasmine.createSpyObj('AuthService', ['getToken', 'getCurrentUser', 'hasPermission']);
+    const authServiceSpy = jasmine.createSpyObj('AuthService', [
+      'getToken',
+      'getCurrentUser',
+      'hasPermission',
+    ]);
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      providers: [
-        CompanyService,
-        { provide: AuthService, useValue: authServiceSpy },
-      ],
+      providers: [CompanyService, { provide: AuthService, useValue: authServiceSpy }],
     });
 
     service = TestBed.inject(CompanyService);
@@ -45,7 +46,7 @@ describe('CompanyService', () => {
       name: 'Test Company',
       userCount: 10,
       groupCount: 2,
-      quizCount: 5
+      quizCount: 5,
     };
 
     service.getCompany(companyId).subscribe(company => {
@@ -67,8 +68,8 @@ describe('CompanyService', () => {
         lastName: 'One',
         roles: ['ROLE_USER'],
         isActive: true,
-        isVerified: true
-      }
+        isVerified: true,
+      },
     ];
 
     service.getCompanyUsers(companyId).subscribe(users => {
@@ -88,8 +89,8 @@ describe('CompanyService', () => {
         name: 'Development Team',
         description: 'Software developers',
         userCount: 5,
-        quizCount: 3
-      }
+        quizCount: 3,
+      },
     ];
 
     service.getCompanyGroups(companyId).subscribe(groups => {
@@ -109,7 +110,7 @@ describe('CompanyService', () => {
       userCount: 10,
       activeUsers: 8,
       groupCount: 2,
-      quizCount: 5
+      quizCount: 5,
     };
 
     service.getCompanyStats(companyId).subscribe(stats => {
@@ -121,15 +122,14 @@ describe('CompanyService', () => {
     req.flush(mockStats);
   });
 
-
   it('should handle API errors', () => {
     const companyId = 1;
 
     service.getCompany(companyId).subscribe({
       next: () => fail('Should have failed'),
-      error: (error) => {
+      error: error => {
         expect(error).toBeTruthy();
-      }
+      },
     });
 
     const req = httpMock.expectOne(`${environment.apiBaseUrl}/companies/${companyId}`);
@@ -141,9 +141,9 @@ describe('CompanyService', () => {
 
     service.getCompany(companyId).subscribe({
       next: () => fail('Should have failed'),
-      error: (error) => {
+      error: error => {
         expect(error).toBeTruthy();
-      }
+      },
     });
 
     const req = httpMock.expectOne(`${environment.apiBaseUrl}/companies/${companyId}`);

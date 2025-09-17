@@ -10,16 +10,13 @@ describe('AlertComponent', () => {
 
   beforeEach(async () => {
     const alertServiceSpy = jasmine.createSpyObj('AlertService', [], {
-      alerts$: of()
+      alerts$: of(),
     });
 
     await TestBed.configureTestingModule({
       imports: [AlertComponent],
-      providers: [
-        { provide: AlertService, useValue: alertServiceSpy }
-      ]
-    })
-    .compileComponents();
+      providers: [{ provide: AlertService, useValue: alertServiceSpy }],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(AlertComponent);
     component = fixture.componentInstance;
@@ -38,7 +35,7 @@ describe('AlertComponent', () => {
     const mockAlert: AlertMessage = {
       message: 'Test alert',
       type: 'success',
-      duration: 5000
+      duration: 5000,
     };
 
     // Simuler directement l'appel à showAlert
@@ -51,7 +48,7 @@ describe('AlertComponent', () => {
     component.currentAlert = {
       message: 'Test alert',
       type: 'success',
-      duration: 5000
+      duration: 5000,
     };
 
     component.closeAlert();
@@ -63,7 +60,7 @@ describe('AlertComponent', () => {
     component.currentAlert = {
       message: 'Test alert',
       type: 'success',
-      duration: 5000
+      duration: 5000,
     };
 
     // Set a timeout

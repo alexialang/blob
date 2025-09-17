@@ -15,8 +15,8 @@ describe('IntruderQuestionComponent', () => {
       { id: 1, answer: 'Answer A', is_correct: true },
       { id: 2, answer: 'Answer B', is_correct: false },
       { id: 3, answer: 'Answer C', is_correct: false },
-      { id: 4, answer: 'Answer D', is_correct: false }
-    ]
+      { id: 4, answer: 'Answer D', is_correct: false },
+    ],
   };
 
   beforeEach(async () => {
@@ -42,7 +42,9 @@ describe('IntruderQuestionComponent', () => {
 
   it('should shuffle answers on init', () => {
     expect(component.shuffledAnswers.length).toBe(3);
-    expect(component.shuffledAnswers).toEqual(jasmine.arrayContaining(mockQuestion.answers.slice(0, 3)));
+    expect(component.shuffledAnswers).toEqual(
+      jasmine.arrayContaining(mockQuestion.answers.slice(0, 3))
+    );
   });
 
   it('should investigate suspect', () => {

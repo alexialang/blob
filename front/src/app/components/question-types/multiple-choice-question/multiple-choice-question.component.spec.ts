@@ -15,14 +15,14 @@ describe('MultipleChoiceQuestionComponent', () => {
       { id: 1, answer: 'Paris', is_correct: true },
       { id: 2, answer: 'London', is_correct: false },
       { id: 3, answer: 'Berlin', is_correct: false },
-      { id: 4, answer: 'Madrid', is_correct: false }
-    ]
+      { id: 4, answer: 'Madrid', is_correct: false },
+    ],
   };
 
   const mockProgress = {
     current: 2,
     total: 10,
-    percentage: 20
+    percentage: 20,
   };
 
   beforeEach(async () => {
@@ -43,12 +43,12 @@ describe('MultipleChoiceQuestionComponent', () => {
 
   it('should initialize with default values', () => {
     const newComponent = new MultipleChoiceQuestionComponent();
-    
+
     expect(newComponent.selectedAnswerIds).toEqual([]);
     expect(newComponent.progress).toEqual({
       current: 0,
       total: 0,
-      percentage: 0
+      percentage: 0,
     });
   });
 
@@ -59,9 +59,9 @@ describe('MultipleChoiceQuestionComponent', () => {
 
   it('should toggle answer selection', () => {
     spyOn(component.answerSelected, 'emit');
-    
+
     component.toggleAnswer(1);
-    
+
     expect(component.selectedAnswerIds).toContain(1);
     expect(component.answerSelected.emit).toHaveBeenCalledWith([1]);
   });
@@ -69,9 +69,9 @@ describe('MultipleChoiceQuestionComponent', () => {
   it('should remove answer when already selected', () => {
     spyOn(component.answerSelected, 'emit');
     component.selectedAnswerIds = [1, 2];
-    
+
     component.toggleAnswer(1);
-    
+
     expect(component.selectedAnswerIds).not.toContain(1);
     expect(component.selectedAnswerIds).toContain(2);
     expect(component.answerSelected.emit).toHaveBeenCalledWith([2]);
@@ -79,10 +79,10 @@ describe('MultipleChoiceQuestionComponent', () => {
 
   it('should add multiple answers', () => {
     spyOn(component.answerSelected, 'emit');
-    
+
     component.toggleAnswer(1);
     component.toggleAnswer(2);
-    
+
     expect(component.selectedAnswerIds).toContain(1);
     expect(component.selectedAnswerIds).toContain(2);
     expect(component.answerSelected.emit).toHaveBeenCalledWith([1, 2]);
@@ -91,24 +91,24 @@ describe('MultipleChoiceQuestionComponent', () => {
   it('should validate answer when answers are selected', () => {
     spyOn(component.answerValidated, 'emit');
     component.selectedAnswerIds = [1];
-    
+
     component.validateAnswer();
-    
+
     expect(component.answerValidated.emit).toHaveBeenCalled();
   });
 
   it('should not validate answer when no answers are selected', () => {
     spyOn(component.answerValidated, 'emit');
     component.selectedAnswerIds = [];
-    
+
     component.validateAnswer();
-    
+
     expect(component.answerValidated.emit).not.toHaveBeenCalled();
   });
 
   it('should check if answer is selected', () => {
     component.selectedAnswerIds = [1, 3];
-    
+
     expect(component.isSelected(1)).toBe(true);
     expect(component.isSelected(2)).toBe(false);
     expect(component.isSelected(3)).toBe(true);
@@ -128,17 +128,16 @@ describe('MultipleChoiceQuestionComponent', () => {
     expect(component.getFlowerShape(10)).toBeDefined();
   });
 
-
   it('should handle empty selected answers', () => {
     component.selectedAnswerIds = [];
-    
+
     expect(component.isSelected(1)).toBe(false);
     expect(component.isSelected(2)).toBe(false);
   });
 
   it('should handle single answer selection', () => {
     component.selectedAnswerIds = [2];
-    
+
     expect(component.isSelected(1)).toBe(false);
     expect(component.isSelected(2)).toBe(true);
     expect(component.isSelected(3)).toBe(false);
@@ -146,7 +145,7 @@ describe('MultipleChoiceQuestionComponent', () => {
 
   it('should handle all answers selected', () => {
     component.selectedAnswerIds = [1, 2, 3, 4];
-    
+
     expect(component.isSelected(1)).toBe(true);
     expect(component.isSelected(2)).toBe(true);
     expect(component.isSelected(3)).toBe(true);
@@ -155,19 +154,19 @@ describe('MultipleChoiceQuestionComponent', () => {
 
   it('should emit answer selected with empty array initially', () => {
     spyOn(component.answerSelected, 'emit');
-    
+
     // Component should start with empty selection
     expect(component.selectedAnswerIds).toEqual([]);
   });
 
   it('should handle multiple toggle operations', () => {
     spyOn(component.answerSelected, 'emit');
-    
+
     component.toggleAnswer(1);
     component.toggleAnswer(2);
     component.toggleAnswer(1); // Toggle off
     component.toggleAnswer(3);
-    
+
     expect(component.selectedAnswerIds).toEqual([2, 3]);
     expect(component.answerSelected.emit).toHaveBeenCalledTimes(4);
   });
@@ -176,9 +175,9 @@ describe('MultipleChoiceQuestionComponent', () => {
     component.progress = {
       current: 5,
       total: 20,
-      percentage: 25
+      percentage: 25,
     };
-    
+
     expect(component.progress.current).toBe(5);
     expect(component.progress.total).toBe(20);
     expect(component.progress.percentage).toBe(25);
@@ -188,9 +187,9 @@ describe('MultipleChoiceQuestionComponent', () => {
     component.progress = {
       current: 0,
       total: 0,
-      percentage: 0
+      percentage: 0,
     };
-    
+
     expect(component.progress.current).toBe(0);
     expect(component.progress.total).toBe(0);
     expect(component.progress.percentage).toBe(0);
@@ -200,9 +199,9 @@ describe('MultipleChoiceQuestionComponent', () => {
     component.progress = {
       current: 10,
       total: 10,
-      percentage: 100
+      percentage: 100,
     };
-    
+
     expect(component.progress.current).toBe(10);
     expect(component.progress.total).toBe(10);
     expect(component.progress.percentage).toBe(100);

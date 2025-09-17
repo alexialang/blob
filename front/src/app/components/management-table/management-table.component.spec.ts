@@ -10,22 +10,20 @@ describe('ManagementTableComponent', () => {
     title: 'Test Table',
     columns: [
       { key: 'id', label: 'ID', sortable: true },
-      { key: 'name', label: 'Name', sortable: true }
+      { key: 'name', label: 'Name', sortable: true },
     ],
-    filters: [
-      { key: 'status', label: 'Status', options: [{ value: 'active', label: 'Active' }] }
-    ]
+    filters: [{ key: 'status', label: 'Status', options: [{ value: 'active', label: 'Active' }] }],
   };
 
   const mockData = [
     { id: 1, name: 'Item 1', selected: false },
-    { id: 2, name: 'Item 2', selected: false }
+    { id: 2, name: 'Item 2', selected: false },
   ];
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ManagementTableComponent],
-      schemas: [NO_ERRORS_SCHEMA]
+      schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ManagementTableComponent);
@@ -64,7 +62,7 @@ describe('ManagementTableComponent', () => {
     component.sortColumn = 'name';
     component.sortDirection = 'asc';
     spyOn(component.sortChange, 'emit');
-    
+
     component.sortBy('name');
     expect(component.sortChange.emit).toHaveBeenCalledWith({ column: 'name', direction: 'desc' });
   });

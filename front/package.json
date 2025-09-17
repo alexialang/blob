@@ -17,7 +17,13 @@
     "format:check": "prettier --check \"src/**/*.{ts,html,css,scss,json}\"",
     "quality:check": "npm run lint:check && npm run format:check && npm run test:ci",
     "quality:lint": "npm run lint:check && npm run format:check",
-    "build:prerender": "ng build --configuration production && node scripts/prerender.js"
+    "build:prerender": "ng build --configuration production && node scripts/prerender.js",
+    "build:analyze": "ng build --configuration production --stats-json && npx webpack-bundle-analyzer dist/blob-front/stats.json",
+    "build:prod": "ng build --configuration production --aot --build-optimizer --source-map=false",
+    "build:optimized": "ng build --configuration production --aot --build-optimizer --source-map=false --output-hashing=all --vendor-chunk=false --named-chunks=false",
+    "build:ultra": "ng build --configuration production --aot --build-optimizer --source-map=false --output-hashing=all --vendor-chunk=false --named-chunks=false --optimization --extract-licenses --stats-json",
+    "start:fast": "ng serve --host 0.0.0.0 --port 4200 --source-map=false",
+    "lighthouse": "lighthouse http://localhost:4200 --output=html --output-path=./lighthouse-report.html --chrome-flags='--headless'"
   },
   "private": true,
   "dependencies": {
@@ -91,6 +97,7 @@
     "karma-jasmine-html-reporter": "~2.1.0",
     "prettier": "^3.6.2",
     "puppeteer": "^24.17.0",
-    "typescript": "~5.7.2"
+    "typescript": "~5.7.2",
+    "webpack-bundle-analyzer": "^4.10.2"
   }
 }

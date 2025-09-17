@@ -62,19 +62,36 @@
                 {
                   "type": "anyComponentStyle",
                   "maximumWarning": "15kb",
-                  "maximumError": "30kb"
+                  "maximumError": "25kb"
+                },
+                {
+                  "type": "bundle",
+                  "name": "vendor",
+                  "maximumWarning": "500kb",
+                  "maximumError": "1mb"
                 }
               ],
               "outputHashing": "all",
               "optimization": {
                 "scripts": true,
-                "styles": true,
+                "styles": {
+                  "minify": true,
+                  "inlineCritical": true
+                },
                 "fonts": true
               },
+              "allowedCommonJsDependencies": [],
+              "crossOrigin": "anonymous",
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.prod.ts"
+                }
+              ],
               "buildOptimizer": true,
               "aot": true,
               "extractLicenses": true,
-              "vendorChunk": true,
+              "vendorChunk": false,
               "namedChunks": false,
               "sourceMap": false,
               "serviceWorker": false

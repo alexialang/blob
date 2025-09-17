@@ -14,7 +14,7 @@ describe('LiveScoreboardComponent', () => {
       isCurrentUser: true,
       rank: 1,
       isOnline: true,
-      lastAnswerCorrect: true
+      lastAnswerCorrect: true,
     },
     {
       username: 'Player2',
@@ -22,7 +22,7 @@ describe('LiveScoreboardComponent', () => {
       isCurrentUser: false,
       rank: 2,
       isOnline: true,
-      lastAnswerCorrect: false
+      lastAnswerCorrect: false,
     },
     {
       username: 'Player3',
@@ -30,14 +30,14 @@ describe('LiveScoreboardComponent', () => {
       isCurrentUser: false,
       rank: 3,
       isOnline: false,
-      lastAnswerCorrect: true
-    }
+      lastAnswerCorrect: true,
+    },
   ];
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [LiveScoreboardComponent, HttpClientTestingModule],
-      schemas: [NO_ERRORS_SCHEMA]
+      schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
 
     fixture = TestBed.createComponent(LiveScoreboardComponent);
@@ -134,7 +134,14 @@ describe('LiveScoreboardComponent', () => {
     spyOn(component as any, 'detectRankChanges');
     spyOn(component as any, 'sortPlayersByScore');
 
-    component.ngOnChanges({ players: { currentValue: newPlayers, previousValue: [], firstChange: false, isFirstChange: () => false } as SimpleChange });
+    component.ngOnChanges({
+      players: {
+        currentValue: newPlayers,
+        previousValue: [],
+        firstChange: false,
+        isFirstChange: () => false,
+      } as SimpleChange,
+    });
 
     expect((component as any).assignAvatarsToPlayers).toHaveBeenCalled();
     expect((component as any).detectRankChanges).toHaveBeenCalled();
@@ -144,12 +151,12 @@ describe('LiveScoreboardComponent', () => {
   it('should assign avatars to players', () => {
     const players: LivePlayerScore[] = [
       { username: 'Player1', score: 100, isCurrentUser: true, rank: 1, isOnline: true },
-      { username: 'Player2', score: 80, isCurrentUser: false, rank: 2, isOnline: true }
+      { username: 'Player2', score: 80, isCurrentUser: false, rank: 2, isOnline: true },
     ];
     component.players = players;
-    
+
     (component as any).assignAvatarsToPlayers();
-    
+
     expect(players[0].avatar).toBeDefined();
     expect(players[1].avatar).toBeDefined();
   });

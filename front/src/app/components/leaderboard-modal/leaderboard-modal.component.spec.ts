@@ -8,14 +8,13 @@ describe('LeaderboardModalComponent', () => {
   const mockLeaderboard = [
     { username: 'Player1', score: 100, rank: 1 },
     { username: 'Player2', score: 80, rank: 2 },
-    { username: 'Player3', score: 60, rank: 3 }
+    { username: 'Player3', score: 60, rank: 3 },
   ];
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [LeaderboardModalComponent]
-    })
-    .compileComponents();
+      imports: [LeaderboardModalComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(LeaderboardModalComponent);
     component = fixture.componentInstance;

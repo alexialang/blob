@@ -59,16 +59,14 @@ export class QuizResultsService {
     console.log('=== DEBUG GET QUIZ LEADERBOARD ===');
     console.log('quizId:', quizId);
     console.log('isGuest():', this.authService.isGuest());
-    
+
     if (this.authService.isGuest()) {
       console.log('Mode GUEST - utilisation de getGuestLeaderboardWithRealData');
       return this.getGuestLeaderboardWithRealData(quizId);
     }
 
     // Utiliser l'endpoint privé pour les utilisateurs connectés
-    return this.http.get<QuizLeaderboard>(
-      `${environment.apiBaseUrl}/quiz/${quizId}/leaderboard`
-    );
+    return this.http.get<QuizLeaderboard>(`${environment.apiBaseUrl}/quiz/${quizId}/leaderboard`);
   }
 
   private getGuestLeaderboardWithRealData(quizId: number): Observable<QuizLeaderboard> {
@@ -81,7 +79,7 @@ export class QuizResultsService {
 
         // Créer le leaderboard final avec le guest inséré au bon endroit
         const finalLeaderboard = [...realLeaderboard];
-        
+
         // Ajouter le guest au leaderboard
         finalLeaderboard.push({
           rank: 0, // Temporaire, sera recalculé

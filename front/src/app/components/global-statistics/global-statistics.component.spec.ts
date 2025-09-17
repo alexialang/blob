@@ -20,4 +20,3 @@ describe('GlobalStatisticsComponent', () => {
     expect(component).toBeTruthy();
   });
 });
-

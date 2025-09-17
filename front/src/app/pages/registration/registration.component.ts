@@ -92,7 +92,7 @@ export class RegistrationComponent implements OnInit {
         },
         'error-callback': () => {
           this.recaptchaToken = undefined;
-        }
+        },
       });
     } else {
       // Attendre que reCAPTCHA soit chargé
@@ -133,18 +133,16 @@ export class RegistrationComponent implements OnInit {
       return;
     }
 
-    
     const { firstName, lastName, email, password } = this.form.value;
     this.auth.register(email, password, firstName, lastName, this.recaptchaToken).subscribe({
       next: () => {
         this.router.navigate(['/connexion']);
       },
-      error: (error) => {
+      error: error => {
         this.error = 'Inscription impossible';
       },
     });
   }
-
 
   showError(fieldName: string): boolean {
     const field = this.form.get(fieldName);

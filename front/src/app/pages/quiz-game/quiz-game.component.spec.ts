@@ -23,9 +23,7 @@ describe('QuizGameComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [QuizGameComponent, HttpClientTestingModule],
-      providers: [
-        { provide: ActivatedRoute, useValue: mockActivatedRoute },
-      ],
+      providers: [{ provide: ActivatedRoute, useValue: mockActivatedRoute }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(QuizGameComponent);
