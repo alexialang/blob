@@ -245,25 +245,21 @@ class UserService
 
     public function anonymizeUser(User $user, ?User $currentUser = null): void
     {
-        $this->em->beginTransaction();
+        // Soft delete : marquer comme supprimé sans supprimer physiquement
+        $user->setDeletedAt(new \DateTimeImmutable());
+        $user->setIsActive(false);
 
-        try {
-            $user->setDeletedAt(new \DateTimeImmutable());
-            $user->setIsActive(false);
+        // Anonymisation des données personnelles
+        $user->setEmail('anon_'.$user->getId().'@example.com');
+        $user->setFirstName('Utilisateur');
+        $user->setLastName('Anonyme');
+        $user->setPseudo('Utilisateur_'.substr(hash('sha256', (string) $user->getId()), 0, 8));
+        $user->setPassword('');
+        $user->setRoles(['ROLE_ANONYMOUS']);
 
-            $user->setEmail('anon_'.$user->getId().'@example.com');
-            $user->setFirstName('Utilisateur');
-            $user->setLastName('Anonyme');
-            $user->setPseudo('Utilisateur_'.substr(hash('sha256', (string) $user->getId()), 0, 8));
-            $user->setPassword('');
-            $user->setRoles(['ROLE_ANONYMOUS']);
-
-            $this->em->flush();
-            $this->em->commit();
-        } catch (\Exception $e) {
-            $this->em->rollback();
-            throw $e;
-        }
+        // Persistance des modifications
+        $this->em->persist($user);
+        $this->em->flush();
     }
 
     public function sendEmail(string $email, string $firstName, string $confirmationToken): void

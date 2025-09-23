@@ -45,6 +45,13 @@ class SecurityHeadersListener implements EventSubscriberInterface
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
 
         // Content Security Policy (CSP) - différente selon l'environnement
+        // Ne pas appliquer de CSP stricte au frontend Angular
+        $path = $request->getPathInfo();
+        if (!str_starts_with($path, '/api')) {
+            // Frontend Angular - pas de CSP stricte
+            return;
+        }
+        
         if ($isDev) {
             // CSP permissive pour le développement (Web Debug Toolbar + Swagger UI)
             $csp = "default-src 'self'; ".
@@ -57,7 +64,7 @@ class SecurityHeadersListener implements EventSubscriberInterface
                    "frame-ancestors 'none'; ".
                    "base-uri 'self'";
         } else {
-            // CSP stricte pour la production
+            // CSP stricte pour la production API uniquement
             $csp = "default-src 'none'; ".
                    "connect-src 'self'; ".
                    "frame-ancestors 'none'; ".
