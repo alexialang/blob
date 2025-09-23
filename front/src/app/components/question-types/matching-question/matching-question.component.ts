@@ -492,4 +492,37 @@ export class MatchingQuestionComponent implements OnInit, AfterViewInit {
   getAriaDescribedBy(): string {
     return 'matching-instructions';
   }
+
+  getFlowerShape(index: number): string {
+    return '/assets/svg/background_flower.svg';
+  }
+
+  getConnectionColor(leftId: string): string {
+    const colors = [
+      'var(--color-primary)',
+      'var(--color-secondary)', 
+      'var(--color-accent)',
+      'var(--color-success)',
+      'var(--color-warning)',
+      'var(--color-danger)',
+      'var(--color-info)',
+    ];
+    
+    const colorIndex = parseInt(leftId) % colors.length;
+    return colors[colorIndex];
+  }
+
+  getConnectedLeftId(rightId: string): string {
+    // Trouve l'ID de gauche qui est connecté à cet élément de droite
+    for (const [leftId, connectedRightId] of Object.entries(this.matches)) {
+      if (connectedRightId === rightId) {
+        return leftId;
+      }
+    }
+    return '';
+  }
+
+  getHueRotation(id: string): number {
+    return parseInt(id) * 60;
+  }
 }

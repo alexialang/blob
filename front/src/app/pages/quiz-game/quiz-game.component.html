@@ -17,7 +17,7 @@
 
     <div class="user-info" *ngIf="currentUser">
       <span class="username">{{ currentUser.name }}</span>
-      <div class="user-avatar">
+      <div class="user-avatar" role="img" [attr.aria-label]="'Avatar de ' + currentUser.name">
         <div *ngIf="currentUser.avatarSvg" [innerHTML]="currentUser.avatarSvg"></div>
         <span *ngIf="!currentUser.avatarSvg">{{ getUserInitials(currentUser.name) }}</span>
       </div>

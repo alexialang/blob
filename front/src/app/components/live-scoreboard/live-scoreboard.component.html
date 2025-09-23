@@ -17,7 +17,7 @@
       [class.rank-2]="i === 1"
       [class.rank-3]="i === 2"
     >
-      <div class="player-avatar">
+      <div class="player-avatar" role="img" [attr.aria-label]="'Avatar de ' + player.username">
         <img
           [src]="getAvatarPath(player)"
           [alt]="player.username + ' avatar'"

@@ -1,14 +1,4 @@
 <div class="matching-question-container">
-  <div class="question-header">
-    <div class="progress-info">
-      <span>Question {{ progress.current }} / {{ progress.total }}</span>
-      <div class="progress-bar">
-        <div class="progress-fill" [style.width.%]="progress.percentage"></div>
-      </div>
-    </div>
-    <h2 class="question-title">{{ question.question }}</h2>
-    <p class="question-instruction">Tracez des lignes pour associer les éléments ou utilisez le clavier</p>
-  </div>
 
   <div id="matching-instructions" class="sr-only">
     Instructions pour l'accessibilité : Utilisez Tab pour naviguer entre les éléments. Appuyez sur Entrée pour
@@ -21,7 +11,6 @@
 
     <div class="matching-columns">
       <div class="left-column">
-        <h3>Éléments à associer</h3>
         <div class="items-list" role="group" aria-label="Éléments à associer">
           <div
             *ngFor="let item of leftColumn; let i = index"
@@ -40,9 +29,17 @@
             (blur)="onBlur()"
           >
             <div class="item-content">
-              <span class="item-number" aria-hidden="true">{{ i + 1 }}</span>
               <span class="item-text">{{ item.answer }}</span>
-              <div class="connection-point left-point" aria-hidden="true"></div>
+              <img 
+                [src]="getFlowerShape(i)" 
+                alt="Point de connexion floral" 
+                class="connection-point left-point flower-connection" 
+                [style.filter]="matches[item.id.toString()] ? 
+                  'brightness(0) saturate(100%) invert(42%) sepia(93%) saturate(1352%) hue-rotate(' + getHueRotation(item.id.toString()) + 'deg) brightness(119%) contrast(119%)' : 
+                  'brightness(0) saturate(0%) contrast(50%)'"
+                [style.color]="matches[item.id.toString()] ? getConnectionColor(item.id.toString()) : '#666'"
+                aria-hidden="true"
+              />
             </div>
             <button
               *ngIf="matches[item.id.toString()]"
@@ -58,7 +55,6 @@
       </div>
 
       <div class="right-column">
-        <h3>Associations possibles</h3>
         <div class="items-list" role="group" aria-label="Associations possibles">
           <div
             *ngFor="let item of rightColumn; let i = index"
@@ -77,8 +73,16 @@
             (blur)="onBlur()"
           >
             <div class="item-content">
-              <div class="connection-point right-point" aria-hidden="true"></div>
-              <span class="item-letter" aria-hidden="true">{{ getItemLetter(i) }}</span>
+              <img 
+                [src]="getFlowerShape(i)" 
+                alt="Point de connexion floral" 
+                class="connection-point right-point flower-connection" 
+                [style.filter]="isRightItemConnected(item.id.toString()) ? 
+                  'brightness(0) saturate(100%) invert(42%) sepia(93%) saturate(1352%) hue-rotate(' + getHueRotation(getConnectedLeftId(item.id.toString())) + 'deg) brightness(119%) contrast(119%)' : 
+                  'brightness(0) saturate(0%) contrast(50%)'"
+                [style.color]="isRightItemConnected(item.id.toString()) ? getConnectionColor(getConnectedLeftId(item.id.toString())) : '#666'"
+                aria-hidden="true"
+              />
               <span class="item-text">{{ item.answer }}</span>
             </div>
           </div>

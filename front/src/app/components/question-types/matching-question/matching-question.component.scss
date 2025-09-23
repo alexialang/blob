@@ -69,11 +69,24 @@
 
 .matching-columns {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 40px;
+  grid-template-columns: 1fr 80px 240px 80px 1fr;
+  gap: 0;
   height: 100%;
   position: relative;
   z-index: 5;
+}
+
+.left-column {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.right-column {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  grid-column: 5;
 }
 
 .left-column,
@@ -94,80 +107,101 @@
 .items-list {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 40px;
 }
 
 .matching-item {
   position: relative;
-  background: var(--bg-primary);
-  border: 2px solid var(--border-light);
-  border-radius: 10px;
-  padding: 15px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 10px;
   cursor: pointer;
   transition: var(--transition);
   user-select: none;
 
+  &:nth-child(odd) {
+    transform: rotate(-3deg);
+  }
+
+  &:nth-child(even) {
+    transform: rotate(3deg);
+  }
+
   &:hover {
-    border-color: var(--color-secondary);
-    box-shadow: var(--hover-shadow);
-    transform: translateY(-2px);
+    transform: translateY(-3px) scale(1.02);
+    
+    &:nth-child(odd) {
+      transform: rotate(-3deg) translateY(-3px) scale(1.02);
+    }
+
+    &:nth-child(even) {
+      transform: rotate(3deg) translateY(-3px) scale(1.02);
+    }
   }
 
   &.connected {
-    border-color: var(--color-success);
-    background: rgba(37, 125, 84, 0.1);
-
-    .connection-point {
-      background: var(--color-success);
-      box-shadow: 0 0 10px rgba(37, 125, 84, 0.5);
+    .connection-point.flower-connection {
+      transform: scale(1.2);
+      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
     }
   }
 
   .item-content {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
     position: relative;
   }
 
-  .item-number,
-  .item-letter {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 30px;
-    height: 30px;
-    background: var(--color-secondary);
-    color: var(--text-inverse);
-    border-radius: 50%;
-    font-weight: 600;
-    font-size: 14px;
-    flex-shrink: 0;
+  &.left-item {
+    .item-content {
+      justify-content: flex-end;
+    }
+    
+    .connection-point {
+      position: absolute;
+      right: -104px;
+      z-index: 20;
+      cursor: pointer;
+    }
+  }
+
+  &.right-item {
+    .item-content {
+      justify-content: flex-start;
+    }
+    
+    .connection-point {
+      position: absolute;
+      left: -104px;
+      z-index: 20;
+      cursor: pointer;
+    }
   }
 
   .item-text {
     flex: 1;
-    font-size: 16px;
+    font-size: 36px;
+    font-weight: 600;
     color: var(--text-primary);
-    line-height: 1.4;
+    line-height: 1.3;
   }
 
   .connection-point {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: var(--border-medium);
-    border: 2px solid var(--bg-primary);
+    width: 48px;
+    height: 48px;
     transition: var(--transition);
     flex-shrink: 0;
 
-    &.left-point {
-      order: 3;
+    &.flower-connection {
+      transition: var(--transition);
+      
+      &:hover {
+        transform: scale(1.1);
+      }
     }
 
-    &.right-point {
-      order: 0;
-    }
   }
 
   .remove-connection {
@@ -262,7 +296,27 @@
 
   .matching-columns {
     grid-template-columns: 1fr;
-    gap: 20px;
+    gap: 40px;
+  }
+
+  .left-column,
+  .right-column {
+    align-items: center;
+  }
+
+  .matching-item {
+    &.left-item,
+    &.right-item {
+      .connection-point {
+        position: relative;
+        right: auto;
+        left: auto;
+      }
+    }
+  }
+
+  .items-list {
+    gap: 30px;
   }
 
   .matching-area {
@@ -284,35 +338,63 @@
   }
 
   .matching-item {
-    padding: 12px;
+    padding: 8px;
 
-    .item-text {
-      font-size: 14px;
+    &:nth-child(odd) {
+      transform: rotate(-2deg);
     }
 
-    .item-number,
-    .item-letter {
-      width: 25px;
-      height: 25px;
-      font-size: 12px;
+    &:nth-child(even) {
+      transform: rotate(2deg);
+    }
+
+    &:hover {
+      &:nth-child(odd) {
+        transform: rotate(-2deg) translateY(-2px) scale(1.01);
+      }
+
+      &:nth-child(even) {
+        transform: rotate(2deg) translateY(-2px) scale(1.01);
+      }
+    }
+
+    .item-text {
+      font-size: 30px;
+    }
+
+    .connection-point {
+      width: 40px;
+      height: 40px;
     }
   }
 }
 
 @keyframes connectionPulse {
   0% {
-    transform: scale(1);
-  }
-  50% {
     transform: scale(1.2);
   }
+  50% {
+    transform: scale(1.4);
+  }
   100% {
-    transform: scale(1);
+    transform: scale(1.2);
   }
 }
 
-.matching-item.connected .connection-point {
-  animation: connectionPulse 0.6s ease-in-out;
+@keyframes flowerGlow {
+  0% {
+    transform: scale(1.2);
+  }
+  50% {
+    transform: scale(1.3);
+  }
+  100% {
+    transform: scale(1.2);
+  }
+}
+
+.matching-item.connected .connection-point.flower-connection {
+  animation: connectionPulse 0.6s ease-in-out, flowerGlow 1.2s ease-in-out;
 }
 
 .connection-canvas {
@@ -340,14 +422,14 @@
   }
 
   &.selected-keyboard {
-    border-color: var(--color-accent);
-    background: rgba(250, 162, 75, 0.1);
+    background: rgba(250, 162, 75, 0.2);
+    border-radius: 8px;
     box-shadow: 0 0 0 2px var(--color-accent);
   }
 
   &.available {
-    border-color: var(--color-success);
-    background: rgba(37, 125, 84, 0.1);
+    background: rgba(37, 125, 84, 0.2);
+    border-radius: 8px;
 
     &:focus {
       outline-color: var(--color-success);
@@ -362,16 +444,16 @@
 
 @media (prefers-contrast: high) {
   .matching-item {
-    border-width: 3px;
-
     &.connected {
-      border-color: var(--color-dark);
       background: var(--bg-primary);
+      border: 2px solid var(--color-dark);
+      border-radius: 8px;
     }
 
     &.selected-keyboard {
-      border-color: var(--color-dark);
       background: var(--color-accent);
+      border: 2px solid var(--color-dark);
+      border-radius: 8px;
     }
   }
 }
@@ -383,7 +465,7 @@
     transition: none;
   }
 
-  .matching-item.connected .connection-point {
+  .matching-item.connected .connection-point.flower-connection {
     animation: none;
   }
 }

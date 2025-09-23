@@ -167,16 +167,16 @@
         <div class="filters-container">
           <div class="filters-row">
             <div class="filter-group">
-              <label class="filter-label">Groupe</label>
-              <select class="form-control" [(ngModel)]="filterByGroup" (ngModelChange)="applyFilters()">
+              <label for="filter-group" class="filter-label">Groupe</label>
+              <select id="filter-group" class="form-control" [(ngModel)]="filterByGroup" (ngModelChange)="applyFilters()">
                 <option value="">Tous groupes</option>
                 <option *ngFor="let g of groupList" [value]="g">{{ g }}</option>
               </select>
             </div>
 
             <div class="filter-group">
-              <label class="filter-label">Statut</label>
-              <select class="form-control" [(ngModel)]="filterByStatus" (ngModelChange)="applyFilters()">
+              <label for="filter-status" class="filter-label">Statut</label>
+              <select id="filter-status" class="form-control" [(ngModel)]="filterByStatus" (ngModelChange)="applyFilters()">
                 <option value="">Tous statuts</option>
                 <option value="active">Actif</option>
                 <option value="inactive">Inactif</option>

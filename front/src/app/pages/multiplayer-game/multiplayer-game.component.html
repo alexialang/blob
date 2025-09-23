@@ -38,7 +38,7 @@
       <span class="username">{{ currentUser?.username || 'Joueur' }}</span>
       <div class="user-level">
         <span class="level-badge">MULTI</span>
-        <div class="user-avatar">
+        <div class="user-avatar" role="img" [attr.aria-label]="'Avatar de ' + (currentUser?.username || 'Joueur')">
           <span>{{ (currentUser?.username || 'U').charAt(0).toUpperCase() }}</span>
         </div>
       </div>

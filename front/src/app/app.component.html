@@ -1,9 +1,9 @@
-<a href="#main-content" class="skip-link">Passer au contenu principal</a>
+<button class="skip-link" (click)="skipToMainContent()">Passer au contenu principal</button>
 <app-privacy-consent></app-privacy-consent>
 <app-navbar *ngIf="showNavbar"></app-navbar>
 <app-game-invitation-toast></app-game-invitation-toast>
 <app-quiz-transition></app-quiz-transition>
 <app-alert></app-alert>
-<main id="main-content">
+<main id="main-content" tabindex="-1">
   <router-outlet></router-outlet>
 </main>

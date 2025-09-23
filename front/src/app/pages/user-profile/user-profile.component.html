@@ -275,14 +275,6 @@
                 </div>
                 <div class="col-md-12 mb-2" *ngIf="isAdmin">
                   <div class="info-item admin-info">
-                    <span class="info-label">Dernière connexion :</span>
-                    <span class="info-value">
-                      {{ user.lastAccess ? (user.lastAccess | date: 'dd/MM/yyyy HH:mm') : 'Jamais' }}
-                    </span>
-                  </div>
-                </div>
-                <div class="col-md-12 mb-2" *ngIf="isAdmin">
-                  <div class="info-item admin-info">
                     <span class="info-label">Statut :</span>
                     <span class="info-value" [class]="user.isActive ? 'status-active' : 'status-inactive'">
                       {{ user.isActive ? 'Actif' : 'Inactif' }}

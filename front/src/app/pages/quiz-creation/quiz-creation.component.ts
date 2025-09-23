@@ -332,6 +332,7 @@ export class QuizCreationComponent implements OnInit {
       matching: "Association d'éléments",
       find_the_intruder: 'Intrus',
       blind_test: 'Blind Test',
+      true_false: 'Vrai/Faux',
     } as const;
 
     return TYPE_LABELS[type as keyof typeof TYPE_LABELS] || type;

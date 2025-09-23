@@ -19,7 +19,7 @@
         <span class="rank-number" *ngIf="player.rank > 3">#{{ player.rank }}</span>
       </div>
 
-      <div class="player-avatar">
+      <div class="player-avatar" role="img" [attr.aria-label]="'Avatar de ' + player.username + ', rang ' + player.rank">
         <div class="avatar-blob" [class.current-user]="player.isCurrentUser" [ngStyle]="getAvatarStyle(player)">
           <div class="avatar-shape" *ngIf="player.avatar?.shape">
             <img
@@ -30,7 +30,7 @@
           </div>
           <span class="avatar-initial">{{ player.username.charAt(0).toUpperCase() }}</span>
         </div>
-        <div class="user-crown" *ngIf="player.rank === 1">👑</div>
+        <div class="user-crown" *ngIf="player.rank === 1" role="img" aria-label="Couronne du premier">👑</div>
       </div>
 
       <div class="player-info">

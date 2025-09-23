@@ -2,18 +2,23 @@
   <div class="quiz-header">
     <div class="page-title"><h1>Quiz</h1></div>
     <div class="quiz-filters">
+      <label for="search-input" class="visually-hidden">Rechercher un quiz</label>
       <input
+        id="search-input"
         type="text"
         class="filter-select"
         [(ngModel)]="searchTerm"
         (ngModelChange)="applyFilters()"
         placeholder="Rechercher un quiz…"
+        aria-label="Rechercher un quiz"
       />
-      <select class="filter-select" [(ngModel)]="selectedCategory" (ngModelChange)="applyFilters()">
+      <label for="category-select" class="visually-hidden">Filtrer par catégorie</label>
+      <select id="category-select" class="filter-select" [(ngModel)]="selectedCategory" (ngModelChange)="applyFilters()" aria-label="Filtrer par catégorie">
         <option value="">Toutes catégories</option>
         <option *ngFor="let c of categories" [value]="c.name">{{ c.name }}</option>
       </select>
-      <select class="filter-select" [(ngModel)]="selectedDifficulty" (ngModelChange)="applyFilters()">
+      <label for="difficulty-select" class="visually-hidden">Filtrer par difficulté</label>
+      <select id="difficulty-select" class="filter-select" [(ngModel)]="selectedDifficulty" (ngModelChange)="applyFilters()" aria-label="Filtrer par difficulté">
         <option value="">Toute difficulté</option>
         <option value="Facile">Facile</option>
         <option value="Moyen">Moyen</option>

@@ -53,4 +53,12 @@ export class AppComponent implements OnInit {
         this.analyticsService.trackPageView(event.url, document.title);
       });
   }
+
+  skipToMainContent() {
+    const mainContent = document.getElementById('main-content');
+    if (mainContent) {
+      mainContent.focus();
+      mainContent.scrollIntoView({ behavior: 'smooth' });
+    }
+  }
 }

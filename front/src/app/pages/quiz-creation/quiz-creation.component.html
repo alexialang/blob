@@ -137,7 +137,7 @@
               <label>Type de question *</label>
               <select formControlName="type_question" class="form-select" (change)="onQuestionTypeChange(i)">
                 <option value="">Sélectionnez un type</option>
-                <option *ngFor="let type of typeQuestions" [value]="type.key">{{ type.name }}</option>
+                <option *ngFor="let type of typeQuestions" [value]="type.key">{{ getQuestionTypeLabel(type.key) }}</option>
               </select>
               <div *ngIf="typeQuestions.length === 0" class="loading">Chargement des types...</div>
               <div

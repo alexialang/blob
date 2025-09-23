@@ -8,7 +8,8 @@
 
     <div class="filters-container">
       <div class="search-row">
-        <select class="form-control page-size-select" [(ngModel)]="pageSize" (ngModelChange)="onPageSizeChange($event)">
+        <label for="page-size-select" class="visually-hidden">Nombre d'éléments par page</label>
+        <select id="page-size-select" class="form-control page-size-select" [(ngModel)]="pageSize" (ngModelChange)="onPageSizeChange($event)" aria-label="Nombre d'éléments par page">
           <option [value]="10">10 par page</option>
           <option [value]="20">20 par page</option>
           <option [value]="50">50 par page</option>

@@ -16,7 +16,7 @@
   --color-danger-dark: #b91c1c;
 
   --color-accent-dark: #d35400;
-  --color-secondary-dark: #48a09d;
+  --color-secondary-dark: #358b87;
   --color-pink-dark: #b91c5c;
 
   --color-success: var(--color-primary);
@@ -183,18 +183,24 @@ p:focus {
   position: absolute;
   top: -40px;
   left: 6px;
-  background: var(--color-accent);
+  background: var(--color-dark);
   color: white;
   padding: 8px 16px;
   text-decoration: none;
+  border: none;
   border-radius: var(--border-radius-small);
   font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
   z-index: 1000;
   transition: top var(--transition-normal);
 }
 
 .skip-link:focus {
   top: 6px;
+  background: var(--color-dark);
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
 }
 
 .quiz-card:focus-visible {
