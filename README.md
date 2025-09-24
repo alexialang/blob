@@ -200,7 +200,6 @@ Le projet suit une approche inspirée de la méthode Agile avec :
 ### Fonctionnalités Avancées Implémentées
 
 - **SSR + SEO** : Pré-rendu Puppeteer des pages publiques pour l'indexation
-- **Analytics Respectueux** : Simple Analytics (RGPD-compliant) + analytics locales anonymisées
 - **Rate Limiting** : Système custom anti-brute force spécifique au login
 - **reCAPTCHA v2** : Score minimum 0.5 pour inscription et reset password
 - **CORS sécurisé** : Configuration Nelmio avec domaines autorisés
@@ -305,6 +304,7 @@ export class SeoService {
 }
 ```
 
+
 ### Analytics et Monitoring
 
 ```typescript
@@ -332,6 +332,7 @@ export class PrivacyAnalyticsService {
   }
 }
 ```
+
 
 ### Optimisation Performance
 
@@ -433,9 +434,8 @@ server {
 
 
 ### Disponibilité
-- **Début octobre** pour CDI/Mission
-- **Mobilité** : Région Grand Est + Remote
-- **Prétentions** : Selon expérience et projet
+- **Début octobre** pour CDI
+- **Mobilité** : Metz et alentours + Remote
 
 ---
 
