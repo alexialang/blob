@@ -1,99 +1,114 @@
 <div class="quiz-results-page" *ngIf="!isLoading && resultData">
-
   <div class="results-header">
-    <app-back-button></app-back-button>
-    <h1 class="page-title">Résultats du Quiz</h1>
+    <app-back-button (click)="onBackToQuizzes()"></app-back-button>
   </div>
 
-  <div class="results-content">
+  <div class="container">
+    <h1 class="page-title">Résultats du Quiz</h1>
 
-    <div class="score-section">
-      <div class="quiz-info">
-        <h2 class="quiz-title">{{ resultData.quizTitle }}</h2>
-        <p class="quiz-completion">Quiz terminé avec succès !</p>
-      </div>
+    <div class="results-content">
+      <div class="score-section">
+        <div class="score-card">
+          <div class="card-header">
+            <h2 class="quiz-title">{{ resultData.quizTitle }}</h2>
+            <p class="quiz-completion">Quiz terminé avec succès !</p>
+          </div>
 
-      <div class="main-score">
-        <div class="score-circle">
-          <div class="score-value">{{ resultData.totalScore }}</div>
-          <div class="score-total">/ 100</div>
-          <div class="score-percentage">{{ getScorePercentage() }}%</div>
-        </div>
-      </div>
-
-      <div class="score-details">
-        <div class="detail-item">
-          <span class="label">Questions correctes</span>
-          <span class="value">{{ Math.floor((resultData.totalScore / 100) * resultData.totalQuestions) }} / {{ resultData.totalQuestions }}</span>
-        </div>
-        <div class="detail-item">
-          <span class="label">Niveau atteint</span>
-          <span class="value level">{{ getPlayerLevel(getScorePercentage()) }}</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="ranking-section">
-      <div class="ranking-header">
-        <h3 *ngIf="!isGuest">Votre Position</h3>
-        <h3 *ngIf="isGuest">Position Simulée</h3>
-        <div class="rank-display">
-          <span class="rank-number">{{ resultData.playerRank }}</span>
-          <span class="rank-suffix">{{ getPositionSuffix(resultData.playerRank) }}</span>
-          <span class="rank-total">/ {{ resultData.totalPlayers }}</span>
-        </div>
-        <p *ngIf="isGuest" class="guest-notice">
-          Connectez-vous pour sauvegarder votre score !
-        </p>
-      </div>
-
-      <div class="top-players" *ngIf="resultData.leaderboard.length > 0">
-        <h4>Top 3 de ce quiz</h4>
-        <div class="podium-mini">
-          <div class="podium-player" *ngFor="let player of resultData.leaderboard.slice(0, 3); let i = index">
-            <div class="player-position">
-              <span class="medal">{{ getMedalIcon(i + 1) }}</span>
-              <span class="position">{{ i + 1 }}</span>
+          <div class="score-content">
+            <div class="main-score">
+              <div class="score-circle">
+                <div class="score-value">{{ resultData.totalScore }}</div>
+                <div class="score-total">/ 100</div>
+                <div class="score-percentage">{{ getScorePercentage() }}%</div>
+              </div>
             </div>
-            <div class="player-info">
-              <span class="player-name">{{ player.name }}</span>
-              <span class="player-score">{{ player.score }} pts</span>
+
+            <div class="score-details">
+              <div class="detail-item">
+                <span class="label">Questions correctes</span>
+                <span class="value"
+                  >{{ Math.floor((resultData.totalScore / 100) * resultData.totalQuestions) }} /
+                  {{ resultData.totalQuestions }}</span
+                >
+              </div>
             </div>
-            <div class="current-indicator" *ngIf="player.isCurrentUser">Vous</div>
           </div>
         </div>
       </div>
-    </div>
 
-    <div class="actions-section">
-      <div class="primary-actions">
-        <app-slide-button
-          label="Rejouer ce quiz"
-          [negative]="false"
-          backgroundColor="var(--color-primary)"
-          (buttonClick)="onReplay()">
-        </app-slide-button>
+      <div class="ranking-section">
+        <div class="ranking-card">
+          <div class="card-header">
+            <h3 *ngIf="!isGuest">Votre Position</h3>
+            <h3 *ngIf="isGuest">Position Simulée</h3>
+            <div class="total-count">
+              {{ resultData.totalPlayers }} joueur{{ resultData.totalPlayers > 1 ? 's' : '' }}
+            </div>
+          </div>
 
-        <app-slide-button
-          label="Partager mon score"
-          [negative]="true"
-          backgroundColor="var(--color-accent)"
-          (buttonClick)="onShare()">
-        </app-slide-button>
+          <div class="ranking-content">
+            <div class="my-position">
+              <div class="rank-display">
+                <span class="rank-number">{{ resultData.playerRank }}</span>
+                <span class="rank-suffix">{{ getPositionSuffix(resultData.playerRank) }}</span>
+                <span class="rank-total">/ {{ resultData.totalPlayers }}</span>
+              </div>
+              <p *ngIf="isGuest" class="guest-notice">Connectez-vous pour sauvegarder votre score !</p>
+            </div>
+
+            <div class="top-players" *ngIf="resultData.leaderboard.length > 0">
+              <h4>Top 3 de ce quiz</h4>
+              <div class="podium-mini">
+                <div
+                  class="podium-player"
+                  *ngFor="let player of resultData.leaderboard.slice(0, 3); let i = index"
+                  [class.current-user]="player.isCurrentUser"
+                >
+                  <div class="player-position">
+                    <span class="medal">{{ getMedalIcon(i + 1) }}</span>
+                    <span class="position">{{ i + 1 }}</span>
+                  </div>
+                  <div class="player-info">
+                    <span class="player-name">{{ player.name }}</span>
+                    <span class="player-score">{{ player.score }} pts</span>
+                  </div>
+                  <div class="current-indicator" *ngIf="player.isCurrentUser">Vous</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div class="secondary-actions">
-        <button class="link-btn" (click)="onViewFullLeaderboard()">
-          <span *ngIf="!isGuest">Voir le classement général</span>
-          <span *ngIf="isGuest">Se connecter pour voir le classement</span>
-        </button>
+      <div class="actions-section">
+        <div class="primary-actions">
+          <app-slide-button
+            label="Rejouer ce quiz"
+            [negative]="false"
+            backgroundColor="var(--color-primary)"
+            (buttonClick)="onReplay()"
+          >
+          </app-slide-button>
 
-        <button class="link-btn" (click)="onBackToQuizzes()">
-          Retour aux quiz
-        </button>
+          <app-slide-button
+            label="Partager mon score"
+            [negative]="true"
+            backgroundColor="var(--color-accent)"
+            (buttonClick)="onShare()"
+          >
+          </app-slide-button>
+        </div>
+
+        <div class="secondary-actions">
+          <button class="link-btn" (click)="onViewFullLeaderboard()">
+            <span *ngIf="!isGuest">Voir le classement général</span>
+            <span *ngIf="isGuest">Se connecter pour voir le classement</span>
+          </button>
+
+          <button class="link-btn" (click)="onBackToQuizzes()">Retour aux quiz</button>
+        </div>
       </div>
     </div>
-
   </div>
 </div>
 

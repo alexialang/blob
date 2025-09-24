@@ -1,8 +1,14 @@
 .multiple-choice-question-container {
   position: relative;
+  width: 100%;
   min-height: 100vh;
   background: var(--color-light);
-  padding: 0;
+  padding: 20px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .quiz-header {
@@ -100,74 +106,223 @@
 
 .answers-container {
   display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding: 0 40px;
-  margin-bottom: 60px;
-  max-width: 800px;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 0 60px;
+  margin-bottom: 40px;
+  min-height: 500px;
+  width: 100%;
+  max-width: 1400px;
 
   .answer-option {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 16px;
-    border: 2px solid var(--border-light);
-    border-radius: 12px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
 
-    &:hover {
-      border-color: var(--text-primary);
-      background: var(--bg-secondary);
+    &.grayed-out {
+      opacity: 0.4;
+      filter: grayscale(50%) brightness(0.9);
+      transform: scale(0.98);
+      cursor: pointer;
     }
 
-    &.selected {
-      border-color: var(--text-primary);
-      background: var(--text-primary);
-      color: var(--color-white);
+    &::before {
+      content: '';
+      position: absolute;
+      top: -10px;
+      left: -10px;
+      right: -10px;
+      bottom: -10px;
+      background: linear-gradient(45deg, var(--color-primary), var(--color-pink));
+      border-radius: 50%;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      z-index: -1;
+    }
 
-      .answer-checkbox {
-        background: var(--color-white);
-        border-color: var(--color-white);
+    &:hover::before {
+      opacity: 0.1;
+    }
 
-        .checkbox-mark {
-          color: var(--text-primary);
+    &.selected::before {
+      opacity: 0.2;
+      animation: pulse 2s infinite;
+    }
+
+    &:nth-child(1) {
+      margin-bottom: 120px;
+
+      .answer-shape {
+        width: 380px;
+        height: 380px;
+
+        .answer-text {
+          font-size: 24px;
+          padding: 40px;
+          max-width: 300px;
         }
       }
     }
+
+    &:nth-child(2) {
+      margin-bottom: 40px;
+
+      .answer-shape {
+        width: 380px;
+        height: 380px;
+
+        .answer-text {
+          font-size: 24px;
+          padding: 40px;
+          max-width: 300px;
+        }
+      }
+    }
+
+    &:nth-child(3) {
+      margin-bottom: 180px;
+
+      .answer-shape {
+        width: 380px;
+        height: 380px;
+
+        .answer-text {
+          font-size: 24px;
+          padding: 40px;
+          max-width: 300px;
+        }
+      }
+    }
+
+    &:nth-child(4) {
+      margin-bottom: 100px;
+
+      .answer-shape {
+        width: 350px;
+        height: 350px;
+      }
+    }
+
+    &:hover {
+      transform: scale(1.08) translateY(-5px);
+      filter: brightness(1.1);
+    }
+
+    &.selected {
+      transform: scale(1.15) translateY(-8px);
+      filter: brightness(1.2) drop-shadow(0 10px 20px rgba(0, 0, 0, 0.2));
+    }
   }
 
-  .answer-checkbox {
-    width: 24px;
-    height: 24px;
-    border: 2px solid var(--text-primary);
-    border-radius: 4px;
+  .answer-shape {
+    position: relative;
+    width: 350px;
+    height: 350px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--color-white);
-    flex-shrink: 0;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
 
-    .checkbox-mark {
-      font-size: 16px;
-      font-weight: bold;
-      color: var(--text-primary);
-      opacity: 0;
-      transition: opacity 0.3s ease;
+    .flower-shape {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
 
-      &.checked {
-        opacity: 1;
+      &.flower-1 {
+        animation: float-rotate-1 4s ease-in-out infinite;
+      }
+
+      &.flower-2 {
+        animation: float-rotate-2 3.5s ease-in-out infinite;
+      }
+
+      &.flower-3 {
+        animation: float-rotate-3 4.5s ease-in-out infinite;
+      }
+
+      &.flower-4 {
+        animation: float-rotate-4 3.8s ease-in-out infinite;
+      }
+
+      &.selected {
+        transform: scale(1.1);
       }
     }
-  }
-
-  .answer-content {
-    flex: 1;
 
     .answer-text {
-      font-size: 18px;
-      font-weight: 500;
+      position: relative;
+      z-index: 2;
+      color: var(--color-white);
+      font-size: 22px;
+      font-weight: 600;
+      text-align: center;
+      padding: 35px;
+      max-width: 280px;
+      word-wrap: break-word;
+      line-height: 1.3;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
     }
+  }
+}
+
+@keyframes float-rotate-1 {
+  0%,
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-15px) rotate(3deg);
+  }
+}
+
+@keyframes float-rotate-2 {
+  0%,
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-12px) rotate(-2deg);
+  }
+}
+
+@keyframes float-rotate-3 {
+  0%,
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-18px) rotate(4deg);
+  }
+}
+
+@keyframes float-rotate-4 {
+  0%,
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(-3deg);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.2;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.3;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.2;
   }
 }
 
@@ -198,3 +353,4 @@
     }
   }
 }
+

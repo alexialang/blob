@@ -5,9 +5,10 @@ import { NavbarComponent } from './components/navbar/navbar.component';
 import { GameInvitationToastComponent } from './components/game-invitation-toast/game-invitation-toast.component';
 import { QuizTransitionComponent } from './components/quiz-transition/quiz-transition.component';
 import { AlertComponent } from './components/alert/alert.component';
-import { CookieBannerComponent } from './components/cookie-banner/cookie-banner.component';
+import { PrivacyConsentComponent } from './components/privacy-consent/privacy-consent.component';
 
 import { AuthService } from './services/auth.service';
+import { PrivacyAnalyticsService } from './services/privacy-analytics.service';
 import { filter } from 'rxjs/operators';
 
 @Component({
@@ -20,32 +21,44 @@ import { filter } from 'rxjs/operators';
     GameInvitationToastComponent,
     QuizTransitionComponent,
     AlertComponent,
-    CookieBannerComponent
+    PrivacyConsentComponent,
   ],
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
+  styleUrls: ['./app.component.scss'],
 })
 export class AppComponent implements OnInit {
   showNavbar: boolean = true;
 
   constructor(
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private analyticsService: PrivacyAnalyticsService
   ) {}
 
   ngOnInit() {
-    this.router.events.pipe(
-      filter(event => event instanceof NavigationEnd)
-    ).subscribe((event: any) => {
-      const route = this.router.routerState.root;
-      let currentRoute = route;
+    this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe((event: any) => {
+        const route = this.router.routerState.root;
+        let currentRoute = route;
 
-      while (currentRoute.children.length > 0) {
-        currentRoute = currentRoute.children[0];
-      }
+        while (currentRoute.children.length > 0) {
+          currentRoute = currentRoute.children[0];
+        }
 
-      const hideNavbar = currentRoute.snapshot.data['hideNavbar'];
-      this.showNavbar = !hideNavbar;
-    });
+        const hideNavbar = currentRoute.snapshot.data['hideNavbar'];
+        this.showNavbar = !hideNavbar;
+
+        // Tracking automatique des pages avec Umami
+        this.analyticsService.trackPageView(event.url, document.title);
+      });
+  }
+
+  skipToMainContent() {
+    const mainContent = document.getElementById('main-content');
+    if (mainContent) {
+      mainContent.focus();
+      mainContent.scrollIntoView({ behavior: 'smooth' });
+    }
   }
 }

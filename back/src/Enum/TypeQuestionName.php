@@ -18,21 +18,16 @@ enum TypeQuestionName: string
 
     case TRUE_FALSE = 'true_false';
 
-
-
     public function getName(): string
-{
-    return match ($this) {
-        self::MCQ => 'QCM',
-        self::MULTIPLE_CHOICE => 'Choix multiple',
-        self::RIGHT_ORDER => 'Remise dans le bon ordre',
-        self::MATCHING => 'Association d\'élément ',
-        self::FIND_THE_INTRUDER => 'Trouver l\'intrus',
-        self::BLIND_TEST => 'Blind test',
-        self::TRUE_FALSE => 'Vrai/Faux',
-    };
+    {
+        return match ($this) {
+            self::MCQ => 'QCM',
+            self::MULTIPLE_CHOICE => 'Choix multiple',
+            self::RIGHT_ORDER => 'Remise dans le bon ordre',
+            self::MATCHING => 'Association d\'élément ',
+            self::FIND_THE_INTRUDER => 'Trouver l\'intrus',
+            self::BLIND_TEST => 'Blind test',
+            self::TRUE_FALSE => 'Vrai/Faux',
+        };
+    }
 }
-}
-
-
-

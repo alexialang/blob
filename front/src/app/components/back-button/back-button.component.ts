@@ -8,12 +8,15 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './back-button.component.html',
-  styleUrls: ['./back-button.component.scss']
+  styleUrls: ['./back-button.component.scss'],
 })
 export class BackButtonComponent {
   @Input() fallbackRoute: string = '/login';
 
-  constructor(private router: Router, private location: Location) {}
+  constructor(
+    private router: Router,
+    private location: Location
+  ) {}
 
   goBack() {
     if (window.history.length > 1) {

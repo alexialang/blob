@@ -7,14 +7,12 @@ body {
   margin: 0;
   padding: 0;
 }
-.company-page{
+.company-page {
   width: 100%;
   align-items: center;
   background-color: var(--color-light) !important;
-
 }
-.company-highlight
-{
+.company-highlight {
   font-family: var(--font-display);
 }
 
@@ -23,7 +21,6 @@ body {
   max-width: 1400px;
   margin: 0 auto;
   padding: 2rem 1rem;
-
 }
 
 .d-flex {
@@ -115,8 +112,6 @@ body {
   line-height: 1;
   border-radius: 6px 0 0 6px;
   transition: background-color 0.2s ease;
-
-
 }
 
 .custom-dropdown-chevron {
@@ -130,7 +125,6 @@ body {
   justify-content: center;
   border-radius: 0 6px 6px 0;
   transition: background-color 0.2s ease;
-
 
   svg {
     color: #ffffff;
@@ -288,7 +282,6 @@ tui-badge {
   }
 }
 
-
 .company-cell {
   display: flex;
   align-items: center;
@@ -313,8 +306,8 @@ tui-badge {
   }
 }
 
-button[tuiButton][appearance="action-grayscale"] {
-  background-color:aliceblue;
+button[tuiButton][appearance='action-grayscale'] {
+  background-color: aliceblue;
   color: var(--color-dark);
   border: none;
 

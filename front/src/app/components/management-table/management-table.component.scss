@@ -45,7 +45,7 @@
 
   &:focus {
     outline: none;
-    border-color: #257D54;
+    border-color: #257d54;
     box-shadow: 0 0 0 2px rgba(37, 125, 84, 0.1);
   }
 }
@@ -101,7 +101,8 @@
   width: 100%;
   min-width: 800px;
 
-  th, td {
+  th,
+  td {
     padding: 12px;
     text-align: left;
     border-bottom: 1px solid #eee;
@@ -145,7 +146,8 @@
   }
 }
 
-.user-cell, .company-cell {
+.user-cell,
+.company-cell {
   .tui-avatar {
     margin-right: 12px;
   }
@@ -186,7 +188,7 @@
 }
 
 .link-profile {
-  color: #257D54;
+  color: #257d54;
   text-decoration: none;
   font-size: 14px;
 

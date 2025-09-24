@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, tap } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { AuthService } from './auth.service';
 
@@ -31,10 +31,9 @@ export interface QuizLeaderboard {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class QuizResultsService {
-
   constructor(
     private http: HttpClient,
     private authService: AuthService
@@ -42,14 +41,13 @@ export class QuizResultsService {
 
   saveQuizResult(result: QuizResult): Observable<any> {
     if (this.authService.isGuest()) {
-
       sessionStorage.setItem('guest-quiz-score', result.score.toString());
       return of({ success: true, saved: false, score: result.score });
     }
 
     return this.http.post(`${environment.apiBaseUrl}/user-answer/game-result`, {
       quiz_id: result.quizId,
-      total_score: result.score
+      total_score: result.score,
     });
   }
 
@@ -58,48 +56,54 @@ export class QuizResultsService {
   }
 
   getQuizLeaderboard(quizId: number): Observable<QuizLeaderboard> {
+    console.log('=== DEBUG GET QUIZ LEADERBOARD ===');
+    console.log('quizId:', quizId);
+    console.log('isGuest():', this.authService.isGuest());
+
     if (this.authService.isGuest()) {
+      console.log('Mode GUEST - utilisation de getGuestLeaderboardWithRealData');
       return this.getGuestLeaderboardWithRealData(quizId);
     }
-    
-    return this.http.get<QuizLeaderboard>(`${environment.apiBaseUrl}/leaderboard/quiz/${quizId}`);
+
+    // Utiliser l'endpoint privé pour les utilisateurs connectés
+    return this.http.get<QuizLeaderboard>(`${environment.apiBaseUrl}/quiz/${quizId}/leaderboard`);
   }
 
   private getGuestLeaderboardWithRealData(quizId: number): Observable<QuizLeaderboard> {
     const savedScore = sessionStorage.getItem('guest-quiz-score');
     const guestScore = savedScore ? parseInt(savedScore) : 0;
-    
-
 
     return this.getPublicQuizLeaderboard(quizId).pipe(
       map((publicData: any) => {
         const realLeaderboard = publicData.leaderboard || [];
-        
-        let guestRank = realLeaderboard.length + 1;
-        for (let i = 0; i < realLeaderboard.length; i++) {
-          if (guestScore > realLeaderboard[i].score) {
-            guestRank = i + 1;
-            break;
-          }
-        }
 
+        // Créer le leaderboard final avec le guest inséré au bon endroit
         const finalLeaderboard = [...realLeaderboard];
-        finalLeaderboard.splice(guestRank - 1, 0, {
-          rank: guestRank,
+
+        // Ajouter le guest au leaderboard
+        finalLeaderboard.push({
+          rank: 0, // Temporaire, sera recalculé
           name: 'Vous (Visiteur)',
           company: 'Non connecté',
           score: guestScore,
-          isCurrentUser: true
+          isCurrentUser: true,
         });
 
+        // Trier par score décroissant
+        finalLeaderboard.sort((a, b) => b.score - a.score);
+
+        // Recalculer tous les rangs
         finalLeaderboard.forEach((player, index) => {
           player.rank = index + 1;
         });
 
-        let displayLeaderboard = finalLeaderboard.slice(0, 5);
-        
+        // Trouver le rang du guest
+        const guestEntry = finalLeaderboard.find(player => player.isCurrentUser);
+        const guestRank = guestEntry ? guestEntry.rank : finalLeaderboard.length;
+
+        const displayLeaderboard = finalLeaderboard.slice(0, 5);
+
         if (guestRank > 5) {
-          const guestEntry = finalLeaderboard.find(player => player.isCurrentUser);
           if (guestEntry) {
             displayLeaderboard.push(guestEntry);
           }
@@ -109,9 +113,8 @@ export class QuizResultsService {
           leaderboard: displayLeaderboard,
           currentUserRank: guestRank,
           totalPlayers: finalLeaderboard.length,
-          currentUserScore: guestScore
+          currentUserScore: guestScore,
         };
-        
 
         return leaderboardData;
       })

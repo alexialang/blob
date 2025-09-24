@@ -7,19 +7,24 @@ import { environment } from '../../environments/environment';
 import { User } from '../models/user.interface';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
   private readonly base = environment.apiBaseUrl;
   private loginStatusSubject = new BehaviorSubject<boolean>(false);
   public loginStatus$ = this.loginStatusSubject.asObservable();
 
-  constructor(private http: HttpClient, private router: Router) {
-  }
+  constructor(
+    private http: HttpClient,
+    private router: Router
+  ) {}
 
   login(email: string, password: string): Observable<void> {
     return this.http
-      .post<{ token: string; refresh_token: string }>(`${this.base}/login_check`, {email, password})
+      .post<{
+        token: string;
+        refresh_token: string;
+      }>(`${this.base}/login_check`, { email, password })
       .pipe(
         tap(res => {
           localStorage.setItem('JWT_TOKEN', res.token);
@@ -42,7 +47,10 @@ export class AuthService {
       return throwError(() => new Error('No refresh token'));
     }
     return this.http
-      .post<{ token: string; refresh_token: string }>(`${this.base}/token/refresh`, {refresh_token: refreshToken})
+      .post<{
+        token: string;
+        refresh_token: string;
+      }>(`${this.base}/token/refresh`, { refresh_token: refreshToken })
       .pipe(
         tap(res => {
           localStorage.setItem('JWT_TOKEN', res.token);
@@ -82,20 +90,18 @@ export class AuthService {
   }
 
   hasRole(role: string): Observable<boolean> {
-    return this.getCurrentUser().pipe(
-      map((user: User) => user.roles.includes(role))
-    );
+    return this.getCurrentUser().pipe(map((user: User) => user.roles.includes(role)));
   }
 
   hasPermission(permission: string): Observable<boolean> {
     return this.getCurrentUser().pipe(
       map((user: User) => {
-
         if (user.roles.includes('ROLE_ADMIN')) {
           return true;
         }
 
-        const hasPermission = user.userPermissions?.some((p: any) => p.permission === permission) || false;
+        const hasPermission =
+          user.userPermissions?.some((p: any) => p.permission === permission) || false;
         return hasPermission;
       })
     );
@@ -107,8 +113,8 @@ export class AuthService {
         if (user.roles.includes('ROLE_ADMIN')) {
           return true;
         }
-        return permissions.some(permission =>
-          user.userPermissions?.some((p: any) => p.permission === permission) || false
+        return permissions.some(
+          permission => user.userPermissions?.some((p: any) => p.permission === permission) || false
         );
       })
     );
@@ -128,12 +134,12 @@ export class AuthService {
         pseudo: 'Invité',
         avatar: './assets/avatars/blob_circle.svg',
         avatarShape: 'circle',
-        roles: ['ROLE_GUEST'],
+        roles: [], // Pas de ROLE_GUEST, cohérent avec le backend Symfony
         userPermissions: [],
         dateRegistration: new Date().toISOString(),
         isAdmin: false,
         isActive: true,
-        isVerified: true
+        isVerified: true,
       } as User);
     }
 
@@ -150,10 +156,12 @@ export class AuthService {
     lastName: string,
     recaptchaToken?: string
   ): Observable<any> {
-    return this.http.post(
-      `${this.base}/user-create`,
-      { email, password, firstName, lastName, recaptchaToken }
-    );
+    return this.http.post(`${this.base}/user-create`, {
+      email,
+      password,
+      firstName,
+      lastName,
+      recaptchaToken,
+    });
   }
 }
-

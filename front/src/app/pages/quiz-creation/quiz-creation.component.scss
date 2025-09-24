@@ -85,7 +85,9 @@ label {
   border: 1px solid var(--border-medium);
   border-radius: 8px;
   background-color: var(--color-white);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
   overflow: hidden;
   resize: vertical;
 }
@@ -121,7 +123,9 @@ label {
   font-weight: 600;
   cursor: pointer;
   border: none;
-  transition: background 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    background 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .btn-primary {
@@ -217,12 +221,12 @@ label {
       font-size: 14px;
       color: var(--text-primary);
 
-      input[type="checkbox"] {
+      input[type='checkbox'] {
         margin-right: 5px;
       }
 
-      input[type="number"], 
-      input[type="text"].small {
+      input[type='number'],
+      input[type='text'].small {
         width: auto;
         margin-left: 5px;
       }
@@ -351,7 +355,7 @@ label {
   background: #e8f5e8;
   border-left: 4px solid #4caf50;
   border-radius: 8px;
-  
+
   p {
     margin: 0;
     color: #2e7d32;
@@ -383,44 +387,44 @@ label {
   cursor: pointer;
   transition: all 0.3s ease;
   background: white;
-  
+
   &:hover {
     border-color: #90caf9;
     background: #f3f8ff;
   }
-  
+
   &.true-option {
     &:hover {
       border-color: #81c784;
       background: #f1f8e9;
     }
   }
-  
+
   &.false-option {
     &:hover {
       border-color: #e57373;
       background: #fff3f3;
     }
   }
-  
-  input[type="radio"] {
+
+  input[type='radio'] {
     display: none;
-    
+
     &:checked + .radio-custom {
       border-color: #4caf50;
-      
+
       &::after {
         opacity: 1;
         transform: scale(1);
       }
     }
-    
+
     &:checked + .radio-custom + .radio-text strong {
       color: #4caf50;
     }
   }
-  
-  input[type="radio"]:checked {
+
+  input[type='radio']:checked {
     & ~ .radio-text strong {
       color: #4caf50;
     }
@@ -435,7 +439,7 @@ label {
   margin-right: 12px;
   position: relative;
   flex-shrink: 0;
-  
+
   &::after {
     content: '';
     position: absolute;
@@ -454,13 +458,13 @@ label {
 .radio-text {
   display: flex;
   flex-direction: column;
-  
+
   strong {
     font-size: 16px;
     margin-bottom: 4px;
     transition: color 0.3s ease;
   }
-  
+
   small {
     color: #666;
     font-size: 13px;
@@ -474,7 +478,7 @@ label {
   background: #fff3e0;
   border-radius: 8px;
   border-left: 4px solid #ff9800;
-  
+
   .text-muted {
     color: #f57c00;
     font-size: 13px;
@@ -491,15 +495,15 @@ label {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .true-false-interface {
     padding: 15px;
   }
-  
+
   .radio-option {
     padding: 12px;
   }
-  
+
   .radio-text strong {
     font-size: 15px;
   }

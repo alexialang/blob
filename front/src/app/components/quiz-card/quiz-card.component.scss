@@ -64,7 +64,7 @@
   display: flex;
   flex-direction: column;
   justify-content: start;
-  text-align:start;
+  text-align: start;
 }
 
 .quiz-title {
@@ -237,7 +237,6 @@
   }
 }
 
-
 .quiz-transition-overlay {
   position: fixed !important;
   top: 0 !important;
@@ -359,16 +358,25 @@
     background: white;
     animation: dotBounce 1.4s infinite ease-in-out both;
 
-    &:nth-child(1) { animation-delay: -0.32s; }
-    &:nth-child(2) { animation-delay: -0.16s; }
-    &:nth-child(3) { animation-delay: 0s; }
+    &:nth-child(1) {
+      animation-delay: -0.32s;
+    }
+    &:nth-child(2) {
+      animation-delay: -0.16s;
+    }
+    &:nth-child(3) {
+      animation-delay: 0s;
+    }
   }
 }
 
-
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes cardGrow {
@@ -442,7 +450,9 @@
 }
 
 @keyframes dotBounce {
-  0%, 80%, 100% {
+  0%,
+  80%,
+  100% {
     transform: scale(0);
     opacity: 0.5;
   }

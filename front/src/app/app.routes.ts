@@ -1,145 +1,191 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './guards/auth.guard';
 import { adminGuard } from './guards/admin.guard';
-import { createQuizGuard, manageUsersGuard, viewResultsGuard, companyDetailsGuard } from './guards/permission.guard';
+import {
+  createQuizGuard,
+  manageUsersGuard,
+  viewResultsGuard,
+  companyDetailsGuard,
+} from './guards/permission.guard';
 import { quizAccessGuard } from './guards/quiz-access.guard';
 
-import { LoginComponent }             from './pages/login/login.component';
-import { UserManagementComponent }    from './pages/user-management/user-management.component';
-import { CompanyManagementComponent } from './pages/company-management/company-management.component';
-import {RegistrationComponent}        from './pages/registration/registration.component';
-import {LegalNoticesComponent}        from './pages/legal-notices/legal-notices.component';
-import {ConfirmAccountComponent}      from './pages/confirm-account/confirm-account.component';
-import {ForgotPasswordComponent}      from './pages/forgot-password/forgot-password.component';
-import {ResetPasswordComponent}       from './pages/reset-password/reset-password.component';
-import {AboutComponent}               from './pages/about/about.component';
-import {QuizManagementComponent}      from './pages/quiz-management/quiz-management.component';
-import {QuizCreationComponent}        from './pages/quiz-creation/quiz-creation.component';
-import {CompanyDetailsComponent} from './pages/company-details/company-details.component';
-import {QuizCardsComponent} from './pages/quiz-cards/quiz-cards.component';
-import {QuizGameComponent} from './pages/quiz-game/quiz-game.component';
-import {UserProfileComponent} from './pages/user-profile/user-profile.component';
-import {AvatarSelectionComponent} from './pages/avatar-selection/avatar-selection.component';
-import {LeaderboardComponent} from './pages/leaderboard/leaderboard.component';
-import {MultiplayerRoomCreateComponent} from './pages/multiplayer-room-create/multiplayer-room-create.component';
-import {MultiplayerRoomComponent} from './pages/multiplayer-room/multiplayer-room.component';
-import {MultiplayerGameComponent} from './pages/multiplayer-game/multiplayer-game.component';
-import {QuizResultsComponent} from './pages/quiz-results/quiz-results.component';
-import {DonationComponent} from './pages/donation/donation.component';
-import {NotFoundComponent} from './pages/not-found/not-found.component';
+// Import only critical components for initial load
+import { LoginComponent } from './pages/login/login.component';
+import { NotFoundComponent } from './pages/not-found/not-found.component';
 
 export const routes: Routes = [
   { path: 'connexion', component: LoginComponent, data: { hideNavbar: true } },
-
-  { path: 'inscription', component: RegistrationComponent,data: { hideNavbar: true } },
+  {
+    path: 'inscription',
+    loadComponent: () =>
+      import('./pages/registration/registration.component').then(m => m.RegistrationComponent),
+    data: { hideNavbar: true },
+  },
 
   {
     path: 'gestion-utilisateur',
-    component: UserManagementComponent,
+    loadComponent: () =>
+      import('./pages/user-management/user-management.component').then(
+        m => m.UserManagementComponent
+      ),
     canActivate: [authGuard, manageUsersGuard],
   },
   {
     path: 'gestion-entreprise',
-    component: CompanyManagementComponent,
+    loadComponent: () =>
+      import('./pages/company-management/company-management.component').then(
+        m => m.CompanyManagementComponent
+      ),
     canActivate: [authGuard, manageUsersGuard],
   },
   {
     path: 'gestion-quiz',
-    component: QuizManagementComponent,
+    loadComponent: () =>
+      import('./pages/quiz-management/quiz-management.component').then(
+        m => m.QuizManagementComponent
+      ),
     canActivate: [authGuard, createQuizGuard],
   },
   {
     path: 'creation-quiz',
-    component: QuizCreationComponent,
+    loadComponent: () =>
+      import('./pages/quiz-creation/quiz-creation.component').then(m => m.QuizCreationComponent),
     canActivate: [authGuard, createQuizGuard],
   },
   {
     path: 'creation-quiz/:id',
-    component: QuizCreationComponent,
+    loadComponent: () =>
+      import('./pages/quiz-creation/quiz-creation.component').then(m => m.QuizCreationComponent),
     canActivate: [authGuard, createQuizGuard],
   },
   {
     path: 'quiz',
-    component: QuizCardsComponent,
+    loadComponent: () =>
+      import('./pages/quiz-cards/quiz-cards.component').then(m => m.QuizCardsComponent),
     canActivate: [quizAccessGuard],
   },
   {
     path: 'profil',
-    component: UserProfileComponent,
+    loadComponent: () =>
+      import('./pages/user-profile/user-profile.component').then(m => m.UserProfileComponent),
     canActivate: [authGuard],
   },
   {
     path: 'profil/avatar',
-    component: AvatarSelectionComponent,
+    loadComponent: () =>
+      import('./pages/avatar-selection/avatar-selection.component').then(
+        m => m.AvatarSelectionComponent
+      ),
     canActivate: [authGuard],
   },
   {
     path: 'profil/:id',
-    component: UserProfileComponent,
+    loadComponent: () =>
+      import('./pages/user-profile/user-profile.component').then(m => m.UserProfileComponent),
     canActivate: [authGuard, manageUsersGuard],
   },
   {
     path: 'classement',
-    component: LeaderboardComponent,
+    loadComponent: () =>
+      import('./pages/leaderboard/leaderboard.component').then(m => m.LeaderboardComponent),
     canActivate: [authGuard],
   },
   {
     path: 'quiz/:id/play',
-    component: QuizGameComponent,
+    loadComponent: () =>
+      import('./pages/quiz-game/quiz-game.component').then(m => m.QuizGameComponent),
     canActivate: [quizAccessGuard],
-    data: { hideNavbar: true }
+    data: { hideNavbar: true },
   },
   {
     path: 'quiz/:id/results',
-    component: QuizResultsComponent,
+    loadComponent: () =>
+      import('./pages/quiz-results/quiz-results.component').then(m => m.QuizResultsComponent),
     canActivate: [authGuard, viewResultsGuard],
-    data: { hideNavbar: true }
+    data: { hideNavbar: true },
   },
   {
     path: 'multiplayer/create/:id',
-    component: MultiplayerRoomCreateComponent,
+    loadComponent: () =>
+      import('./pages/multiplayer-room-create/multiplayer-room-create.component').then(
+        m => m.MultiplayerRoomCreateComponent
+      ),
     canActivate: [authGuard, createQuizGuard],
-    data: { hideNavbar: true }
+    data: { hideNavbar: true },
   },
   {
     path: 'multiplayer/room/:id',
-    component: MultiplayerRoomComponent,
+    loadComponent: () =>
+      import('./pages/multiplayer-room/multiplayer-room.component').then(
+        m => m.MultiplayerRoomComponent
+      ),
     canActivate: [authGuard],
-    data: { hideNavbar: true }
+    data: { hideNavbar: true },
   },
   {
     path: 'multiplayer/game/:id',
-    component: MultiplayerGameComponent,
+    loadComponent: () =>
+      import('./pages/multiplayer-game/multiplayer-game.component').then(
+        m => m.MultiplayerGameComponent
+      ),
     canActivate: [authGuard],
-    data: { hideNavbar: true }
+    data: { hideNavbar: true },
   },
-  {path: 'mentions-legales', component: LegalNoticesComponent, data: { hideNavbar: true } },
+  {
+    path: 'mentions-legales',
+    loadComponent: () =>
+      import('./pages/legal-notices/legal-notices.component').then(m => m.LegalNoticesComponent),
+    data: { hideNavbar: true },
+  },
   {
     path: 'confirmation-compte/:token',
-    component: ConfirmAccountComponent
+    loadComponent: () =>
+      import('./pages/confirm-account/confirm-account.component').then(
+        m => m.ConfirmAccountComponent
+      ),
   },
   {
-    path: 'mot-de-passe-oublie', data: { hideNavbar: true },
-    component: ForgotPasswordComponent,
+    path: 'mot-de-passe-oublie',
+    data: { hideNavbar: true },
+    loadComponent: () =>
+      import('./pages/forgot-password/forgot-password.component').then(
+        m => m.ForgotPasswordComponent
+      ),
   },
   {
     path: 'reset-password/:token',
-    component: ResetPasswordComponent,data: { hideNavbar: true },
+    loadComponent: () =>
+      import('./pages/reset-password/reset-password.component').then(m => m.ResetPasswordComponent),
+    data: { hideNavbar: true },
   },
   {
-    path: 'a-propos', data: { hideNavbar: true },
-    component: AboutComponent,
+    path: 'a-propos',
+    data: { hideNavbar: true },
+    loadComponent: () => import('./pages/about/about.component').then(m => m.AboutComponent),
   },
   {
-    path: 'faire-un-don', data: { hideNavbar: true },
-    component: DonationComponent,
+    path: 'faire-un-don',
+    data: { hideNavbar: true },
+    loadComponent: () =>
+      import('./pages/donation/donation.component').then(m => m.DonationComponent),
+  },
+  {
+    path: 'payment-success',
+    data: { hideNavbar: true },
+    loadComponent: () =>
+      import('./pages/payment-success/payment-success.component').then(
+        m => m.PaymentSuccessComponent
+      ),
   },
   {
     path: 'company/:id',
-    component: CompanyDetailsComponent,
-    canActivate: [authGuard, companyDetailsGuard]
+    loadComponent: () =>
+      import('./pages/company-details/company-details.component').then(
+        m => m.CompanyDetailsComponent
+      ),
+    canActivate: [authGuard, companyDetailsGuard],
   },
 
-  { path: '',  component: LoginComponent, pathMatch: 'full', data: { hideNavbar: true } },
+  { path: '', component: LoginComponent, pathMatch: 'full', data: { hideNavbar: true } },
   { path: '**', component: NotFoundComponent },
 ];

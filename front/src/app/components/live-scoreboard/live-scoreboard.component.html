@@ -4,33 +4,37 @@
       <tui-icon icon="@tui.trophy" class="trophy-icon"></tui-icon>
       Classement en direct
     </h3>
-    <div class="question-progress">
-      Question {{ currentQuestionIndex }}/{{ totalQuestions }}
-    </div>
+    <div class="question-progress">Question {{ currentQuestionIndex }}/{{ totalQuestions }}</div>
   </div>
 
   <div class="players-list">
-    <div *ngFor="let player of players; let i = index"
-         class="player-row"
-         [class.current-user]="player.isCurrentUser"
-         [class.top-3]="i < 3"
-         [class.rank-1]="i === 0"
-         [class.rank-2]="i === 1"
-         [class.rank-3]="i === 2">
-
-      <div class="player-avatar">
-        <img [src]="getAvatarPath(player)"
-             [alt]="player.username + ' avatar'"
-             class="blob-avatar"
-             [class.rank-changed]="hasRankChanged(player)"
-             [class.rank-up]="getRankChange(player) === 'up'"
-             [class.rank-down]="getRankChange(player) === 'down'">
+    <div
+      *ngFor="let player of players; let i = index"
+      class="player-row"
+      [class.current-user]="player.isCurrentUser"
+      [class.top-3]="i < 3"
+      [class.rank-1]="i === 0"
+      [class.rank-2]="i === 1"
+      [class.rank-3]="i === 2"
+    >
+      <div class="player-avatar" role="img" [attr.aria-label]="'Avatar de ' + player.username">
+        <img
+          [src]="getAvatarPath(player)"
+          [alt]="player.username + ' avatar'"
+          class="blob-avatar"
+          width="40"
+          height="40"
+          [class.rank-changed]="hasRankChanged(player)"
+          [class.rank-up]="getRankChange(player) === 'up'"
+          [class.rank-down]="getRankChange(player) === 'down'"
+        />
 
         <div class="rank-change-indicator" *ngIf="hasRankChanged(player)">
           <tui-icon
             [icon]="getRankChange(player) === 'up' ? '@tui.arrow-up' : '@tui.arrow-down'"
             [class.rank-up]="getRankChange(player) === 'up'"
-            [class.rank-down]="getRankChange(player) === 'down'">
+            [class.rank-down]="getRankChange(player) === 'down'"
+          >
           </tui-icon>
         </div>
       </div>
@@ -48,9 +52,7 @@
           <span class="current-user-badge" *ngIf="player.isCurrentUser">(Vous)</span>
         </div>
         <div class="player-status">
-          <span class="status-indicator"
-                [class.online]="player.isOnline"
-                [class.offline]="!player.isOnline">
+          <span class="status-indicator" [class.online]="player.isOnline" [class.offline]="!player.isOnline">
             {{ player.isOnline ? '●' : '○' }}
           </span>
           <span class="status-text">{{ player.isOnline ? 'En ligne' : 'Hors ligne' }}</span>
@@ -63,9 +65,11 @@
       </div>
 
       <div class="answer-indicator" *ngIf="player.lastAnswerCorrect !== undefined">
-        <span class="answer-icon"
-              [class.correct]="player.lastAnswerCorrect"
-              [class.incorrect]="!player.lastAnswerCorrect">
+        <span
+          class="answer-icon"
+          [class.correct]="player.lastAnswerCorrect"
+          [class.incorrect]="!player.lastAnswerCorrect"
+        >
           {{ player.lastAnswerCorrect ? '✓' : '✗' }}
         </span>
       </div>
@@ -73,8 +77,6 @@
   </div>
 
   <div class="scoreboard-footer">
-    <div class="total-points">
-      Score normalisé sur 100 (10 pts par bonne réponse)
-    </div>
+    <div class="total-points">Score normalisé sur 100 (10 pts par bonne réponse)</div>
   </div>
 </div>

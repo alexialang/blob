@@ -7,15 +7,11 @@ use App\Service\UserService;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsEntityListener;
 use Doctrine\ORM\Events;
 
-
 #[AsEntityListener(event: Events::postPersist, method: 'onPostPersist', entity: User::class)]
 class UserListener
 {
-    private UserService $userService;
-
-    public function __construct(UserService $userService)
+    public function __construct(private readonly UserService $userService)
     {
-        $this->userService = $userService;
     }
 
     public function onPostPersist(User $user): void

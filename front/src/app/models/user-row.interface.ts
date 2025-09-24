@@ -23,4 +23,3 @@ export interface UserBadge {
   id: number;
   name: string;
 }
-

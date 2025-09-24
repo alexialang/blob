@@ -1,11 +1,11 @@
 export const environment = {
-  production: false,
+  production: true,
   apiUrl: 'https://blob.dev.local',
   apiBaseUrl: 'https://blob.dev.local/api',
   analytics: {
-    googleAnalyticsId: 'G-95GW7QPNRH',
-    googleTagManagerId: 'GTM-PJ9GL9GB',
-    hotjarId: '',
-    enabled: false
-  }
+    umamiUrl: 'https://analytics.blob.dev.local',
+    umamiWebsiteId: 'your-website-id',
+    enabled: true,
+    respectPrivacy: true,
+  },
 };

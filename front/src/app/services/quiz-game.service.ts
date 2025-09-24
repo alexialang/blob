@@ -7,33 +7,35 @@ import { Quiz } from '../models/quiz.model';
 import { AuthService } from './auth.service';
 
 @Injectable({
-    providedIn: 'root'
+  providedIn: 'root',
 })
 export class QuizGameService {
-    private readonly apiUrl = environment.apiBaseUrl;
+  private readonly apiUrl = environment.apiBaseUrl;
 
-    constructor(
-        private http: HttpClient,
-        private authService: AuthService
-    ) { }
+  constructor(
+    private http: HttpClient,
+    private authService: AuthService
+  ) {}
 
-    loadQuiz(quizId: number): Observable<Quiz> {
-        return this.http.get<Quiz>(`${this.apiUrl}/quiz/${quizId}`);
+  loadQuiz(quizId: number): Observable<Quiz> {
+    return this.http.get<Quiz>(`${this.apiUrl}/quiz/${quizId}`);
+  }
+
+  saveGameResult(quizId: number, score: number): Observable<any> {
+    if (this.authService.isGuest()) {
+      sessionStorage.setItem('guest-quiz-score', score.toString());
+      return of({ success: true, saved: false, score });
     }
 
-    saveGameResult(quizId: number, score: number): Observable<any> {
-        if (this.authService.isGuest()) {
-            sessionStorage.setItem('guest-quiz-score', score.toString());
-            return of({ success: true, saved: false, score });
-        }
-
-        return this.http.post(`${this.apiUrl}/user-answer/game-result`, {
-            quiz_id: quizId,
-            total_score: score
-        }).pipe(
-            catchError(error => {
-                return throwError(() => error);
-            })
-        );
-    }
+    return this.http
+      .post(`${this.apiUrl}/user-answer/game-result`, {
+        quiz_id: quizId,
+        total_score: score,
+      })
+      .pipe(
+        catchError(error => {
+          return throwError(() => error);
+        })
+      );
+  }
 }

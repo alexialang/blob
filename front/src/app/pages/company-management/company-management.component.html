@@ -1,274 +1,254 @@
 <div class="company-page">
+  <div class="container">
+    <h1 class="page-title">
+      Gestion <br />
+      des <span class="company-highlight" [ngStyle]="{ color: highlightColor }">entreprises</span>
+    </h1>
 
-<div class="container">
-  <h1 class="page-title">Gestion <br /> des <span class="company-highlight" [ngStyle]="{ 'color': highlightColor }">entreprises</span></h1>
+    <div class="filters-container">
+      <div class="filters-row">
+        <select class="form-control" [(ngModel)]="filterStatus" (ngModelChange)="applyFilters()">
+          <option value="">Groupe</option>
+          <option *ngFor="let status of statusOptions" [value]="status">
+            {{ status }}
+          </option>
+        </select>
 
-  <div class="filters-container">
-    <div class="filters-row">
-      <select
-        class="form-control"
-        [(ngModel)]="filterStatus"
-        (ngModelChange)="applyFilters()"
-      >
-        <option value="">Groupe</option>
-        <option *ngFor="let status of statusOptions" [value]="status">
-          {{ status }}
-        </option>
-      </select>
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Mot-clé"
+          [(ngModel)]="filterKeyword"
+          (ngModelChange)="applyFilters()"
+        />
 
-      <input
-        type="text"
-        class="form-control"
-        placeholder="Mot-clé"
-        [(ngModel)]="filterKeyword"
-        (ngModelChange)="applyFilters()"
-      />
+        <button tuiButton class="form-control" (click)="applyFilters()">Rechercher</button>
+      </div>
 
-      <button tuiButton class="form-control" (click)="applyFilters()">
-        Rechercher
-      </button>
-    </div>
-
-    <div class="dropdown-wrapper">
-      <div class="custom-dropdown" [class.open]="open">
-        <button class="custom-dropdown-btn" (click)="toggleDropdown()">
-          Actions
-          <span class="dropdown-arrow">▼</span>
-        </button>
-        <div class="dropdown-menu" *ngIf="open">
-          <button
-            *hasPermission="'MANAGE_USERS'"
-            class="dropdown-item"
-            type="button"
-            (click)="onDropdownAction('Ajouter entreprise')"
-          >
-            <tui-icon icon="@tui.plus" class="dropdown-icon"></tui-icon>
-            Ajouter entreprise
+      <div class="dropdown-wrapper">
+        <div class="custom-dropdown" [class.open]="open">
+          <button class="custom-dropdown-btn" (click)="toggleDropdown()">
+            Actions
+            <span class="dropdown-arrow">▼</span>
           </button>
-          <button
-            *hasPermission="'MANAGE_USERS'"
-            class="dropdown-item"
-            type="button"
-            (click)="onDropdownAction('Exporter CSV')"
-          >
-            <tui-icon icon="@tui.download" class="dropdown-icon"></tui-icon>
-            Exporter CSV
-          </button>
-          <button
-            *hasPermission="'MANAGE_USERS'"
-            class="dropdown-item"
-            type="button"
-            (click)="onDropdownAction('Exporter JSON')"
-          >
-            <tui-icon icon="@tui.download" class="dropdown-icon"></tui-icon>
-            Exporter JSON
-          </button>
-          <button
-            *hasPermission="'MANAGE_USERS'"
-            class="dropdown-item"
-            type="button"
-            (click)="onDropdownAction('Importer CSV')"
-          >
-            <tui-icon icon="@tui.upload" class="dropdown-icon"></tui-icon>
-            Importer CSV
-          </button>
+          <div class="dropdown-menu" *ngIf="open">
+            <button
+              *hasPermission="'MANAGE_USERS'"
+              class="dropdown-item"
+              type="button"
+              (click)="onDropdownAction('Ajouter entreprise')"
+            >
+              <tui-icon icon="@tui.plus" class="dropdown-icon"></tui-icon>
+              Ajouter entreprise
+            </button>
+            <button
+              *hasPermission="'MANAGE_USERS'"
+              class="dropdown-item"
+              type="button"
+              (click)="onDropdownAction('Exporter CSV')"
+            >
+              <tui-icon icon="@tui.download" class="dropdown-icon"></tui-icon>
+              Exporter CSV
+            </button>
+            <button
+              *hasPermission="'MANAGE_USERS'"
+              class="dropdown-item"
+              type="button"
+              (click)="onDropdownAction('Exporter JSON')"
+            >
+              <tui-icon icon="@tui.download" class="dropdown-icon"></tui-icon>
+              Exporter JSON
+            </button>
+            <button
+              *hasPermission="'MANAGE_USERS'"
+              class="dropdown-item"
+              type="button"
+              (click)="onDropdownAction('Importer CSV')"
+            >
+              <tui-icon icon="@tui.upload" class="dropdown-icon"></tui-icon>
+              Importer CSV
+            </button>
+          </div>
         </div>
       </div>
     </div>
+
+    <div *ngIf="loadError" class="alert alert-danger">Impossible de charger les entreprises.</div>
+
+    <div class="table-scroll-wrapper">
+      <table tuiTable [size]="size" class="custom-table table-striped">
+        <thead>
+          <tr>
+            <th tuiTh class="th-checkbox">
+              <input
+                *hasPermission="'MANAGE_USERS'"
+                type="checkbox"
+                tuiCheckbox
+                [ngModel]="allSelected"
+                (ngModelChange)="toggleAll($event)"
+              />
+            </th>
+            <th tuiTh (click)="sortBy('name')" class="th-company">
+              Entreprise
+              <button
+                tuiIconButton
+                size="xs"
+                class="sort-btn"
+                *ngIf="sortColumn === 'name'"
+                [iconStart]="sortDirection === 'asc' ? 'tuiIconChevronUp' : 'tuiIconChevronDown'"
+              ></button>
+            </th>
+            <th tuiTh (click)="sortBy('userCount')" class="th-users">
+              Utilisateurs
+              <button
+                tuiIconButton
+                size="xs"
+                appearance="ghost"
+                class="sort-btn"
+                *ngIf="sortColumn === 'userCount'"
+                [iconStart]="sortDirection === 'asc' ? 'tuiIconChevronUp' : 'tuiIconChevronDown'"
+              ></button>
+            </th>
+            <th tuiTh class="th-groups">Groupes</th>
+            <th tuiTh class="th-action">
+              Action
+              <button
+                *hasPermission="'MANAGE_USERS'"
+                tuiButton
+                appearance="action"
+                size="xs"
+                iconStart="@tui.trash"
+                tuiIconButton
+                (click)="deleteSelected()"
+                [disabled]="!hasSelection"
+                class="btn-delete-all"
+              ></button>
+            </th>
+          </tr>
+        </thead>
+        <tbody tuiTbody>
+          <tr *ngFor="let row of pagedRows" class="table-row">
+            <td tuiTd>
+              <input *hasPermission="'MANAGE_USERS'" type="checkbox" tuiCheckbox [(ngModel)]="row.selected" />
+            </td>
+            <td tuiTd class="td-company">
+              <div [tuiCell]="size" class="d-flex align-center gap-2 company-cell">
+                <tui-avatar [size]="size">{{ row.name.charAt(0) }}</tui-avatar>
+                <div>
+                  <div tuiTitle>{{ row.name }}</div>
+                </div>
+              </div>
+            </td>
+            <td tuiTd class="td-users">
+              <span class="user-icon">👤</span>
+              {{ row.userCount }} utilisateur{{ row.userCount > 1 ? 's' : '' }}
+            </td>
+            <td tuiTd class="td-groups">
+              <div class="groups-container">
+                <tui-chip *ngFor="let group of getVisibleGroups(row.groups)" [size]="'s'" class="group-chip">
+                  {{ group.name }}
+                </tui-chip>
+                <tui-chip
+                  *ngIf="getRemainingGroupsCount(row.groups) > 0"
+                  [size]="'s'"
+                  class="group-chip group-chip-more"
+                  [tuiHint]="getGroupsTooltip(row.groups)"
+                  tuiHintDirection="top"
+                >
+                  +{{ getRemainingGroupsCount(row.groups) }}
+                </tui-chip>
+              </div>
+            </td>
+            <td tuiTd class="td-action">
+              <div class="d-flex gap-2">
+                <a [routerLink]="['/company', row.id]" class="link-profile">Voir détails</a>
+                <button
+                  *hasPermission="'MANAGE_USERS'"
+                  tuiButton
+                  appearance="action"
+                  size="xs"
+                  iconStart="@tui.pencil"
+                  tuiIconButton
+                  class="btn-edit"
+                ></button>
+                <button
+                  *hasPermission="'MANAGE_USERS'"
+                  tuiButton
+                  appearance="action"
+                  size="xs"
+                  iconStart="@tui.trash"
+                  tuiIconButton
+                  class="btn-delete-single"
+                  (click)="deleteSingle(row.id)"
+                ></button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="rows.length === 0">
+            <td tuiTd colspan="6" class="no-data">Aucune entreprise trouvée.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination-container">
+      <app-pagination
+        [totalItems]="rows.length"
+        [pageSize]="pageSize"
+        [page]="page"
+        [activePadding]="2"
+        (pageChange)="onPageChange($event)"
+      ></app-pagination>
+    </div>
   </div>
 
-  <div *ngIf="loadError" class="alert alert-danger">
-    Impossible de charger les entreprises.
+  <div *ngIf="showAddCompanyModal" class="modal-overlay">
+    <div class="modal-container">
+      <app-add-company-modal
+        (companyCreated)="onCompanyCreated($event)"
+        (cancelled)="onAddCompanyCancelled()"
+      ></app-add-company-modal>
+    </div>
   </div>
 
-  <div class="table-scroll-wrapper">
-    <table tuiTable [size]="size" class="custom-table table-striped">
-      <thead>
-      <tr>
-        <th tuiTh class="th-checkbox">
-          <input
-            *hasPermission="'MANAGE_USERS'"
-            type="checkbox"
-            tuiCheckbox
-            [ngModel]="allSelected"
-            (ngModelChange)="toggleAll($event)"
-          />
-        </th>
-        <th tuiTh (click)="sortBy('name')" class="th-company">
-          Entreprise
+  <div *ngIf="showImportModal" class="modal-overlay">
+    <div class="modal-container">
+      <div class="modal-content">
+        <div class="modal-header">
+          <tui-icon icon="@tui.upload" class="modal-icon"></tui-icon>
+          <h3>Importer des entreprises</h3>
+        </div>
+        <div class="modal-body">
+          <p class="modal-description">
+            <tui-icon icon="@tui.info" class="info-icon"></tui-icon>
+            Format CSV attendu : <strong>Nom de l'entreprise</strong>
+          </p>
+          <div class="file-input-wrapper">
+            <input type="file" accept=".csv" (change)="onFileSelected($event)" id="csvFile" class="file-input" />
+            <label for="csvFile" class="file-input-label">
+              <tui-icon icon="@tui.upload-cloud" class="upload-icon"></tui-icon>
+              <span *ngIf="!selectedFile" class="file-text">Choisir un fichier CSV</span>
+              <span *ngIf="selectedFile" class="file-text selected">{{ selectedFile.name }}</span>
+            </label>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button tuiButton appearance="secondary" (click)="onImportCancelled()" class="action-btn">
+            <tui-icon icon="@tui.x" class="btn-icon"></tui-icon>
+            Annuler
+          </button>
           <button
-            tuiIconButton
-            size="xs"
-            class="sort-btn"
-            *ngIf="sortColumn === 'name'"
-            [iconStart]="
-                sortDirection === 'asc'
-                  ? 'tuiIconChevronUp'
-                  : 'tuiIconChevronDown'
-              "
-          ></button>
-        </th>
-        <th tuiTh (click)="sortBy('userCount')" class="th-users">
-          Utilisateurs
-          <button
-            tuiIconButton
-            size="xs"
-            appearance="ghost"
-            class="sort-btn"
-            *ngIf="sortColumn === 'userCount'"
-            [iconStart]="
-                sortDirection === 'asc'
-                  ? 'tuiIconChevronUp'
-                  : 'tuiIconChevronDown'
-              "
-          ></button>
-        </th>
-        <th tuiTh class="th-groups">
-          Groupes
-        </th>
-        <th tuiTh class="th-action">
-          Action
-          <button
-            *hasPermission="'MANAGE_USERS'"
             tuiButton
-            appearance="action"
-            size="xs"
-            iconStart="@tui.trash"
-            tuiIconButton
-            (click)="deleteSelected()"
-            [disabled]="!hasSelection"
-            class="btn-delete-all"
-          ></button>
-        </th>
-      </tr>
-      </thead>
-      <tbody tuiTbody>
-      <tr *ngFor="let row of pagedRows" class="table-row">
-        <td tuiTd>
-          <input *hasPermission="'MANAGE_USERS'" type="checkbox" tuiCheckbox [(ngModel)]="row.selected" />
-        </td>
-        <td tuiTd class="td-company">
-          <div [tuiCell]="size" class="d-flex align-center gap-2 company-cell">
-            <tui-avatar [size]="size">{{ row.name.charAt(0) }}</tui-avatar>
-            <div>
-              <div tuiTitle>{{ row.name }}</div>
-            </div>
-          </div>
-        </td>
-        <td tuiTd class="td-users">
-          <span class="user-icon">👤</span>
-          {{ row.userCount }} utilisateur{{ row.userCount > 1 ? 's' : '' }}
-        </td>
-        <td tuiTd class="td-groups">
-          <div class="groups-container">
-            <tui-chip
-              *ngFor="let group of getVisibleGroups(row.groups)"
-              [size]="'s'"
-              class="group-chip"
-            >
-              {{ group.name }}
-            </tui-chip>
-            <tui-chip
-              *ngIf="getRemainingGroupsCount(row.groups) > 0"
-              [size]="'s'"
-              class="group-chip group-chip-more"
-              [tuiHint]="getGroupsTooltip(row.groups)"
-              tuiHintDirection="top"
-            >
-              +{{ getRemainingGroupsCount(row.groups) }}
-            </tui-chip>
-          </div>
-        </td>
-        <td tuiTd class="td-action">
-          <div class="d-flex gap-2">
-            <a [routerLink]="['/company', row.id]" class="link-profile">Voir détails</a>
-            <button
-              *hasPermission="'MANAGE_USERS'"
-              tuiButton
-              appearance="action"
-              size="xs"
-              iconStart="@tui.pencil"
-              tuiIconButton
-              class="btn-edit"
-            ></button>
-            <button
-              *hasPermission="'MANAGE_USERS'"
-              tuiButton
-              appearance="action"
-              size="xs"
-              iconStart="@tui.trash"
-              tuiIconButton
-              class="btn-delete-single"
-              (click)="deleteSingle(row.id)"
-            ></button>
-          </div>
-        </td>
-      </tr>
-      <tr *ngIf="rows.length === 0">
-        <td tuiTd colspan="6" class="no-data">Aucune entreprise trouvée.</td>
-      </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div class="pagination-container">
-    <app-pagination
-      [totalItems]="rows.length"
-      [pageSize]="pageSize"
-      [page]="page"
-      [activePadding]="2"
-      (pageChange)="onPageChange($event)"
-    ></app-pagination>
-  </div>
-</div>
-
-<div *ngIf="showAddCompanyModal" class="modal-overlay">
-  <div class="modal-container">
-    <app-add-company-modal
-      (companyCreated)="onCompanyCreated($event)"
-      (cancelled)="onAddCompanyCancelled()"
-    ></app-add-company-modal>
-  </div>
-</div>
-
-<div *ngIf="showImportModal" class="modal-overlay">
-  <div class="modal-container">
-    <div class="modal-content">
-      <div class="modal-header">
-        <tui-icon icon="@tui.upload" class="modal-icon"></tui-icon>
-        <h3>Importer des entreprises</h3>
-      </div>
-      <div class="modal-body">
-        <p class="modal-description">
-          <tui-icon icon="@tui.info" class="info-icon"></tui-icon>
-          Format CSV attendu : <strong>Nom de l'entreprise</strong>
-        </p>
-        <div class="file-input-wrapper">
-          <input 
-            type="file" 
-            accept=".csv" 
-            (change)="onFileSelected($event)"
-            id="csvFile"
-            class="file-input" />
-          <label for="csvFile" class="file-input-label">
-            <tui-icon icon="@tui.upload-cloud" class="upload-icon"></tui-icon>
-            <span *ngIf="!selectedFile" class="file-text">Choisir un fichier CSV</span>
-            <span *ngIf="selectedFile" class="file-text selected">{{ selectedFile.name }}</span>
-          </label>
+            appearance="primary"
+            [disabled]="!selectedFile"
+            (click)="importCsvFile()"
+            class="action-btn"
+          >
+            <tui-icon icon="@tui.upload" class="btn-icon"></tui-icon>
+            Importer
+          </button>
         </div>
-      </div>
-      <div class="modal-actions">
-        <button tuiButton appearance="secondary" (click)="onImportCancelled()" class="action-btn">
-          <tui-icon icon="@tui.x" class="btn-icon"></tui-icon>
-          Annuler
-        </button>
-        <button tuiButton appearance="primary" [disabled]="!selectedFile" (click)="importCsvFile()" class="action-btn">
-          <tui-icon icon="@tui.upload" class="btn-icon"></tui-icon>
-          Importer
-        </button>
       </div>
     </div>
   </div>
-</div>
-
 </div>

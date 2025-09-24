@@ -1,5 +1,11 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-import {CommonModule, NgOptimizedImage} from '@angular/common';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+} from '@angular/core';
+import { CommonModule, NgOptimizedImage } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { QuizManagementService } from '../../services/quiz-management.service';
@@ -10,7 +16,6 @@ import { PaginationComponent } from '../../components/pagination/pagination.comp
 import { forkJoin } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import { AlertService } from '../../services/alert.service';
-import { AnalyticsService } from '../../services/analytics.service';
 
 interface CategoryWithPagination {
   name: string;
@@ -21,8 +26,8 @@ interface CategoryWithPagination {
   totalItems: number;
 }
 
-type QuizItem   = { type: 'quiz'; data: QuizCard };
-type BlobItem   = { type: 'blob' };
+type QuizItem = { type: 'quiz'; data: QuizCard };
+type BlobItem = { type: 'blob' };
 type DisplayItem = QuizItem | BlobItem;
 
 @Component({
@@ -51,6 +56,11 @@ export class QuizCardsComponent implements OnInit, OnDestroy {
   myQuizzesWithBlobs: DisplayItem[] = [];
   myQuizzesCurrentPage = 1;
 
+  originalGroupQuizzes: QuizCard[] = [];
+  groupQuizzes: QuizCard[] = [];
+  groupQuizzesWithBlobs: DisplayItem[] = [];
+  groupQuizzesCurrentPage = 1;
+
   originalRecentQuizzes: QuizCard[] = [];
   recentQuizzes: QuizCard[] = [];
   recentQuizzesWithBlobs: DisplayItem[] = [];
@@ -67,6 +77,7 @@ export class QuizCardsComponent implements OnInit, OnDestroy {
   selectedDifficulty = '';
 
   isGuest = false;
+  currentUser: any = null;
 
   private readonly flippedCardsCache = new Map<number, boolean>();
   private readonly blobPositions: Record<string, number | null> = {};
@@ -78,8 +89,7 @@ export class QuizCardsComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     private router: Router,
     private authService: AuthService,
-    private alertService: AlertService,
-    private analytics: AnalyticsService
+    private alertService: AlertService
   ) {}
 
   ngOnInit(): void {
@@ -107,9 +117,25 @@ export class QuizCardsComponent implements OnInit, OnDestroy {
         if (this.isUserLoggedIn) {
           this.originalMyQuizzes = this.convertToQuizCards(data.myQuizzes ?? []);
           this.myQuizzes = [...this.originalMyQuizzes];
+
+          this.originalGroupQuizzes = this.convertToQuizCards(data.groupQuizzes ?? []);
+          this.groupQuizzes = [...this.originalGroupQuizzes];
+
+          // Charger les informations de l'utilisateur connecté
+          this.authService.getCurrentUser().subscribe(user => {
+            this.currentUser = user;
+            this.cdr.markForCheck();
+          });
+
+          // Si les quiz de l'utilisateur sont vides, utiliser l'API de fallback
+          if (this.originalMyQuizzes.length === 0 && this.originalGroupQuizzes.length === 0) {
+            this.loadMyQuizzesFromManagement();
+          }
         } else {
           this.originalMyQuizzes = [];
           this.myQuizzes = [];
+          this.originalGroupQuizzes = [];
+          this.groupQuizzes = [];
         }
 
         this.originalRecentQuizzes = this.convertToQuizCards(data.recent ?? []);
@@ -122,7 +148,7 @@ export class QuizCardsComponent implements OnInit, OnDestroy {
             currentPage: 1,
             itemsPerPage: this.pageSize,
             totalItems: (cat.quizzes ?? []).length,
-            totalPages: Math.ceil((cat.quizzes ?? []).length / this.pageSize)
+            totalPages: Math.ceil((cat.quizzes ?? []).length / this.pageSize),
           })
         );
         this.categories = [...this.originalCategories];
@@ -136,15 +162,106 @@ export class QuizCardsComponent implements OnInit, OnDestroy {
       error: err => {
         this.loading = false;
         this.cdr.markForCheck();
-      }
+      },
     });
+  }
+
+  private loadMyQuizzesFromManagement(): void {
+    this.quizService.getAllQuizzes().subscribe({
+      next: response => {
+        const quizzes = (response as any)?.data || response;
+        this.authService.getCurrentUser().subscribe(currentUser => {
+          this.currentUser = currentUser;
+
+          const myCreatedQuizzes: QuizCard[] = [];
+          const myGroupQuizzes: QuizCard[] = [];
+
+          quizzes.forEach((quiz: any) => {
+            const isMyQuiz = quiz.user?.id === currentUser.id;
+
+            if (isMyQuiz) {
+              // Quiz créé par l'utilisateur
+              if (quiz.isPublic) {
+                myCreatedQuizzes.push(this.convertSingleQuizToCard(quiz));
+              } else if (quiz.groups?.length > 0) {
+                // Quiz privé avec groupes -> va dans les quiz de groupe
+                myGroupQuizzes.push(this.convertSingleQuizToCard(quiz));
+              } else {
+                // Quiz privé sans groupes -> va dans mes quiz créés
+                myCreatedQuizzes.push(this.convertSingleQuizToCard(quiz));
+              }
+            } else {
+              // Quiz créé par d'autres utilisateurs
+              if (!quiz.isPublic && quiz.groups?.length > 0) {
+                // Vérifier si l'utilisateur fait partie d'un des groupes
+                const userGroupIds = currentUser.groups?.map((g: any) => g.id) || [];
+                const quizGroupIds = quiz.groups?.map((g: any) => g.id) || [];
+                const hasCommonGroup = userGroupIds.some((id: number) => quizGroupIds.includes(id));
+
+                if (hasCommonGroup) {
+                  myGroupQuizzes.push(this.convertSingleQuizToCard(quiz));
+                }
+              }
+            }
+          });
+
+          this.originalMyQuizzes = myCreatedQuizzes;
+          this.myQuizzes = [...this.originalMyQuizzes];
+
+          this.originalGroupQuizzes = myGroupQuizzes;
+          this.groupQuizzes = [...this.originalGroupQuizzes];
+
+          this.calculateAllBlobs();
+          this.cdr.markForCheck();
+        });
+      },
+      error: error => {
+        console.error('Erreur lors du chargement des quiz depuis la gestion:', error);
+      },
+    });
+  }
+
+  private convertSingleQuizToCard(quiz: any): QuizCard {
+    const companyName = quiz.company?.name ?? quiz.user?.company?.name ?? 'Inconnu';
+    const groupName = quiz.groups?.[0]?.name ?? null;
+    const isPublic = quiz.is_public ?? quiz.isPublic ?? false;
+
+    let categoryName = 'Catégorie inconnue';
+    if (quiz.category?.name) {
+      categoryName = quiz.category.name;
+    }
+
+    let difficultyLabel = 'Inconnue';
+    if (quiz.difficulty) {
+      const difficultyMap: { [key: string]: string } = {
+        easy: 'Facile',
+        medium: 'Moyen',
+        hard: 'Difficile',
+      };
+      difficultyLabel = difficultyMap[quiz.difficulty] || quiz.difficulty;
+    }
+
+    return {
+      id: quiz.id,
+      title: quiz.title,
+      description: quiz.description,
+      difficulty: difficultyLabel as 'Facile' | 'Moyen' | 'Difficile',
+      category: quiz.category?.name || categoryName,
+      is_public: isPublic,
+      company: companyName,
+      groupName,
+      rating: 0,
+      questionCount: 0,
+      isFlipped: false,
+      playMode: 'solo' as 'solo' | 'team',
+    };
   }
 
   private convertToQuizCards(raw: any[]): QuizCard[] {
     return raw.map(q => {
-      const companyName = (q.company?.name ?? q.user?.company?.name) ?? 'Inconnu';
-      const groupName   = q.groups?.[0]?.name ?? null;
-      const isPublic    = q.is_public ?? q.isPublic ?? false;
+      const companyName = q.company?.name ?? q.user?.company?.name ?? 'Inconnu';
+      const groupName = q.groups?.[0]?.name ?? null;
+      const isPublic = q.is_public ?? q.isPublic ?? false;
 
       let categoryName = 'Catégorie inconnue';
       if (q.category) {
@@ -170,7 +287,7 @@ export class QuizCardsComponent implements OnInit, OnDestroy {
         company: companyName,
         groupName,
         category: categoryName,
-        difficulty: (q.difficultyLabel ?? q.difficulty) ?? 'Niveau non renseigné',
+        difficulty: q.difficultyLabel ?? q.difficulty ?? 'Niveau non renseigné',
         rating: rating,
         questionCount: q.questionCount,
         isFlipped: this.flippedCardsCache.get(q.id) ?? false,
@@ -191,8 +308,6 @@ export class QuizCardsComponent implements OnInit, OnDestroy {
   }
 
   startQuiz(quiz: QuizCard): void {
-    this.analytics.trackQuizStart(quiz.id.toString());
-
     if (quiz.playMode === 'solo') {
       this.router.navigate(['/quiz', quiz.id, 'play']);
     } else if (quiz.playMode === 'team') {
@@ -232,6 +347,17 @@ export class QuizCardsComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
+  onGroupQuizzesPageChange(page: number): void {
+    this.groupQuizzesCurrentPage = page;
+    const key = `group-${page}`;
+    this.groupQuizzesWithBlobs = this.addRandomBlobsLimited(
+      this.getSectionPage(this.groupQuizzes, page),
+      this.pageSize,
+      key
+    );
+    this.cdr.markForCheck();
+  }
+
   onRecentPageChange(page: number): void {
     this.recentCurrentPage = page;
     const key = `recent-${page}`;
@@ -259,15 +385,12 @@ export class QuizCardsComponent implements OnInit, OnDestroy {
   private calculateAllBlobs(): void {
     this.onPopularPageChange(this.popularCurrentPage);
     this.onMyQuizzesPageChange(this.myQuizzesCurrentPage);
+    this.onGroupQuizzesPageChange(this.groupQuizzesCurrentPage);
     this.onRecentPageChange(this.recentCurrentPage);
     this.categories.forEach(cat => this.recalculateCategoryBlobs(cat));
   }
 
-  public addRandomBlobsLimited(
-    quizzes: QuizCard[],
-    maxItems: number,
-    key: string
-  ): DisplayItem[] {
+  public addRandomBlobsLimited(quizzes: QuizCard[], maxItems: number, key: string): DisplayItem[] {
     const BLOB_PROBABILITY = 0.25;
     const MIN_QUIZZES_FOR_BLOB = 1;
 
@@ -289,18 +412,19 @@ export class QuizCardsComponent implements OnInit, OnDestroy {
   }
 
   applyFilters(): void {
-    const filt = (arr: QuizCard[]) => arr.filter(q =>
-      (!this.searchTerm ||
-        q.title.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        q.description.toLowerCase().includes(this.searchTerm.toLowerCase())
-      ) &&
-      (!this.selectedCategory || q.category === this.selectedCategory) &&
-      (!this.selectedDifficulty || q.difficulty === this.selectedDifficulty)
-    );
+    const filt = (arr: QuizCard[]) =>
+      arr.filter(
+        q =>
+          (!this.searchTerm ||
+            q.title.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+            q.description.toLowerCase().includes(this.searchTerm.toLowerCase())) &&
+          (!this.selectedCategory || q.category === this.selectedCategory) &&
+          (!this.selectedDifficulty || q.difficulty === this.selectedDifficulty)
+      );
 
     this.popularQuizzes = filt(this.originalPopularQuizzes);
-    this.myQuizzes      = filt(this.originalMyQuizzes);
-    this.recentQuizzes  = filt(this.originalRecentQuizzes);
+    this.myQuizzes = filt(this.originalMyQuizzes);
+    this.recentQuizzes = filt(this.originalRecentQuizzes);
     this.popularCurrentPage = this.myQuizzesCurrentPage = this.recentCurrentPage = 1;
 
     this.categories = this.originalCategories
@@ -308,7 +432,7 @@ export class QuizCardsComponent implements OnInit, OnDestroy {
         ...cat,
         quizzes: filt(cat.quizzes),
         totalItems: filt(cat.quizzes).length,
-        currentPage: 1
+        currentPage: 1,
       }))
       .filter(cat => !this.selectedCategory || cat.name === this.selectedCategory);
 
@@ -321,11 +445,11 @@ export class QuizCardsComponent implements OnInit, OnDestroy {
       ...this.originalPopularQuizzes,
       ...this.originalMyQuizzes,
       ...this.originalRecentQuizzes,
-      ...this.originalCategories.flatMap(cat => cat.quizzes)
+      ...this.originalCategories.flatMap(cat => cat.quizzes),
     ];
 
-    const uniqueQuizzes = allQuizzes.filter((quiz, index, self) =>
-      index === self.findIndex(q => q.id === quiz.id)
+    const uniqueQuizzes = allQuizzes.filter(
+      (quiz, index, self) => index === self.findIndex(q => q.id === quiz.id)
     );
 
     if (uniqueQuizzes.length === 0) return;
@@ -334,7 +458,7 @@ export class QuizCardsComponent implements OnInit, OnDestroy {
     );
 
     forkJoin(ratingRequests).subscribe({
-      next: (ratings) => {
+      next: ratings => {
         ratings.forEach((rating, index) => {
           const quizId = uniqueQuizzes[index].id;
           const displayRating = rating.averageRating || 0;
@@ -356,8 +480,7 @@ export class QuizCardsComponent implements OnInit, OnDestroy {
 
         this.cdr.markForCheck();
       },
-      error: (error) => {
-      }
+      error: error => {},
     });
   }
 
@@ -399,5 +522,18 @@ export class QuizCardsComponent implements OnInit, OnDestroy {
 
   getCardRowIndex(index: number): number {
     return Math.floor(index / 4);
+  }
+
+  getGroupNames(): string[] {
+    if (!this.groupQuizzes.length) return [];
+
+    const allGroups = new Set<string>();
+    this.groupQuizzes.forEach(quiz => {
+      if (quiz.groupName) {
+        allGroups.add(quiz.groupName);
+      }
+    });
+
+    return Array.from(allGroups);
   }
 }

@@ -11,14 +11,16 @@
     <div class="donation-content">
       <div class="donation-info">
         <h2>Soutenez Blob</h2>
-        <p>Votre don nous aide à améliorer la plateforme et à offrir une meilleure expérience à tous les utilisateurs.</p>
+        <p>
+          Votre don nous aide à améliorer la plateforme et à offrir une meilleure expérience à tous les utilisateurs.
+        </p>
       </div>
 
       <form class="donation-form" (ngSubmit)="submitDonation()">
         <div class="amount-selection">
           <label>Montant du don (€)</label>
           <div class="predefined-amounts">
-            <button 
+            <button
               type="button"
               *ngFor="let preAmount of predefinedAmounts"
               [class.selected]="amount === preAmount"
@@ -27,11 +29,11 @@
               {{ preAmount }}€
             </button>
           </div>
-          <input 
-            type="number" 
-            [(ngModel)]="amount" 
+          <input
+            type="number"
+            [(ngModel)]="amount"
             name="amount"
-            min="1" 
+            min="1"
             max="10000"
             placeholder="Montant personnalisé"
             class="custom-amount"
@@ -40,16 +42,10 @@
 
         <div class="donor-info">
           <h3>Informations (optionnel)</h3>
-          <input 
-            type="text" 
-            [(ngModel)]="donorName" 
-            name="donorName"
-            placeholder="Votre nom"
-            class="input-field"
-          />
-          <input 
-            type="email" 
-            [(ngModel)]="donorEmail" 
+          <input type="text" [(ngModel)]="donorName" name="donorName" placeholder="Votre nom" class="input-field" />
+          <input
+            type="email"
+            [(ngModel)]="donorEmail"
             name="donorEmail"
             placeholder="Votre email"
             class="input-field"
@@ -59,23 +55,18 @@
         <div class="info-box">
           <p>🔒 <strong>Paiement 100% sécurisé</strong></p>
           <p>Vous serez redirigé vers Stripe pour finaliser votre don en toute sécurité.</p>
+          <p>✅ Après le paiement, vous serez automatiquement redirigé vers notre page de confirmation.</p>
         </div>
 
         <div *ngIf="error" class="error-message">
           {{ error }}
         </div>
 
-        <button 
-          type="submit" 
-          class="donate-button"
-          [disabled]="isProcessing || amount <= 0"
-        >
+        <button type="submit" class="donate-button" [disabled]="isProcessing || amount <= 0">
           <span *ngIf="!isProcessing">Continuer vers le paiement sécurisé →</span>
           <span *ngIf="isProcessing">Redirection en cours...</span>
         </button>
       </form>
     </div>
-
-
   </div>
 </div>

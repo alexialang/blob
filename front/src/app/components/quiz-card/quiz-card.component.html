@@ -1,18 +1,26 @@
-<div class="quiz-card" 
-     [class.flipped]="quiz.isFlipped" 
-     [style.--card-bg-color]="cardColor" 
-     [style.--card-text-color]="cardTextColor"
-     role="article"
-     [attr.aria-labelledby]="'quiz-title-' + quiz.id"
-     [attr.aria-describedby]="'quiz-description-' + quiz.id"
-     tabindex="0"
-     appAccessibility
-     (keydown.enter)="flipCard()"
-     (keydown.space)="flipCard()">
-  
+<div
+  class="quiz-card"
+  [class.flipped]="quiz.isFlipped"
+  [style.--card-bg-color]="cardColor"
+  [style.--card-text-color]="cardTextColor"
+  role="article"
+  [attr.aria-labelledby]="'quiz-title-' + quiz.id"
+  [attr.aria-describedby]="'quiz-description-' + quiz.id"
+  tabindex="0"
+  appAccessibility
+  (keydown.enter)="flipCard()"
+  (keydown.space)="flipCard()"
+>
   <div class="card-face card-front" role="region" [attr.aria-labelledby]="'front-title-' + quiz.id">
-    <div class="card-corner-badge" *ngIf="getCompanyBadgeText()" role="status" [attr.aria-label]="'Badge entreprise: ' + getCompanyBadgeText()">{{ getCompanyBadgeText() }}</div>
-    
+    <div
+      class="card-corner-badge"
+      *ngIf="getCompanyBadgeText()"
+      role="status"
+      [attr.aria-label]="'Badge entreprise: ' + getCompanyBadgeText()"
+    >
+      {{ getCompanyBadgeText() }}
+    </div>
+
     <div class="card-content">
       <h3 class="quiz-title" id="quiz-title-{{ quiz.id }}">{{ quiz.title }}</h3>
       <p class="quiz-subtitle" [attr.aria-label]="'Difficulté du quiz: ' + quiz.difficulty">{{ quiz.difficulty }}</p>
@@ -23,30 +31,46 @@
     </div>
 
     <div class="card-action">
-      <div class="quiz-rating" role="img" [attr.aria-label]="'Note de ' + quiz.rating + ' sur 5 étoiles pour le quiz ' + quiz.title">
+      <div
+        class="quiz-rating"
+        role="img"
+        [attr.aria-label]="'Note de ' + quiz.rating + ' sur 5 étoiles pour le quiz ' + quiz.title"
+      >
         <div class="stars">
-          <span class="star" 
-                *ngFor="let i of [1,2,3,4,5]" 
-                [class.filled]="i <= quiz.rating"
-                [attr.aria-hidden]="true">★</span>
+          <span
+            class="star"
+            *ngFor="let i of [1, 2, 3, 4, 5]"
+            [class.filled]="i <= quiz.rating"
+            [attr.aria-hidden]="true"
+            >★</span
+          >
         </div>
       </div>
-      
-      <button class="details-btn" 
-              (click)="flipCard()"
-              (keydown.enter)="flipCard()"
-              (keydown.space)="flipCard()"
-              [attr.aria-label]="'Retourner la carte pour voir les détails du quiz ' + quiz.title"
-              [attr.aria-expanded]="quiz.isFlipped"
-              tabindex="0">
-        <img src="/assets/svg/arrow-down-left.svg" alt="Icône de flèche pour retourner la carte" aria-hidden="true">
+
+      <button
+        class="details-btn"
+        (click)="flipCard()"
+        (keydown.enter)="flipCard()"
+        (keydown.space)="flipCard()"
+        [attr.aria-label]="'Retourner la carte pour voir les détails du quiz ' + quiz.title"
+        [attr.aria-expanded]="quiz.isFlipped"
+        tabindex="0"
+      >
+        <img src="/assets/svg/arrow-down-left.svg" alt="Icône de flèche pour retourner la carte" aria-hidden="true" />
       </button>
     </div>
   </div>
 
   <div class="card-face card-back" role="region" [attr.aria-labelledby]="'back-title-' + quiz.id">
-    <div class="card-corner-badge" *ngIf="getCompanyBadgeText()" role="status" [attr.aria-label]="'Badge entreprise: ' + getCompanyBadgeText()">{{ getCompanyBadgeText() }}</div>
-    
+    <div
+      class="card-corner-badge"
+      *ngIf="getCompanyBadgeText()"
+      role="status"
+      [attr.aria-label]="'Badge entreprise: ' + getCompanyBadgeText()"
+    >
+      {{ getCompanyBadgeText() }}
+    </div>
+
     <div class="card-content">
       <h3 id="back-title-{{ quiz.id }}" class="sr-only">Détails du quiz {{ quiz.title }}</h3>
       <p class="quiz-description" id="quiz-description-{{ quiz.id }}">{{ quiz.description }}</p>
@@ -58,7 +82,11 @@
 
       <div class="play-mode-section">
         <h4>Mode de jeu:</h4>
-        <div class="mode-toggle" role="radiogroup" [attr.aria-label]="'Sélection du mode de jeu pour le quiz ' + quiz.title">
+        <div
+          class="mode-toggle"
+          role="radiogroup"
+          [attr.aria-label]="'Sélection du mode de jeu pour le quiz ' + quiz.title"
+        >
           <button
             class="mode-btn"
             [class.active]="quiz.playMode === 'solo'"
@@ -66,7 +94,8 @@
             role="radio"
             [attr.aria-checked]="quiz.playMode === 'solo'"
             [attr.aria-label]="'Mode solo pour le quiz ' + quiz.title"
-            [tabindex]="quiz.isFlipped ? 0 : -1">
+            [tabindex]="quiz.isFlipped ? 0 : -1"
+          >
             Solo
           </button>
           <button
@@ -77,7 +106,8 @@
             role="radio"
             [attr.aria-checked]="quiz.playMode === 'team'"
             [attr.aria-label]="'Mode équipe pour le quiz ' + quiz.title"
-            [tabindex]="quiz.isFlipped ? 0 : -1">
+            [tabindex]="quiz.isFlipped ? 0 : -1"
+          >
             Équipe
           </button>
         </div>
@@ -86,18 +116,24 @@
         </p>
       </div>
     </div>
-    
+
     <div class="card-actions">
-      <button class="back-btn" 
-              (click)="flipCard()"
-              (keydown.enter)="flipCard()"
-              (keydown.space)="flipCard()"
-              [attr.aria-label]="'Retourner la carte vers l\'avant pour le quiz ' + quiz.title"
-              [tabindex]="quiz.isFlipped ? 0 : -1">←</button>
-      <button class="start-btn" 
-              (click)="startQuiz()"
-              [attr.aria-label]="'Démarrer le quiz ' + quiz.title + ' en mode ' + quiz.playMode"
-              [tabindex]="quiz.isFlipped ? 0 : -1">
+      <button
+        class="back-btn"
+        (click)="flipCard()"
+        (keydown.enter)="flipCard()"
+        (keydown.space)="flipCard()"
+        [attr.aria-label]="'Retourner la carte vers l\'avant pour le quiz ' + quiz.title"
+        [tabindex]="quiz.isFlipped ? 0 : -1"
+      >
+        ←
+      </button>
+      <button
+        class="start-btn"
+        (click)="startQuiz()"
+        [attr.aria-label]="'Démarrer le quiz ' + quiz.title + ' en mode ' + quiz.playMode"
+        [tabindex]="quiz.isFlipped ? 0 : -1"
+      >
         Démarrer le Quiz
       </button>
     </div>

@@ -169,12 +169,21 @@
   -webkit-text-stroke: 1px #ffd700;
 }
 
-.star:nth-child(1) { --star-index: 0; }
-.star:nth-child(2) { --star-index: 1; }
-.star:nth-child(3) { --star-index: 2; }
-.star:nth-child(4) { --star-index: 3; }
-.star:nth-child(5) { --star-index: 4; }
-
+.star:nth-child(1) {
+  --star-index: 0;
+}
+.star:nth-child(2) {
+  --star-index: 1;
+}
+.star:nth-child(3) {
+  --star-index: 2;
+}
+.star:nth-child(4) {
+  --star-index: 3;
+}
+.star:nth-child(5) {
+  --star-index: 4;
+}
 
 @keyframes overlayExpand {
   0% {
@@ -332,7 +341,6 @@
   }
 }
 
-
 @media (max-width: 768px) {
   .transition-content {
     padding: 1rem;
@@ -372,7 +380,6 @@
     max-height: 60%;
   }
 }
-
 
 .quiz-transition-overlay,
 .transition-card,

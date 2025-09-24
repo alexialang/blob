@@ -18,9 +18,7 @@
     </div>
 
     <div class="leaderboard-list">
-      <div class="leaderboard-item"
-           *ngFor="let player of leaderboard"
-           [class.current-user]="player.isCurrentUser">
+      <div class="leaderboard-item" *ngFor="let player of leaderboard" [class.current-user]="player.isCurrentUser">
         <div class="rank">
           <span class="rank-number">#{{ player.rank }}</span>
           <div class="rank-medal" *ngIf="player.rank <= 3">
@@ -55,12 +53,8 @@
     </div>
 
     <div class="leaderboard-actions">
-      <button class="action-btn primary" (click)="onReplay()">
-        🔄 Rejouer
-      </button>
-      <button class="action-btn secondary" (click)="onShare()">
-        📤 Partager
-      </button>
+      <button class="action-btn primary" (click)="onReplay()">🔄 Rejouer</button>
+      <button class="action-btn secondary" (click)="onShare()">📤 Partager</button>
     </div>
   </div>
 </div>

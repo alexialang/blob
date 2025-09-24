@@ -7,7 +7,7 @@ import { SlideButtonComponent } from '../slide-button/slide-button.component';
   standalone: true,
   imports: [CommonModule, SlideButtonComponent],
   templateUrl: './leaderboard-modal.component.html',
-  styleUrls: ['./leaderboard-modal.component.scss']
+  styleUrls: ['./leaderboard-modal.component.scss'],
 })
 export class LeaderboardModalComponent {
   @Input() isVisible = false;
@@ -16,8 +16,6 @@ export class LeaderboardModalComponent {
   @Input() playerRank = 1;
   @Input() totalScore = 0;
   @Input() totalPlayers = 1;
-
-
 
   @Output() close = new EventEmitter<void>();
   @Output() replay = new EventEmitter<void>();
@@ -37,10 +35,14 @@ export class LeaderboardModalComponent {
 
   getMedalIcon(position: number): string {
     switch (position) {
-      case 1: return '🥇';
-      case 2: return '🥈';
-      case 3: return '🥉';
-      default: return '';
+      case 1:
+        return '🥇';
+      case 2:
+        return '🥈';
+      case 3:
+        return '🥉';
+      default:
+        return '';
     }
   }
 
@@ -56,8 +58,10 @@ export class LeaderboardModalComponent {
     if (position >= 11 && position <= 13) return 'ème';
     const lastDigit = position % 10;
     switch (lastDigit) {
-      case 1: return 'er';
-      default: return 'ème';
+      case 1:
+        return 'er';
+      default:
+        return 'ème';
     }
   }
 }

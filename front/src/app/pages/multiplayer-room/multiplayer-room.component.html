@@ -1,52 +1,38 @@
 <div class="room-container">
   <div class="room-header">
     <div class="room-info">
-      <h1>{{currentRoom?.name || 'Salon Multiplayer'}}</h1>
+      <h1>{{ currentRoom?.name || 'Salon Multiplayer' }}</h1>
       <div class="quiz-info" *ngIf="currentRoom?.quiz">
-        <span class="quiz-title">{{currentRoom?.quiz?.title}}</span>
-        <span class="quiz-questions">{{currentRoom?.quiz?.questionCount}} questions</span>
+        <span class="quiz-title">{{ currentRoom?.quiz?.title }}</span>
+        <span class="quiz-questions">{{ currentRoom?.quiz?.questionCount }} questions</span>
       </div>
     </div>
 
     <div class="room-actions">
-      <button
-        *ngIf="canStartGame()"
-        class="btn btn-start"
-        (click)="startGame()"
-        [disabled]="starting"
-      >
-        {{starting ? 'Lancement...' : '🚀 Lancer le jeu'}}
+      <button *ngIf="canStartGame()" class="btn btn-start" (click)="startGame()" [disabled]="starting">
+        {{ starting ? 'Lancement...' : '🚀 Lancer le jeu' }}
       </button>
 
-      <button class="btn btn-leave" (click)="leaveRoom()">
-        Quitter le salon
-      </button>
+      <button class="btn btn-leave" (click)="leaveRoom()">Quitter le salon</button>
     </div>
   </div>
 
   <div class="room-content" *ngIf="currentRoom">
     <div class="players-container">
       <h3 class="section-title">
-        Joueurs connectés ({{currentRoom.players?.length || 0}}/{{currentRoom.maxPlayers || 4}})
+        Joueurs connectés ({{ currentRoom.players?.length || 0 }}/{{ currentRoom.maxPlayers || 4 }})
       </h3>
-      
+
       <div class="players-list">
-        <div
-          *ngFor="let player of currentRoom.players"
-          class="player-card"
-          [class.is-creator]="player.isCreator"
-        >
-          <div class="player-avatar">{{getPlayerInitials(player.username)}}</div>
+        <div *ngFor="let player of currentRoom.players" class="player-card" [class.is-creator]="player.isCreator">
+          <div class="player-avatar">{{ getPlayerInitials(player.username) }}</div>
           <div class="player-info">
-            <span class="player-name">{{player.username}}</span>
+            <span class="player-name">{{ player.username }}</span>
             <span class="player-status" *ngIf="player.isCreator">👑 Créateur</span>
           </div>
         </div>
 
-        <div
-          *ngFor="let empty of getEmptySlots()"
-          class="empty-slot"
-        >
+        <div *ngFor="let empty of getEmptySlots()" class="empty-slot">
           <div class="empty-avatar">+</div>
           <span>En attente d'un joueur...</span>
         </div>
@@ -57,19 +43,15 @@
       <div class="detail-item">
         <span class="detail-label">Statut:</span>
         <span class="detail-value status" [class]="currentRoom.status">
-          {{getStatusText(currentRoom.status)}}
+          {{ getStatusText(currentRoom.status) }}
         </span>
       </div>
     </div>
 
     <div class="instructions" *ngIf="currentRoom.status === 'waiting'">
       <h4>🎮 En attente de joueurs</h4>
-      <p *ngIf="isCreator()">
-        Vous pouvez lancer le jeu dès qu'il y a au moins 2 joueurs connectés.
-      </p>
-      <p *ngIf="!isCreator()">
-        En attente que {{currentRoom.creator?.username}} lance le jeu.
-      </p>
+      <p *ngIf="isCreator()">Vous pouvez lancer le jeu dès qu'il y a au moins 2 joueurs connectés.</p>
+      <p *ngIf="!isCreator()">En attente que {{ currentRoom.creator?.username }} lance le jeu.</p>
     </div>
   </div>
 

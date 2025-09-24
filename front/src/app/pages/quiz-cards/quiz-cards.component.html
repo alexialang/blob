@@ -2,16 +2,23 @@
   <div class="quiz-header">
     <div class="page-title"><h1>Quiz</h1></div>
     <div class="quiz-filters">
-      <input type="text"
-             class="filter-select "
-             [(ngModel)]="searchTerm"
-             (ngModelChange)="applyFilters()"
-             placeholder="Rechercher un quiz…" />
-      <select class="filter-select " [(ngModel)]="selectedCategory" (ngModelChange)="applyFilters()">
+      <label for="search-input" class="visually-hidden">Rechercher un quiz</label>
+      <input
+        id="search-input"
+        type="text"
+        class="filter-select"
+        [(ngModel)]="searchTerm"
+        (ngModelChange)="applyFilters()"
+        placeholder="Rechercher un quiz…"
+        aria-label="Rechercher un quiz"
+      />
+      <label for="category-select" class="visually-hidden">Filtrer par catégorie</label>
+      <select id="category-select" class="filter-select" [(ngModel)]="selectedCategory" (ngModelChange)="applyFilters()" aria-label="Filtrer par catégorie">
         <option value="">Toutes catégories</option>
         <option *ngFor="let c of categories" [value]="c.name">{{ c.name }}</option>
       </select>
-      <select class="filter-select " [(ngModel)]="selectedDifficulty" (ngModelChange)="applyFilters()">
+      <label for="difficulty-select" class="visually-hidden">Filtrer par difficulté</label>
+      <select id="difficulty-select" class="filter-select" [(ngModel)]="selectedDifficulty" (ngModelChange)="applyFilters()" aria-label="Filtrer par difficulté">
         <option value="">Toute difficulté</option>
         <option value="Facile">Facile</option>
         <option value="Moyen">Moyen</option>
@@ -27,109 +34,179 @@
 
   <div *ngIf="!loading" class="quiz-content">
     <section class="quiz-section popular-section">
-      <h2>Les Plus Populaires ({{popularQuizzes.length}})</h2>
-      <div class="cards-grid grid grid-cols-4 gap-4"
-           *ngIf="popularQuizzesWithBlobs.length">
+      <h2>Les Plus Populaires ({{ popularQuizzes.length }})</h2>
+      <div class="cards-grid grid grid-cols-4 gap-4" *ngIf="popularQuizzesWithBlobs.length">
         <ng-container *ngFor="let it of popularQuizzesWithBlobs; let i = index">
-          <app-quiz-card *ngIf="it.type==='quiz'"
-                         [quiz]="it.data"
-                         [index]="getCardIndex(i)"
-                         [rowIndex]="getCardRowIndex(i)"
-                         (quizStart)="startQuiz($event)"
-                         (quizFlip)="flipCard($event)"
-                         (playModeChange)="togglePlayMode($event)">
+          <app-quiz-card
+            *ngIf="it.type === 'quiz'"
+            [quiz]="it.data"
+            [index]="getCardIndex(i)"
+            [rowIndex]="getCardRowIndex(i)"
+            (quizStart)="startQuiz($event)"
+            (quizFlip)="flipCard($event)"
+            (playModeChange)="togglePlayMode($event)"
+          >
           </app-quiz-card>
-          <div *ngIf="it.type==='blob'" class="blob-card">
-            <img ngSrc="/assets/svg/blob_flower.svg" alt="Élément décoratif floral pour la mise en page des quiz" height="334" width="242">
+          <div *ngIf="it.type === 'blob'" class="blob-card">
+            <img
+              ngSrc="/assets/svg/blob_flower.svg"
+              alt="Élément décoratif floral pour la mise en page des quiz"
+              height="334"
+              width="242"
+            />
           </div>
         </ng-container>
       </div>
-      <app-pagination *ngIf="popularQuizzes.length>pageSize"
-                      [totalItems]="popularQuizzes.length"
-                      [pageSize]="pageSize"
-                      [page]="popularCurrentPage"
-                      [activePadding]="2"
-                      (pageChange)="onPopularPageChange($event)">
+      <app-pagination
+        *ngIf="popularQuizzes.length > pageSize"
+        [totalItems]="popularQuizzes.length"
+        [pageSize]="pageSize"
+        [page]="popularCurrentPage"
+        [activePadding]="2"
+        (pageChange)="onPopularPageChange($event)"
+      >
       </app-pagination>
       <p *ngIf="!popularQuizzesWithBlobs.length">Aucun quiz populaire disponible pour le moment</p>
     </section>
 
-    <section class="quiz-section my-quizzes-section"
-             *ngIf="myQuizzesWithBlobs.length && isUserLoggedIn">
-      <h2>Mes Quiz Créés ({{myQuizzes.length}})</h2>
+    <section class="quiz-section my-quizzes-section" *ngIf="myQuizzesWithBlobs.length && isUserLoggedIn">
+      <h2>Mes Quiz Créés ({{ myQuizzes.length }})</h2>
       <a routerLink="/creation-quiz" class="btn-create">+ Créer un nouveau quiz</a>
       <div class="cards-grid grid grid-cols-4 gap-4">
         <ng-container *ngFor="let it of myQuizzesWithBlobs; let i = index">
-          <app-quiz-card *ngIf="it.type==='quiz'" [quiz]="it.data"
-                         [index]="getCardIndex(i)"
-                         [rowIndex]="getCardRowIndex(i)"
-                         (quizStart)="startQuiz($event)"
-                         (quizFlip)="flipCard($event)"
-                         (playModeChange)="togglePlayMode($event)">
+          <app-quiz-card
+            *ngIf="it.type === 'quiz'"
+            [quiz]="it.data"
+            [index]="getCardIndex(i)"
+            [rowIndex]="getCardRowIndex(i)"
+            (quizStart)="startQuiz($event)"
+            (quizFlip)="flipCard($event)"
+            (playModeChange)="togglePlayMode($event)"
+          >
           </app-quiz-card>
-          <div *ngIf="it.type==='blob'" class="blob-card">
-            <img src="/assets/svg/blob_flower.svg" alt="Élément décoratif floral pour la mise en page des quiz">
+          <div *ngIf="it.type === 'blob'" class="blob-card">
+            <img
+              src="/assets/svg/blob_flower.svg"
+              alt="Élément décoratif floral pour la mise en page des quiz"
+              width="100"
+              height="100"
+            />
           </div>
         </ng-container>
       </div>
-      <app-pagination *ngIf="myQuizzes.length>pageSize"
-                      [totalItems]="myQuizzes.length"
-                      [pageSize]="pageSize"
-                      [page]="myQuizzesCurrentPage"
-                      [activePadding]="2"
-                      (pageChange)="onMyQuizzesPageChange($event)">
+      <app-pagination
+        *ngIf="myQuizzes.length > pageSize"
+        [totalItems]="myQuizzes.length"
+        [pageSize]="pageSize"
+        [page]="myQuizzesCurrentPage"
+        [activePadding]="2"
+        (pageChange)="onMyQuizzesPageChange($event)"
+      >
+      </app-pagination>
+    </section>
+
+    <section class="quiz-section group-quizzes-section" *ngIf="groupQuizzesWithBlobs.length && isUserLoggedIn">
+      <h2>Quiz Privés - {{ getGroupNames().join(', ') || 'Mes Groupes' }} ({{ groupQuizzes.length }})</h2>
+      <div class="cards-grid grid grid-cols-4 gap-4">
+        <ng-container *ngFor="let it of groupQuizzesWithBlobs; let i = index">
+          <app-quiz-card
+            *ngIf="it.type === 'quiz'"
+            [quiz]="it.data"
+            [index]="getCardIndex(i)"
+            [rowIndex]="getCardRowIndex(i)"
+            (quizStart)="startQuiz($event)"
+            (quizFlip)="flipCard($event)"
+            (playModeChange)="togglePlayMode($event)"
+          >
+          </app-quiz-card>
+          <div *ngIf="it.type === 'blob'" class="blob-card">
+            <img
+              src="/assets/svg/blob_flower.svg"
+              alt="Élément décoratif floral pour la mise en page des quiz"
+              width="100"
+              height="100"
+            />
+          </div>
+        </ng-container>
+      </div>
+      <app-pagination
+        *ngIf="groupQuizzes.length > pageSize"
+        [totalItems]="groupQuizzes.length"
+        [pageSize]="pageSize"
+        [page]="groupQuizzesCurrentPage"
+        [activePadding]="2"
+        (pageChange)="onGroupQuizzesPageChange($event)"
+      >
       </app-pagination>
     </section>
 
     <section class="quiz-section recent-section">
-      <h2>Récemment Ajoutés ({{recentQuizzes.length}})</h2>
-      <div class="cards-grid grid grid-cols-4 gap-4"
-           *ngIf="recentQuizzesWithBlobs.length">
+      <h2>Récemment Ajoutés ({{ recentQuizzes.length }})</h2>
+      <div class="cards-grid grid grid-cols-4 gap-4" *ngIf="recentQuizzesWithBlobs.length">
         <ng-container *ngFor="let it of recentQuizzesWithBlobs; let i = index">
-          <app-quiz-card *ngIf="it.type==='quiz'" [quiz]="it.data"
-                         [index]="getCardIndex(i)"
-                         [rowIndex]="getCardRowIndex(i)"
-                         (quizStart)="startQuiz($event)"
-                         (quizFlip)="flipCard($event)"
-                         (playModeChange)="togglePlayMode($event)">
+          <app-quiz-card
+            *ngIf="it.type === 'quiz'"
+            [quiz]="it.data"
+            [index]="getCardIndex(i)"
+            [rowIndex]="getCardRowIndex(i)"
+            (quizStart)="startQuiz($event)"
+            (quizFlip)="flipCard($event)"
+            (playModeChange)="togglePlayMode($event)"
+          >
           </app-quiz-card>
-          <div *ngIf="it.type==='blob'" class="blob-card">
-            <img src="/assets/svg/blob_flower.svg" alt="Élément décoratif floral pour la mise en page des quiz">
+          <div *ngIf="it.type === 'blob'" class="blob-card">
+            <img
+              src="/assets/svg/blob_flower.svg"
+              alt="Élément décoratif floral pour la mise en page des quiz"
+              width="100"
+              height="100"
+            />
           </div>
         </ng-container>
       </div>
-      <app-pagination *ngIf="recentQuizzes.length>pageSize"
-                      [totalItems]="recentQuizzes.length"
-                      [pageSize]="pageSize"
-                      [page]="recentCurrentPage"
-                      [activePadding]="2"
-                      (pageChange)="onRecentPageChange($event)">
+      <app-pagination
+        *ngIf="recentQuizzes.length > pageSize"
+        [totalItems]="recentQuizzes.length"
+        [pageSize]="pageSize"
+        [page]="recentCurrentPage"
+        [activePadding]="2"
+        (pageChange)="onRecentPageChange($event)"
+      >
       </app-pagination>
     </section>
 
     <section *ngFor="let cat of categories" class="quiz-section category-section">
-      <h2>{{cat.name}} ({{cat.totalItems}})</h2>
-      <div class="cards-grid grid grid-cols-4 gap-4"
-           *ngIf="getSectionPage(cat.quizzes, cat.currentPage).length">
+      <h2>{{ cat.name }} ({{ cat.totalItems }})</h2>
+      <div class="cards-grid grid grid-cols-4 gap-4" *ngIf="getSectionPage(cat.quizzes, cat.currentPage).length">
         <ng-container *ngFor="let it of categoriesWithBlobs[cat.name + '-' + cat.currentPage]; let i = index">
-          <app-quiz-card *ngIf="it.type==='quiz'" [quiz]="it.data"
-                         [index]="getCardIndex(i)"
-                         [rowIndex]="getCardRowIndex(i)"
-                         (quizStart)="startQuiz($event)"
-                         (quizFlip)="flipCard($event)"
-                         (playModeChange)="togglePlayMode($event)">
+          <app-quiz-card
+            *ngIf="it.type === 'quiz'"
+            [quiz]="it.data"
+            [index]="getCardIndex(i)"
+            [rowIndex]="getCardRowIndex(i)"
+            (quizStart)="startQuiz($event)"
+            (quizFlip)="flipCard($event)"
+            (playModeChange)="togglePlayMode($event)"
+          >
           </app-quiz-card>
-          <div *ngIf="it.type==='blob'" class="blob-card">
-            <img src="/assets/svg/blob_flower.svg" alt="Élément décoratif floral pour la mise en page des quiz">
+          <div *ngIf="it.type === 'blob'" class="blob-card">
+            <img
+              src="/assets/svg/blob_flower.svg"
+              alt="Élément décoratif floral pour la mise en page des quiz"
+              width="100"
+              height="100"
+            />
           </div>
         </ng-container>
       </div>
-      <app-pagination *ngIf="cat.totalItems>cat.itemsPerPage"
-                      [totalItems]="cat.totalItems"
-                      [pageSize]="cat.itemsPerPage"
-                      [page]="cat.currentPage"
-                      [activePadding]="2"
-                      (pageChange)="onCategoryPageChange(cat, $event)">
+      <app-pagination
+        *ngIf="cat.totalItems > cat.itemsPerPage"
+        [totalItems]="cat.totalItems"
+        [pageSize]="cat.itemsPerPage"
+        [page]="cat.currentPage"
+        [activePadding]="2"
+        (pageChange)="onCategoryPageChange(cat, $event)"
+      >
       </app-pagination>
       <p *ngIf="!cat.quizzes.length">Aucun quiz disponible dans cette catégorie pour le moment</p>
     </section>

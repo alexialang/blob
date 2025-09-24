@@ -7,11 +7,15 @@ import { Question } from '../../../models/quiz.model';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './mcq-question.component.html',
-  styleUrls: ['./mcq-question.component.scss']
+  styleUrls: ['./mcq-question.component.scss'],
 })
 export class McqQuestionComponent {
   @Input() question!: Question;
-  @Input() progress: { current: number; total: number; percentage: number } = { current: 0, total: 0, percentage: 0 };
+  @Input() progress: { current: number; total: number; percentage: number } = {
+    current: 0,
+    total: 0,
+    percentage: 0,
+  };
   @Output() answerSelected = new EventEmitter<number>();
   @Output() answerValidated = new EventEmitter<void>();
 
@@ -34,10 +38,10 @@ export class McqQuestionComponent {
 
   getFlowerShape(index: number): string {
     const shapes = [
-      '/assets/svg/blob_flower_color.png',
-      '/assets/svg/blob_flower color2.png',
-      '/assets/svg/blob_flower_color3.png',
-      '/assets/svg/blob_flower_color4.png'
+      '/assets/svg/blob_flower_color.svg',
+      '/assets/svg/blob_flower_color2.svg',
+      '/assets/svg/blob_flower_color3.svg',
+      '/assets/svg/blob_flower_color1.svg',
     ];
     return shapes[index % shapes.length];
   }

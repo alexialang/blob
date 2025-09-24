@@ -56,16 +56,45 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "1MB",
-                  "maximumError": "2MB"
+                  "maximumWarning": "1mb",
+                  "maximumError": "2mb"
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "1MB",
-                  "maximumError": "2MB"
+                  "maximumWarning": "15kb",
+                  "maximumError": "25kb"
+                },
+                {
+                  "type": "bundle",
+                  "name": "vendor",
+                  "maximumWarning": "500kb",
+                  "maximumError": "1mb"
                 }
               ],
-              "outputHashing": "all"
+              "outputHashing": "all",
+              "optimization": {
+                "scripts": true,
+                "styles": {
+                  "minify": true,
+                  "inlineCritical": true
+                },
+                "fonts": true
+              },
+              "allowedCommonJsDependencies": [],
+              "crossOrigin": "anonymous",
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.prod.ts"
+                }
+              ],
+              "buildOptimizer": true,
+              "aot": true,
+              "extractLicenses": true,
+              "vendorChunk": false,
+              "namedChunks": false,
+              "sourceMap": false,
+              "serviceWorker": false
             },
             "development": {
               "optimization": false,

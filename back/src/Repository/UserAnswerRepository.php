@@ -2,8 +2,8 @@
 
 namespace App\Repository;
 
-use App\Entity\UserAnswer;
 use App\Entity\Quiz;
+use App\Entity\UserAnswer;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -21,6 +21,7 @@ class UserAnswerRepository extends ServiceEntityRepository
             ->join('ua.user', 'u')
             ->leftJoin('u.company', 'c')
             ->where('ua.quiz = :quiz')
+            ->andWhere('ua.total_score >= 0') // Inclure tous les scores (même 0)
             ->setParameter('quiz', $quizId)
             ->groupBy('u.id')
             ->orderBy('score', 'DESC')
@@ -47,6 +48,7 @@ class UserAnswerRepository extends ServiceEntityRepository
     public function getQuizLeaderboardData(Quiz $quiz): array
     {
         $qb = $this->createQueryBuilder('ua');
+
         return $qb->select('ua.total_score as score, u.pseudo as name, c.name as company, u.id as userId')
             ->join('ua.user', 'u')
             ->leftJoin('u.company', 'c')
@@ -69,7 +71,7 @@ class UserAnswerRepository extends ServiceEntityRepository
             ->getResult();
 
         $leaderboardData = [];
-        
+
         foreach ($users as $user) {
             $userStats = $this->getUserStats($user['userId']);
             if ($userStats) {
@@ -91,14 +93,12 @@ class UserAnswerRepository extends ServiceEntityRepository
                     'firstName' => $userData['firstName'],
                     'lastName' => $userData['lastName'],
                     'avatar' => $userData['avatar'],
-                    'companyName' => $userData['companyName']
+                    'companyName' => $userData['companyName'],
                 ];
             }
         }
 
-        usort($leaderboardData, function($a, $b) {
-            return $b['totalScore'] - $a['totalScore'];
-        });
+        usort($leaderboardData, fn ($a, $b) => $b['totalScore'] - $a['totalScore']);
 
         return array_slice($leaderboardData, 0, $limit);
     }
@@ -187,7 +187,7 @@ class UserAnswerRepository extends ServiceEntityRepository
         return [
             'totalScore' => $totalScore,
             'quizzesCompleted' => $quizzesCompleted,
-            'averageScore' => $averageScore
+            'averageScore' => $averageScore,
         ];
     }
 

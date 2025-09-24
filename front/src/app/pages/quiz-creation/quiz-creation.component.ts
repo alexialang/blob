@@ -7,11 +7,10 @@ import {
   Validators,
   ReactiveFormsModule,
   FormsModule,
-  AbstractControl
+  AbstractControl,
 } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { QuizManagementService } from '../../services/quiz-management.service';
-import { AnalyticsService } from '../../services/analytics.service';
 
 interface TypeQuestion {
   id: number;
@@ -45,7 +44,7 @@ interface Difficulty {
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './quiz-creation.component.html',
-  styleUrls: ['./quiz-creation.component.scss']
+  styleUrls: ['./quiz-creation.component.scss'],
 })
 export class QuizCreationComponent implements OnInit {
   quizForm!: FormGroup;
@@ -57,7 +56,7 @@ export class QuizCreationComponent implements OnInit {
   difficulties: Difficulty[] = [
     { value: 'easy', label: 'Facile' },
     { value: 'medium', label: 'Moyen' },
-    { value: 'hard', label: 'Difficile' }
+    { value: 'hard', label: 'Difficile' },
   ];
   isSubmitting = false;
   isEditMode = false;
@@ -73,8 +72,7 @@ export class QuizCreationComponent implements OnInit {
     private readonly fb: FormBuilder,
     private readonly router: Router,
     private readonly route: ActivatedRoute,
-    private readonly quizService: QuizManagementService,
-    private analytics: AnalyticsService
+    private readonly quizService: QuizManagementService
   ) {}
 
   @HostListener('document:click', ['$event'])
@@ -88,29 +86,30 @@ export class QuizCreationComponent implements OnInit {
   ngOnInit(): void {
     this.generateRandomColor();
     this.quizForm = this.createQuizForm();
-    this.loadTypeQuestions();
-    this.loadCategories();
-    this.loadStatuses();
 
-    this.quizForm.get('is_public')?.valueChanges.subscribe(isPublic => {
-      if (isPublic === false) {
-        this.loadGroups();
-      }
-    });
+    // Charger d'abord les types de questions
+    this.loadTypeQuestions().then(() => {
+      this.loadCategories();
+      this.loadStatuses();
 
-    this.route.params.subscribe(params => {
-      if (params['id']) {
-        this.isEditMode = true;
-        this.quizId = +params['id'];
-        this.loadQuizForEdit(this.quizId);
-      }
+      this.quizForm.get('is_public')?.valueChanges.subscribe(isPublic => {
+        if (isPublic === false) {
+          this.loadGroups();
+        }
+      });
+
+      this.route.params.subscribe(params => {
+        if (params['id']) {
+          this.isEditMode = true;
+          this.quizId = +params['id'];
+          this.loadQuizForEdit(this.quizId);
+        }
+      });
     });
   }
 
   private generateRandomColor(): void {
-    const colors = [
-      '#257D54', '#FAA24B', '#D30D4C',
-    ];
+    const colors = ['#257D54', '#FAA24B', '#D30D4C'];
 
     const index = Math.floor(Math.random() * colors.length);
     this.highlightColor = colors[index];
@@ -124,7 +123,7 @@ export class QuizCreationComponent implements OnInit {
       is_public: [true, Validators.required],
       category: [null, Validators.required],
       groups: [[]],
-      questions: this.fb.array([])
+      questions: this.fb.array([]),
     });
 
     setTimeout(() => this.addQuestion(), 0);
@@ -140,7 +139,7 @@ export class QuizCreationComponent implements OnInit {
       question: ['', [Validators.required, Validators.minLength(5)]],
       type_question: [null, Validators.required],
       difficulty: ['easy', Validators.required],
-      answers: this.fb.array([])
+      answers: this.fb.array([]),
     });
 
     this.questions.push(questionForm);
@@ -172,7 +171,7 @@ export class QuizCreationComponent implements OnInit {
       is_correct: [false],
       order_correct: [''],
       pair_id: [''],
-      is_intrus: [false]
+      is_intrus: [false],
     });
 
     answers.push(answerForm);
@@ -243,7 +242,9 @@ export class QuizCreationComponent implements OnInit {
 
   private initializeMatchingPairs(questionIndex: number): void {
     const answers = this.getAnswers(questionIndex);
-    const alreadyPaired = answers.controls.some((control: AbstractControl) => !!control.get('pair_id')?.value);
+    const alreadyPaired = answers.controls.some(
+      (control: AbstractControl) => !!control.get('pair_id')?.value
+    );
     if (alreadyPaired) return;
 
     for (let i = 0; i < answers.length; i++) {
@@ -263,7 +264,7 @@ export class QuizCreationComponent implements OnInit {
       is_correct: [true],
       order_correct: [null],
       pair_id: [null],
-      is_intrus: [false]
+      is_intrus: [false],
     });
     answers.push(trueAnswer);
 
@@ -272,7 +273,7 @@ export class QuizCreationComponent implements OnInit {
       is_correct: [false],
       order_correct: [null],
       pair_id: [null],
-      is_intrus: [false]
+      is_intrus: [false],
     });
     answers.push(falseAnswer);
   }
@@ -298,13 +299,13 @@ export class QuizCreationComponent implements OnInit {
 
   private getMinAnswersForType(questionType: string): number {
     const MIN_ANSWERS_CONFIG = {
-      'MCQ': 3,
-      'multiple_choice': 3,
-      'right_order': 3,
-      'matching': 4,
-      'find_the_intruder': 3,
-      'blind_test': 1,
-      'true_false': 2
+      MCQ: 3,
+      multiple_choice: 3,
+      right_order: 3,
+      matching: 4,
+      find_the_intruder: 3,
+      blind_test: 1,
+      true_false: 2,
     } as const;
 
     return MIN_ANSWERS_CONFIG[questionType as keyof typeof MIN_ANSWERS_CONFIG] || 2;
@@ -312,12 +313,12 @@ export class QuizCreationComponent implements OnInit {
 
   private getMaxAnswersForType(questionType: string): number {
     const MAX_ANSWERS_CONFIG = {
-      'MCQ': 6,
-      'multiple_choice': 6,
-      'right_order': 8,
-      'matching': 10,
-      'find_the_intruder': 3,
-      'blind_test': 1
+      MCQ: 6,
+      multiple_choice: 6,
+      right_order: 8,
+      matching: 10,
+      find_the_intruder: 3,
+      blind_test: 1,
     } as const;
 
     return MAX_ANSWERS_CONFIG[questionType as keyof typeof MAX_ANSWERS_CONFIG] || 8;
@@ -325,12 +326,13 @@ export class QuizCreationComponent implements OnInit {
 
   getQuestionTypeLabel(type: string): string {
     const TYPE_LABELS = {
-      'MCQ': 'QCM',
-      'multiple_choice': 'Choix multiple',
-      'right_order': 'Remise dans le bon ordre',
-      'matching': 'Association d\'éléments',
-      'find_the_intruder': 'Intrus',
-      'blind_test': 'Blind Test'
+      MCQ: 'QCM',
+      multiple_choice: 'Choix multiple',
+      right_order: 'Remise dans le bon ordre',
+      matching: "Association d'éléments",
+      find_the_intruder: 'Intrus',
+      blind_test: 'Blind Test',
+      true_false: 'Vrai/Faux',
     } as const;
 
     return TYPE_LABELS[type as keyof typeof TYPE_LABELS] || type;
@@ -352,7 +354,9 @@ export class QuizCreationComponent implements OnInit {
   }
 
   getAnswerControlByPairId(questionIndex: number, pairId: string): any {
-    return this.getAnswers(questionIndex).controls.find(ctrl => ctrl.get('pair_id')?.value === pairId)?.get('answer');
+    return this.getAnswers(questionIndex)
+      .controls.find(ctrl => ctrl.get('pair_id')?.value === pairId)
+      ?.get('answer');
   }
 
   filterCategories(): void {
@@ -375,9 +379,18 @@ export class QuizCreationComponent implements OnInit {
     this.categorySearch = '';
   }
 
-  loadTypeQuestions(): void {
-    this.quizService.getTypeQuestions().subscribe(res => {
-      this.typeQuestions = res;
+  loadTypeQuestions(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.quizService.getTypeQuestions().subscribe({
+        next: res => {
+          this.typeQuestions = res;
+          resolve();
+        },
+        error: error => {
+          console.error('Erreur lors du chargement des types de questions:', error);
+          reject(error);
+        },
+      });
     });
   }
 
@@ -400,8 +413,6 @@ export class QuizCreationComponent implements OnInit {
     });
   }
 
-
-
   cancel(): void {
     this.router.navigate(['/quiz-management']);
   }
@@ -414,7 +425,7 @@ export class QuizCreationComponent implements OnInit {
         status: res.status,
         is_public: res.isPublic,
         category: res.category?.id || null,
-        groups: res.groups.map((g: any) => g.id)
+        groups: res.groups.map((g: any) => g.id),
       });
 
       if (res.category) {
@@ -431,18 +442,27 @@ export class QuizCreationComponent implements OnInit {
       }
 
       res.questions.forEach((q: any) => {
+        console.log('DEBUG: Question reçue:', q);
+        console.log('DEBUG: Type de question:', q.type_question);
+        console.log('DEBUG: TypeQuestions disponibles:', this.typeQuestions);
+
         let questionTypeKey = '';
         if (typeof q.type_question === 'object' && q.type_question !== null) {
-          questionTypeKey = q.type_question.key || q.type_question.name || '';
+          // Utiliser le name du backend (ex: "QCM") au lieu de la key
+          questionTypeKey = q.type_question.name || q.type_question.key || '';
+          console.log('DEBUG: Type object, clé trouvée:', questionTypeKey);
         } else if (typeof q.type_question === 'string') {
           questionTypeKey = q.type_question;
+          console.log('DEBUG: Type string, clé:', questionTypeKey);
+        } else {
+          console.log('DEBUG: Type inconnu:', typeof q.type_question, q.type_question);
         }
 
         const questionForm = this.fb.group({
           question: [q.question || '', [Validators.required, Validators.minLength(5)]],
           type_question: [questionTypeKey, Validators.required],
           difficulty: [q.difficulty || 'easy', Validators.required],
-          answers: this.fb.array([])
+          answers: this.fb.array([]),
         });
 
         questionsArray.push(questionForm);
@@ -455,7 +475,7 @@ export class QuizCreationComponent implements OnInit {
               is_correct: [ans.is_correct || false],
               order_correct: [ans.order_correct ?? ''],
               pair_id: [ans.pair_id || ''],
-              is_intrus: [ans.is_intrus || false]
+              is_intrus: [ans.is_intrus || false],
             });
             (questionForm.get('answers') as FormArray).push(answerForm);
           });
@@ -467,49 +487,80 @@ export class QuizCreationComponent implements OnInit {
   }
 
   onSubmit(): void {
-    if (this.quizForm.invalid) return;
+    if (this.quizForm.invalid) {
+      return;
+    }
+
+    if (this.typeQuestions.length === 0) {
+      alert('Erreur: Types de questions non chargés. Veuillez rafraîchir la page.');
+      return;
+    }
 
     this.isSubmitting = true;
     const formValue = this.quizForm.value;
 
-    const payload = {
-      ...formValue,
-      category_id: formValue.category,
-      isPublic: formValue.is_public,
-      questions: formValue.questions.map((q: any) => ({
+    // Construire le payload sans utiliser ...formValue pour éviter l'écrasement
+    const mappedQuestions = formValue.questions.map((q: any, index: number) => {
+      const typeQuestionId = this.getTypeQuestionId(q.type_question);
+
+      if (typeQuestionId === 0) {
+        throw new Error(`Type de question invalide: ${q.type_question}`);
+      }
+
+      const questionMapped = {
         question: q.question,
-        type_question: q.type_question,
+        type_question: typeQuestionId, // Utilise l'ID numérique
         difficulty: q.difficulty,
         answers: q.answers.map((a: any) => ({
           ...a,
-          order_correct: a.order_correct || null
-        }))
-      }))
+          order_correct: a.order_correct || null,
+        })),
+      };
+
+      return questionMapped;
+    });
+
+    const payload = {
+      title: formValue.title,
+      description: formValue.description,
+      status: formValue.status,
+      groups: formValue.groups,
+      category_id: formValue.category,
+      isPublic: formValue.is_public,
+      questions: mappedQuestions,
     };
 
-    delete payload.is_public;
-    delete payload.category;
+    // Plus besoin de delete car on construit le payload proprement
+
+    // Vérifier qu'aucune question n'a un type_question à 0
+    const hasInvalidQuestions = payload.questions.some((q: any) => q.type_question === 0);
+    if (hasInvalidQuestions) {
+      this.isSubmitting = false;
+      alert(
+        'Erreur: Une ou plusieurs questions ont un type invalide. Veuillez vérifier et réessayer.'
+      );
+      return;
+    }
 
     const action = this.isEditMode
       ? this.quizService.updateQuiz(this.quizId!, payload)
       : this.quizService.createQuiz(payload);
 
     action.subscribe({
-      next: () => {
-        if (!this.isEditMode) {
-          this.analytics.trackQuizCreation();
-        }
-
+      next: response => {
         this.isSubmitting = false;
         this.router.navigate(['/quiz']);
       },
-      error: () => {
+      error: error => {
+        console.error('Erreur lors de la création/modification du quiz:', {
+          status: error.status,
+          message: error.message,
+          error: error.error,
+        });
         this.isSubmitting = false;
-      }
+      },
     });
   }
-
-
 
   addMatchingPair(questionIndex: number): void {
     const answers = this.getAnswers(questionIndex);
@@ -521,7 +572,7 @@ export class QuizCreationComponent implements OnInit {
       is_correct: [false],
       order_correct: [''],
       pair_id: [`left_${nextPairNumber}`],
-      is_intrus: [false]
+      is_intrus: [false],
     });
 
     const rightAnswerForm = this.fb.group({
@@ -529,7 +580,7 @@ export class QuizCreationComponent implements OnInit {
       is_correct: [false],
       order_correct: [''],
       pair_id: [`right_${nextPairNumber}`],
-      is_intrus: [false]
+      is_intrus: [false],
     });
 
     answers.push(leftAnswerForm);
@@ -538,12 +589,12 @@ export class QuizCreationComponent implements OnInit {
 
   getAnswerPlaceholder(questionType: string, answerIndex: number): string {
     const PLACEHOLDER_GENERATORS = {
-      'MCQ': (index: number) => `Option ${index + 1}`,
-      'multiple_choice': (index: number) => `Choix ${index + 1}`,
-      'right_order': (index: number) => `Élément ${index + 1} à ordonner`,
-      'find_the_intruder': (index: number) => `Élément ${index + 1}`,
-      'blind_test': () => 'Réponse du blind test',
-      'matching': () => 'Élément à associer'
+      MCQ: (index: number) => `Option ${index + 1}`,
+      multiple_choice: (index: number) => `Choix ${index + 1}`,
+      right_order: (index: number) => `Élément ${index + 1} à ordonner`,
+      find_the_intruder: (index: number) => `Élément ${index + 1}`,
+      blind_test: () => 'Réponse du blind test',
+      matching: () => 'Élément à associer',
     } as const;
 
     const generator = PLACEHOLDER_GENERATORS[questionType as keyof typeof PLACEHOLDER_GENERATORS];
@@ -562,5 +613,30 @@ export class QuizCreationComponent implements OnInit {
     const answers = this.getAnswers(questionIndex);
     const minAnswers = this.getMinAnswersForType(questionType);
     return answers.length > minAnswers;
+  }
+
+  /**
+   * Convertit la clé du type de question en ID numérique
+   */
+  private getTypeQuestionId(typeKey: string): number {
+    // Chercher d'abord par name (format backend), puis par key (fallback)
+    const typeQuestion =
+      this.typeQuestions.find(t => t.name === typeKey) ||
+      this.typeQuestions.find(t => t.key === typeKey);
+
+    // Convertir l'ID en nombre si c'est une string
+    const rawId = typeQuestion ? typeQuestion.id : 0;
+    const result = typeof rawId === 'string' ? parseInt(rawId, 10) : rawId;
+
+    if (result === 0 || isNaN(result)) {
+      console.error('ATTENTION: Type de question non trouvé ou ID invalide!', {
+        typeKey,
+        rawId,
+        result,
+        availableTypes: this.typeQuestions.map(t => ({ id: t.id, key: t.key, name: t.name })),
+      });
+    }
+
+    return result;
   }
 }

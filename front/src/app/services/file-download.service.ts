@@ -1,31 +1,26 @@
 import { Injectable } from '@angular/core';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class FileDownloadService {
-
-  constructor() { }
+  constructor() {}
 
   /**
    * Télécharge un fichier avec le contenu et le type MIME spécifiés
    */
   downloadFile(content: string, mimeType: string, filename: string): void {
-    try {
-      const blob = new Blob([content], { type: `${mimeType};charset=utf-8;` });
+    const blob = new Blob([content], { type: `${mimeType};charset=utf-8;` });
 
-      const url = URL.createObjectURL(blob);
+    const url = URL.createObjectURL(blob);
 
-      const link = this.createDownloadLink(url, filename);
+    const link = this.createDownloadLink(url, filename);
 
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 
-      URL.revokeObjectURL(url);
-    } catch (error) {
-      throw error;
-    }
+    URL.revokeObjectURL(url);
   }
 
   /**
@@ -56,9 +51,3 @@ export class FileDownloadService {
     this.downloadFile(jsonContent, 'application/json', defaultFilename);
   }
 }
-
-
-
-
-
-

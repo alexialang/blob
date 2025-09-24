@@ -22,6 +22,7 @@ services:
       - ./back/.docker/dev/php/conf.d/custom.ini:/usr/local/etc/php/conf.d/custom.ini
     environment:
       - APP_ENV=${APP_ENV:-dev}
+      - RECAPTCHA_SECRET_KEY=6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe
     networks:
       - adimeo_local_proxy
 
@@ -51,7 +52,7 @@ services:
   bdd:
     ports:
       - "3319:3306"
-    image: mariadb:11.8.1-rc
+    image: mariadb:11.8
     restart: always
     container_name: blob_bdd
     command: --max_allowed_packet=32505856 --default-authentication-plugin=mysql_native_password
@@ -119,6 +120,7 @@ services:
       - "traefik.http.middlewares.traefik-https-redirect.redirectscheme.scheme=https"
       - "traefik.http.routers.blob_mercure.rule=Host(`blob-mercure.dev.local`)"
       - "traefik.http.services.blob_mercure.loadbalancer.server.port=8080"
+
 
 
 

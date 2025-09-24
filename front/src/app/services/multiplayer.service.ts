@@ -63,7 +63,7 @@ export interface GameInvitation {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class MultiplayerService {
   private readonly apiUrl = environment.apiBaseUrl;
@@ -102,10 +102,7 @@ export class MultiplayerService {
     private zone: NgZone,
     private mercureService: MercureService
   ) {
-
-
     this.mercureService.invitationReceived$.subscribe(invitation => {
-
       this.invitations$.next(invitation);
     });
   }
@@ -158,7 +155,6 @@ export class MultiplayerService {
     return this.gameTimerUpdate$.asObservable();
   }
 
-
   setCurrentRoom(room: GameRoom | null): void {
     this.currentRoom$.next(room);
   }
@@ -167,8 +163,18 @@ export class MultiplayerService {
     this.currentGame$.next(game);
   }
 
-  createRoom(quizId: number, maxPlayers = 4, isTeamMode = false, roomName?: string): Observable<GameRoom> {
-    return this.http.post<GameRoom>(`${this.apiUrl}/multiplayer/room/create`, { quizId, maxPlayers, isTeamMode, roomName });
+  createRoom(
+    quizId: number,
+    maxPlayers = 4,
+    isTeamMode = false,
+    roomName?: string
+  ): Observable<GameRoom> {
+    return this.http.post<GameRoom>(`${this.apiUrl}/multiplayer/room/create`, {
+      quizId,
+      maxPlayers,
+      isTeamMode,
+      roomName,
+    });
   }
 
   joinRoom(roomId: string, teamName?: string): Observable<GameRoom> {
@@ -180,16 +186,26 @@ export class MultiplayerService {
   }
 
   startGame(roomId: string): Observable<MultiplayerGame> {
-
-
     return this.http.post<MultiplayerGame>(`${this.apiUrl}/multiplayer/room/${roomId}/start`, {});
   }
 
-  submitAnswer(gameId: string, questionId: number, answer: any, timeSpent: number): Observable<any> {
-    return this.http.post(`${this.apiUrl}/multiplayer/game/${gameId}/answer`, { questionId, answer, timeSpent });
+  submitAnswer(
+    gameId: string,
+    questionId: number,
+    answer: any,
+    timeSpent: number
+  ): Observable<any> {
+    return this.http.post(`${this.apiUrl}/multiplayer/game/${gameId}/answer`, {
+      questionId,
+      answer,
+      timeSpent,
+    });
   }
 
-  submitPlayerScores(gameId: string, playerScores: { [username: string]: number }): Observable<any> {
+  submitPlayerScores(
+    gameId: string,
+    playerScores: { [username: string]: number }
+  ): Observable<any> {
     return this.http.post(`${this.apiUrl}/multiplayer/game/${gameId}/scores`, { playerScores });
   }
 
@@ -206,15 +222,23 @@ export class MultiplayerService {
   }
 
   sendInvitation(roomId: string, invitedUserIds: number[]): Observable<{ success: boolean }> {
-    return this.http.post<{ success: boolean }>(`${this.apiUrl}/multiplayer/invite/${roomId}`, { invitedUserIds });
+    return this.http.post<{ success: boolean }>(`${this.apiUrl}/multiplayer/invite/${roomId}`, {
+      invitedUserIds,
+    });
   }
 
   triggerFeedbackPhase(gameId: string): Observable<{ success: boolean }> {
-    return this.http.post<{ success: boolean }>(`${this.apiUrl}/multiplayer/game/${gameId}/trigger-feedback`, {});
+    return this.http.post<{ success: boolean }>(
+      `${this.apiUrl}/multiplayer/game/${gameId}/trigger-feedback`,
+      {}
+    );
   }
 
   triggerNextQuestion(gameId: string): Observable<{ success: boolean }> {
-    return this.http.post<{ success: boolean }>(`${this.apiUrl}/multiplayer/game/${gameId}/next-question`, {});
+    return this.http.post<{ success: boolean }>(
+      `${this.apiUrl}/multiplayer/game/${gameId}/next-question`,
+      {}
+    );
   }
 
   endGame(gameId: string): Observable<any> {
@@ -251,8 +275,6 @@ export class MultiplayerService {
   }
 
   canStartGame(room: GameRoom): boolean {
-    return room.players.length >= 2 &&
-      room.status === 'waiting' &&
-      this.isRoomCreator(room);
+    return room.players.length >= 2 && room.status === 'waiting' && this.isRoomCreator(room);
   }
 }

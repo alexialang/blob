@@ -1,12 +1,12 @@
 import { Component } from '@angular/core';
-import {Router, RouterLink} from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { NgIf } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { SlideButtonComponent } from '../../components/slide-button/slide-button.component';
 import { BackButtonComponent } from '../../components/back-button/back-button.component';
-import {environment} from '../../../environments/environment';
-import {SeoService} from '../../services/seo.service';
+import { environment } from '../../../environments/environment';
+import { SeoService } from '../../services/seo.service';
 
 @Component({
   standalone: true,
@@ -21,7 +21,6 @@ export class ForgotPasswordComponent {
   success?: string;
   isLoading = false;
 
-
   constructor(
     private readonly router: Router,
     private readonly http: HttpClient,
@@ -31,11 +30,13 @@ export class ForgotPasswordComponent {
   ngOnInit() {
     this.seoService.updateSEO({
       title: 'Blob - Mot de passe oublié',
-      description: 'Réinitialisez votre mot de passe pour retrouver l’accès à votre compte Blob et vos quiz.',
+      description:
+        'Réinitialisez votre mot de passe pour retrouver l’accès à votre compte Blob et vos quiz.',
       keywords: 'mot de passe oublié, réinitialisation, compte, connexion, quiz',
       ogTitle: 'Réinitialisez votre mot de passe Blob',
-      ogDescription: 'Suivez les étapes pour récupérer l’accès à votre compte Blob et continuer à jouer à vos quiz interactifs.',
-      ogUrl: '/mot-de-passe-oublie'
+      ogDescription:
+        'Suivez les étapes pour récupérer l’accès à votre compte Blob et continuer à jouer à vos quiz interactifs.',
+      ogUrl: '/mot-de-passe-oublie',
     });
   }
   onReset() {
@@ -59,21 +60,20 @@ export class ForgotPasswordComponent {
 
     this.isLoading = true;
 
-    this.http.post(`${environment.apiBaseUrl}/forgot-password`, { email: this.email })
-      .subscribe({
-        next: (response: any) => {
-          this.isLoading = false;
-          this.success = 'Un email de réinitialisation a été envoyé à votre adresse !';
-          this.email = '';
-        },
-        error: (error) => {
-          this.isLoading = false;
-          if (error.status === 404) {
-            this.error = 'Aucun compte trouvé avec cette adresse email';
-          } else {
-            this.error = 'Une erreur est survenue. Veuillez réessayer';
-          }
+    this.http.post(`${environment.apiBaseUrl}/forgot-password`, { email: this.email }).subscribe({
+      next: (response: any) => {
+        this.isLoading = false;
+        this.success = 'Un email de réinitialisation a été envoyé à votre adresse !';
+        this.email = '';
+      },
+      error: error => {
+        this.isLoading = false;
+        if (error.status === 404) {
+          this.error = 'Aucun compte trouvé avec cette adresse email';
+        } else {
+          this.error = 'Une erreur est survenue. Veuillez réessayer';
         }
-      });
+      },
+    });
   }
 }

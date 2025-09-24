@@ -1,23 +1,23 @@
 :root {
-  --color-primary: #257D54;
-  --color-secondary: #91DEDA;
-  --color-accent: #FAA24B;
-  --color-pink: #D30D4C;
-  --color-danger: #DC2626;
-  --color-dark: #0B0C1E;
-  --color-light: #F2F2F2;
-  --color-white: #FFFFFF;
+  --color-primary: #257d54;
+  --color-secondary: #91deda;
+  --color-accent: #faa24b;
+  --color-pink: #d30d4c;
+  --color-danger: #dc2626;
+  --color-dark: #0b0c1e;
+  --color-light: #f2f2f2;
+  --color-white: #ffffff;
 
-  --color-primary-light: #2E9A68;
-  --color-primary-dark: #1E6B47;
-  --color-secondary-light: #A8E5E2;
-  --color-pink-light: #E63D6F;
-  --color-danger-light: #EF4444;
-  --color-danger-dark: #B91C1C;
+  --color-primary-light: #2e9a68;
+  --color-primary-dark: #1e6b47;
+  --color-secondary-light: #a8e5e2;
+  --color-pink-light: #e63d6f;
+  --color-danger-light: #ef4444;
+  --color-danger-dark: #b91c1c;
 
-  --color-accent-dark: #D35400;
-  --color-secondary-dark: #48A09D;
-  --color-pink-dark: #B91C5C;
+  --color-accent-dark: #d35400;
+  --color-secondary-dark: #358b87;
+  --color-pink-dark: #b91c5c;
 
   --color-success: var(--color-primary);
   --color-warning: var(--color-accent);
@@ -25,8 +25,8 @@
   --color-info: var(--color-secondary);
 
   --text-primary: var(--color-dark);
-  --text-secondary: #6B7280;
-  --text-muted: #9CA3AF;
+  --text-secondary: #6b7280;
+  --text-muted: #9ca3af;
   --text-inverse: var(--color-white);
 
   --bg-primary: var(--color-white);
@@ -34,12 +34,12 @@
   --bg-dark: var(--color-dark);
   --bg-overlay: rgba(11, 12, 30, 0.8);
 
-  --border-light: #E5E7EB;
-  --border-medium: #D1D5DB;
+  --border-light: #e5e7eb;
+  --border-medium: #d1d5db;
   --border-dark: var(--color-dark);
 
-  --font-primary: "Archivo", sans-serif;
-  --font-display: "LCMogiA", sans-serif;
+  --font-primary: 'Archivo', sans-serif;
+  --font-display: 'LCMogiA', sans-serif;
 
   --font-size-h1: 8em;
   --font-size-h2: 100px;
@@ -85,7 +85,7 @@
     --border-light: #000000;
     --border-medium: #000000;
   }
-  
+
   /* Force le texte noir sur les couleurs claires pour le high contrast */
   .podium-player.second-place,
   .podium-player.third-place {
@@ -100,8 +100,8 @@ body {
 }
 
 @font-face {
-  font-family: "LCMogiA";
-  src: url("../public/font/LCMogi-A.otf");
+  font-family: 'LCMogiA';
+  src: url('../public/font/LCMogi-A.otf');
   font-weight: 200; /* extra light weight pour cette police */
   font-style: normal;
 }
@@ -115,18 +115,25 @@ body {
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   overflow-x: hidden;
   width: 100%;
   max-width: 100%;
 }
 
-input, textarea, select, button {
+input,
+textarea,
+select,
+button {
   outline: none;
   transition: all var(--transition-fast);
 }
 
-input:focus, textarea:focus, select:focus, button:focus {
+input:focus,
+textarea:focus,
+select:focus,
+button:focus {
   outline: var(--focus-outline);
   outline-offset: var(--focus-outline-offset);
   border-color: var(--focus-border-color);
@@ -160,7 +167,6 @@ p:focus {
   outline: none !important;
 }
 
-
 .sr-only {
   position: absolute !important;
   width: 1px !important;
@@ -177,18 +183,24 @@ p:focus {
   position: absolute;
   top: -40px;
   left: 6px;
-  background: var(--color-accent);
+  background: var(--color-dark);
   color: white;
   padding: 8px 16px;
   text-decoration: none;
+  border: none;
   border-radius: var(--border-radius-small);
   font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
   z-index: 1000;
   transition: top var(--transition-normal);
 }
 
 .skip-link:focus {
   top: 6px;
+  background: var(--color-dark);
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
 }
 
 .quiz-card:focus-visible {
@@ -197,7 +209,9 @@ p:focus {
 }
 
 .btn:focus-visible {
-  box-shadow: 0 0 0 3px var(--focus-outline-color), 0 0 0 1px var(--color-white) !important;
+  box-shadow:
+    0 0 0 3px var(--focus-outline-color),
+    0 0 0 1px var(--color-white) !important;
 }
 
 .modal-content:focus-visible {
@@ -210,7 +224,7 @@ p:focus {
   margin-top: 0.25rem;
 }
 
-[aria-selected="true"] {
+[aria-selected='true'] {
   box-shadow: 0 0 0 2px var(--color-accent) !important;
 }
 
@@ -218,8 +232,7 @@ p:focus {
   @extend .focus-visible-medium;
 }
 
-
-[role="radio"]:focus-visible {
+[role='radio']:focus-visible {
   @extend .focus-visible-base;
 }
 

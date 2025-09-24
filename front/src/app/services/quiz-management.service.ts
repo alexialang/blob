@@ -6,7 +6,7 @@ import { AuthService } from './auth.service';
 import { map, switchMap, catchError } from 'rxjs/operators';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class QuizManagementService {
   private readonly apiUrl = environment.apiBaseUrl;
@@ -16,8 +16,12 @@ export class QuizManagementService {
     private authService: AuthService
   ) {}
 
-
-  getQuizzes(page: number = 1, limit: number = 20, search?: string, sort: string = 'id'): Observable<any> {
+  getQuizzes(
+    page: number = 1,
+    limit: number = 20,
+    search?: string,
+    sort: string = 'id'
+  ): Observable<any> {
     return this.authService.hasPermission('CREATE_QUIZ').pipe(
       map(hasPermission => {
         if (!hasPermission) {
@@ -36,11 +40,8 @@ export class QuizManagementService {
   }
 
   getAllQuizzes(): Observable<any[]> {
-    return this.getQuizzes(1, 1000).pipe(
-      map(response => response.data || [])
-    );
+    return this.getQuizzes(1, 1000).pipe(map(response => response.data || []));
   }
-
 
   getOrganizedQuizzes(): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/quiz/organized`);
@@ -49,7 +50,6 @@ export class QuizManagementService {
   getQuiz(id: number): Observable<any> {
     return this.http.get(`${this.apiUrl}/quiz/${id}`);
   }
-
 
   getQuizForEdit(id: number): Observable<any> {
     return this.authService.hasPermission('CREATE_QUIZ').pipe(
@@ -98,9 +98,11 @@ export class QuizManagementService {
       switchMap(apiCall => apiCall),
       catchError((error: any) => {
         if (error.status === 401) {
-          throw new Error('Non autorisé - Vérifiez vos permissions et votre appartenance à l\'entreprise');
+          throw new Error(
+            "Non autorisé - Vérifiez vos permissions et votre appartenance à l'entreprise"
+          );
         } else if (error.status === 403) {
-          throw new Error('Accès interdit - Ce quiz n\'appartient pas à votre entreprise');
+          throw new Error("Accès interdit - Ce quiz n'appartient pas à votre entreprise");
         } else if (error.status === 404) {
           throw new Error('Quiz non trouvé');
         } else {

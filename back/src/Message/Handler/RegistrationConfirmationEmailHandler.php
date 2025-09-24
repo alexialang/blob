@@ -10,9 +10,8 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 readonly class RegistrationConfirmationEmailHandler
 {
     public function __construct(
-        private UserService     $userService,
+        private UserService $userService,
     ) {
-
     }
 
     public function __invoke(RegistrationConfirmationEmailMessage $message): void

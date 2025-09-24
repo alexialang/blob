@@ -1,7 +1,4 @@
-<div
-  class="multiplayer-transition"
-  *ngIf="show">
-
+<div class="multiplayer-transition" *ngIf="show">
   <div class="transition-header">
     <div class="header-content">
       <tui-icon icon="@tui.trophy" class="trophy-icon"></tui-icon>
@@ -16,28 +13,24 @@
   </div>
 
   <div class="players-container">
-    <div
-      *ngFor="let player of players; let i = index"
-      class="player-card"
-      [ngClass]="getPlayerCardClass(player)">
-
+    <div *ngFor="let player of players; let i = index" class="player-card" [ngClass]="getPlayerCardClass(player)">
       <div class="player-rank" [style.color]="getRankColor(player.rank)">
         <span class="rank-medal" *ngIf="player.rank <= 3">{{ getRankMedal(player.rank) }}</span>
         <span class="rank-number" *ngIf="player.rank > 3">#{{ player.rank }}</span>
       </div>
 
-      <div class="player-avatar">
-        <div class="avatar-blob"
-             [class.current-user]="player.isCurrentUser"
-             [ngStyle]="getAvatarStyle(player)">
+      <div class="player-avatar" role="img" [attr.aria-label]="'Avatar de ' + player.username + ', rang ' + player.rank">
+        <div class="avatar-blob" [class.current-user]="player.isCurrentUser" [ngStyle]="getAvatarStyle(player)">
           <div class="avatar-shape" *ngIf="player.avatar?.shape">
-            <img [src]="'/assets/avatars/' + getAvatarShape(player) + '.svg'"
-                 [alt]="player.username + ' shape'"
-                 class="shape-svg">
+            <img
+              [src]="'/assets/avatars/' + getAvatarShape(player) + '.svg'"
+              [alt]="player.username + ' shape'"
+              class="shape-svg"
+            />
           </div>
           <span class="avatar-initial">{{ player.username.charAt(0).toUpperCase() }}</span>
         </div>
-        <div class="user-crown" *ngIf="player.rank === 1">👑</div>
+        <div class="user-crown" *ngIf="player.rank === 1" role="img" aria-label="Couronne du premier">👑</div>
       </div>
 
       <div class="player-info">
@@ -52,18 +45,18 @@
         </div>
 
         <div class="points-gained" *ngIf="player.pointsGained !== undefined">
-          <span class="points-text"
-                [class.positive]="player.pointsGained > 0"
-                [class.zero]="player.pointsGained === 0">
+          <span class="points-text" [class.positive]="player.pointsGained > 0" [class.zero]="player.pointsGained === 0">
             {{ player.pointsGained > 0 ? '+' : '' }}{{ player.pointsGained }} pts
           </span>
         </div>
       </div>
 
       <div class="answer-result" *ngIf="player.lastAnswerCorrect !== undefined">
-        <div class="answer-icon"
-             [class.correct]="player.lastAnswerCorrect"
-             [class.incorrect]="!player.lastAnswerCorrect">
+        <div
+          class="answer-icon"
+          [class.correct]="player.lastAnswerCorrect"
+          [class.incorrect]="!player.lastAnswerCorrect"
+        >
           <tui-icon [icon]="player.lastAnswerCorrect ? '@tui.check' : '@tui.x'"></tui-icon>
         </div>
       </div>

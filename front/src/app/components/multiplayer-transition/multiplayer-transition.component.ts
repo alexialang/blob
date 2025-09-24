@@ -23,7 +23,7 @@ export interface TransitionPlayer {
   standalone: true,
   imports: [CommonModule, TuiIcon],
   templateUrl: './multiplayer-transition.component.html',
-  styleUrls: ['./multiplayer-transition.component.scss']
+  styleUrls: ['./multiplayer-transition.component.scss'],
 })
 export class MultiplayerTransitionComponent implements OnInit, OnDestroy, OnChanges {
   @Input() players: TransitionPlayer[] = [];
@@ -66,19 +66,27 @@ export class MultiplayerTransitionComponent implements OnInit, OnDestroy, OnChan
 
   getRankMedal(rank: number): string {
     switch (rank) {
-      case 1: return '🥇';
-      case 2: return '🥈';
-      case 3: return '🥉';
-      default: return '';
+      case 1:
+        return '🥇';
+      case 2:
+        return '🥈';
+      case 3:
+        return '🥉';
+      default:
+        return '';
     }
   }
 
   getRankColor(rank: number): string {
     switch (rank) {
-      case 1: return 'var(--color-accent)';
-      case 2: return '#c0c0c0';
-      case 3: return '#cd7f32';
-      default: return 'var(--color-text-secondary)';
+      case 1:
+        return 'var(--color-accent)';
+      case 2:
+        return '#c0c0c0';
+      case 3:
+        return '#cd7f32';
+      default:
+        return 'var(--color-text-secondary)';
     }
   }
 
@@ -103,12 +111,12 @@ export class MultiplayerTransitionComponent implements OnInit, OnDestroy, OnChan
   getAvatarStyle(player: TransitionPlayer): any {
     if (!player.avatar) {
       return {
-        'background': 'linear-gradient(135deg, var(--color-secondary), var(--color-secondary-dark))'
+        background: 'linear-gradient(135deg, var(--color-secondary), var(--color-secondary-dark))',
       };
     }
 
     return {
-      'background': `linear-gradient(135deg, ${player.avatar.color}, ${this.getDarkerColor(player.avatar.color)})`
+      background: `linear-gradient(135deg, ${player.avatar.color}, ${this.getDarkerColor(player.avatar.color)})`,
     };
   }
 
@@ -123,4 +131,3 @@ export class MultiplayerTransitionComponent implements OnInit, OnDestroy, OnChan
     return player.avatar?.shape || 'blob_circle';
   }
 }
-

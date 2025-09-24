@@ -3,30 +3,17 @@
 namespace App\Service;
 
 use App\Entity\UserPermission;
+use App\Enum\Permission;
 use App\Repository\UserPermissionRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use App\Enum\Permission;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Exception\ValidationFailedException;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class UserPermissionService
 {
-    private EntityManagerInterface $em;
-    private UserPermissionRepository $userPermissionRepository;
-    private UserService $userService;
-    private ValidatorInterface $validator;
-
-    public function __construct(
-        EntityManagerInterface $em,
-        UserPermissionRepository $userPermissionRepository,
-        UserService $userService,
-        ValidatorInterface $validator
-    ) {
-        $this->em = $em;
-        $this->userPermissionRepository = $userPermissionRepository;
-        $this->userService = $userService;
-        $this->validator = $validator;
+    public function __construct(private readonly EntityManagerInterface $em, private readonly UserPermissionRepository $userPermissionRepository, private readonly UserService $userService, private readonly ValidatorInterface $validator)
+    {
     }
 
     public function list(): array
@@ -42,7 +29,7 @@ class UserPermissionService
     public function create(array $data): UserPermission
     {
         $this->validateUserPermissionData($data);
-        
+
         $userPermission = new UserPermission();
         $userPermission->setPermission(Permission::from($data['permission']));
 
@@ -58,7 +45,7 @@ class UserPermissionService
     public function update(UserPermission $userPermission, array $data): UserPermission
     {
         $this->validateUserPermissionData($data);
-        
+
         if (isset($data['permission'])) {
             $userPermission->setPermission(Permission::from($data['permission']));
         }
@@ -84,14 +71,14 @@ class UserPermissionService
             'fields' => [
                 'permission' => [
                     new Assert\NotBlank(['message' => 'La permission est requise']),
-                    new Assert\Length(['max' => 100, 'maxMessage' => 'La permission ne peut pas dépasser 100 caractères'])
+                    new Assert\Length(['max' => 100, 'maxMessage' => 'La permission ne peut pas dépasser 100 caractères']),
                 ],
                 'user_id' => [
                     new Assert\Optional([
-                        new Assert\Type(['type' => 'integer', 'message' => 'L\'ID de l\'utilisateur doit être un entier'])
-                    ])
-                ]
-            ]
+                        new Assert\Type(['type' => 'integer', 'message' => 'L\'ID de l\'utilisateur doit être un entier']),
+                    ]),
+                ],
+            ],
         ]);
 
         $errors = $this->validator->validate($data, $constraints);

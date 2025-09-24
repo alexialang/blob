@@ -2,8 +2,8 @@
 
 namespace App\Event;
 
-use App\Entity\UserAnswer;
 use App\Entity\User;
+use App\Entity\UserAnswer;
 use Symfony\Contracts\EventDispatcher\Event;
 
 class QuizCompletedEvent extends Event
@@ -11,8 +11,8 @@ class QuizCompletedEvent extends Event
     public const NAME = 'quiz.completed';
 
     public function __construct(
-        private UserAnswer $userAnswer,
-        private User $user
+        private readonly UserAnswer $userAnswer,
+        private readonly User $user,
     ) {
     }
 

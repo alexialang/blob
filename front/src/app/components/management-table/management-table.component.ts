@@ -14,7 +14,7 @@ export interface TableColumn {
 export interface FilterOption {
   key: string;
   label: string;
-  options: Array<{value: string, label: string}>;
+  options: Array<{ value: string; label: string }>;
 }
 
 export interface ManagementTableConfig {
@@ -31,13 +31,9 @@ export interface ManagementTableConfig {
 @Component({
   selector: 'app-management-table',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    PaginationComponent
-  ],
+  imports: [CommonModule, FormsModule, PaginationComponent],
   templateUrl: './management-table.component.html',
-  styleUrls: ['./management-table.component.scss']
+  styleUrls: ['./management-table.component.scss'],
 })
 export class ManagementTableComponent {
   @Input() config!: ManagementTableConfig;
@@ -45,13 +41,13 @@ export class ManagementTableComponent {
   @Input() loading = false;
   @Input() error = false;
   @Input() pageSize = 20;
-  @Output() filterChange = new EventEmitter<{[key: string]: any}>();
-  @Output() sortChange = new EventEmitter<{column: string, direction: 'asc' | 'desc'}>();
-  @Output() actionClick = new EventEmitter<{action: string, item?: any}>();
+  @Output() filterChange = new EventEmitter<{ [key: string]: any }>();
+  @Output() sortChange = new EventEmitter<{ column: string; direction: 'asc' | 'desc' }>();
+  @Output() actionClick = new EventEmitter<{ action: string; item?: any }>();
   @Output() pageChange = new EventEmitter<number>();
   @Output() selectionChange = new EventEmitter<any[]>();
 
-  filters: {[key: string]: any} = {};
+  filters: { [key: string]: any } = {};
   keywordFilter = '';
   sortColumn = '';
   sortDirection: 'asc' | 'desc' = 'asc';
@@ -76,13 +72,14 @@ export class ManagementTableComponent {
   applyFilters() {
     const allFilters = {
       ...this.filters,
-      keyword: this.keywordFilter
+      keyword: this.keywordFilter,
     };
     this.filterChange.emit(allFilters);
   }
 
   sortBy(column: string) {
-    const newDirection = this.sortColumn === column && this.sortDirection === 'asc' ? 'desc' : 'asc';
+    const newDirection =
+      this.sortColumn === column && this.sortDirection === 'asc' ? 'desc' : 'asc';
     this.sortColumn = column;
     this.sortDirection = newDirection;
     this.sortChange.emit({ column, direction: newDirection });
@@ -90,7 +87,7 @@ export class ManagementTableComponent {
 
   toggleAll(selected: boolean) {
     this.allSelected = selected;
-    this.data.forEach(item => item.selected = selected);
+    this.data.forEach(item => (item.selected = selected));
     this.selectionChange.emit(this.selectedItems);
   }
 

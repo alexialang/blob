@@ -4,22 +4,22 @@ namespace App\Controller;
 
 use App\Entity\CategoryQuiz;
 use App\Service\CategoryQuizService;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Validator\Exception\ValidationFailedException;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Annotation\Route;
 use OpenApi\Annotations as OA;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\Routing\Annotation\Route;
 
 #[Route('/api/category-quiz')]
 class CategoryQuizController extends AbstractController
 {
     public function __construct(
-        private CategoryQuizService $categoryQuizService,
-        ) {}
+        private readonly CategoryQuizService $categoryQuizService,
+    ) {
+    }
 
     /**
      * @OA\Get(summary="Lister les catégories de quiz", tags={"CategoryQuiz"})
+     *
      * @OA\Response(response=200, description="Liste des catégories")
      */
     #[Route('', name: 'category_quiz_index', methods: ['GET'])]
@@ -32,7 +32,9 @@ class CategoryQuizController extends AbstractController
 
     /**
      * @OA\Get(summary="Afficher une catégorie de quiz", tags={"CategoryQuiz"})
+     *
      * @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer"))
+     *
      * @OA\Response(response=200, description="Catégorie affichée")
      */
     #[Route('/{id}', name: 'category_quiz_show', methods: ['GET'])]
@@ -40,6 +42,4 @@ class CategoryQuizController extends AbstractController
     {
         return $this->json($category, 200, [], ['groups' => ['quiz:read']]);
     }
-
-
 }

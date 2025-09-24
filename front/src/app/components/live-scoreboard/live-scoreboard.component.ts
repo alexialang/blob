@@ -18,7 +18,7 @@ export interface LivePlayerScore {
   standalone: true,
   imports: [CommonModule, TuiIcon],
   templateUrl: './live-scoreboard.component.html',
-  styleUrls: ['./live-scoreboard.component.scss']
+  styleUrls: ['./live-scoreboard.component.scss'],
 })
 export class LiveScoreboardComponent implements OnChanges {
   @Input() players: LivePlayerScore[] = [];
@@ -36,7 +36,7 @@ export class LiveScoreboardComponent implements OnChanges {
     'circle_head.svg',
     'flower_head.svg',
     'pic_head.svg',
-    'wave_head.svg'
+    'wave_head.svg',
   ];
 
   private playerAvatars: { [username: string]: string } = {};
@@ -53,8 +53,8 @@ export class LiveScoreboardComponent implements OnChanges {
   private assignAvatarsToPlayers(): void {
     this.players.forEach(player => {
       if (!this.playerAvatars[player.username]) {
-        const availableAvatars = this.blobAvatars.filter(avatar =>
-          !Object.values(this.playerAvatars).includes(avatar)
+        const availableAvatars = this.blobAvatars.filter(
+          avatar => !Object.values(this.playerAvatars).includes(avatar)
         );
 
         if (availableAvatars.length > 0) {

@@ -14,7 +14,7 @@ class UserPermission
     #[ORM\GeneratedValue]
     #[ORM\Column]
     #[Groups(['user:read', 'user_permission:read', 'user:admin_read'])]
-    private ?int $id = null;
+    private int $id;
 
     #[ORM\Column(type: 'string', enumType: Permission::class)]
     #[Groups(['user:read', 'user_permission:read', 'user:admin_read', 'user:profile'])]

@@ -7,11 +7,15 @@ import { Question } from '../../../models/quiz.model';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './multiple-choice-question.component.html',
-  styleUrls: ['./multiple-choice-question.component.scss']
+  styleUrls: ['./multiple-choice-question.component.scss'],
 })
 export class MultipleChoiceQuestionComponent {
   @Input() question!: Question;
-  @Input() progress: { current: number; total: number; percentage: number } = { current: 0, total: 0, percentage: 0 };
+  @Input() progress: { current: number; total: number; percentage: number } = {
+    current: 0,
+    total: 0,
+    percentage: 0,
+  };
   @Output() answerSelected = new EventEmitter<number[]>();
   @Output() answerValidated = new EventEmitter<void>();
 
@@ -35,5 +39,15 @@ export class MultipleChoiceQuestionComponent {
 
   isSelected(answerId: number): boolean {
     return this.selectedAnswerIds.includes(answerId);
+  }
+
+  getFlowerShape(index: number): string {
+    const shapes = [
+      '/assets/svg/blob_flower_color.svg',
+      '/assets/svg/blob_flower_color2.svg',
+      '/assets/svg/blob_flower_color3.svg',
+      '/assets/svg/blob_flower_color1.svg',
+    ];
+    return shapes[index % shapes.length];
   }
 }

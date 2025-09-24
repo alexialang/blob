@@ -1,25 +1,38 @@
-<div class="multiple-choice-question-container">
-
-  <div class="answers-container">
+<div
+  class="multiple-choice-question-container"
+  role="region"
+  [attr.aria-labelledby]="'question-instruction-' + question.id"
+>
+  <div class="answers-container" role="group" aria-label="Options de réponse pour la question (sélection multiple)">
     <div
       *ngFor="let answer of question.answers; let i = index"
       class="answer-option"
       [class.selected]="isSelected(answer.id)"
-      (click)="toggleAnswer(answer.id)">
-      <div class="answer-checkbox">
-        <div class="checkbox-mark" [class.checked]="isSelected(answer.id)">✓</div>
-      </div>
-      <div class="answer-content">
+      [class.grayed-out]="false"
+      (click)="toggleAnswer(answer.id)"
+      (keydown.enter)="toggleAnswer(answer.id)"
+      (keydown.space)="toggleAnswer(answer.id)"
+      role="checkbox"
+      [attr.aria-checked]="isSelected(answer.id)"
+      [attr.aria-label]="'Option ' + (i + 1) + ': ' + answer.answer"
+      tabindex="0"
+      appAccessibility
+    >
+      <div class="answer-shape">
+        <img
+          [src]="getFlowerShape(i)"
+          alt="Forme florale décorative pour l'option de réponse {{ i + 1 }}"
+          class="flower-shape flower-{{ i + 1 }}"
+          [class.selected]="isSelected(answer.id)"
+          aria-hidden="true"
+        />
         <span class="answer-text">{{ answer.answer }}</span>
       </div>
     </div>
   </div>
 
   <div class="validation-container">
-    <button
-      class="validate-btn"
-      [disabled]="selectedAnswerIds.length === 0"
-      (click)="validateAnswer()">
+    <button class="validate-btn" [disabled]="selectedAnswerIds.length === 0" (click)="validateAnswer()">
       Valider ({{ selectedAnswerIds.length }} sélectionnée{{ selectedAnswerIds.length > 1 ? 's' : '' }})
     </button>
   </div>

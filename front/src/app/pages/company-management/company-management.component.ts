@@ -1,9 +1,26 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, HostListener, ElementRef } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  HostListener,
+  ElementRef,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TuiTable } from '@taiga-ui/addon-table';
-import { TuiButton, TuiGroup, TuiDataList, TuiDialogService, TuiAlertService, TuiHintDirective, TuiSizeS, TuiIcon } from '@taiga-ui/core';
+import {
+  TuiButton,
+  TuiGroup,
+  TuiDataList,
+  TuiDialogService,
+  TuiAlertService,
+  TuiHintDirective,
+  TuiSizeS,
+  TuiIcon,
+} from '@taiga-ui/core';
 import { TuiAvatar, TuiCheckbox, TuiChip } from '@taiga-ui/kit';
 import { TuiCell } from '@taiga-ui/layout';
 import { CompanyService } from '../../services/company.service';
@@ -111,9 +128,7 @@ export class CompanyManagementComponent implements OnInit, OnDestroy {
   }
 
   private generateRandomColor(): void {
-    const colors = [
-      '#257D54', '#FAA24B', '#D30D4C',
-    ];
+    const colors = ['#257D54', '#FAA24B', '#D30D4C'];
 
     const index = Math.floor(Math.random() * colors.length);
     this.highlightColor = colors[index];
@@ -143,7 +158,8 @@ export class CompanyManagementComponent implements OnInit, OnDestroy {
   }
 
   private exportCsv(): void {
-    this.companyService.exportCompaniesCsv()
+    this.companyService
+      .exportCompaniesCsv()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (csvContent: string) => {
@@ -151,15 +167,16 @@ export class CompanyManagementComponent implements OnInit, OnDestroy {
           this.fileDownloadService.downloadCsv(csvContent, filename);
           this.alerts.open('Export CSV réussi !', { appearance: 'success' }).subscribe();
         },
-        error: (error: any) => {
-          console.error('Erreur export CSV:', error);
-          this.alerts.open('Erreur lors de l\'export CSV', { appearance: 'error' }).subscribe();
-        }
+        error: (_error: any) => {
+          console.error('Erreur export CSV:', _error);
+          this.alerts.open("Erreur lors de l'export CSV", { appearance: 'error' }).subscribe();
+        },
       });
   }
 
   private exportJson(): void {
-    this.companyService.exportCompaniesJson()
+    this.companyService
+      .exportCompaniesJson()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (result: any) => {
@@ -167,14 +184,12 @@ export class CompanyManagementComponent implements OnInit, OnDestroy {
           this.fileDownloadService.downloadJson(result.data, filename);
           this.alerts.open('Export JSON réussi !', { appearance: 'success' }).subscribe();
         },
-        error: (error: any) => {
-          console.error('Erreur export JSON:', error);
-          this.alerts.open('Erreur lors de l\'export JSON', { appearance: 'error' }).subscribe();
-        }
+        error: (_error: any) => {
+          console.error('Erreur export JSON:', _error);
+          this.alerts.open("Erreur lors de l'export JSON", { appearance: 'error' }).subscribe();
+        },
       });
   }
-
-
 
   onCompanyCreated(company: any): void {
     this.showAddCompanyModal = false;
@@ -194,7 +209,9 @@ export class CompanyManagementComponent implements OnInit, OnDestroy {
     if (file && file.type === 'text/csv') {
       this.selectedFile = file;
     } else {
-      this.alerts.open('Veuillez sélectionner un fichier CSV valide', { appearance: 'warning' }).subscribe();
+      this.alerts
+        .open('Veuillez sélectionner un fichier CSV valide', { appearance: 'warning' })
+        .subscribe();
       this.selectedFile = null;
     }
   }
@@ -202,27 +219,30 @@ export class CompanyManagementComponent implements OnInit, OnDestroy {
   importCsvFile(): void {
     if (!this.selectedFile) return;
 
-    this.companyService.importCompaniesCsv(this.selectedFile)
+    this.companyService
+      .importCompaniesCsv(this.selectedFile)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-      next: (result: any) => {
-        this.alerts.open(
-          `Import terminé ! ${result.success} entreprises créées${result.errors.length > 0 ? `, ${result.errors.length} erreurs` : ''}`,
-          { appearance: 'success' }
-        ).subscribe();
+        next: (result: any) => {
+          this.alerts
+            .open(
+              `Import terminé ! ${result.success} entreprises créées${result.errors.length > 0 ? `, ${result.errors.length} erreurs` : ''}`,
+              { appearance: 'success' }
+            )
+            .subscribe();
 
-        if (result.success > 0) {
-          this.loadCompanies();
-        }
+          if (result.success > 0) {
+            this.loadCompanies();
+          }
 
-        this.showImportModal = false;
-        this.selectedFile = null;
-      },
-      error: (error: any) => {
-        console.error('Erreur import CSV:', error);
-        this.alerts.open('Erreur lors de l\'import CSV', { appearance: 'error' }).subscribe();
-      }
-    });
+          this.showImportModal = false;
+          this.selectedFile = null;
+        },
+        error: (_error: any) => {
+          console.error('Erreur import CSV:', _error);
+          this.alerts.open("Erreur lors de l'import CSV", { appearance: 'error' }).subscribe();
+        },
+      });
   }
 
   private loadCompanies(): void {
@@ -235,7 +255,7 @@ export class CompanyManagementComponent implements OnInit, OnDestroy {
           this.rows = companies.map((c: any) => {
             const userCount = c.userCount ?? c.users?.length ?? 0;
             const groups: Group[] = c.groups ?? [];
-            
+
             return {
               id: c.id,
               selected: false,
@@ -245,16 +265,18 @@ export class CompanyManagementComponent implements OnInit, OnDestroy {
               users: c.users ?? [],
               activeUsers: c.activeUsers ?? 0,
               createdAt: c.createdAt ? new Date(c.createdAt).toLocaleDateString('fr-FR') : '—',
-              lastActivity: c.lastActivity ? new Date(c.lastActivity).toLocaleDateString('fr-FR') : 'Aucune activité',
+              lastActivity: c.lastActivity
+                ? new Date(c.lastActivity).toLocaleDateString('fr-FR')
+                : 'Aucune activité',
             };
           });
 
           this.applyFilters();
         },
-        error: (error: any) => {
+        error: (_error: any) => {
           this.loadError = true;
           this.cdr.markForCheck();
-        }
+        },
       });
   }
 
@@ -267,9 +289,9 @@ export class CompanyManagementComponent implements OnInit, OnDestroy {
 
     if (this.filterKeyword) {
       const kw = this.filterKeyword.toLowerCase();
-      filtered = filtered.filter(r =>
-        r.name.toLowerCase().includes(kw) ||
-        r.groups.some(g => g.name.toLowerCase().includes(kw))
+      filtered = filtered.filter(
+        r =>
+          r.name.toLowerCase().includes(kw) || r.groups.some(g => g.name.toLowerCase().includes(kw))
       );
     }
 
@@ -325,7 +347,7 @@ export class CompanyManagementComponent implements OnInit, OnDestroy {
   }
 
   toggleAll(checked: boolean): void {
-    this.rows.forEach(r => r.selected = checked);
+    this.rows.forEach(r => (r.selected = checked));
     this.cdr.markForCheck();
   }
 
@@ -359,38 +381,37 @@ export class CompanyManagementComponent implements OnInit, OnDestroy {
 
     this.isDeleting = true;
 
-    const deleteObservables = ids.map(id =>
-      this.companyService.deleteCompany(id)
-    );
+    const deleteObservables = ids.map(id => this.companyService.deleteCompany(id));
 
     forkJoin(deleteObservables)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-      next: (results) => {
-        this.isDeleting = false;
-        this.loadCompanies();
-        this.rows.forEach(r => r.selected = false);
-        this.cdr.markForCheck();
+        next: results => {
+          this.isDeleting = false;
+          this.loadCompanies();
+          this.rows.forEach(r => (r.selected = false));
+          this.cdr.markForCheck();
 
-        this.alerts.open(
-          `${count} entreprise${count > 1 ? 's' : ''} supprimée${count > 1 ? 's' : ''}`,
-          {
-            label: 'Succès',
-            appearance: 'positive',
-            autoClose: 3000,
-          }
-        ).subscribe();
-      },
-      error: (error) => {
-        this.isDeleting = false;
+          this.alerts
+            .open(`${count} entreprise${count > 1 ? 's' : ''} supprimée${count > 1 ? 's' : ''}`, {
+              label: 'Succès',
+              appearance: 'positive',
+              autoClose: 3000,
+            })
+            .subscribe();
+        },
+        error: error => {
+          this.isDeleting = false;
 
-        this.alerts.open('Échec de la suppression', {
-          label: 'Erreur',
-          appearance: 'danger',
-          autoClose: 3000,
-        }).subscribe();
-      },
-    });
+          this.alerts
+            .open('Échec de la suppression', {
+              label: 'Erreur',
+              appearance: 'danger',
+              autoClose: 3000,
+            })
+            .subscribe();
+        },
+      });
   }
 
   getVisibleGroups(groups: Group[]): Group[] {
@@ -406,6 +427,4 @@ export class CompanyManagementComponent implements OnInit, OnDestroy {
     const remainingGroups = groups.slice(this.MAX_VISIBLE_GROUPS);
     return remainingGroups.map(g => g.name).join(', ');
   }
-
-
 }

@@ -21,6 +21,7 @@ class QuizRepository extends ServiceEntityRepository
 
     /**
      * @param bool $forManagement Si true, retourne tous les quiz, sinon seulement les publics
+     *
      * @return array Liste des quiz filtrés
      */
     public function findPublishedOrAll(bool $forManagement = false): array
@@ -37,13 +38,14 @@ class QuizRepository extends ServiceEntityRepository
     }
 
     /**
-     * Trouve les quiz avec pagination pour la gestion
+     * Trouve les quiz avec pagination pour la gestion.
      *
-     * @param int $page Numéro de page
-     * @param int $limit Nombre d'éléments par page
+     * @param int         $page   Numéro de page
+     * @param int         $limit  Nombre d'éléments par page
      * @param string|null $search Terme de recherche
-     * @param string $sort Champ de tri
-     * @param User $user Utilisateur demandant les quiz
+     * @param string      $sort   Champ de tri
+     * @param User        $user   Utilisateur demandant les quiz
+     *
      * @return array Résultat avec données et pagination
      */
     public function findWithPagination(int $page, int $limit, ?string $search, string $sort, User $user): array
@@ -64,7 +66,7 @@ class QuizRepository extends ServiceEntityRepository
             }
         }
 
-        if ($search && trim($search) !== '') {
+        if ($search && '' !== trim($search)) {
             $queryBuilder->andWhere(
                 $queryBuilder->expr()->orX(
                     $queryBuilder->expr()->like('q.title', ':search'),
@@ -74,13 +76,13 @@ class QuizRepository extends ServiceEntityRepository
                     $queryBuilder->expr()->like('u.lastName', ':search'),
                     $queryBuilder->expr()->like('c.name', ':search')
                 )
-            )->setParameter('search', '%' . trim($search) . '%');
+            )->setParameter('search', '%'.trim($search).'%');
         }
 
         // Tri
         $allowedSorts = ['id', 'title', 'dateCreation', 'status'];
         if (in_array($sort, $allowedSorts, true)) {
-            $queryBuilder->orderBy('q.' . $sort, 'ASC');
+            $queryBuilder->orderBy('q.'.$sort, 'ASC');
         } else {
             $queryBuilder->orderBy('q.id', 'ASC');
         }
@@ -99,14 +101,14 @@ class QuizRepository extends ServiceEntityRepository
                 'page' => $page,
                 'limit' => $limit,
                 'total' => $total,
-                'totalPages' => (int) ceil($total / $limit)
-            ]
+                'totalPages' => (int) ceil($total / $limit),
+            ],
         ];
     }
 
     /**
-
      * @param array $userGroupIds IDs des groupes de l'utilisateur
+     *
      * @return array Quiz privés accessibles
      */
     public function findPrivateQuizzesForUserGroups(array $userGroupIds): array
@@ -127,12 +129,9 @@ class QuizRepository extends ServiceEntityRepository
             ->getQuery();
 
         $result = $query->getResult();
-        
 
         return $result;
     }
-
-
 
     public function findByUser(User $user): array
     {
@@ -143,7 +142,6 @@ class QuizRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
-
 
     public function findMostPopular(int $limit = 8): array
     {
@@ -160,7 +158,6 @@ class QuizRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-
     public function findMostRecent(int $limit = 6): array
     {
         return $this->createQueryBuilder('q')
@@ -172,8 +169,6 @@ class QuizRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
-
-
 
     public function canUserModifyQuiz(int $quizId, User $user): bool
     {
@@ -206,7 +201,6 @@ class QuizRepository extends ServiceEntityRepository
         $accessConditions[] = 'q.user = :userId';
         $qb->setParameter('userId', $user->getId());
 
-
         if ($user->getCompany()) {
             $accessConditions[] = 'q.company = :companyId';
             $qb->setParameter('companyId', $user->getCompany()->getId());
@@ -215,7 +209,7 @@ class QuizRepository extends ServiceEntityRepository
         $accessConditions[] = 'q.isPublic = :isPublic';
         $qb->setParameter('isPublic', true);
 
-        $qb->andWhere('(' . implode(' OR ', $accessConditions) . ')');
+        $qb->andWhere('('.implode(' OR ', $accessConditions).')');
 
         return $qb->getQuery()->getOneOrNullResult();
     }
@@ -234,8 +228,24 @@ class QuizRepository extends ServiceEntityRepository
             ->where('q.id = :quizId')
             ->setParameter('quizId', $quizId)
             ->getQuery()
-            ->setFetchMode('App\Entity\Question', 'answers', ClassMetadata::FETCH_EAGER)
-            ->setFetchMode('App\Entity\Question', 'type_question', ClassMetadata::FETCH_EAGER)
+            ->setFetchMode(\App\Entity\Question::class, 'answers', ClassMetadata::FETCH_EAGER)
+            ->setFetchMode(\App\Entity\Question::class, 'type_question', ClassMetadata::FETCH_EAGER)
             ->getOneOrNullResult();
+    }
+
+    public function findPrivateQuizzesForUser(User $user): array
+    {
+        return $this->createQueryBuilder('q')
+            ->leftJoin('q.groups', 'g')
+            ->leftJoin('g.users', 'u')
+            ->where('q.isPublic = false')
+            ->andWhere('q.status = :status')
+            ->andWhere('u.id = :userId')  // Quiz accessibles via les groupes de l'utilisateur
+            ->setParameter('status', Status::PUBLISHED->value)
+            ->setParameter('userId', $user->getId())
+            ->distinct()
+            ->orderBy('q.date_creation', 'DESC')
+            ->getQuery()
+            ->getResult();
     }
 }

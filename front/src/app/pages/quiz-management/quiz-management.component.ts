@@ -16,15 +16,19 @@ import {
   TuiHintDirective,
   TuiIcon,
 } from '@taiga-ui/core';
-import {
-  TuiAvatar,
-  TuiCheckbox,
-  TuiChip,
-} from '@taiga-ui/kit';
+import { TuiAvatar, TuiCheckbox, TuiChip } from '@taiga-ui/kit';
 import { TuiCell } from '@taiga-ui/layout';
 import { QuizManagementService } from '../../services/quiz-management.service';
 import { FileDownloadService } from '../../services/file-download.service';
-import { forkJoin, Subject, takeUntil, debounceTime, distinctUntilChanged, catchError, of } from 'rxjs';
+import {
+  forkJoin,
+  Subject,
+  takeUntil,
+  debounceTime,
+  distinctUntilChanged,
+  catchError,
+  of,
+} from 'rxjs';
 import { PaginationComponent } from '../../components/pagination/pagination.component';
 
 type TuiSizeS = 's' | 'm';
@@ -48,7 +52,6 @@ interface QuizRow {
   createdAt?: string;
   questionsCount?: number;
 }
-
 
 @Component({
   selector: 'app-quiz-management',
@@ -118,11 +121,7 @@ export class QuizManagementComponent implements OnInit, OnDestroy {
 
   private setupSearchDebounce(): void {
     this.searchSubject$
-      .pipe(
-        debounceTime(300),
-        distinctUntilChanged(),
-        takeUntil(this.destroy$)
-      )
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
       .subscribe(searchTerm => {
         this.searchTerm = searchTerm;
         this.page = 1;
@@ -131,9 +130,7 @@ export class QuizManagementComponent implements OnInit, OnDestroy {
   }
 
   private generateRandomColor(): void {
-    const colors = [
-      '#257D54', '#FAA24B', '#D30D4C',
-    ];
+    const colors = ['#257D54', '#FAA24B', '#D30D4C'];
 
     const index = Math.floor(Math.random() * colors.length);
     this.highlightColor = colors[index];
@@ -141,8 +138,9 @@ export class QuizManagementComponent implements OnInit, OnDestroy {
 
   getQuizStats(row: any): string {
     const totalAttempts = row.userAnswers?.length || 0;
-    const uniquePlayers = row.userAnswers ?
-      new Set(row.userAnswers.map((answer: any) => answer.userId || answer.user?.id)).size : 0;
+    const uniquePlayers = row.userAnswers
+      ? new Set(row.userAnswers.map((answer: any) => answer.userId || answer.user?.id)).size
+      : 0;
 
     if (totalAttempts > 0 && uniquePlayers > 0) {
       return `${uniquePlayers} joueurs • ${totalAttempts} parties`;
@@ -184,19 +182,27 @@ export class QuizManagementComponent implements OnInit, OnDestroy {
             const createdDaysAgo = Math.floor(Math.random() * 180) + 1;
             const questionsCount = quiz.questionCount || Math.floor(Math.random() * 15) + 5;
 
+            const createdBy = quiz.user
+              ? `${quiz.user.firstName || ''} ${quiz.user.lastName || ''}`.trim() ||
+                quiz.user.email ||
+                'Utilisateur inconnu'
+              : 'Créateur inconnu';
+
             return {
               id: quiz.id,
               selected: false,
               title: quiz.title,
               description: quiz.description,
-              createdBy: `${quiz.user?.firstName || ''} ${quiz.user?.lastName || ''}`.trim() || quiz.user?.email || '',
+              createdBy,
               category: quiz.category?.name ?? null,
               isPublic: quiz.isPublic ?? false,
               status: quiz.status ?? 'draft',
               groups: quiz.groups || [],
               stats: `${questionsCount} questions • Créé il y a ${createdDaysAgo}j`,
-              createdAt: quiz.dateCreation ? new Date(quiz.dateCreation).toLocaleDateString('fr-FR') : 'N/A',
-              questionsCount: questionsCount
+              createdAt: quiz.dateCreation
+                ? new Date(quiz.dateCreation).toLocaleDateString('fr-FR')
+                : 'N/A',
+              questionsCount: questionsCount,
             };
           });
 
@@ -204,12 +210,12 @@ export class QuizManagementComponent implements OnInit, OnDestroy {
           this.isLoading = false;
           this.cdr.markForCheck();
         },
-        error: (error) => {
+        error: error => {
           console.error('Erreur dans le subscribe:', error);
           this.loadError = true;
           this.isLoading = false;
           this.cdr.markForCheck();
-        }
+        },
       });
   }
 
@@ -246,8 +252,6 @@ export class QuizManagementComponent implements OnInit, OnDestroy {
     return Math.min(this.page * this.pageSize, this.totalItems);
   }
 
-
-
   get hasSelection(): boolean {
     return this.rows.some(r => r.selected);
   }
@@ -257,7 +261,7 @@ export class QuizManagementComponent implements OnInit, OnDestroy {
   }
 
   toggleAll(checked: boolean): void {
-    this.rows.forEach(r => r.selected = checked);
+    this.rows.forEach(r => (r.selected = checked));
     this.cdr.markForCheck();
   }
 
@@ -292,20 +296,23 @@ export class QuizManagementComponent implements OnInit, OnDestroy {
 
     const deletes$ = ids.map(id => this.quizService.deleteQuiz(id));
     forkJoin(deletes$).subscribe({
-      next: (results) => {
+      next: results => {
         this.isDeleting = false;
 
         this.loadQuizzes();
 
-        this.rows.forEach(r => r.selected = false);
+        this.rows.forEach(r => (r.selected = false));
         this.cdr.markForCheck();
 
-        this.alerts.open(
-          `${count} quiz${count > 1 ? 's' : ''} supprimé${count > 1 ? 's' : ''}`,
-          { label: 'Succès', appearance: 'positive', autoClose: 3000 }
-        ).subscribe();
+        this.alerts
+          .open(`${count} quiz${count > 1 ? 's' : ''} supprimé${count > 1 ? 's' : ''}`, {
+            label: 'Succès',
+            appearance: 'positive',
+            autoClose: 3000,
+          })
+          .subscribe();
       },
-      error: (error) => {
+      error: error => {
         this.isDeleting = false;
       },
     });
@@ -327,24 +334,26 @@ export class QuizManagementComponent implements OnInit, OnDestroy {
       exportDate: new Date().toISOString(),
       exportType: 'selective',
       totalQuizzes: selectedQuizzes.length,
-      quizzes: selectedQuizzes
+      quizzes: selectedQuizzes,
     };
 
     const filename = `quiz_selection_${selectedQuizzes.length}_${new Date().toISOString().split('T')[0]}.json`;
     this.fileDownloadService.downloadJson(exportData, filename);
 
-    const message = selectedQuizzes.length === 1
-      ? `Export réussi ! 1 quiz sélectionné exporté`
-      : `Export réussi ! ${selectedQuizzes.length} quiz sélectionnés exportés`;
+    const message =
+      selectedQuizzes.length === 1
+        ? `Export réussi ! 1 quiz sélectionné exporté`
+        : `Export réussi ! ${selectedQuizzes.length} quiz sélectionnés exportés`;
 
     this.alerts.open(message, { appearance: 'success' }).subscribe();
 
-    selectedQuizzes.forEach(quiz => quiz.selected = false);
+    selectedQuizzes.forEach(quiz => (quiz.selected = false));
     this.cdr.markForCheck();
   }
 
   private exportAllQuizzes(): void {
-    this.quizService.getQuizzes()
+    this.quizService
+      .getQuizzes()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (quizzes: any[]) => {
@@ -352,16 +361,16 @@ export class QuizManagementComponent implements OnInit, OnDestroy {
             exportDate: new Date().toISOString(),
             exportType: 'complete',
             totalQuizzes: quizzes.length,
-            quizzes: quizzes
+            quizzes: quizzes,
           };
           const filename = `quiz_export_complet_${new Date().toISOString().split('T')[0]}.json`;
           this.fileDownloadService.downloadJson(exportData, filename);
           this.alerts.open('Export JSON complet réussi !', { appearance: 'success' }).subscribe();
         },
-        error: (error: any) => {
-          console.error('Erreur export JSON:', error);
-          this.alerts.open('Erreur lors de l\'export JSON', { appearance: 'error' }).subscribe();
-        }
+        error: (_error: any) => {
+          console.error('Erreur export JSON:', _error);
+          this.alerts.open("Erreur lors de l'export JSON", { appearance: 'error' }).subscribe();
+        },
       });
   }
 
@@ -379,7 +388,9 @@ export class QuizManagementComponent implements OnInit, OnDestroy {
     if (file && file.type === 'application/json') {
       this.selectedFile = file;
     } else {
-      this.alerts.open('Veuillez sélectionner un fichier JSON valide', { appearance: 'warning' }).subscribe();
+      this.alerts
+        .open('Veuillez sélectionner un fichier JSON valide', { appearance: 'warning' })
+        .subscribe();
       this.selectedFile = null;
     }
   }
@@ -388,7 +399,7 @@ export class QuizManagementComponent implements OnInit, OnDestroy {
     if (!this.selectedFile) return;
 
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = e => {
       try {
         const importData = JSON.parse(e.target?.result as string);
 
@@ -396,18 +407,20 @@ export class QuizManagementComponent implements OnInit, OnDestroy {
           throw new Error('Format de fichier invalide');
         }
 
-        this.alerts.open(
-          `Import simulé réussi ! ${importData.quizzes.length} quiz détectés dans le fichier`,
-          { appearance: 'info' }
-        ).subscribe();
+        this.alerts
+          .open(
+            `Import simulé réussi ! ${importData.quizzes.length} quiz détectés dans le fichier`,
+            { appearance: 'info' }
+          )
+          .subscribe();
 
         this.showImportModal = false;
         this.selectedFile = null;
-
-
       } catch (error: any) {
         console.error('Erreur parsing JSON:', error);
-        this.alerts.open('Erreur : Format de fichier JSON invalide', { appearance: 'error' }).subscribe();
+        this.alerts
+          .open('Erreur : Format de fichier JSON invalide', { appearance: 'error' })
+          .subscribe();
       }
     };
 
@@ -440,7 +453,10 @@ export class QuizManagementComponent implements OnInit, OnDestroy {
   }
 
   getGroupsTooltip(groups: Group[]): string {
-    return groups.slice(this.MAX_VISIBLE_GROUPS).map(g => g.name).join(', ');
+    return groups
+      .slice(this.MAX_VISIBLE_GROUPS)
+      .map(g => g.name)
+      .join(', ');
   }
 
   getExportButtonText(): string {

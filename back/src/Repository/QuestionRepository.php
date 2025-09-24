@@ -15,6 +15,4 @@ class QuestionRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Question::class);
     }
-
-
 }

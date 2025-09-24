@@ -1,0 +1,68 @@
+{
+  "root": true,
+  "ignorePatterns": [
+    "projects/**/*",
+    "dist/**/*",
+    "node_modules/**/*",
+    "coverage/**/*"
+  ],
+  "env": {
+    "browser": true,
+    "es2020": true,
+    "jasmine": true,
+    "node": true
+  },
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": 2020,
+    "sourceType": "module",
+    "project": "./tsconfig.json"
+  },
+  "plugins": [
+    "@typescript-eslint"
+  ],
+  "extends": [
+    "eslint:recommended"
+  ],
+  "rules": {
+    "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": "off",
+    "prefer-const": "error",
+    "no-var": "error",
+    "no-console": "off",
+    "no-debugger": "error",
+    "no-empty": "off",
+    "no-useless-catch": "error",
+    "no-useless-escape": "error",
+    "no-case-declarations": "error",
+    "@typescript-eslint/explicit-module-boundary-types": "off",
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/no-unused-vars": "off"
+  },
+  "overrides": [
+    {
+      "files": ["*.ts"],
+      "parser": "@typescript-eslint/parser",
+      "plugins": ["@typescript-eslint"],
+      "rules": {
+        "@typescript-eslint/no-unused-vars": "off",
+        "no-unused-vars": "off"
+      }
+    },
+    {
+      "files": ["*.spec.ts", "test-setup.ts"],
+      "env": {
+        "jasmine": true
+      },
+      "rules": {
+        "@typescript-eslint/no-unused-vars": "off",
+        "no-console": "off"
+      }
+    },
+    {
+      "files": ["*.html"],
+      "parser": "@angular-eslint/template-parser",
+      "rules": {}
+    }
+  ]
+}

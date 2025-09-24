@@ -16,7 +16,7 @@ class Badge
     #[ORM\GeneratedValue]
     #[ORM\Column]
     #[Groups(['badge:read', 'user:read', 'user:profile'])]
-    private ?int $id = null;
+    private int $id;
 
     #[ORM\Column(length: 100)]
     #[Groups(['badge:read', 'badge:create', 'user:read', 'user:profile'])]

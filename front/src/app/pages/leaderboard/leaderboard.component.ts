@@ -2,7 +2,6 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
-import { AnalyticsService } from '../../services/analytics.service';
 
 interface LeaderboardUser {
   id: number;
@@ -41,19 +40,16 @@ interface LeaderboardResponse {
   standalone: true,
   imports: [CommonModule],
   templateUrl: './leaderboard.component.html',
-  styleUrls: ['./leaderboard.component.scss']
+  styleUrls: ['./leaderboard.component.scss'],
 })
 export class LeaderboardComponent implements OnInit {
   private http = inject(HttpClient);
-  private analytics = inject(AnalyticsService);
 
   leaderboardData: LeaderboardResponse | null = null;
   isLoading = true;
   error: string | null = null;
 
   ngOnInit() {
-    this.analytics.trackLeaderboardView();
-
     this.loadLeaderboard();
   }
 
@@ -61,47 +57,54 @@ export class LeaderboardComponent implements OnInit {
     this.isLoading = true;
     this.error = null;
 
-    this.http.get<LeaderboardResponse>(`${environment.apiBaseUrl}/leaderboard?limit=10`)
-      .subscribe({
-        next: (data) => {
-          if (data.leaderboard) {
-            const uniqueUsers = new Map();
-            data.leaderboard.forEach(user => {
-              if (!uniqueUsers.has(user.id)) {
-                uniqueUsers.set(user.id, user);
-              }
-            });
-            data.leaderboard = Array.from(uniqueUsers.values());
-            data.leaderboard.forEach((user, index) => {
-              user.position = index + 1;
-            });
-          }
-
-          this.leaderboardData = data;
-          this.isLoading = false;
-        },
-        error: (error) => {
-          this.error = 'Impossible de charger le classement';
-          this.isLoading = false;
+    this.http.get<LeaderboardResponse>(`${environment.apiBaseUrl}/leaderboard?limit=10`).subscribe({
+      next: data => {
+        if (data.leaderboard) {
+          const uniqueUsers = new Map();
+          data.leaderboard.forEach(user => {
+            if (!uniqueUsers.has(user.id)) {
+              uniqueUsers.set(user.id, user);
+            }
+          });
+          data.leaderboard = Array.from(uniqueUsers.values());
+          data.leaderboard.forEach((user, index) => {
+            user.position = index + 1;
+          });
         }
-      });
+
+        this.leaderboardData = data;
+        this.isLoading = false;
+      },
+      error: error => {
+        this.error = 'Impossible de charger le classement';
+        this.isLoading = false;
+      },
+    });
   }
 
   getMedalIcon(position: number): string {
     switch (position) {
-      case 1: return 'fas fa-trophy';
-      case 2: return 'fas fa-medal';
-      case 3: return 'fas fa-award';
-      default: return '';
+      case 1:
+        return 'fas fa-trophy';
+      case 2:
+        return 'fas fa-medal';
+      case 3:
+        return 'fas fa-award';
+      default:
+        return '';
     }
   }
 
   getMedalClass(position: number): string {
     switch (position) {
-      case 1: return 'gold';
-      case 2: return 'silver';
-      case 3: return 'bronze';
-      default: return '';
+      case 1:
+        return 'gold';
+      case 2:
+        return 'silver';
+      case 3:
+        return 'bronze';
+      default:
+        return '';
     }
   }
 
@@ -123,8 +126,10 @@ export class LeaderboardComponent implements OnInit {
     if (position >= 11 && position <= 13) return 'ème';
     const lastDigit = position % 10;
     switch (lastDigit) {
-      case 1: return 'er';
-      default: return 'ème';
+      case 1:
+        return 'er';
+      default:
+        return 'ème';
     }
   }
 
@@ -158,10 +163,10 @@ export class LeaderboardComponent implements OnInit {
     }
 
     const shapeToHeadMapping: { [key: string]: string } = {
-      'blob_flower': 'flower_head',
-      'blob_circle': 'circle_head',
-      'blob_pic': 'pic_head',
-      'blob_wave': 'wave_head'
+      blob_flower: 'flower_head',
+      blob_circle: 'circle_head',
+      blob_pic: 'pic_head',
+      blob_wave: 'wave_head',
     };
 
     const headAvatar = shapeToHeadMapping[shape];

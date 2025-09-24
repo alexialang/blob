@@ -1,5 +1,3 @@
-
-
 .profile-container {
   background: var(--color-light);
   min-height: 100vh;
@@ -7,7 +5,6 @@
   margin: 1rem;
   border-radius: 20px;
 }
-
 
 .main-title {
   font-size: 7rem;
@@ -28,15 +25,15 @@
 .profile-card {
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255,255,255,0.2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 20px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   transition: var(--transition);
   overflow: hidden;
 
   &:hover {
     transform: translateY(-5px);
-    box-shadow: 0 16px 48px rgba(0,0,0,0.15);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15);
   }
 
   .card-header {
@@ -74,12 +71,12 @@
       font-size: 0.9rem;
       transition: all 0.3s ease;
       cursor: pointer;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
       margin-left: auto;
 
       &:hover {
         transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
         background: #f8f9fa;
         color: var(--color-primary);
         border-color: #f8f9fa;
@@ -109,14 +106,13 @@
   background: var(--color-secondary-dark);
 }
 
-
 .avatar-section {
   text-align: center;
   margin-bottom: 1.5rem;
   padding: 1.5rem;
   background: rgba(255, 255, 255, 0.3);
   border-radius: 15px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
   .avatar-container {
     position: relative;
@@ -139,8 +135,6 @@
         height: auto;
       }
     }
-
-
   }
 
   .display-name {
@@ -160,7 +154,7 @@
 
   .avatar-modify-section {
     margin-top: 1rem;
-    
+
     .btn-avatar-modify {
       background: white;
       color: var(--color-primary);
@@ -235,7 +229,7 @@
       left: -100%;
       width: 100%;
       height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
       transition: left 0.5s ease;
     }
 
@@ -265,7 +259,6 @@
   }
 }
 
-
 .btn-modern {
   background: white;
   color: var(--color-dark);
@@ -276,11 +269,11 @@
   font-size: 0.95rem;
   transition: var(--transition);
   cursor: pointer;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
     background: var(--color-dark);
     color: white;
   }
@@ -293,12 +286,12 @@
     background: var(--color-secondary);
     color: var(--color-dark);
     border: 2px solid var(--color-secondary);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 
     &:hover {
       background: var(--color-secondary-dark);
       border-color: var(--color-secondary-dark);
-      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
     }
   }
 
@@ -307,10 +300,9 @@
   }
 }
 
-
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(100px,1fr));
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
   gap: 0.75rem;
   margin-bottom: 1.5rem;
 
@@ -322,25 +314,36 @@
     position: relative;
     overflow: hidden;
     transition: var(--transition);
-    border: 1px solid rgba(0,0,0,0.05);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 
     &::before {
       content: '';
       position: absolute;
-      top: 0; left: 0; width: 100%; height: 3px;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
       background: var(--primary-gradient);
     }
 
     &:hover {
       transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
     }
 
-    &.primary::before   { background: var(--primary-gradient); }
-    &.success::before   { background: var(--success-gradient); }
-    &.warning::before   { background: var(--warning-gradient); }
-    &.secondary::before { background: var(--secondary-gradient); }
+    &.primary::before {
+      background: var(--primary-gradient);
+    }
+    &.success::before {
+      background: var(--success-gradient);
+    }
+    &.warning::before {
+      background: var(--warning-gradient);
+    }
+    &.secondary::before {
+      background: var(--secondary-gradient);
+    }
 
     .stat-number {
       font-size: 2rem;
@@ -359,14 +362,14 @@
   }
 }
 
-
 .badges-header {
   display: flex;
   align-items: center;
   margin-bottom: 1rem;
 
   .section-icon {
-    width: 30px; height: 30px;
+    width: 30px;
+    height: 30px;
     background: var(--color-secondary);
     color: white;
     display: flex;
@@ -392,12 +395,9 @@
   }
 }
 
-
-
-
 .badge-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(70px,1fr));
+  grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
   gap: 0.75rem;
   margin-bottom: 1.5rem;
 
@@ -407,8 +407,8 @@
     padding: 0.75rem;
     text-align: center;
     transition: var(--transition);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    border: 1px solid rgba(0,0,0,0.05);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(0, 0, 0, 0.05);
 
     &.earned {
       border-color: var(--color-success);
@@ -421,7 +421,7 @@
 
     &:hover {
       transform: translateY(-1px);
-      box-shadow: 0 4px 15px rgba(0,0,0,0.12);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
     }
 
     .badge-image {
@@ -443,16 +443,14 @@
   }
 }
 
-
 .charts-section {
   margin: 0 0 2rem 0;
-  
+
   app-statistics-charts {
     display: block;
     width: 100%;
   }
 }
-
 
 .profile-form {
   .form-label {
@@ -466,7 +464,7 @@
     border: 2px solid var(--border-light);
     padding: 0.75rem 1rem;
     transition: var(--transition);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 
     &:focus {
       border-color: var(--color-primary);
@@ -497,13 +495,13 @@
     background: rgba(255, 255, 255, 0.7);
     border-radius: 8px;
     margin-bottom: 0;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    border: 1px solid rgba(0,0,0,0.05);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.05);
     transition: all 0.2s ease;
 
     &:hover {
       background: rgba(255, 255, 255, 0.9);
-      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
       transform: translateY(-1px);
     }
 
@@ -555,7 +553,6 @@
   }
 }
 
-
 .loading-container {
   display: flex;
   justify-content: center;
@@ -565,26 +562,41 @@
   padding: 2rem;
   background: rgba(255, 255, 255, 0.1);
   border-radius: 20px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 
   .spinner {
-    width: 50px; height: 50px;
+    width: 50px;
+    height: 50px;
     border: 4px solid var(--color-light);
     border-top: 4px solid var(--color-primary);
     border-radius: 50%;
     animation: spin 1s linear infinite;
   }
 }
-@keyframes spin { to { transform: rotate(360deg); } }
-
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
 @media (max-width: 992px) {
-  .profile-grid { grid-template-columns: 1fr; }
-  .main-title  { font-size: 2rem; }
-  .avatar-img  { width: 140px; height: 140px; }
-  .stats-grid .stat-number { font-size: 2rem; }
-  .badge-grid { grid-template-columns: repeat(auto-fit, minmax(60px,1fr)); }
-  
+  .profile-grid {
+    grid-template-columns: 1fr;
+  }
+  .main-title {
+    font-size: 2rem;
+  }
+  .avatar-img {
+    width: 140px;
+    height: 140px;
+  }
+  .stats-grid .stat-number {
+    font-size: 2rem;
+  }
+  .badge-grid {
+    grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+  }
+
   .modify-button-section {
     margin: 1rem 0;
     padding: 0 1rem;

@@ -3,11 +3,12 @@ parameters:
     app.frontend_url: 'https://angular.dev.local'
     mailer_from: 'no-reply@exemple.com'
     recaptcha_secret_key: '%env(RECAPTCHA_SECRET_KEY)%'
+    stripe_webhook_secret: '%env(STRIPE_WEBHOOK_SECRET)%'
 
 services:
     _defaults:
         autowire: true
-        autoconfigure: true c.
+        autoconfigure: true
 
     App\:
         resource: '../src/'
@@ -24,3 +25,9 @@ services:
     App\Service\PaymentService:
         arguments:
             $stripeSecretKey: '%env(STRIPE_SECRET_KEY)%'
+            $frontendUrl: '%app.frontend_url%'
+    
+    App\Controller\StripeWebhookController:
+        arguments:
+            $stripeSecretKey: '%env(STRIPE_SECRET_KEY)%'
+            $stripeWebhookSecret: '%env(STRIPE_WEBHOOK_SECRET)%'

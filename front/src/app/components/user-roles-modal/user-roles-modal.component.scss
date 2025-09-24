@@ -25,7 +25,7 @@
   .modal-header {
     margin-bottom: 1.5rem;
     position: relative;
-    
+
     h2 {
       margin: 0 0 0.5rem 0;
       color: #333;
@@ -61,12 +61,12 @@
       display: flex;
       flex-direction: column;
       gap: 0.25rem;
-      
+
       strong {
         color: #333;
         font-size: 1rem;
       }
-      
+
       .user-email {
         color: #666;
         font-size: 0.875rem;
@@ -108,14 +108,14 @@
       transition: all 0.2s ease;
 
       &:hover {
-        border-color: #257D54;
+        border-color: #257d54;
         background: #f8fffe;
       }
 
       &.disabled {
         opacity: 0.6;
         cursor: not-allowed;
-        
+
         &:hover {
           border-color: #e0e0e0;
           background: #fafafa;
@@ -129,7 +129,7 @@
         cursor: pointer;
         margin: 0;
 
-        input[type="checkbox"] {
+        input[type='checkbox'] {
           margin-top: 0.125rem;
         }
 
@@ -187,7 +187,7 @@
       transition: all 0.2s ease;
 
       &:hover {
-        border-color: #257D54;
+        border-color: #257d54;
         background: #f8fffe;
       }
 
@@ -200,7 +200,7 @@
         color: #333;
         font-size: 0.875rem;
 
-        input[type="checkbox"] {
+        input[type='checkbox'] {
           flex-shrink: 0;
         }
       }
@@ -284,7 +284,7 @@
       transition: all 0.2s ease;
 
       &.btn-primary {
-        background-color: #257D54;
+        background-color: #257d54;
         color: white;
 
         &:hover {
@@ -317,7 +317,7 @@
     }
 
     &.user-badge {
-      background-color: #257D54;
+      background-color: #257d54;
       color: white;
     }
 
@@ -351,7 +351,7 @@
 
     .modal-footer {
       flex-direction: column;
-      
+
       .btn {
         width: 100%;
       }

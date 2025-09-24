@@ -4,7 +4,7 @@
   min-height: 100vh;
   background: var(--color-light);
   padding: 20px;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 .question-instruction {
@@ -36,6 +36,11 @@
   .answer-option {
     cursor: pointer;
     transition: all 0.3s ease;
+
+    &.grayed-out {
+      opacity: 0.4;
+      filter: grayscale(50%);
+    }
 
     &:nth-child(1) {
       margin-bottom: 120px;
@@ -155,7 +160,8 @@
 }
 
 @keyframes float-rotate-1 {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0px) rotate(0deg);
   }
   50% {
@@ -164,7 +170,8 @@
 }
 
 @keyframes float-rotate-2 {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0px) rotate(0deg);
   }
   50% {
@@ -173,7 +180,8 @@
 }
 
 @keyframes float-rotate-3 {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0px) rotate(0deg);
   }
   50% {
@@ -182,7 +190,8 @@
 }
 
 @keyframes float-rotate-4 {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0px) rotate(0deg);
   }
   50% {
@@ -243,7 +252,9 @@
         margin-bottom: 70px;
       }
 
-      &:nth-child(1), &:nth-child(2), &:nth-child(3) {
+      &:nth-child(1),
+      &:nth-child(2),
+      &:nth-child(3) {
         .answer-shape {
           width: 320px;
           height: 320px;
@@ -269,8 +280,12 @@
 @media (max-width: 768px) {
   .mcq-question-container {
     min-height: 100vh;
+    height: auto;
     overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
     padding: 10px;
+    position: relative;
   }
 
   .answers-container {
@@ -283,7 +298,9 @@
     .answer-option {
       margin-bottom: 0 !important;
 
-      &:nth-child(1), &:nth-child(2), &:nth-child(3) {
+      &:nth-child(1),
+      &:nth-child(2),
+      &:nth-child(3) {
         .answer-shape {
           width: 300px;
           height: 300px;
@@ -315,7 +332,7 @@
 
   .validation-container {
     position: fixed;
-    bottom: 1rem;
+    bottom: 2.5rem;
     right: 1rem;
     z-index: 10;
 

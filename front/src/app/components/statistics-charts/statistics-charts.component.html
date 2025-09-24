@@ -1,5 +1,4 @@
 <div class="charts-container" *ngIf="userStatistics">
-  
   <div class="charts-grid">
     <div class="chart-section" *ngIf="hasScoreHistory()">
       <div class="chart-card">
@@ -18,7 +17,6 @@
       </div>
     </div>
 
-
     <div class="chart-section" *ngIf="hasCategoryData()">
       <div class="chart-card">
         <div class="chart-header">
@@ -36,7 +34,6 @@
       </div>
     </div>
   </div>
-
 
   <div class="no-data-message" *ngIf="!hasScoreHistory() && !hasCategoryData()">
     <div class="no-data-card">

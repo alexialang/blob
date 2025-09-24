@@ -13,7 +13,7 @@ import { HttpClient } from '@angular/common/http';
   standalone: true,
   imports: [RouterLink, CommonModule, HasPermissionDirective],
   templateUrl: './navbar.component.html',
-  styleUrls: ['./navbar.component.scss']
+  styleUrls: ['./navbar.component.scss'],
 })
 export class NavbarComponent implements OnInit {
   userName$: Observable<string> = of('');
@@ -35,8 +35,7 @@ export class NavbarComponent implements OnInit {
     private authService: AuthService,
     private sanitizer: DomSanitizer,
     private http: HttpClient
-  ) {
-  }
+  ) {}
 
   ngOnInit() {
     this.generateRandomColor();
@@ -48,7 +47,12 @@ export class NavbarComponent implements OnInit {
   }
 
   generateRandomColor() {
-    const colors = ['var(--color-primary)', 'var(--color-secondary)', 'var(--color-accent)', 'var(--color-pink)'];
+    const colors = [
+      'var(--color-primary)',
+      'var(--color-secondary)',
+      'var(--color-accent)',
+      'var(--color-pink)',
+    ];
     this.randomColor = colors[Math.floor(Math.random() * colors.length)];
   }
 
@@ -56,9 +60,7 @@ export class NavbarComponent implements OnInit {
     console.error('Image failed to load:', event.target.src);
   }
 
-  onImageLoad(event: any) {
-    console.log('Image loaded successfully:', event.target.src);
-  }
+  onImageLoad(event: any) {}
 
   // Fonction pour convertir un avatar corps entier en tête d'avatar
   private getHeadAvatarFromFullAvatar(fullAvatarPath: string): string {
@@ -68,7 +70,7 @@ export class NavbarComponent implements OnInit {
 
     // Extraire le nom de fichier de l'avatar
     const fileName = fullAvatarPath.split('/').pop() || '';
-    
+
     // Mapping des avatars corps entier vers les têtes
     const avatarMapping: { [key: string]: string } = {
       'blob_circle.svg': 'circle_head.svg',
@@ -76,20 +78,20 @@ export class NavbarComponent implements OnInit {
       'blob_flower_blue.svg': 'flower_head.svg', // Même tête pour les deux variantes de fleur
       'blob_pic.svg': 'pic_head.svg',
       'blob_pic_orange.svg': 'pic_head.svg', // Même tête pour les deux variantes de pic
-      'blob_wave.svg': 'wave_head.svg'
+      'blob_wave.svg': 'wave_head.svg',
     };
 
     // Support pour les noms sans extension (utilisés dans avatar-selection)
     const shapeMapping: { [key: string]: string } = {
-      'blob_flower': 'flower_head.svg',
-      'blob_circle': 'circle_head.svg', 
-      'blob_pic': 'pic_head.svg',
-      'blob_wave': 'wave_head.svg'
+      blob_flower: 'flower_head.svg',
+      blob_circle: 'circle_head.svg',
+      blob_pic: 'pic_head.svg',
+      blob_wave: 'wave_head.svg',
     };
 
     // Vérifier d'abord le mapping avec extension
     let headAvatar = avatarMapping[fileName];
-    
+
     // Si pas trouvé, essayer sans extension ou avec le nom de forme directement
     if (!headAvatar) {
       const shapeName = fileName.replace('.svg', '');
@@ -112,10 +114,10 @@ export class NavbarComponent implements OnInit {
 
     // Mapping direct des formes vers les têtes
     const shapeToHeadMapping: { [key: string]: string } = {
-      'blob_flower': 'flower_head.svg',
-      'blob_circle': 'circle_head.svg', 
-      'blob_pic': 'pic_head.svg',
-      'blob_wave': 'wave_head.svg'
+      blob_flower: 'flower_head.svg',
+      blob_circle: 'circle_head.svg',
+      blob_pic: 'pic_head.svg',
+      blob_wave: 'wave_head.svg',
     };
 
     const headAvatar = shapeToHeadMapping[shape];
@@ -134,18 +136,18 @@ export class NavbarComponent implements OnInit {
         // Remplacer les couleurs par défaut par la couleur utilisateur
         // #257D54 (vert par défaut dans la plupart des têtes d'avatar)
         let coloredSvg = svgContent.replace(/#257D54/g, color);
-        
+
         // Pour head_guest.svg qui utilise #0B0C1E comme couleur principale
         if (avatarPath.includes('head_guest.svg')) {
           coloredSvg = coloredSvg.replace(/#0B0C1E/g, color);
         }
-        
+
         // Forcer les dimensions du SVG pour qu'il prenne toute la taille du conteneur
         coloredSvg = coloredSvg.replace(
           /<svg([^>]*)>/,
           '<svg$1 style="width: 100px !important; height: 100px !important;">'
         );
-        
+
         return this.sanitizer.bypassSecurityTrustHtml(coloredSvg);
       }),
       catchError(error => {
@@ -168,19 +170,16 @@ export class NavbarComponent implements OnInit {
 
       this.userAvatar$ = this.authService.getCurrentUser().pipe(
         map(user => {
-          console.log('User data:', user);
           if (user.avatar) {
             // Convertir l'avatar corps entier en tête d'avatar
             const headAvatarPath = this.getHeadAvatarFromFullAvatar(user.avatar);
-            console.log('Full avatar:', user.avatar, '-> Head avatar:', headAvatarPath);
             return this.sanitizer.bypassSecurityTrustUrl(headAvatarPath);
           }
           // Par défaut, utiliser la tête d'invité
           const avatarPath = 'assets/avatars/head_guest.svg';
-          console.log('Generated avatar path:', avatarPath);
           return this.sanitizer.bypassSecurityTrustUrl(avatarPath);
         }),
-        catchError((error) => {
+        catchError(error => {
           console.error('Error loading avatar:', error);
           return of(this.sanitizer.bypassSecurityTrustUrl('assets/svg/logo.svg'));
         })
@@ -200,24 +199,20 @@ export class NavbarComponent implements OnInit {
       this.userAvatarSvg$ = combineLatest([
         this.authService.getCurrentUser().pipe(
           map(user => {
-            console.log('User avatarShape from service:', user.avatarShape);
             if (user.avatarShape) {
               // Convertir directement la forme en tête d'avatar
               const headPath = this.getHeadAvatarFromShape(user.avatarShape);
-              console.log('Generated head avatar path from shape:', headPath);
               return headPath;
             }
-            console.log('No user avatarShape, using guest head');
             return 'assets/avatars/head_guest.svg';
           })
         ),
-        this.userAvatarColor$
+        this.userAvatarColor$,
       ]).pipe(
         switchMap(([avatarPath, color]) => {
-          console.log('Loading SVG with path:', avatarPath, 'and color:', color);
           return this.loadAvatarSvg(avatarPath, color);
         }),
-        catchError((error) => {
+        catchError(error => {
           console.error('Error in userAvatarSvg$:', error);
           return of(this.sanitizer.bypassSecurityTrustHtml(''));
         })
@@ -264,7 +259,4 @@ export class NavbarComponent implements OnInit {
   open() {
     return this.isMobileMenuOpen;
   }
-
-
 }
-

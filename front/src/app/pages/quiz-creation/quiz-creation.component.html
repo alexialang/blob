@@ -1,8 +1,15 @@
 <div class="background">
   <div class="quiz-creation-container">
     <div class="header">
-      <h1>{{ isEditMode ? 'Modifier le ' : 'Créer un nouveau ' }}<span class="lcmogi-font" [ngStyle]="{ 'color': highlightColor }">quiz</span></h1>
-      <p>{{ isEditMode ? 'Modifiez votre ' : 'Créez un ' }}<span class="lcmogi-font" [ngStyle]="{ 'color': highlightColor }">quiz</span>{{ isEditMode ? ' avec des questions et réponses' : ' personnalisé avec des questions et réponses' }}</p>
+      <h1>
+        {{ isEditMode ? 'Modifier le ' : 'Créer un nouveau '
+        }}<span class="lcmogi-font" [ngStyle]="{ color: highlightColor }">quiz</span>
+      </h1>
+      <p>
+        {{ isEditMode ? 'Modifiez votre ' : 'Créez un '
+        }}<span class="lcmogi-font" [ngStyle]="{ color: highlightColor }">quiz</span
+        >{{ isEditMode ? ' avec des questions et réponses' : ' personnalisé avec des questions et réponses' }}
+      </p>
     </div>
 
     <form [formGroup]="quizForm" class="quiz-form" (ngSubmit)="onSubmit()">
@@ -11,7 +18,13 @@
 
         <div class="form-group">
           <label for="title">Titre du quiz *</label>
-          <input id="title" type="text" formControlName="title" class="form-input" placeholder="Entrez le titre du quiz">
+          <input
+            id="title"
+            type="text"
+            formControlName="title"
+            class="form-input"
+            placeholder="Entrez le titre du quiz"
+          />
           <div *ngIf="quizForm.get('title')?.invalid && quizForm.get('title')?.touched" class="error">
             Le titre est requis (min 3 caractères)
           </div>
@@ -28,7 +41,8 @@
             (focus)="showCategoryDropdown = true"
             class="form-input"
             placeholder="Rechercher une catégorie..."
-            autocomplete="off" />
+            autocomplete="off"
+          />
 
           <ul *ngIf="showCategoryDropdown && filteredCategories.length > 0" class="dropdown-list">
             <li *ngFor="let cat of filteredCategories" (click)="selectCategory(cat)">
@@ -52,7 +66,13 @@
 
         <div class="form-group">
           <label for="description">Description *</label>
-          <textarea id="description" formControlName="description" class="form-textarea" rows="3" placeholder="Décrivez le contenu du quiz"></textarea>
+          <textarea
+            id="description"
+            formControlName="description"
+            class="form-textarea"
+            rows="3"
+            placeholder="Décrivez le contenu du quiz"
+          ></textarea>
           <div *ngIf="quizForm.get('description')?.invalid && quizForm.get('description')?.touched" class="error">
             La description est requise (min 10 caractères)
           </div>
@@ -63,7 +83,7 @@
             <label for="status">Statut</label>
             <select id="status" formControlName="status" class="form-select">
               <option value="">Sélectionnez un statut</option>
-              <option *ngFor="let status of statuses" [value]="status.value">{{status.name}}</option>
+              <option *ngFor="let status of statuses" [value]="status.value">{{ status.name }}</option>
             </select>
             <div *ngIf="statuses.length === 0" class="loading">Chargement des statuts...</div>
           </div>
@@ -71,8 +91,8 @@
           <div class="form-group">
             <label>Visibilité *</label>
             <div class="radio-group">
-              <label><input type="radio" formControlName="is_public" [value]="true"> Public</label>
-              <label><input type="radio" formControlName="is_public" [value]="false"> Privé</label>
+              <label><input type="radio" formControlName="is_public" [value]="true" /> Public</label>
+              <label><input type="radio" formControlName="is_public" [value]="false" /> Privé</label>
             </div>
           </div>
         </div>
@@ -80,7 +100,7 @@
         <div class="form-group" *ngIf="quizForm.get('is_public')?.value === false">
           <label for="groups">Groupes autorisés *</label>
           <select id="groups" formControlName="groups" multiple class="form-select">
-            <option *ngFor="let group of groups" [value]="group.id">{{group.name}}</option>
+            <option *ngFor="let group of groups" [value]="group.id">{{ group.name }}</option>
           </select>
           <small>Maintenez Ctrl (ou Cmd) pour sélectionner plusieurs groupes</small>
         </div>
@@ -94,13 +114,20 @@
         <div formArrayName="questions">
           <div *ngFor="let question of questions.controls; let i = index" [formGroupName]="i" class="question-card">
             <div class="question-header">
-              <h3 class="question-title">Question {{i + 1}}</h3>
-              <button type="button" class="btn btn-danger" (click)="removeQuestion(i)" [disabled]="questions.length <= 1">Supprimer</button>
+              <h3 class="question-title">Question {{ i + 1 }}</h3>
+              <button
+                type="button"
+                class="btn btn-danger"
+                (click)="removeQuestion(i)"
+                [disabled]="questions.length <= 1"
+              >
+                Supprimer
+              </button>
             </div>
 
             <div class="form-group">
               <label>Texte de la question *</label>
-              <input type="text" formControlName="question" class="form-input" placeholder="Entrez la question">
+              <input type="text" formControlName="question" class="form-input" placeholder="Entrez la question" />
               <div *ngIf="question.get('question')?.invalid && question.get('question')?.touched" class="error">
                 La question est requise (min 5 caractères)
               </div>
@@ -110,10 +137,13 @@
               <label>Type de question *</label>
               <select formControlName="type_question" class="form-select" (change)="onQuestionTypeChange(i)">
                 <option value="">Sélectionnez un type</option>
-                <option *ngFor="let type of typeQuestions" [value]="type.key">{{type.name}}</option>
+                <option *ngFor="let type of typeQuestions" [value]="type.key">{{ getQuestionTypeLabel(type.key) }}</option>
               </select>
               <div *ngIf="typeQuestions.length === 0" class="loading">Chargement des types...</div>
-              <div *ngIf="question.get('type_question')?.invalid && question.get('type_question')?.touched" class="error">
+              <div
+                *ngIf="question.get('type_question')?.invalid && question.get('type_question')?.touched"
+                class="error"
+              >
                 Veuillez sélectionner un type de question
               </div>
             </div>
@@ -121,7 +151,9 @@
             <div class="form-group">
               <label>Difficulté *</label>
               <select formControlName="difficulty" class="form-select">
-                <option *ngFor="let difficulty of difficulties" [value]="difficulty.value">{{difficulty.label}}</option>
+                <option *ngFor="let difficulty of difficulties" [value]="difficulty.value">
+                  {{ difficulty.label }}
+                </option>
               </select>
               <div *ngIf="question.get('difficulty')?.invalid && question.get('difficulty')?.touched" class="error">
                 Veuillez sélectionner une difficulté
@@ -131,28 +163,32 @@
             <div formArrayName="answers" *ngIf="question.get('type_question')?.value">
               <h4>
                 Réponses
-                <small>({{getQuestionTypeLabel(question.get('type_question')?.value)}})</small>
+                <small>({{ getQuestionTypeLabel(question.get('type_question')?.value) }})</small>
               </h4>
 
               <div *ngIf="question.get('type_question')?.value === 'matching'" class="matching-interface">
                 <div class="matching-pairs">
                   <div *ngFor="let pairIndex of getMatchingPairs(i); let pairNum = index" class="matching-pair">
-                    <h5>Paire {{pairNum + 1}}</h5>
+                    <h5>Paire {{ pairNum + 1 }}</h5>
                     <div class="pair-container">
                       <div class="left-element">
                         <label>Élément A:</label>
-                        <input type="text"
-                               [formControl]="getAnswerControlByPairId(i, 'left_' + (pairNum + 1))"
-                               class="form-input"
-                               placeholder="Élément à associer">
+                        <input
+                          type="text"
+                          [formControl]="getAnswerControlByPairId(i, 'left_' + (pairNum + 1))"
+                          class="form-input"
+                          placeholder="Élément à associer"
+                        />
                       </div>
                       <div class="association-arrow">↔</div>
                       <div class="right-element">
                         <label>Élément B:</label>
-                        <input type="text"
-                               [formControl]="getAnswerControlByPairId(i, 'right_' + (pairNum + 1))"
-                               class="form-input"
-                               placeholder="Élément associé">
+                        <input
+                          type="text"
+                          [formControl]="getAnswerControlByPairId(i, 'right_' + (pairNum + 1))"
+                          class="form-input"
+                          placeholder="Élément associé"
+                        />
                       </div>
                     </div>
                   </div>
@@ -169,10 +205,12 @@
                   <h5>Cette affirmation est :</h5>
                   <div class="radio-group-vertical">
                     <label class="radio-option true-option">
-                      <input type="radio"
-                             [value]="true"
-                             [checked]="getTrueFalseCorrectAnswer(i)"
-                             (change)="onTrueFalseCorrectAnswerChange(i, true)">
+                      <input
+                        type="radio"
+                        [value]="true"
+                        [checked]="getTrueFalseCorrectAnswer(i)"
+                        (change)="onTrueFalseCorrectAnswerChange(i, true)"
+                      />
                       <span class="radio-custom"></span>
                       <span class="radio-text">
                         <strong>VRAIE</strong>
@@ -181,10 +219,12 @@
                     </label>
 
                     <label class="radio-option false-option">
-                      <input type="radio"
-                             [value]="false"
-                             [checked]="!getTrueFalseCorrectAnswer(i)"
-                             (change)="onTrueFalseCorrectAnswerChange(i, false)">
+                      <input
+                        type="radio"
+                        [value]="false"
+                        [checked]="!getTrueFalseCorrectAnswer(i)"
+                        (change)="onTrueFalseCorrectAnswerChange(i, false)"
+                      />
                       <span class="radio-custom"></span>
                       <span class="radio-text">
                         <strong>FAUSSE</strong>
@@ -201,7 +241,12 @@
                 </div>
               </div>
 
-              <div *ngIf="question.get('type_question')?.value !== 'matching' && question.get('type_question')?.value !== 'true_false'">
+              <div
+                *ngIf="
+                  question.get('type_question')?.value !== 'matching' &&
+                  question.get('type_question')?.value !== 'true_false'
+                "
+              >
                 <button type="button" class="btn" (click)="addAnswer(i)" [disabled]="!canAddAnswer(i)">
                   + Ajouter une réponse
                   <span *ngIf="question.get('type_question')?.value === 'find_the_intruder' && !canAddAnswer(i)">
@@ -209,15 +254,27 @@
                   </span>
                 </button>
 
-                <div *ngFor="let answer of getAnswers(i).controls; let j = index" [formGroupName]="j" class="answer-item">
+                <div
+                  *ngFor="let answer of getAnswers(i).controls; let j = index"
+                  [formGroupName]="j"
+                  class="answer-item"
+                >
                   <div class="answer-content">
-                    <input type="text" formControlName="answer" class="form-input"
-                           [placeholder]="getAnswerPlaceholder(question.get('type_question')?.value, j)">
+                    <input
+                      type="text"
+                      formControlName="answer"
+                      class="form-input"
+                      [placeholder]="getAnswerPlaceholder(question.get('type_question')?.value, j)"
+                    />
 
-                    <div *ngIf="question.get('type_question')?.value === 'MCQ' ||
-                                question.get('type_question')?.value === 'multiple_choice'">
+                    <div
+                      *ngIf="
+                        question.get('type_question')?.value === 'MCQ' ||
+                        question.get('type_question')?.value === 'multiple_choice'
+                      "
+                    >
                       <label>
-                        <input type="checkbox" formControlName="is_correct" (change)="onCorrectAnswerChange(i, j)">
+                        <input type="checkbox" formControlName="is_correct" (change)="onCorrectAnswerChange(i, j)" />
                         Réponse correcte
                       </label>
                     </div>
@@ -225,27 +282,37 @@
                     <div *ngIf="question.get('type_question')?.value === 'right_order'">
                       <label>
                         Ordre correct:
-                        <input type="number" formControlName="order_correct" class="form-input small" min="1" [max]="getAnswers(i).length">
+                        <input
+                          type="number"
+                          formControlName="order_correct"
+                          class="form-input small"
+                          min="1"
+                          [max]="getAnswers(i).length"
+                        />
                       </label>
                     </div>
 
                     <div *ngIf="question.get('type_question')?.value === 'find_the_intruder'">
                       <label>
-                        <input type="checkbox" formControlName="is_intrus" (change)="onCorrectAnswerChange(i, j)">
+                        <input type="checkbox" formControlName="is_intrus" (change)="onCorrectAnswerChange(i, j)" />
                         C'est l'intrus
                       </label>
                     </div>
 
                     <div *ngIf="question.get('type_question')?.value === 'blind_test'">
                       <label>
-                        <input type="checkbox" formControlName="is_correct" (change)="onCorrectAnswerChange(i, j)">
+                        <input type="checkbox" formControlName="is_correct" (change)="onCorrectAnswerChange(i, j)" />
                         Bonne réponse
                       </label>
                     </div>
                   </div>
 
-                  <button type="button" class="btn btn-danger" (click)="removeAnswer(i, j)"
-                          [disabled]="!canRemoveAnswer(i)">
+                  <button
+                    type="button"
+                    class="btn btn-danger"
+                    (click)="removeAnswer(i, j)"
+                    [disabled]="!canRemoveAnswer(i)"
+                  >
                     Supprimer
                   </button>
 

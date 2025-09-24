@@ -1,23 +1,23 @@
 <div class="modal-content">
   <h3>Ajouter un membre à l'entreprise</h3>
-  
+
   <div class="form-group">
     <label>Rechercher un utilisateur</label>
-    <input 
-      type="text" 
-      class="form-control search-input" 
+    <input
+      type="text"
+      class="form-control search-input"
       placeholder="Rechercher par nom, email ou pseudo..."
       [(ngModel)]="searchTerm"
       (ngModelChange)="onSearchChange($event)"
     />
   </div>
-  
+
   <div class="form-group">
     <label>Sélectionner un utilisateur</label>
     <ng-container *ngIf="filteredUsers$ | async as availableUsers">
       <div class="users-list" *ngIf="availableUsers.length > 0; else noUsersTpl">
-        <div 
-          *ngFor="let user of availableUsers; trackBy: trackByUserId" 
+        <div
+          *ngFor="let user of availableUsers; trackBy: trackByUserId"
           class="user-item"
           [class.selected]="selectedUserId === user.id"
           (click)="selectUser(user.id)"
@@ -46,18 +46,11 @@
     <label>Rôles</label>
     <div class="roles-list">
       <label class="role-item">
-        <input 
-          type="checkbox" 
-          [(ngModel)]="selectedRoles['ROLE_USER']" 
-          [disabled]="true"
-        />
+        <input type="checkbox" [(ngModel)]="selectedRoles['ROLE_USER']" [disabled]="true" />
         <span>Utilisateur (obligatoire)</span>
       </label>
       <label class="role-item">
-        <input 
-          type="checkbox" 
-          [(ngModel)]="selectedRoles['ROLE_ADMIN']"
-        />
+        <input type="checkbox" [(ngModel)]="selectedRoles['ROLE_ADMIN']" />
         <span>Administrateur</span>
       </label>
     </div>
@@ -67,50 +60,27 @@
     <label>Permissions</label>
     <div class="permissions-list">
       <label class="permission-item">
-        <input 
-          type="checkbox" 
-          [(ngModel)]="selectedPermissions['CREATE_QUIZ']"
-        />
+        <input type="checkbox" [(ngModel)]="selectedPermissions['CREATE_QUIZ']" />
         <span>Créer des quiz</span>
       </label>
       <label class="permission-item">
-        <input 
-          type="checkbox" 
-          [(ngModel)]="selectedPermissions['MANAGE_USERS']"
-        />
+        <input type="checkbox" [(ngModel)]="selectedPermissions['MANAGE_USERS']" />
         <span>Gérer les utilisateurs</span>
       </label>
       <label class="permission-item">
-        <input 
-          type="checkbox" 
-          [(ngModel)]="selectedPermissions['VIEW_RESULTS']"
-        />
+        <input type="checkbox" [(ngModel)]="selectedPermissions['VIEW_RESULTS']" />
         <span>Voir les résultats</span>
       </label>
       <label class="permission-item">
-        <input 
-          type="checkbox" 
-          [(ngModel)]="selectedPermissions['MANAGE_COMPANY']"
-        />
+        <input type="checkbox" [(ngModel)]="selectedPermissions['MANAGE_COMPANY']" />
         <span>Gérer l'entreprise</span>
       </label>
     </div>
   </div>
 
   <div class="form-actions">
-    <button 
-      type="button" 
-      class="btn btn-secondary" 
-      (click)="closeModal()"
-    >
-      Annuler
-    </button>
-    <button 
-      type="button" 
-      class="btn btn-primary" 
-      [disabled]="!selectedUserId || loading"
-      (click)="addMember()"
-    >
+    <button type="button" class="btn btn-secondary" (click)="closeModal()">Annuler</button>
+    <button type="button" class="btn btn-primary" [disabled]="!selectedUserId || loading" (click)="addMember()">
       <span *ngIf="!loading">Ajouter le membre</span>
       <span *ngIf="loading">Ajout en cours...</span>
     </button>
@@ -120,6 +90,3 @@
     {{ errorMessage }}
   </div>
 </div>
-
-
-

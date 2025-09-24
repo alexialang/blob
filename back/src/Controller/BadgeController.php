@@ -4,21 +4,23 @@ namespace App\Controller;
 
 use App\Entity\Badge;
 use App\Service\BadgeService;
+use OpenApi\Annotations as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
-use OpenApi\Annotations as OA;
 
 #[Route('/api/badge')]
 class BadgeController extends AbstractController
 {
     public function __construct(
-        private readonly BadgeService $badgeService
-    ) {}
+        private readonly BadgeService $badgeService,
+    ) {
+    }
 
     /**
      * @OA\Get(summary="Liste des badges", tags={"Badge"})
+     *
      * @OA\Response(response=200, description="Retourne tous les badges")
      */
     #[Route('/', name: 'badge_index', methods: ['GET'])]
@@ -29,10 +31,11 @@ class BadgeController extends AbstractController
         return $this->json($badges, 200, [], ['groups' => ['badge:read']]);
     }
 
-
     /**
      * @OA\Get(summary="Afficher un badge", tags={"Badge"})
+     *
      * @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer"))
+     *
      * @OA\Response(response=200, description="Badge affiché")
      */
     #[Route('/{id}', name: 'badge_show', methods: ['GET'])]
@@ -43,7 +46,9 @@ class BadgeController extends AbstractController
 
     /**
      * @OA\Post(summary="Initialiser les badges", tags={"Badge"})
+     *
      * @OA\Response(response=200, description="Badges initialisés")
+     *
      * @OA\Security(name="bearerAuth")
      */
     #[Route('/initialize', name: 'badge_initialize', methods: ['POST'])]
@@ -52,9 +57,10 @@ class BadgeController extends AbstractController
     {
         try {
             $this->badgeService->initializeBadges();
+
             return $this->json(['message' => 'Badges initialisés avec succès'], 200);
         } catch (\Exception $e) {
-            return $this->json(['error' => 'Erreur lors de l\'initialisation: ' . $e->getMessage()], 500);
+            return $this->json(['error' => 'Erreur lors de l\'initialisation: '.$e->getMessage()], 500);
         }
     }
 }

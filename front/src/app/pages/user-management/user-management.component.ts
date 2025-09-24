@@ -11,29 +11,20 @@ import { Router } from '@angular/router';
 
 import { TuiTable } from '@taiga-ui/addon-table';
 import { TuiCell } from '@taiga-ui/layout';
-import {
-  TuiAvatar,
-  TuiBadge,
-  TuiCheckbox,
-  TuiItemsWithMore,
-} from '@taiga-ui/kit';
-import {
-  TuiChevron,
-} from '@taiga-ui/kit';
-import {
-  TuiDialogService,
-  TuiAlertService,
-
-  TuiButton,
-  TuiDataList,
-} from '@taiga-ui/core';
+import { TuiAvatar, TuiBadge, TuiCheckbox, TuiItemsWithMore } from '@taiga-ui/kit';
+import { TuiChevron } from '@taiga-ui/kit';
+import { TuiDialogService, TuiAlertService, TuiButton, TuiDataList } from '@taiga-ui/core';
 
 import { catchError, of, Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
 
 import { UserManagementService } from '../../services/user-management.service';
 import { AuthService } from '../../services/auth.service';
 import { PaginationComponent } from '../../components/pagination/pagination.component';
-import { UserRolesModalComponent, UserWithRoles, UserRole } from '../../components/user-roles-modal/user-roles-modal.component';
+import {
+  UserRolesModalComponent,
+  UserWithRoles,
+  UserRole,
+} from '../../components/user-roles-modal/user-roles-modal.component';
 import { HasPermissionDirective } from '../../directives/has-permission.directive';
 
 type TuiSizeS = 's' | 'm';
@@ -92,8 +83,6 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   public totalItems = 0;
   public searchTerm = '';
 
-
-
   public showRolesModal = false;
   public selectedUserForRoles: UserWithRoles | null = null;
   public isDeleting = false;
@@ -102,14 +91,14 @@ export class UserManagementComponent implements OnInit, OnDestroy {
       id: 1,
       name: 'ROLE_USER',
       description: 'Accès utilisateur standard',
-      permissions: []
+      permissions: [],
     },
     {
       id: 2,
       name: 'ROLE_ADMIN',
       description: 'Accès administrateur complet',
-      permissions: ['CREATE_QUIZ', 'MANAGE_USERS', 'VIEW_RESULTS']
-    }
+      permissions: ['CREATE_QUIZ', 'MANAGE_USERS', 'VIEW_RESULTS'],
+    },
   ];
   public availablePermissions: string[] = ['CREATE_QUIZ', 'MANAGE_USERS', 'VIEW_RESULTS'];
   public isAdmin = false;
@@ -142,11 +131,7 @@ export class UserManagementComponent implements OnInit, OnDestroy {
 
   private setupSearchDebounce(): void {
     this.searchSubject$
-      .pipe(
-        debounceTime(300),
-        distinctUntilChanged(),
-        takeUntil(this.destroy$)
-      )
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
       .subscribe(searchTerm => {
         this.searchTerm = searchTerm;
         this.page = 1;
@@ -170,8 +155,6 @@ export class UserManagementComponent implements OnInit, OnDestroy {
       this.cdr.markForCheck();
     });
   }
-
-
 
   loadUsers(): void {
     this.isLoading = true;
@@ -200,9 +183,10 @@ export class UserManagementComponent implements OnInit, OnDestroy {
 
           this.rows = users.map((u: any) => {
             const joinDaysAgo = (u.id % 365) + 1;
-            const groupNames = Array.isArray(u.groups) && u.groups.length > 0
-              ? u.groups.map((g: any) => g.name).join(', ')
-              : '—';
+            const groupNames =
+              Array.isArray(u.groups) && u.groups.length > 0
+                ? u.groups.map((g: any) => g.name).join(', ')
+                : '—';
 
             return {
               id: u.id,
@@ -218,7 +202,9 @@ export class UserManagementComponent implements OnInit, OnDestroy {
               rights: Array.isArray(u.userPermissions) ? u.userPermissions : [],
               roles: u.roles ?? ['ROLE_USER'],
               permissions: Array.isArray(u.userPermissions) ? u.userPermissions : [],
-              joinedAt: new Date(Date.now() - joinDaysAgo * 24 * 60 * 60 * 1000).toLocaleDateString('fr-FR')
+              joinedAt: new Date(Date.now() - joinDaysAgo * 24 * 60 * 60 * 1000).toLocaleDateString(
+                'fr-FR'
+              ),
             };
           });
 
@@ -227,25 +213,19 @@ export class UserManagementComponent implements OnInit, OnDestroy {
           this.isLoading = false;
           this.cdr.markForCheck();
         },
-        error: (error) => {
+        error: error => {
           console.error('Erreur dans le subscribe:', error);
           this.loadError = true;
           this.isLoading = false;
           this.cdr.markForCheck();
-        }
+        },
       });
   }
-
-
-
-
 
   highlightColor: string = '';
 
   private generateRandomColor(): void {
-    const colors = [
-      '#257D54', '#FAA24B', '#D30D4C',
-    ];
+    const colors = ['#257D54', '#FAA24B', '#D30D4C'];
 
     const index = Math.floor(Math.random() * colors.length);
     this.highlightColor = colors[index];
@@ -265,14 +245,6 @@ export class UserManagementComponent implements OnInit, OnDestroy {
     return user.id;
   }
 
-
-
-
-
-
-
-
-
   get hasSelection(): boolean {
     return this.rows.some(r => r.selected);
   }
@@ -282,7 +254,7 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   }
 
   toggleAll(checked: boolean): void {
-    this.rows.forEach(r => r.selected = checked);
+    this.rows.forEach(r => (r.selected = checked));
     this.cdr.markForCheck();
   }
 
@@ -303,7 +275,9 @@ export class UserManagementComponent implements OnInit, OnDestroy {
     }
 
     const count = ids.length;
-    const confirmed = window.confirm(`Anonymiser ${count} utilisateur${count > 1 ? 's' : ''} ? (Les données seront conservées mais l'utilisateur sera désactivé)`);
+    const confirmed = window.confirm(
+      `Anonymiser ${count} utilisateur${count > 1 ? 's' : ''} ? (Les données seront conservées mais l'utilisateur sera désactivé)`
+    );
 
     if (!confirmed) {
       return;
@@ -311,33 +285,36 @@ export class UserManagementComponent implements OnInit, OnDestroy {
 
     this.isDeleting = true;
 
-    this.userService.anonymizeUser(ids[0])
+    this.userService
+      .anonymizeUser(ids[0])
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
           this.isDeleting = false;
           this.loadUsers();
-          this.rows.forEach(r => r.selected = false);
+          this.rows.forEach(r => (r.selected = false));
           this.cdr.markForCheck();
 
-          this.alerts.open('Utilisateur anonymisé avec succès', {
-            label: 'Info',
-            appearance: 'positive',
-            autoClose: 2000,
-          }).subscribe();
+          this.alerts
+            .open('Utilisateur anonymisé avec succès', {
+              label: 'Info',
+              appearance: 'positive',
+              autoClose: 2000,
+            })
+            .subscribe();
         },
-        error: (err) => {
+        error: err => {
           this.isDeleting = false;
-          this.alerts.open('Échec de l\'anonymisation', {
-            label: 'Erreur',
-            appearance: 'danger',
-            autoClose: 2000,
-          }).subscribe();
+          this.alerts
+            .open("Échec de l'anonymisation", {
+              label: 'Erreur',
+              appearance: 'danger',
+              autoClose: 2000,
+            })
+            .subscribe();
         },
       });
   }
-
-
 
   viewUserProfile(userId: number): void {
     this.router.navigate(['/profil', userId]);
@@ -349,7 +326,7 @@ export class UserManagementComponent implements OnInit, OnDestroy {
       name: row.name,
       email: row.email,
       roles: row.roles,
-      permissions: row.permissions
+      permissions: row.permissions,
     };
     this.showRolesModal = true;
     this.cdr.markForCheck();
@@ -362,10 +339,11 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   }
 
   saveUserRoles(changes: { userId: number; roles: string[]; permissions: string[] }): void {
-    this.userService.updateUserRoles(changes.userId, changes.roles, changes.permissions)
+    this.userService
+      .updateUserRoles(changes.userId, changes.roles, changes.permissions)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (updatedUser) => {
+        next: updatedUser => {
           const displayRowIndex = this.rows.findIndex(r => r.id === changes.userId);
           if (displayRowIndex !== -1) {
             this.rows[displayRowIndex].roles = changes.roles;
@@ -378,20 +356,22 @@ export class UserManagementComponent implements OnInit, OnDestroy {
           this.closeRolesModal();
 
           this.authService.getCurrentUser().subscribe({
-            next: (currentUser) => {
+            next: currentUser => {
               if (currentUser && currentUser.id === changes.userId) {
                 this.authService.logout();
               }
-            }
+            },
           });
         },
-        error: (err) => {
-          this.alerts.open('Erreur lors de la mise à jour des rôles', {
-            label: 'Erreur',
-            appearance: 'danger',
-            autoClose: 3000,
-          }).subscribe();
-        }
+        error: err => {
+          this.alerts
+            .open('Erreur lors de la mise à jour des rôles', {
+              label: 'Erreur',
+              appearance: 'danger',
+              autoClose: 3000,
+            })
+            .subscribe();
+        },
       });
   }
 

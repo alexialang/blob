@@ -69,7 +69,7 @@ export interface GroupStats {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class GlobalStatisticsService {
   private apiUrl = `${environment.apiUrl}/api/global-statistics`;
@@ -105,5 +105,4 @@ export class GlobalStatisticsService {
       switchMap(apiCall => apiCall)
     );
   }
-
 }

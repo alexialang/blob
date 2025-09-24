@@ -5,7 +5,8 @@
       <span
         *ngIf="config.highlightText"
         class="highlight-text"
-        [ngStyle]="{ 'color': config.highlightColor || '#257D54' }">
+        [ngStyle]="{ color: config.highlightColor || '#257D54' }"
+      >
         {{ config.highlightText }}
       </span>
     </h1>
@@ -45,12 +46,7 @@
           class="dropdown-container"
         >
           <button class="custom-dropdown-btn">Actions</button>
-          <button
-            tuiChevron
-            tuiIconButton
-            class="custom-dropdown-chevron"
-            type="button"
-          ></button>
+          <button tuiChevron tuiIconButton class="custom-dropdown-chevron" type="button"></button>
         </div>
 
         <ng-template #dropdown>
@@ -68,27 +64,20 @@
       </div>
     </div>
 
-    <div *ngIf="error" class="alert alert-danger">
-      Impossible de charger les données.
-    </div>
+    <div *ngIf="error" class="alert alert-danger">Impossible de charger les données.</div>
 
     <div class="table-scroll-wrapper">
       <table tuiTable [size]="size" class="custom-table table-striped">
         <thead>
           <tr>
             <th tuiTh class="th-checkbox" *ngIf="config.showSelectAll !== false">
-              <input
-                type="checkbox"
-                tuiCheckbox
-                [ngModel]="allSelected"
-                (ngModelChange)="toggleAll($event)"
-              />
+              <input type="checkbox" tuiCheckbox [ngModel]="allSelected" (ngModelChange)="toggleAll($event)" />
             </th>
             <th
               *ngFor="let column of config.columns"
               tuiTh
               [class]="'th-' + column.key"
-              [ngClass]="{'sortable': column.sortable}"
+              [ngClass]="{ sortable: column.sortable }"
               (click)="column.sortable ? sortBy(column.key) : null"
               [style.width]="column.width"
             >
@@ -121,19 +110,10 @@
         <tbody tuiTbody>
           <tr *ngFor="let row of pagedData" class="table-row">
             <td tuiTd *ngIf="config.showSelectAll !== false">
-              <input
-                type="checkbox"
-                tuiCheckbox
-                [(ngModel)]="row.selected"
-                (ngModelChange)="onItemSelectionChange()"
-              />
+              <input type="checkbox" tuiCheckbox [(ngModel)]="row.selected" (ngModelChange)="onItemSelectionChange()" />
             </td>
 
-            <td
-              *ngFor="let column of config.columns"
-              tuiTd
-              [class]="'td-' + column.key"
-            >
+            <td *ngFor="let column of config.columns" tuiTd [class]="'td-' + column.key">
               <ng-container
                 *ngIf="column.template; else defaultCell"
                 [ngTemplateOutlet]="column.template"
@@ -172,9 +152,7 @@
           </tr>
 
           <tr *ngIf="data.length === 0">
-            <td tuiTd [attr.colspan]="config.columns.length + 2" class="no-data">
-              Aucune donnée trouvée.
-            </td>
+            <td tuiTd [attr.colspan]="config.columns.length + 2" class="no-data">Aucune donnée trouvée.</td>
           </tr>
         </tbody>
       </table>

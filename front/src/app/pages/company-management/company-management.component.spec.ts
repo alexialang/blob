@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 import { CompanyManagementComponent } from './company-management.component';
 
@@ -8,9 +9,8 @@ describe('CompanyManagementComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CompanyManagementComponent]
-    })
-    .compileComponents();
+      imports: [CompanyManagementComponent, HttpClientTestingModule],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(CompanyManagementComponent);
     component = fixture.componentInstance;

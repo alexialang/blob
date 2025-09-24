@@ -1,0 +1,42 @@
+<div class="payment-success-page">
+  <div class="success-container">
+    <div class="success-header">
+      <div class="success-icon">
+        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="12" r="10" fill="var(--color-pink)" />
+          <path d="M9 12l2 2 4-4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </div>
+      <h1>Paiement Effectué !</h1>
+      <p class="success-message">Merci pour votre générosité ! Votre don a été traité avec succès.</p>
+    </div>
+
+    <div *ngIf="isLoading" class="loading-section">
+      <div class="loading-spinner"></div>
+      <p>Vérification du paiement...</p>
+    </div>
+
+    <div *ngIf="!isLoading" class="success-details">
+      <div class="impact-message">
+        <h3>Votre impact</h3>
+        <p>
+          Grâce à votre don, nous pouvons continuer à améliorer la plateforme Blob et offrir une meilleure expérience à
+          tous nos utilisateurs.
+        </p>
+      </div>
+
+      <div class="action-buttons">
+        <button class="btn-primary" (click)="goToHome()">Retour à l'accueil</button>
+        <button class="btn-secondary" (click)="goToDonation()">Faire un autre don</button>
+      </div>
+    </div>
+
+    <div *ngIf="error" class="error-message">
+      <p>{{ error }}</p>
+    </div>
+
+    <div class="auto-redirect">
+      <p>Vous serez automatiquement redirigé vers l'accueil dans quelques secondes...</p>
+    </div>
+  </div>
+</div>

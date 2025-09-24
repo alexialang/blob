@@ -151,11 +151,11 @@
   margin-bottom: 80px;
 
   .podium-card {
-    background: white;
-    border-radius: 20px;
+    background: transparent;
+    border-radius: 0;
     padding: 40px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
-    border: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow: none;
+    border: none;
 
     .podium-title {
       font-size: 42px !important;
@@ -167,6 +167,7 @@
       align-items: center;
       justify-content: center;
       gap: 15px;
+      letter-spacing: 0;
 
       i {
         color: var(--color-primary);
@@ -192,7 +193,7 @@
 
         &.first-place {
           order: 2;
-          margin-bottom: 0;
+          margin-bottom: -20px;
           transform: scale(1.1);
           background: var(--color-primary);
 
@@ -233,16 +234,13 @@
           img {
             width: 100px;
             height: 100px;
-            border-radius: 50%;
-            border: 6px solid rgba(255, 255, 255, 0.4);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
             transition: all 0.3s ease;
           }
 
           .medal {
             position: absolute;
             top: -15px;
-            right: -15px;
+            right: -10px;
             width: 50px;
             height: 50px;
             border-radius: 50%;
@@ -322,13 +320,10 @@
           .player-avatar.empty {
             width: 100px;
             height: 100px;
-            border-radius: 50%;
-            background: rgba(0, 0, 0, 0.1);
             display: flex;
             align-items: center;
             justify-content: center;
             margin: 0 auto 20px;
-            border: 6px solid rgba(0, 0, 0, 0.1);
           }
         }
       }
@@ -515,8 +510,6 @@
           img {
             width: 50px;
             height: 50px;
-            border-radius: 50%;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
           }
 
           .online-indicator {
@@ -606,8 +599,12 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 @media (max-width: 768px) {

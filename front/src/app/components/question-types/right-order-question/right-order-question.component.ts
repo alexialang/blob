@@ -8,11 +8,15 @@ import { Question, Answer } from '../../../models/quiz.model';
   standalone: true,
   imports: [CommonModule, DragDropModule],
   templateUrl: './right-order-question.component.html',
-  styleUrls: ['./right-order-question.component.scss']
+  styleUrls: ['./right-order-question.component.scss'],
 })
 export class RightOrderQuestionComponent {
   @Input() question!: Question;
-  @Input() progress: { current: number; total: number; percentage: number } = { current: 0, total: 0, percentage: 0 };
+  @Input() progress: { current: number; total: number; percentage: number } = {
+    current: 0,
+    total: 0,
+    percentage: 0,
+  };
   @Output() answerSelected = new EventEmitter<number[]>();
   @Output() answerValidated = new EventEmitter<void>();
 

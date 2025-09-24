@@ -15,10 +15,10 @@ class Group
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['company:read', 'group:read', 'quiz:read', 'quiz:create', 'user:admin_read', 'company:detail', 'group:create'])]
-    private ?int $id = null;
+    #[Groups(['company:read', 'group:read', 'quiz:read', 'quiz:create', 'user:admin_read', 'company:detail', 'group:create', 'quiz:organized', 'user:profile'])]
+    private int $id;
 
-    #[Groups(['user:read', 'company:read', 'group:read', 'quiz:read', 'quiz:create', 'user:admin_read', 'company:detail', 'group:create'])]
+    #[Groups(['user:read', 'company:read', 'group:read', 'quiz:read', 'quiz:create', 'user:admin_read', 'company:detail', 'group:create', 'quiz:organized', 'user:profile'])]
     #[ORM\Column(length: 100)]
     private ?string $name = null;
 
@@ -40,7 +40,6 @@ class Group
     {
         $this->users = new ArrayCollection();
     }
-
 
     public function getId(): ?int
     {

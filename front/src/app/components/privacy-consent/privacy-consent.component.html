@@ -1,0 +1,25 @@
+<div class="privacy-consent-banner" *ngIf="showConsentBanner">
+  <div class="banner-content">
+    <div class="banner-text">
+      <h3>🛡️ Votre vie privée est importante</h3>
+      <p>
+        Nous utilisons des <strong>analytics respectueux de la vie privée</strong> (Umami Analytics) pour améliorer
+        notre service. Solution gratuite, open source, aucun cookie de tracking.
+      </p>
+      <div class="privacy-details">
+        <small>
+          ✅ Pas de cookies tiers<br />
+          ✅ Données anonymisées<br />
+          ✅ Respecte "Do Not Track"<br />
+          ✅ Conforme RGPD
+        </small>
+      </div>
+    </div>
+
+    <div class="banner-actions">
+      <button type="button" class="btn btn-primary" (click)="acceptAnalytics()">Accepter</button>
+      <button type="button" class="btn btn-secondary" (click)="declineAnalytics()">Refuser</button>
+      <button type="button" class="btn btn-link" (click)="openPrivacySettings()">En savoir plus</button>
+    </div>
+  </div>
+</div>

@@ -1,13 +1,12 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import {FormsModule} from '@angular/forms';
+import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-filter',
   templateUrl: './filter.component.html',
-  imports: [
-    FormsModule
-  ],
-  styleUrls: ['./filter.component.scss']
+  imports: [FormsModule, CommonModule],
+  styleUrls: ['./filter.component.scss'],
 })
 export class FilterComponent {
   @Input() filterOptions: { label: string; options: string[] }[] = [];

@@ -23,11 +23,9 @@ class CompanyRepository extends ServiceEntityRepository
         if ($user->getCompany()) {
             return [$user->getCompany()];
         }
-        
+
         return [];
     }
-
-
 
     public function findGroupInCompany(int $groupId, int $companyId): ?Group
     {

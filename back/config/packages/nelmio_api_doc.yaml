@@ -1,9 +1,18 @@
 nelmio_api_doc:
     documentation:
         info:
-            title: My App
-            description: This is an awesome app!
+            title: Quiz API
+            description: API pour l'application de quiz avec authentification JWT
             version: 1.0.0
+        security:
+            - bearerAuth: []
+        components:
+            securitySchemes:
+                bearerAuth:
+                    type: http
+                    scheme: bearer
+                    bearerFormat: JWT
+                    description: "Token JWT obtenu via l'endpoint /api/login_check"
     areas: # to filter documented areas
         path_patterns:
             - ^/api(?!/doc$) # Accepts routes under /api except /api/doc

@@ -25,10 +25,24 @@ COPY package.json package-lock.json ./
 RUN npm ci
 
 COPY . .
-RUN npm run build
+
+# Analyse statique
+RUN npm run quality:lint
+
+# Build de production ultra-optimisé
+RUN npm run build:ultra
+
+# Purger le CSS inutilisé
+RUN node scripts/purge-css.js
+
+# Ajouter le préchargement des ressources critiques
+RUN node scripts/preload-critical.js
 
 # Run Nginx for prod
 FROM nginx:stable-alpine AS prod
+
+# Install Brotli module
+RUN apk add --no-cache nginx-mod-http-brotli
 
 RUN rm /etc/nginx/conf.d/default.conf
 COPY nginx.conf /etc/nginx/conf.d/default.conf

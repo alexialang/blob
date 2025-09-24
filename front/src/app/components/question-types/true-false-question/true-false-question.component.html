@@ -1,65 +1,27 @@
 <div class="true-false-container">
-  <div class="question-header">
-    <div class="progress-info">
-      <span>Question {{ progress.current }} / {{ progress.total }}</span>
-      <div class="progress-bar">
-        <div class="progress-fill" [style.width.%]="progress.percentage"></div>
-      </div>
-    </div>
-    <h2 class="question-title">{{ question.question }}</h2>
-    <div class="question-instruction">
-      <span>Cette affirmation est-elle vraie ou fausse ?</span>
-    </div>
-  </div>
-
-  <div class="statement-card">
-    <div class="statement-content">
-      <p class="statement-text">{{ question.question }}</p>
-    </div>
-  </div>
-
   <div class="choices-container">
-    <div class="choice-card true-card"
-         [class.selected]="isSelected(getTrueAnswer()?.id || 0)"
-         (click)="selectAnswer(getTrueAnswer()?.id || 0, true)">
-      <div class="choice-header">
-        <div class="choice-icon true-icon">✓</div>
-        <h3 class="choice-title">VRAI</h3>
-      </div>
-      <div class="choice-description">
-        <p>Cette affirmation est correcte</p>
-      </div>
-      <div class="choice-animation">
-        <div class="pulse-ring true-ring"></div>
-      </div>
+    <div
+      class="choice-card true-card"
+      [class.selected]="isSelected(getTrueAnswer()?.id || 0)"
+      [class.grayed-out]="selectedAnswerId && !isSelected(getTrueAnswer()?.id || 0)"
+      (click)="selectAnswer(getTrueAnswer()?.id || 0, true)"
+    >
+      <img src="assets/svg/true.svg" alt="VRAI" class="svg-background">
     </div>
 
-    <div class="vs-separator">
-      <span class="vs-text">VS</span>
-    </div>
-
-    <div class="choice-card false-card"
-         [class.selected]="isSelected(getFalseAnswer()?.id || 0)"
-         (click)="selectAnswer(getFalseAnswer()?.id || 0, false)">
-      <div class="choice-header">
-        <div class="choice-icon false-icon">✗</div>
-        <h3 class="choice-title">FAUX</h3>
-      </div>
-      <div class="choice-description">
-        <p>Cette affirmation est incorrecte</p>
-      </div>
-      <div class="choice-animation">
-        <div class="pulse-ring false-ring"></div>
-      </div>
+    <div
+      class="choice-card false-card"
+      [class.selected]="isSelected(getFalseAnswer()?.id || 0)"
+      [class.grayed-out]="selectedAnswerId && !isSelected(getFalseAnswer()?.id || 0)"
+      (click)="selectAnswer(getFalseAnswer()?.id || 0, false)"
+    >
+      <img src="assets/svg/false.svg" alt="FAUX" class="svg-background">
     </div>
   </div>
 
   <div class="validation-area">
-    <button class="validate-btn"
-            [disabled]="!selectedAnswerId"
-            (click)="validateAnswer()">
-      <span class="btn-icon">🎯</span>
-      Confirmer ma réponse
+    <button class="validate-btn" [disabled]="!selectedAnswerId" (click)="validateAnswer()">
+      Valider cette réponse
     </button>
   </div>
 </div>

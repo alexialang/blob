@@ -1,9 +1,73 @@
 .quiz-game {
   position: relative;
   height: 100vh;
-  background: #f5f5f5;
+  background: var(--color-light);
   padding: 0;
   overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .quiz-game {
+    height: auto;
+    min-height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .quiz-header {
+    padding: 15px 20px;
+    flex-wrap: wrap;
+    gap: 10px;
+
+    .logo img {
+      height: 30px;
+    }
+
+    .quiz-info {
+      gap: 15px;
+
+      .timer,
+      .score {
+        padding: 6px 12px;
+
+        .timer-icon,
+        .score-icon {
+          font-size: 14px;
+        }
+
+        .timer-text,
+        .score-text {
+          font-size: 14px;
+        }
+      }
+    }
+
+    .user-info {
+      display: none;
+    }
+  }
+
+  .question-container {
+    padding: 0 20px;
+    margin-bottom: 20px;
+
+    .question-number {
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .question-text {
+      font-size: 24px;
+      line-height: 1.3;
+    }
+  }
+
+  .question-instruction {
+    font-size: 16px;
+    margin: 15px 0 15px 0;
+    padding: 0 20px;
+  }
 }
 
 .background-pattern {
@@ -76,29 +140,25 @@
       align-items: center;
       gap: 8px;
       padding: 8px 16px;
-      background: rgba(52, 152, 219, 0.1);
+      background: transparent;
       border-radius: 25px;
-      border: 2px solid #3498db;
       transition: all 0.3s ease;
 
       &.warning {
-        background: var(--color-pink);
-        border-color: #e74c3c;
-        animation: pulse 1s infinite;
-
         .timer-text {
-          color: #e74c3c;
+          color: var(--color-danger);
         }
       }
 
       .timer-icon {
         font-size: 18px;
+        color: var(--color-dark);
       }
 
       .timer-text {
         font-weight: 600;
         font-size: 16px;
-        color: #3498db;
+        color: var(--color-dark);
         transition: color 0.3s ease;
       }
     }
@@ -108,18 +168,18 @@
       align-items: center;
       gap: 8px;
       padding: 8px 16px;
-      background: rgba(241, 196, 15, 0.1);
+      background: transparent;
       border-radius: 25px;
-      border: 2px solid #f1c40f;
 
       .score-icon {
         font-size: 18px;
+        color: var(--color-dark);
       }
 
       .score-text {
         font-weight: 600;
         font-size: 16px;
-        color: #f39c12;
+        color: var(--color-dark);
       }
     }
   }
@@ -132,56 +192,42 @@
     .username {
       font-size: 16px;
       font-weight: 600;
-      color: #333;
+      color: var(--color-dark);
     }
 
-    .user-level {
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      background: transparent;
       display: flex;
       align-items: center;
-      gap: 8px;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+      font-size: 14px;
 
-      .level-badge {
-        background: #333;
-        color: white;
-        padding: 4px 12px;
-        border-radius: 12px;
-        font-size: 12px;
-        font-weight: 600;
-      }
-
-      .user-avatar {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background: #333;
+      div {
+        width: 100%;
+        height: 100%;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: white;
-        font-weight: 600;
-        font-size: 14px;
       }
-    }
-  }
-}
 
-.progress-container {
-  position: relative;
-  z-index: 10;
-  padding: 0 40px;
-  margin-bottom: 40px;
+      svg {
+        width: 100%;
+        height: 100%;
+      }
 
-  .progress-bar {
-    width: 300px;
-    height: 8px;
-    background: #e0e0e0;
-    border-radius: 4px;
-    overflow: hidden;
-
-    .progress-fill {
-      height: 100%;
-      background: #333;
-      transition: width 0.3s ease;
+      span {
+        background: var(--color-dark);
+        border-radius: 50%;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
     }
   }
 }
@@ -189,12 +235,14 @@
 .question-container {
   position: relative;
   z-index: 10;
-  padding: 0 40px;
-  margin-bottom: 60px;
+  padding: 0;
+  margin-bottom: 40px;
+  text-align: center;
+  width: 100%;
 
   .question-number {
     font-size: 16px;
-    color: #666;
+    color: var(--color-dark);
     margin-bottom: 16px;
     font-weight: 500;
   }
@@ -202,20 +250,23 @@
   .question-text {
     font-size: 48px;
     font-weight: 900;
-    color: #333;
+    color: var(--color-dark);
     margin: 0;
     line-height: 1.2;
     max-width: 800px;
+    margin: 0 auto;
   }
 }
 
 .question-instruction {
   font-size: 18px;
-  color: #666;
-  margin: 40px 0 40px 0;
-  padding: 0 40px;
+  color: var(--color-dark);
+  margin: 20px 0 20px 0;
+  padding: 0;
   font-weight: 500;
   line-height: 1.4;
+  text-align: center;
+  width: 100%;
 }
 
 .answers-container {
@@ -257,7 +308,7 @@
   }
 
   &.incorrect {
-    background:var(--color-pink);
+    background: var(--color-pink);
     animation: incorrectShake 0.6s ease-in-out;
   }
 
@@ -267,8 +318,6 @@
     text-align: center;
     padding: 20px;
   }
-
-
 
   &.dotted-circle {
     width: 190px;
@@ -287,14 +336,13 @@
       background: #333;
       z-index: 1;
       border-radius: 50%;
-
-
     }
   }
 }
 
 @keyframes wave-morph {
-  0%, 100% {
+  0%,
+  100% {
     border-radius: 50% 40% 60% 30%;
   }
   50% {
@@ -330,7 +378,8 @@
 }
 
 @keyframes incorrectShake {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateX(0);
   }
   25% {
@@ -446,7 +495,6 @@
   }
 }
 
-
 @media (max-width: 768px) {
   .quiz-header {
     padding: 16px 20px;
@@ -504,15 +552,19 @@
   text-align: start;
   overflow: hidden;
 
-  &.correct   { background: var(--color-primary); }
-  &.incorrect { background: var(--color-pink); }
+  &.correct {
+    background: var(--color-primary);
+  }
+  &.incorrect {
+    background: var(--color-pink);
+  }
 
   .ff-content {
     margin: auto;
     color: white;
     max-width: 70%;
     animation: pop 0.4s ease-out;
-    h3{
+    h3 {
       color: white;
     }
   }
@@ -523,7 +575,10 @@
     font-weight: 900;
     margin-bottom: 1rem;
   }
-  .ff-score { font-size: 1.5rem; margin-bottom: 2rem; }
+  .ff-score {
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+  }
 
   .ff-correct-list {
     display: flex;
@@ -532,7 +587,7 @@
     justify-content: center;
 
     .ff-answer {
-      background: rgba(255,255,255,0.2);
+      background: rgba(255, 255, 255, 0.2);
       padding: 8px 16px;
       border-radius: 20px;
       font-weight: 600;
@@ -541,7 +596,12 @@
 }
 
 @keyframes pop {
-  from { transform: scale(0.9); opacity: 0; }
-  to   { transform: scale(1);   opacity: 1; }
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
-

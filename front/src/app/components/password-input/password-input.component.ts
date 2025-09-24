@@ -12,9 +12,9 @@ import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/f
     {
       provide: NG_VALUE_ACCESSOR,
       useExisting: forwardRef(() => PasswordInputComponent),
-      multi: true
-    }
-  ]
+      multi: true,
+    },
+  ],
 })
 export class PasswordInputComponent implements ControlValueAccessor {
   @Input() placeholder: string = 'Mot de passe';

@@ -2,8 +2,8 @@
 
 namespace App\Entity;
 
-use App\Repository\QuestionRepository;
 use App\Enum\Difficulty;
+use App\Repository\QuestionRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -16,7 +16,7 @@ class Question
     #[ORM\GeneratedValue]
     #[ORM\Column]
     #[Groups(['question:read', 'quiz:read', 'quiz:create'])]
-    private ?int $id = null;
+    private int $id;
 
     #[ORM\Column(length: 255)]
     #[Groups(['question:read', 'question:create', 'quiz:read', 'quiz:create'])]
@@ -59,6 +59,7 @@ class Question
     public function setQuestion(string $question): static
     {
         $this->question = $question;
+
         return $this;
     }
 
@@ -70,6 +71,7 @@ class Question
     public function setQuiz(?Quiz $quiz): static
     {
         $this->quiz = $quiz;
+
         return $this;
     }
 
@@ -81,6 +83,7 @@ class Question
     public function setTypeQuestion(?TypeQuestion $type_question): static
     {
         $this->type_question = $type_question;
+
         return $this;
     }
 
@@ -98,6 +101,7 @@ class Question
             $this->answers->add($answer);
             $answer->setQuestion($this);
         }
+
         return $this;
     }
 
@@ -108,6 +112,7 @@ class Question
                 $answer->setQuestion(null);
             }
         }
+
         return $this;
     }
 
@@ -119,6 +124,7 @@ class Question
     public function setDifficulty(?Difficulty $difficulty): static
     {
         $this->difficulty = $difficulty;
+
         return $this;
     }
 }

@@ -6,30 +6,15 @@ use App\Entity\UserAnswer;
 use App\Event\QuizCompletedEvent;
 use App\Repository\UserAnswerRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Exception\ValidationFailedException;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 class UserAnswerService
 {
-    private EntityManagerInterface $em;
-    private UserAnswerRepository $userAnswerRepository;
-    private QuizRatingService $quizRatingService;
-    private UserService $userService;
-    private QuizCrudService $quizCrudService;
-    private EventDispatcherInterface $eventDispatcher;
-    private ValidatorInterface $validator;
-
-    public function __construct(EntityManagerInterface $em, UserAnswerRepository $userAnswerRepository, QuizRatingService $quizRatingService, UserService $userService, QuizCrudService $quizCrudService, EventDispatcherInterface $eventDispatcher, ValidatorInterface $validator)
+    public function __construct(private readonly EntityManagerInterface $em, private readonly UserAnswerRepository $userAnswerRepository, private readonly QuizRatingService $quizRatingService, private readonly UserService $userService, private readonly QuizCrudService $quizCrudService, private readonly EventDispatcherInterface $eventDispatcher, private readonly ValidatorInterface $validator)
     {
-        $this->em = $em;
-        $this->userAnswerRepository = $userAnswerRepository;
-        $this->quizRatingService = $quizRatingService;
-        $this->userService = $userService;
-        $this->quizCrudService = $quizCrudService;
-        $this->eventDispatcher = $eventDispatcher;
-        $this->validator = $validator;
     }
 
     public function list(): array
@@ -40,7 +25,7 @@ class UserAnswerService
     public function create(array $data): UserAnswer
     {
         $this->validateUserAnswerData($data);
-        
+
         $userAnswer = new UserAnswer();
         $userAnswer->setDateAttempt(new \DateTimeImmutable());
         $userAnswer->setTotalScore($data['total_score']);
@@ -65,7 +50,7 @@ class UserAnswerService
     public function update(UserAnswer $userAnswer, array $data): UserAnswer
     {
         $this->validateUserAnswerData($data);
-        
+
         if (isset($data['total_score'])) {
             $userAnswer->setTotalScore($data['total_score']);
         }
@@ -92,14 +77,14 @@ class UserAnswerService
     public function saveGameResult(array $data): UserAnswer
     {
         $this->validateGameResultData($data);
-        
+
         if (!isset($data['user']) || !isset($data['quiz_id']) || !isset($data['total_score'])) {
             throw new \InvalidArgumentException('Missing required data: user, quiz_id, total_score');
         }
 
         $user = $data['user'];
         $quiz = $this->quizCrudService->find($data['quiz_id']);
-        
+
         if (!$quiz) {
             throw new \InvalidArgumentException('Quiz not found');
         }
@@ -127,7 +112,7 @@ class UserAnswerService
 
         $user = $data['user'];
         $quiz = $this->quizCrudService->find($data['quizId']);
-        
+
         if (!$quiz) {
             throw new \InvalidArgumentException('Quiz not found');
         }
@@ -137,11 +122,9 @@ class UserAnswerService
         return [
             'success' => true,
             'averageRating' => $result['averageRating'],
-            'totalRatings' => $result['totalRatings']
+            'totalRatings' => $result['totalRatings'],
         ];
     }
-
-
 
     public function getQuizRating(int $quizId, $currentUser = null): array
     {
@@ -159,33 +142,33 @@ class UserAnswerService
             'fields' => [
                 'total_score' => [
                     new Assert\Optional([
-                        new Assert\Type(['type' => 'integer', 'message' => 'Le score total doit être un entier'])
-                    ])
+                        new Assert\Type(['type' => 'integer', 'message' => 'Le score total doit être un entier']),
+                    ]),
                 ],
                 'user_id' => [
                     new Assert\NotBlank(['message' => 'L\'ID de l\'utilisateur est requis']),
-                    new Assert\Type(['type' => 'integer', 'message' => 'L\'ID de l\'utilisateur doit être un entier'])
+                    new Assert\Type(['type' => 'integer', 'message' => 'L\'ID de l\'utilisateur doit être un entier']),
                 ],
                 'quiz_id' => [
                     new Assert\NotBlank(['message' => 'L\'ID du quiz est requis']),
-                    new Assert\Type(['type' => 'integer', 'message' => 'L\'ID du quiz doit être un entier'])
+                    new Assert\Type(['type' => 'integer', 'message' => 'L\'ID du quiz doit être un entier']),
                 ],
                 'question_id' => [
                     new Assert\Optional([
-                        new Assert\Type(['type' => 'integer', 'message' => 'L\'ID de la question doit être un entier'])
-                    ])
+                        new Assert\Type(['type' => 'integer', 'message' => 'L\'ID de la question doit être un entier']),
+                    ]),
                 ],
                 'answer' => [
                     new Assert\Optional([
-                        new Assert\Length(['max' => 1000, 'maxMessage' => 'La réponse ne peut pas dépasser 1000 caractères'])
-                    ])
+                        new Assert\Length(['max' => 1000, 'maxMessage' => 'La réponse ne peut pas dépasser 1000 caractères']),
+                    ]),
                 ],
                 'score' => [
                     new Assert\Optional([
-                        new Assert\Type(['type' => 'integer', 'message' => 'Le score doit être un entier'])
-                    ])
-                ]
-            ]
+                        new Assert\Type(['type' => 'integer', 'message' => 'Le score doit être un entier']),
+                    ]),
+                ],
+            ],
         ]);
 
         $errors = $this->validator->validate($data, $constraints);
@@ -201,13 +184,13 @@ class UserAnswerService
             'fields' => [
                 'total_score' => [
                     new Assert\NotBlank(['message' => 'Le score total est requis']),
-                    new Assert\Type(['type' => 'integer', 'message' => 'Le score total doit être un entier'])
+                    new Assert\Type(['type' => 'integer', 'message' => 'Le score total doit être un entier']),
                 ],
                 'quiz_id' => [
                     new Assert\NotBlank(['message' => 'L\'ID du quiz est requis']),
-                    new Assert\Type(['type' => 'integer', 'message' => 'L\'ID du quiz doit être un entier'])
-                ]
-            ]
+                    new Assert\Type(['type' => 'integer', 'message' => 'L\'ID du quiz doit être un entier']),
+                ],
+            ],
         ]);
 
         $errors = $this->validator->validate($data, $constraints);

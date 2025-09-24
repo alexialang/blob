@@ -3,13 +3,13 @@
 namespace App\Entity;
 
 use App\Enum\Difficulty;
+use App\Enum\Status;
 use App\Repository\QuizRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
-use App\Enum\Status;
 
 #[ORM\Entity(repositoryClass: QuizRepository::class)]
 class Quiz
@@ -18,7 +18,7 @@ class Quiz
     #[ORM\GeneratedValue]
     #[ORM\Column]
     #[Groups(['quiz:read', 'quiz:create', 'question:read', 'quiz:organized'])]
-    private ?int $id = null;
+    private int $id;
 
     #[ORM\Column(length: 100)]
     #[Groups(['quiz:read', 'quiz:create', 'quiz:organized'])]
@@ -29,7 +29,7 @@ class Quiz
     private ?string $description = null;
 
     #[ORM\Column]
-    #[Groups(['quiz:read', 'quiz:create'])]
+    #[Groups(['quiz:read', 'quiz:create', 'quiz:organized'])]
     private ?bool $isPublic = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
@@ -45,7 +45,7 @@ class Quiz
     private ?Company $company = null;
 
     #[ORM\ManyToOne(inversedBy: 'quizs')]
-    #[Groups(['quiz:read', 'quiz:create'])]
+    #[Groups(['quiz:read', 'quiz:create', 'quiz:organized'])]
     private ?User $user = null;
 
     /**
@@ -53,7 +53,7 @@ class Quiz
      */
     #[ORM\ManyToMany(targetEntity: Group::class)]
     #[ORM\JoinTable(name: 'quiz_group')]
-    #[Groups(['quiz:read', 'quiz:create', 'company:detail'])]
+    #[Groups(['quiz:read', 'quiz:create', 'company:detail', 'quiz:organized'])]
     private Collection $groups;
 
     #[ORM\ManyToOne(inversedBy: 'quizs')]
@@ -94,6 +94,7 @@ class Quiz
     public function setTitle(string $title): static
     {
         $this->title = $title;
+
         return $this;
     }
 
@@ -105,6 +106,7 @@ class Quiz
     public function setDescription(string $description): static
     {
         $this->description = $description;
+
         return $this;
     }
 
@@ -116,6 +118,7 @@ class Quiz
     public function setIsPublic(bool $isPublic): static
     {
         $this->isPublic = $isPublic;
+
         return $this;
     }
 
@@ -127,6 +130,7 @@ class Quiz
     public function setDateCreation(\DateTimeInterface $date_creation): static
     {
         $this->date_creation = $date_creation;
+
         return $this;
     }
 
@@ -138,6 +142,7 @@ class Quiz
     public function setStatus(Status $status): static
     {
         $this->status = $status;
+
         return $this;
     }
 
@@ -149,6 +154,7 @@ class Quiz
     public function setCompany(?Company $company): static
     {
         $this->company = $company;
+
         return $this;
     }
 
@@ -160,6 +166,7 @@ class Quiz
     public function setUser(?User $user): static
     {
         $this->user = $user;
+
         return $this;
     }
 
@@ -171,6 +178,7 @@ class Quiz
     public function setCategory(?CategoryQuiz $category): static
     {
         $this->category = $category;
+
         return $this;
     }
 
@@ -188,6 +196,7 @@ class Quiz
             $this->questions->add($question);
             $question->setQuiz($this);
         }
+
         return $this;
     }
 
@@ -198,6 +207,7 @@ class Quiz
                 $question->setQuiz(null);
             }
         }
+
         return $this;
     }
 
@@ -215,6 +225,7 @@ class Quiz
             $this->userAnswers->add($userAnswer);
             $userAnswer->setQuiz($this);
         }
+
         return $this;
     }
 
@@ -225,6 +236,7 @@ class Quiz
                 $userAnswer->setQuiz(null);
             }
         }
+
         return $this;
     }
 
@@ -266,15 +278,16 @@ class Quiz
             $difficulty = $question->getDifficulty();
             if ($difficulty) {
                 $totalWeight += $difficulty->getWeight();
-                $questionCount++;
+                ++$questionCount;
             }
         }
 
-        if ($questionCount === 0) {
+        if (0 === $questionCount) {
             return 'Facile';
         }
 
         $avgWeight = $totalWeight / $questionCount;
+
         return Difficulty::fromWeight($avgWeight)->getLabel();
     }
 
@@ -288,6 +301,7 @@ class Quiz
     public function getPopularity(): int
     {
         $attempts = $this->getTotalAttempts();
+
         return min(5, max(1, ceil($attempts / 2)));
     }
 

@@ -3,9 +3,9 @@ export const environment = {
   apiUrl: 'https://blob.dev.local',
   apiBaseUrl: 'https://blob.dev.local/api',
   analytics: {
-    googleAnalyticsId: 'G-95GW7QPNRH',
-    googleTagManagerId: 'GTM-PJ9GL9GB',
-    hotjarId: '',
-    enabled: true
-  }
+    umamiUrl: 'https://cloud.umami.is',
+    umamiWebsiteId: 'e0ff5165-f84d-493a-ac33-4e079fb86094',
+    enabled: true,
+    respectPrivacy: true,
+  },
 };

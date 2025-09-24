@@ -35,7 +35,9 @@
       display: flex;
       align-items: center;
       gap: 1rem;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
 
       &:hover {
         transform: translateY(-2px);
@@ -160,12 +162,12 @@
   padding: 20px;
   background: white;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .stats-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   margin-bottom: 20px;
 }
@@ -195,24 +197,36 @@
   font-size: 14px;
 }
 
-.btn-refresh {
-  background-color: #3498db;
-  color: white;
+// Styles pour le bouton actualiser discret
+.discrete-action-link {
+  background: transparent;
   border: none;
-  padding: 8px 16px;
+  color: var(--text-muted, #9ca3af);
+  font-size: 0.9rem;
+  padding: 0.375rem;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 14px;
-  transition: background-color 0.3s;
+  transition: all 0.2s ease;
+  opacity: 0.7;
 
   &:hover:not(:disabled) {
-    background-color: #2980b9;
+    opacity: 1;
+    color: var(--color-primary, #257d54);
+    background: rgba(37, 125, 84, 0.1);
   }
 
   &:disabled {
-    background-color: #bdc3c7;
+    opacity: 0.5;
     cursor: not-allowed;
-    opacity: 0.7;
+    color: var(--text-muted, #9ca3af);
+  }
+
+  i {
+    font-size: 0.875rem;
+  }
+
+  .fa-spin {
+    color: var(--color-primary, #257d54);
   }
 }
 
@@ -336,8 +350,12 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 // Responsive design

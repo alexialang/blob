@@ -4,15 +4,8 @@ namespace App\Message\Mailer;
 
 class PasswordResetEmailMessage
 {
-    public string $email;
-    public string $firstName;
-    public string $resetToken;
-
-    public function __construct(string $email, string $firstName, string $resetToken)
+    public function __construct(public string $email, public string $firstName, public string $resetToken)
     {
-        $this->email = $email;
-        $this->firstName = $firstName;
-        $this->resetToken = $resetToken;
     }
 
     public function getEmail(): string
