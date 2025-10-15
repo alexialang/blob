@@ -68,9 +68,16 @@ Blob transforme les évaluations en expériences stimulantes grâce à :
 
 ### Démonstrations de Gameplay
 
-*Captures vidéo à venir - Mode solo et multijoueur*
+Mode Solo
 
 ---![jeu](https://github.com/user-attachments/assets/83b2a2da-cedb-4568-a868-72448e8a6e83)
+
+Multijoueur
+
+![multijoueur](https://github.com/user-attachments/assets/e17e548a-b4d6-44b5-ac6a-3afcff04b9c6)
+
+Choix de l'avatar
+![avatar](https://github.com/user-attachments/assets/44148d63-9c68-4f29-b362-108d3fb6bd22)
 
 
 ## Analyse Fonctionnelle et Conception
